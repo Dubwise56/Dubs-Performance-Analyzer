@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+
+  <KeyBindingCategoryDef>
+    <defName>ResourceMonitor</defName>
+    <label>Resource Monitor</label>
+    <description>Keybinds for Resource Monitor.</description>
+    <isGameUniversal>true</isGameUniversal>
+  </KeyBindingCategoryDef>
+
+  <KeyBindingDef>
+    <category>ResourceMonitor</category>
+    <defName>ResourceMonitorKey</defName>
+    <label>Resource Monitor</label>
+    <defaultKeyCodeA></defaultKeyCodeA>
+  </KeyBindingDef>
+
+</Defs>

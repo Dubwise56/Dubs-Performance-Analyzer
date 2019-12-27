@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Dubs resource monitor</name>
+  <author>Dubwise</author>
+  <supportedVersions>
+    <li>1.0</li>
+  </supportedVersions>
+  <description> My version of a resource monitor or profiler
+  </description>
+</ModMetaData>
