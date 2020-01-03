@@ -1,8 +1,6 @@
-# ResourceMonitor
-Resource Monitor
+# Dubs Performance Analyzer
 
-
-This is a tool to profile how much load ticked things have on the game, may be useful for optimizing a mod or speeding up your game by knowing what things to use less of.
+This mod adds a performance analyzer which can be used to profile parts of the game such as ticking and drawing and optimize it by disabling mods, optimizing your code, switching off alerts, filtering out work types, and so on.
 
 Set a keybind in the keybind settings to open the window.
 
