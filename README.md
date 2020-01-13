@@ -1,4 +1,4 @@
-# Dubs Performance Analyzer
+# Dubs Performance Analyzer (WIP)
 
 This mod adds a performance analyzer which can be used to profile parts of the game such as ticking and drawing and optimize it by disabling mods, optimizing your code, switching off alerts, filtering out work types, and so on.
 
