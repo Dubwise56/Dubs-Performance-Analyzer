@@ -2,16 +2,16 @@
 <Defs>
 
   <KeyBindingCategoryDef>
-    <defName>ResourceMonitor</defName>
-    <label>Resource Monitor</label>
-    <description>Keybinds for Resource Monitor.</description>
+    <defName>DubsPerformanceAnalyzer</defName>
+    <label>Dubs Performance Analyzer</label>
+    <description>Keybinds for Dubs Performance Analyzer.</description>
     <isGameUniversal>true</isGameUniversal>
   </KeyBindingCategoryDef>
 
   <KeyBindingDef>
-    <category>ResourceMonitor</category>
-    <defName>ResourceMonitorKey</defName>
-    <label>Resource Monitor</label>
+    <category>DubsPerformanceAnalyzer</category>
+    <defName>DubsPerformanceAnalyzerKey</defName>
+    <label>Dubs Performance Analyzer</label>
     <defaultKeyCodeA></defaultKeyCodeA>
   </KeyBindingDef>
 
