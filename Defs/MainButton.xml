@@ -2,23 +2,23 @@
 <Defs>
 
   <KeyBindingCategoryDef>
-    <defName>DubsPerformanceAnalyzer</defName>
-    <label>Dubs Performance Analyzer</label>
-    <description>Keybinds for Dubs Performance Analyzer.</description>
+    <defName>DubsPerformanceUtils</defName>
+    <label>Dubs Performance Utils</label>
+    <description>Keybinds for Dubs Performance Utils.</description>
     <isGameUniversal>true</isGameUniversal>
   </KeyBindingCategoryDef>
 
   <KeyBindingDef>
-    <category>DubsPerformanceAnalyzer</category>
-    <defName>DubsPerformanceAnalyzerKey</defName>
-    <label>Dubs Performance Analyzer</label>
+    <category>DubsPerformanceUtils</category>
+    <defName>DubsPerformanceUtilsKey</defName>
+    <label>Dubs Performance Utils</label>
     <defaultKeyCodeA></defaultKeyCodeA>
   </KeyBindingDef>
 
   <MainButtonDef>
-    <defName>DubsPerformanceAnalyzer</defName>
-    <label>Analyzer</label>
-    <description>Open Dubs Performance Analyzer.</description>
+    <defName>DubsPerformanceUtils</defName>
+    <label>Performance</label>
+    <description>Open Dubs Performance Utils.</description>
     <workerClass>DubsAnalyzer.MainButtonWorker_ToggleAnalyzer</workerClass>
     <tabWindowClass>DubsAnalyzer.Dialog_Analyzer</tabWindowClass>
     <order>60</order>
