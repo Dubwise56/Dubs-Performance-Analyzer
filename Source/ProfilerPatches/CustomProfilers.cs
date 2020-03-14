@@ -13,25 +13,30 @@ namespace DubsAnalyzer
     class CustomProfilersTick
     {
         public static bool Active = false;
-        public static void PatchMeth(string str)
+        public static void PatchMeth(string strde)
         {
-            try
+            var listStrLineElements = strde.Split(',').ToList();
+
+            foreach (var str in listStrLineElements)
             {
-                var sav = AccessTools.Method(str);
-                if (sav != null)
+                try
                 {
-                    Messages.Message($"Patched {str}", MessageTypeDefOf.TaskCompletion, false);
-                    Analyzer.harmony.Patch(sav, new HarmonyMethod(typeof(CustomProfilersTick), nameof(Prefix)),
-                        new HarmonyMethod(typeof(CustomProfilersTick), nameof(Postfix)));
+                    var sav = AccessTools.Method(str);
+                    if (sav != null)
+                    {
+                        Messages.Message($"Patched {str}", MessageTypeDefOf.TaskCompletion, false);
+                        Analyzer.harmony.Patch(sav, new HarmonyMethod(typeof(CustomProfilersTick), nameof(Prefix)),
+                            new HarmonyMethod(typeof(CustomProfilersTick), nameof(Postfix)));
+                    }
+                    else
+                    {
+                        Messages.Message($"{str} not found", MessageTypeDefOf.NegativeEvent, false);
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    Messages.Message($"{str} not found", MessageTypeDefOf.NegativeEvent, false);
+                    Messages.Message($"catch. {str} failed", MessageTypeDefOf.NegativeEvent, false);
                 }
-            }
-            catch (Exception e)
-            {
-                Messages.Message($"catch. {str} failed", MessageTypeDefOf.NegativeEvent, false);
             }
         }
 
@@ -68,25 +73,29 @@ namespace DubsAnalyzer
     class CustomProfilersUpdate
     {
         public static bool Active = false;
-        public static void PatchMeth(string str)
+        public static void PatchMeth(string strde)
         {
-            try
+            var listStrLineElements = strde.Split(',').ToList();
+            foreach (var str in listStrLineElements)
             {
-                var sav = AccessTools.Method(str);
-                if (sav != null)
+                try
                 {
-                    Messages.Message($"Patched {str}", MessageTypeDefOf.TaskCompletion, false);
-                    Analyzer.harmony.Patch(sav, new HarmonyMethod(typeof(CustomProfilersUpdate), nameof(Prefix)),
-                        new HarmonyMethod(typeof(CustomProfilersUpdate), nameof(Postfix)));
+                    var sav = AccessTools.Method(str);
+                    if (sav != null)
+                    {
+                        Messages.Message($"Patched {str}", MessageTypeDefOf.TaskCompletion, false);
+                        Analyzer.harmony.Patch(sav, new HarmonyMethod(typeof(CustomProfilersUpdate), nameof(Prefix)),
+                            new HarmonyMethod(typeof(CustomProfilersUpdate), nameof(Postfix)));
+                    }
+                    else
+                    {
+                        Messages.Message($"{str} not found", MessageTypeDefOf.NegativeEvent, false);
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    Messages.Message($"{str} not found", MessageTypeDefOf.NegativeEvent, false);
+                    Messages.Message($"catch. {str} failed", MessageTypeDefOf.NegativeEvent, false);
                 }
-            }
-            catch (Exception e)
-            {
-                Messages.Message($"catch. {str} failed", MessageTypeDefOf.NegativeEvent, false);
             }
         }
 
