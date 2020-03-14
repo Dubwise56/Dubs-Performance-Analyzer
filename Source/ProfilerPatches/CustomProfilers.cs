@@ -42,18 +42,19 @@ namespace DubsAnalyzer
                 return;
             }
             __state = string.Empty;
-            if (__instance != null)
-            {
-                __state = __instance.GetType().Name;
-            }
-            else if (__originalMethod.ReflectedType != null)
-            {
-                __state = __originalMethod.ReflectedType.Name;
-            }
-            else
-            {
-                __state = __originalMethod.GetType().Name;
-            }
+            //if (__instance != null)
+            //{
+                __state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
+            //}
+            //else 
+            //if (__originalMethod.ReflectedType != null)
+            //{
+            //    __state = __originalMethod.ReflectedType.Name;
+            //}
+            //else
+            //{
+                //__state = ;
+           // }
 
             Analyzer.Start(__state);
         }
@@ -100,18 +101,19 @@ namespace DubsAnalyzer
                 return;
             }
             __state = string.Empty;
-            if (__instance != null)
-            {
-                __state = __instance.GetType().Name;
-            }
-            else if (__originalMethod.ReflectedType != null)
-            {
-                __state = __originalMethod.ReflectedType.Name;
-            }
-            else
-            {
-                __state = __originalMethod.GetType().Name;
-            }
+            //if (__instance != null)
+            //{
+            //    __state = __instance.GetType().Name;
+            //}
+            //else 
+            //if (__originalMethod.ReflectedType != null)
+            //{
+            //    __state = __originalMethod.ReflectedType.Name;
+            //}
+            //else
+            //{
+            __state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
+            //}
 
             Analyzer.Start(__state);
         }

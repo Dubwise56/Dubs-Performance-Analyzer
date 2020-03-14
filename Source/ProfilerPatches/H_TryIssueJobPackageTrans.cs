@@ -79,7 +79,7 @@ namespace DubsAnalyzer
                 return;
             }
 
-            Log.Warning("start ");
+          //  Log.Warning("start ");
 
             wg = giver;
 
@@ -105,7 +105,7 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                Log.Warning("stop");
+              //  Log.Warning("stop");
                 Analyzer.Stop(CurrentKey);
             }
         }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,6 +10,7 @@ using HarmonyLib;
 using RimWorld;
 using UnityEngine;
 using Verse;
+
 
 namespace DubsAnalyzer
 {
@@ -31,7 +34,6 @@ namespace DubsAnalyzer
         public override void PreOpen()
         {
             base.PreOpen();
-
             if (!PatchedEverything)
             {
                 Log.Message("Applying profiling patches...");
