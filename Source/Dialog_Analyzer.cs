@@ -118,6 +118,7 @@ namespace DubsAnalyzer
 
         public Dialog_Analyzer()
         {
+            layer = WindowLayer.Super;
             forcePause = false;
             absorbInputAroundWindow = false;
             closeOnCancel = false;

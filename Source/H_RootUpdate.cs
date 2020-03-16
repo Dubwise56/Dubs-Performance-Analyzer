@@ -6,7 +6,7 @@ using Verse;
 
 namespace DubsAnalyzer
 {
-    [HarmonyPatch(typeof(Root_Play), nameof(Root_Play.Update))]
+    [HarmonyPatch(typeof(Root), nameof(Root.Update))]
     public class H_RootUpdate
     {
         public static float delta;

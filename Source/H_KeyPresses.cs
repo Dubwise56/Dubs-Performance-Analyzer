@@ -35,29 +35,31 @@ namespace DubsAnalyzer
                 {
                     GenCommandLine.Restart();
                 }
-           // }
+
+                try
+                {
+                    if (key != null && key.KeyDownEvent)
+                    {
+                        if (Find.WindowStack.WindowOfType<Dialog_Analyzer>() != null)
+                        {
+                            Find.WindowStack.RemoveWindowsOfType(typeof(Dialog_Analyzer));
+                        }
+                        else
+                        {
+                            Find.WindowStack.Add(new Dialog_Analyzer());
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e.ToString());
+                }
+            // }
         }
 
         public static void pertwee()
         {
-            try
-            {
-                if (key != null && key.KeyDownEvent)
-                {
-                    if (Find.WindowStack.WindowOfType<Dialog_Analyzer>() != null)
-                    {
-                        Find.WindowStack.RemoveWindowsOfType(typeof(Dialog_Analyzer));
-                    }
-                    else
-                    {
-                        Find.WindowStack.Add(new Dialog_Analyzer());
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Log.Error(e.ToString());
-            }
+
         }
     }
 }
