@@ -80,7 +80,7 @@ namespace DubsAnalyzer
             {
                 var value = Profiles[key];
                 var av = value.History.GetAverageTime(AveragingTime);
-                newLogs.Add(new ProfileLog(value.label, string.Empty, av, null, key, string.Empty, 0, value.type));
+                newLogs.Add(new ProfileLog(value.label, string.Empty, av, (float)value.History.times.Max(), null, key, string.Empty, 0, value.type));
             }
 
             var dd = newLogs.Sum(x => x.Average);
@@ -89,7 +89,7 @@ namespace DubsAnalyzer
             {
                 var k = newLogs[index];
                 var pc = (float)(k.Average / dd);
-                var Log = new ProfileLog(k.Label, pc.ToStringPercent(), pc, k.Def, k.Key, k.Mod, pc, k.Type);
+                var Log = new ProfileLog(k.Label, pc.ToStringPercent(), pc, k.Max, k.Def, k.Key, k.Mod, pc, k.Type);
                 newLogs[index] = Log;
             }
 
@@ -164,10 +164,10 @@ namespace DubsAnalyzer
 
             if (ShouldUpdate)
             {
-                foreach (Profiler profiler in Profiles.Values)
-                {
-                    profiler.MemRiseUpdate();
-                }
+                //foreach (Profiler profiler in Profiles.Values)
+                //{
+                //    profiler.MemRiseUpdate();
+                //}
                 ShouldUpdate = false;
                 t1 = new Thread(() => ThreadStart(Profiles));
                 t1.Start();

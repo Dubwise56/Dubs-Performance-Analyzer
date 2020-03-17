@@ -65,30 +65,28 @@ namespace DubsAnalyzer
             var skiff2 = AccessTools.Method(typeof(AlertsReadout), nameof(AlertsReadout.AlertsReadoutOnGUI));
             Analyzer.harmony.Patch(skiff2, new HarmonyMethod(typeof(H_AlertsReadoutUpdate), nameof(AlertsReadoutOnGUI)));
 
-        //    skiff2 = AccessTools.Method(typeof(AlertsReadout), nameof(AlertsReadout.AlertsReadoutUpdate));
-        //    Analyzer.harmony.Patch(skiff2, new HarmonyMethod(typeof(H_AlertsReadoutUpdate), nameof(AlertsReadoutUpdate)));
+             //   skiff2 = AccessTools.Method(typeof(AlertsReadout), nameof(AlertsReadout.AlertsReadoutUpdate));
+               // Analyzer.harmony.Patch(skiff2, new HarmonyMethod(typeof(H_AlertsReadoutUpdate), nameof(AlertsReadoutUpdate)));
         }
 
 
 
         public static bool CheckAddOrRemoveAlert(AlertsReadout __instance, Alert alert, bool forceRemove)
         {
-            if (!Analyzer.Settings.OverrideAlerts && !Analyzer.running)
+        //    return false;
+            if (!Analyzer.Settings.OverrideAlerts && (!Analyzer.running || !Active))
             {
                 return true;
             }
 
             try
             {
-                alert.Recalculate();
-
                 var typeis = alert.GetType();
 
                 // if (Analyzer.loggingMode == LoggingMode.RenderingThings)
                 //  {
                 //name = $"{alert.GetType()}";
                 //  }
-
 
                 if (Active)
                 {
@@ -101,11 +99,13 @@ namespace DubsAnalyzer
                 {
                     if (Analyzer.Settings.AlertFilter[typeis] == false)
                     {
+                        alert.Recalculate();
                         ac = alert.Active;
                     }
                 }
                 else
                 {
+                    alert.Recalculate();
                     ac = alert.Active;
                 }
 
@@ -138,7 +138,8 @@ namespace DubsAnalyzer
 
         public static bool AlertsReadoutOnGUI(AlertsReadout __instance)
         {
-            if (!Analyzer.Settings.OverrideAlerts && !Analyzer.running)
+       //     return false;
+            if (!Analyzer.Settings.OverrideAlerts && (!Analyzer.running || !Active))
             {
                 return true;
             }
@@ -221,6 +222,7 @@ namespace DubsAnalyzer
 
         public static bool AlertsReadoutUpdate(AlertsReadout __instance)
         {
+         //   return false;
             if (!Analyzer.Settings.OverrideAlerts && !Analyzer.running)
             {
                 return true;

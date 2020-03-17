@@ -7,7 +7,7 @@ namespace DubsAnalyzer
     [StaticConstructorOnStartup]
     public static class Dialog_Graph
     {
-        public static Texture2D mem = ContentFinder<Texture2D>.Get("DPA/UI/mem", false);
+      //  public static Texture2D mem = ContentFinder<Texture2D>.Get("DPA/UI/mem", false);
 
         private static int entryCount = 300;
         public static string key = string.Empty;
@@ -23,13 +23,13 @@ namespace DubsAnalyzer
         private static double max;
         private static string MaxStr;
 
-        private static long maxBytes;
-        private static long minBytes;
+      //  private static long maxBytes;
+      //  private static long minBytes;
 
         private static long LASTtotalBytesStr;
         private static string totalBytesStr;
 
-        private static bool ShowMem = false;
+      //  private static bool ShowMem = false;
 
         public static void RunKey(string s)
         {
@@ -40,8 +40,8 @@ namespace DubsAnalyzer
         public static void reset()
         {
             WindowMax = 0;
-            maxBytes = 0;
-            minBytes = 0;
+       //     maxBytes = 0;
+       //     minBytes = 0;
             max = 0;
             totalBytesStr = string.Empty;
             key = string.Empty;
@@ -141,20 +141,20 @@ namespace DubsAnalyzer
             if (Analyzer.Settings.AdvancedMode)
             {
                 var memr = settings.LeftPartPixels(20f);
-                if (Widgets.ButtonImageFitted(memr, mem, ShowMem ? Color.white : Color.grey))
-                {
-                    ShowMem = !ShowMem;
-                }
+            //    if (Widgets.ButtonImageFitted(memr, mem, ShowMem ? Color.white : Color.grey))
+            //    {
+            //        ShowMem = !ShowMem;
+            //    }
                 GUI.color = Color.white;
                 TooltipHandler.TipRegion(memr, "Toggle garbage tracking, approximation of total garbage produced by the selected log");
 
                 memr.x = memr.xMax;
                 memr.width = 300f;
-                if (ShowMem)
-                {
-                    Text.Anchor = TextAnchor.MiddleLeft;
-                    Widgets.Label(memr, totalBytesStr);
-                }
+             //   if (ShowMem)
+            //    {
+            //        Text.Anchor = TextAnchor.MiddleLeft;
+           ////         Widgets.Label(memr, totalBytesStr);
+           ///     }
             }
 
 
@@ -162,8 +162,8 @@ namespace DubsAnalyzer
             Widgets.Label(settings, hoverValStr);
             Text.Anchor = TextAnchor.UpperLeft;
 
-            maxBytes = 0;
-            minBytes = 0;
+         //   maxBytes = 0;
+          //  minBytes = 0;
 
             var LastMax = max;
             max = 0;
@@ -173,25 +173,25 @@ namespace DubsAnalyzer
 
             for (var i = 0; i < mescou; i++)
             {
-                var bytes = prof.History.mem[i];
+              //  var bytes = prof.History.mem[i];
                 var TM = prof.History.times[i];
 
                 if (i == 0)
                 {
-                    minBytes = bytes;
-                    maxBytes = bytes;
+              //      minBytes = bytes;
+              //      maxBytes = bytes;
                     max = TM;
                 }
 
-                if (bytes < minBytes)
-                {
-                    minBytes = bytes;
-                }
+             //   if (bytes < minBytes)
+             //   {
+             //       minBytes = bytes;
+              //  }
 
-                if (bytes > maxBytes)
-                {
-                    maxBytes = bytes;
-                }
+            //    if (bytes > maxBytes)
+           //     {
+           //         maxBytes = bytes;
+           //     }
 
                 if (TM > max)
                 {
@@ -209,22 +209,22 @@ namespace DubsAnalyzer
 
             for (var i = 0; i < mescou; i++)
             {
-                var bytes = prof.History.mem[i];
+            //    var bytes = prof.History.mem[i];
                 var TM = prof.History.times[i];
 
                 var y = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)TM);
-                var MEMy = GenMath.LerpDoubleClamped(minBytes, maxBytes, position.height, position.y, bytes);
+              //  var MEMy = GenMath.LerpDoubleClamped(minBytes, maxBytes, position.height, position.y, bytes);
 
                 var screenPoint = new Vector2(position.xMax - gap * i, y);
-                var MEMscreenPoint = new Vector2(position.xMax - gap * i, MEMy);
+            //    var MEMscreenPoint = new Vector2(position.xMax - gap * i, MEMy);
 
                 if (i != 0)
                 {
                     Widgets.DrawLine(last, screenPoint, Analyzer.Settings.LineCol, 1f);
-                    if (ShowMem)
-                    {
-                        Widgets.DrawLine(lastMEM, MEMscreenPoint, Color.grey, 2f);
-                    }
+                 //   if (ShowMem)
+                 //   {
+                 //       Widgets.DrawLine(lastMEM, MEMscreenPoint, Color.grey, 2f);
+                 //   }
 
                     var vag = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
 
@@ -248,7 +248,7 @@ namespace DubsAnalyzer
                 }
 
                 last = screenPoint;
-                lastMEM = MEMscreenPoint;
+            //    lastMEM = MEMscreenPoint;
             }
 
             if (LastMax != max)
@@ -256,11 +256,11 @@ namespace DubsAnalyzer
                 MaxStr = $"Max {max}ms";
             }
 
-            if (LASTtotalBytesStr < prof.BytesUsed)
-            {
-                LASTtotalBytesStr = prof.BytesUsed;
-                totalBytesStr = $"Mem {(long)(prof.BytesUsed / (long)1024)} Kb";
-            }
+         //   if (LASTtotalBytesStr < prof.BytesUsed)
+         ///   {
+         //       LASTtotalBytesStr = prof.BytesUsed;
+         //       totalBytesStr = $"Mem {(long)(prof.BytesUsed / (long)1024)} Kb";
+         //   }
 
 
             var LogMaxY = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)max);

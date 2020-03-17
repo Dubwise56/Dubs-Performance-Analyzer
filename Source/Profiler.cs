@@ -14,15 +14,15 @@ namespace DubsAnalyzer
         public Type type;
         public Def def;
         public Thing thing;
-        private long startBytes = 0;
-        private long endBytes = 0;
-        public long BytesUsed = 0;
+   //     private long startBytes = 0;
+    //    private long endBytes = 0;
+       // public long BytesUsed = 0;
         public string label;
         public string key;
 
-        public long memRise = 0;
-        public long LastBytesRecorded = 0;
-        public string memRiseStr;
+       // public long memRise = 0;
+     //   public long LastBytesRecorded = 0;
+      //  public string memRiseStr;
 
         public double lastTime = 0;
         public double startTime = 0;
@@ -39,9 +39,9 @@ namespace DubsAnalyzer
             label = lab;
             stopwatch = new Stopwatch();
             type = ty;
-            startBytes = 0;
-            endBytes = 0;
-            BytesUsed = 0;
+      //      startBytes = 0;
+      //      endBytes = 0;
+      //      BytesUsed = 0;
             History = new ProfilerHistory(Analyzer.MaxHistoryEntries);
         }
 
@@ -52,8 +52,8 @@ namespace DubsAnalyzer
             stopwatch.Start();
         }
 
-        public void MemRiseUpdate()
-        {
+     //   public void MemRiseUpdate()
+     //   {
             //var compare = LastBytesRecorded;
             //LastBytesRecorded = BytesUsed;
             //memRise = BytesUsed - compare;
@@ -66,7 +66,7 @@ namespace DubsAnalyzer
             //{
             //    memRiseStr = $"+{memRise / 1024}KB";
             //}
-        }
+      //  }
 
         public void Stop(bool writestack)
         {
@@ -102,7 +102,7 @@ namespace DubsAnalyzer
 
         public void RecordMeasurement()
         {
-            History.AddMeasurement(stopwatch.Elapsed.TotalMilliseconds, BytesUsed, HitCounter);
+            History.AddMeasurement(stopwatch.Elapsed.TotalMilliseconds, HitCounter);
             if (stopwatch.IsRunning)
             {
                 Log.Error($"{key} was still running when recorded");

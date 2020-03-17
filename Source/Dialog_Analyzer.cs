@@ -248,7 +248,7 @@ namespace DubsAnalyzer
                             {
                                 row = listing.GetRect(30f);
                                 row.x += 20f;
-                                  GUI.color = Widgets.OptionSelectedBGBorderColor;
+                                GUI.color = Widgets.OptionSelectedBGBorderColor;
                                 Widgets.DrawLineVertical(row.x, row.y, 15f);
                                 if (doo != 0)
                                 {
@@ -355,7 +355,7 @@ namespace DubsAnalyzer
             {
                 Analyzer.running = !Analyzer.running;
             }
-            
+
             TooltipHandler.TipRegion(rowby, "Start and stop logging");
             bool save = false;
             if (Analyzer.Settings.AdvancedMode)
@@ -374,7 +374,7 @@ namespace DubsAnalyzer
                 rowby.x = rowby.xMax;
                 rowby.width = 100f;
                 save = Widgets.ButtonTextSubtle(rowby, "Save .CSV");
-             TooltipHandler.TipRegion(rowby, $"Save the current list of times to a csv file in {GenFilePaths.FolderUnderSaveData("Profiling")}");
+                TooltipHandler.TipRegion(rowby, $"Save the current list of times to a csv file in {GenFilePaths.FolderUnderSaveData("Profiling")}");
             }
             else
             {
@@ -490,23 +490,25 @@ namespace DubsAnalyzer
 
                         Widgets.FillableBar(r.BottomPartPixels(8f), log.Percent, col, clear, false);
 
-                        r = r.LeftPartPixels(50);
+                        r = r.LeftPartPixels(60);
 
                         if (!on)
                         {
                             GUI.color = Color.grey;
                         }
 
-                        Widgets.Label(r, log.Average_s);
+                      //  Widgets.Label(r, log.Average_s);
 
-                        if (Analyzer.Settings.AdvancedMode)
-                        {
-                            r.x = r.xMax;
+                        // if (Analyzer.Settings.AdvancedMode)
+                        // {
+                      //  r.x = r.xMax;
+                      //  r.width = 50f;
 
-                            Widgets.Label(r, profile.memRiseStr);
-                        }
+                        Widgets.Label(r, $"{log.Max:0.000}ms");
+                        //  }
 
-                        r.x = r.xMax;
+                        r.x = r.xMax + 15;
+
                         r.width = 2000;
                         Widgets.Label(r, log.Label);
 
@@ -514,7 +516,7 @@ namespace DubsAnalyzer
 
                         if (save)
                         {
-                            csv.Append($"{log.Label},{log.Average},{profile.BytesUsed}");
+                            //    csv.Append($"{log.Label},{log.Average},{profile.BytesUsed}");
                             foreach (var historyTime in profile.History.times)
                             {
                                 csv.Append($",{historyTime}");
