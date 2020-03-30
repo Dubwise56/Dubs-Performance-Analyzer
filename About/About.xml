@@ -7,5 +7,5 @@
       <li>1.1</li>
    </supportedVersions>
   <packageId>Dubwise.DubsPerformanceAnalyzer</packageId>
-  <description>This is a tool to analyze the cpu usage of specific parts of the game to help players and modders with performance issues\n\nAlso includes some basic fixes and optimizations to improve fps and memory usage\n\n1.0.0</description>
+  <description>This is a tool to analyze the cpu usage of specific parts of the game to help players and modders with performance issues</description>
 </ModMetaData>
