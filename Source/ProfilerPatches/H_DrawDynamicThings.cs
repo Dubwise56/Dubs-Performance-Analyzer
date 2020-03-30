@@ -7,7 +7,7 @@ namespace DubsAnalyzer
 {
 
 
-    [ProfileMode("DrawDynamicThings", UpdateMode.Update, "Dynamic drawing of things on the map like colonists or animated buildings, things usually only draw when they are in view", true)]
+    [ProfileMode("DrawDynamicThings", UpdateMode.Update, "DrawDynThinTipKey", true)]
     [HarmonyPatch(typeof(DynamicDrawManager), nameof(DynamicDrawManager.DrawDynamicThings))]
     internal class H_DrawDynamicThings
     {

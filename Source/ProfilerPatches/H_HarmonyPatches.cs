@@ -9,7 +9,7 @@ using Verse.AI;
 
 namespace DubsAnalyzer
 {
-    [ProfileMode("HarmonyTranspilers", UpdateMode.Update, "Profiles any methods that have been modified using harmony transpiler, this is the total time for the whole method, not just the parts that were patched in")]
+    [ProfileMode("HarmonyTranspilers", UpdateMode.Update, "TransPatchTipKey")]
     internal class H_HarmonyTranspilers
     {
         public static bool Active = false;

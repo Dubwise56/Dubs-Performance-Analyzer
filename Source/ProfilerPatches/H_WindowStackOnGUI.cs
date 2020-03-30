@@ -6,7 +6,7 @@ using Verse.AI;
 
 namespace DubsAnalyzer
 {
-    [ProfileMode("WindowStackOnGUI", UpdateMode.GUI, "Windows that open like this one or main tab windows like research", true)]
+    [ProfileMode("WindowStackOnGUI", UpdateMode.GUI, "WindowPatchTipKey", true)]
     [HarmonyPatch(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI))]
     internal class H_WindowStackOnGUI
     {

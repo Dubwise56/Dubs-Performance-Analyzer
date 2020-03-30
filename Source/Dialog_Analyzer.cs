@@ -43,31 +43,46 @@ namespace DubsAnalyzer
 
                     foreach (var mode in modes)
                     {
-
-                        var att = mode.TryGetAttribute<ProfileMode>();
-                        att.Settings = new Dictionary<FieldInfo, Setting>();
-
-                        foreach (var fieldInfo in mode.GetFields().Where(m => m.TryGetAttribute<Setting>(out _)))
+                        try
                         {
-                            var sett = fieldInfo.TryGetAttribute<Setting>();
-                            att.Settings.Add(fieldInfo, sett);
-                        }
+                            var att = mode.TryGetAttribute<ProfileMode>();
+                            att.Settings = new Dictionary<FieldInfo, Setting>();
 
-                        att.Clicked = AccessTools.Method(mode, "Clicked");
-                        att.Selected = AccessTools.Method(mode, "Selected");
-                        att.Checkbox = AccessTools.Method(mode, "Checkbox");
-                        att.typeRef = mode;
-
-                        foreach (var profileTab in MainTabs)
-                        {
-                            if (att.mode == profileTab.UpdateMode)
+                            foreach (var fieldInfo in mode.GetFields().Where(m => m.TryGetAttribute<Setting>(out _)))
                             {
-                                profileTab.Modes.Add(att, mode);
+                                var sett = fieldInfo.TryGetAttribute<Setting>();
+                                att.Settings.Add(fieldInfo, sett);
+                            }
+
+                            att.Clicked = AccessTools.Method(mode, "Clicked");
+                            att.Selected = AccessTools.Method(mode, "Selected");
+                            att.Checkbox = AccessTools.Method(mode, "Checkbox");
+                            att.typeRef = mode;
+
+                            foreach (var profileTab in MainTabs)
+                            {
+                                if (att.mode == profileTab.UpdateMode)
+                                {
+                                    profileTab.Modes.Add(att, mode);
+                                }
                             }
                         }
+                        catch (Exception e)
+                        {
+                            Log.Error(e.ToString());
+                        }
+
                     }
 
-                    Analyzer.harmony.PatchAll(Assembly.GetExecutingAssembly());
+                    try
+                    {
+                        Analyzer.harmony.PatchAll(Assembly.GetExecutingAssembly());
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(e.ToString());
+                    }
+
 
                     PatchedEverything = true;
                     Log.Message("Done");
@@ -265,10 +280,16 @@ namespace DubsAnalyzer
                                     Analyzer.Reset();
                                 }
                             }
-                            if (keySetting.Key.FieldType == typeof(float) || keySetting.Key.FieldType == typeof(int))
-                            {
 
+                            if (keySetting.Value.tip != null)
+                            {
+                                TooltipHandler.TipRegion(row, keySetting.Value.tip);
                             }
+                           
+                            //if (keySetting.Key.FieldType == typeof(float) || keySetting.Key.FieldType == typeof(int))
+                            //{
+
+                            //}
 
                             doo++;
                         }
@@ -497,12 +518,12 @@ namespace DubsAnalyzer
                             GUI.color = Color.grey;
                         }
 
-                      //  Widgets.Label(r, log.Average_s);
+                        //  Widgets.Label(r, log.Average_s);
 
                         // if (Analyzer.Settings.AdvancedMode)
                         // {
-                      //  r.x = r.xMax;
-                      //  r.width = 50f;
+                        //  r.x = r.xMax;
+                        //  r.width = 50f;
 
                         Widgets.Label(r, $"{log.Max:0.000}ms");
                         //  }

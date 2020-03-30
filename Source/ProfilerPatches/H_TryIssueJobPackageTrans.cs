@@ -9,7 +9,7 @@ using Verse.AI;
 
 namespace DubsAnalyzer
 {
-    [ProfileMode("JobGiver_Work", UpdateMode.Tick, "The scanners which issue jobs to pawns", true)]
+    [ProfileMode("JobGiver_Work", UpdateMode.Tick, "JobGiveTipKey", true)]
     public static class H_TryIssueJobPackageTrans
     {
         [Setting("By Work Type")] public static bool ByWorkType = false;
@@ -162,8 +162,7 @@ namespace DubsAnalyzer
     }
 
 
-    [ProfileMode("WorkGiverDetoured", UpdateMode.Tick,
-        "This version detours the whole method, just used to confirm the other WorkGiver is accurate or do custom stuff")]
+    [ProfileMode("JobGiver_Work(Detoured)", UpdateMode.Tick, "DetourWorkTipKey")]
     internal class H_TryIssueJobPackage
     {
         [Setting("By Work Type")] public static bool ByWorkType = false;

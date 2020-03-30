@@ -11,10 +11,11 @@ namespace DubsAnalyzer
     public class Setting : Attribute
     {
         public string name;
-
-        public Setting(string name)
+        public string tip;
+        public Setting(string name, string tip = null)
         {
             this.name = name;
+            this.tip = tip.Translate();
         }
     }
 
@@ -28,8 +29,10 @@ namespace DubsAnalyzer
     {
         public bool IsPatched = false;
         public Dictionary<FieldInfo, Setting> Settings;
+
         public string name;
         public string tip;
+
         public UpdateMode mode;
         public bool Active = false;
         public Type typeRef;
@@ -44,7 +47,7 @@ namespace DubsAnalyzer
         {
             this.name = name;
             this.mode = mode;
-            this.tip = tip;
+            this.tip = tip.Translate();
             this.Basics = Basics;
         }
 

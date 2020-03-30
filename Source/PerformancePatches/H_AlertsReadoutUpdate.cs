@@ -9,8 +9,7 @@ using Verse;
 namespace DubsAnalyzer
 {
     [PerformancePatch]
-    [ProfileMode("Alerts", UpdateMode.Update,
-        "Alerts appear on the right of the screen, these run constantly even while paused and can heavily impact performance, click the check boxes to disable them",
+    [ProfileMode("Alerts", UpdateMode.Update, "AlertsTipKey",
         true)]
     internal class H_AlertsReadoutUpdate
     {

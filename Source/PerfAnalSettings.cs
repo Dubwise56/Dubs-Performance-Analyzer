@@ -86,38 +86,35 @@ namespace DubsAnalyzer
 
             var rec = listing.GetRect(24f);
             Widgets.DrawTextureFitted(rec.LeftPartPixels(40f), Gfx.Support, 1f);
-            if (Widgets.ButtonText(rec.RightPartPixels(rec.width - 40), "Performance Analyzer Wiki", false, true))
+            if (Widgets.ButtonText(rec.RightPartPixels(rec.width - 40), "PerfAnalWiki".Translate(), false, true))
             {
                 Application.OpenURL("https://github.com/Dubwise56/Dubs-Performance-Analyzer/wiki");
             }
 
             rec = listing.GetRect(24f);
             Widgets.DrawTextureFitted(rec.LeftPartPixels(40f), Gfx.disco, 1f);
-            if (Widgets.ButtonText(rec.RightPartPixels(rec.width - 40), "Dubs Mods Discord", false, true))
+            if (Widgets.ButtonText(rec.RightPartPixels(rec.width - 40), "DubModDisco".Translate(), false, true))
             {
                 Application.OpenURL("https://discord.gg/Az5CnDW");
             }
 
             listing.GapLine();
-            listing.Label("Optimizations and fixes");
-            DubGUI.Checkbox("Speed up temperature stats (Fixes lots of stutters)", listing,
+            listing.Label("OptimizationsAndFixes".Translate());
+            DubGUI.Checkbox("TempSpeedup".Translate(), listing,
                 ref Analyzer.Settings.FixGame);
          //   DubGUI.Checkbox("Fix memory leak on beds and room stats", listing, ref Analyzer.Settings.FixBedMemLeak);
-            DubGUI.Checkbox("Optimize build roof job scanner", listing, ref Analyzer.Settings.OverrideBuildRoof);
-            DubGUI.Checkbox("Override alerts (ctrl click analyzed alerts to kill them)", listing,
-                ref Analyzer.Settings.OverrideAlerts);
-            DubGUI.Checkbox("Optimize DrawInspectGizmoGrid (Buttons when selecting things)", listing,
-                ref Analyzer.Settings.OptimizeDrawInspectGizmoGrid);
+            DubGUI.Checkbox("RoofOptimize".Translate(), listing, ref Analyzer.Settings.OverrideBuildRoof);
+            DubGUI.Checkbox("OverrideAlerts".Translate(), listing, ref Analyzer.Settings.OverrideAlerts);
+            DubGUI.Checkbox("GizmoOpti".Translate(), listing, ref Analyzer.Settings.OptimizeDrawInspectGizmoGrid);
             var jam = Analyzer.Settings.MeshOnlyBuildings;
-            DubGUI.Checkbox("Disable realtime drawing on walls and conduit", listing,
-                ref Analyzer.Settings.MeshOnlyBuildings);
+            DubGUI.Checkbox("RealtimeCondu".Translate(), listing, ref Analyzer.Settings.MeshOnlyBuildings);
             if (jam != Analyzer.Settings.MeshOnlyBuildings)
             {
                 H_FixWallsNConduits.Swapclasses();
             }
             // dirk("Never check jobs on take damage", ref Analyzer.Settings.NeverCheckJobsOnDamage);
 
-            DubGUI.Checkbox("Disable music manager", listing, ref Analyzer.Settings.KillMusicMan);
+            DubGUI.Checkbox("KillMusicMan".Translate(), listing, ref Analyzer.Settings.KillMusicMan);
             //  dirk("Replace bill ingredient finder (Testing only)", ref Analyzer.Settings.ReplaceIngredientFinder);
             //var dan = Analyzer.Settings.HumanoidOnlyWarden;
             //dirk("Replace warden jobs to only scan Humanoids (Testing only)", ref Analyzer.Settings.HumanoidOnlyWarden);
@@ -126,28 +123,28 @@ namespace DubsAnalyzer
             //    H_WardenRequest.Swapclasses();
             //}
             listing.GapLine();
-            DubGUI.Checkbox("Show analyzer button on main tabs", listing, ref Analyzer.Settings.ShowOnMainTab);
+            DubGUI.Checkbox("ShowAnalBut".Translate(), listing, ref Analyzer.Settings.ShowOnMainTab);
          //   DubGUI.Checkbox("Mute GC messages", listing, ref Analyzer.Settings.MuteGC);
-            DubGUI.Checkbox("Advanced mode (More data)", listing, ref Analyzer.Settings.AdvancedMode);
-            DubGUI.Checkbox("Tick Pawns", listing, ref H_PawnTick.TickPawns);
+            DubGUI.Checkbox("AdvProfMode".Translate(), listing, ref Analyzer.Settings.AdvancedMode);
+            DubGUI.Checkbox("TickPawnTog".Translate(), listing, ref H_PawnTick.TickPawns);
             listing.GapLine();
             if (Analyzer.Settings.AdvancedMode)
             {
-                listing.Label("Profile a method e.g. ResourceReadout:ResourceReadoutOnGUI");
+                listing.Label("CustoMethProfPatch".Translate());
                 var r = listing.GetRect(25f);
                 DubGUI.InputField(r, "Type:Method", ref methToPatch, ShowName: true);
                 r = listing.GetRect(25f).LeftPartPixels(150);
-                if (Widgets.RadioButtonLabeled(r, "Custom Tick", customPatchMode == UpdateMode.Tick))
+                if (Widgets.RadioButtonLabeled(r, "CustoTickPatch".Translate(), customPatchMode == UpdateMode.Tick))
                 {
                     customPatchMode = UpdateMode.Tick;
                 }
                 r = listing.GetRect(25f).LeftPartPixels(150);
-                if (Widgets.RadioButtonLabeled(r, "Custom Update", customPatchMode == UpdateMode.Update))
+                if (Widgets.RadioButtonLabeled(r, "CustoUpdatePatch".Translate(), customPatchMode == UpdateMode.Update))
                 {
                     customPatchMode = UpdateMode.Update;
                 }
                 var b = listing.GetRect(25);
-                if (Widgets.ButtonText(b.LeftPartPixels(100), "Try patch"))
+                if (Widgets.ButtonText(b.LeftPartPixels(100), "TryCustoPatch".Translate()))
                 {
                     if (customPatchMode == UpdateMode.Tick)
                     {
