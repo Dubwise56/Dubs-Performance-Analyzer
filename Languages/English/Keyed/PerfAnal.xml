@@ -23,4 +23,8 @@
   <WindowPatchTipKey>Windows that open like this one or main tab windows like research</WindowPatchTipKey>
   <DetourWorkTipKey>This version detours the whole method, just used to confirm the other WorkGiver is accurate or do custom stuff</DetourWorkTipKey>
   <GizmoInspectTip>Profile drawing and getting gizmos separately</GizmoInspectTip>
+  <HarmPatchesTipKey>Tries to profile how long prefixes and postfixes from harmony patches take to execute, does not include code from transpilers</HarmPatchesTipKey>
+  <TickThingsSelectTipKey>Log ticking on selected things</TickThingsSelectTipKey>
+  <TickThingByDefTipKey>Log ticking of all things on the map by def</TickThingByDefTipKey>
+  <LogTipThingTickByClass>Log ticking of all things on the map by class</LogTipThingTickByClass>
 </LanguageData>
