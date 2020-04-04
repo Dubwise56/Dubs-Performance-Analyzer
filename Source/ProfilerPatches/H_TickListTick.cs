@@ -184,20 +184,20 @@ namespace DubsAnalyzer
     //    }
     //}
 
-    [ProfileMode("Selection", UpdateMode.Tick, "Log ticking on selected things", true)]
+    [ProfileMode("Selection", UpdateMode.Tick, "TickThingsSelectTipKey", true)]
     internal class H_TickSelection
     {
         public static bool Active = false;
     }
 
-    [ProfileMode("TickDef", UpdateMode.Tick, "Log ticking of all things on the map by def", true)]
+    [ProfileMode("TickDef", UpdateMode.Tick, "TickThingByDefTipKey", true)]
     internal class H_TickDef
     {
         public static bool Active = false;
     }
 
 
-    [ProfileMode("TickThing", UpdateMode.Tick, "Log ticking of all things on the map by class", true)]
+    [ProfileMode("TickThing", UpdateMode.Tick, "LogTipThingTickByClass", true)]
     [HarmonyPatch(typeof(TickList), nameof(TickList.Tick))]
     internal class H_TickListTick
     {

@@ -62,7 +62,7 @@ namespace ColourPicker
             }
 
             HSBPicker.Apply(false);
-
+            layer = WindowLayer.Super;
             forcePause = false;
             absorbInputAroundWindow = false;
             closeOnCancel = true;
