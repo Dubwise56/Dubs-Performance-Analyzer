@@ -10,8 +10,7 @@ using Verse.AI;
 namespace DubsAnalyzer
 {
     [ProfileMode("PathFinder", UpdateMode.Tick)]
-    [HarmonyPatch(typeof(PathFinder), nameof(PathFinder.FindPath), typeof(IntVec3), typeof(LocalTargetInfo),
-        typeof(TraverseParms), typeof(PathEndMode))]
+    [HarmonyPatch(typeof(PathFinder), nameof(PathFinder.FindPath), typeof(IntVec3), typeof(LocalTargetInfo), typeof(TraverseParms), typeof(PathEndMode))]
     internal class H_FindPath
     {
         public static bool Active = false;

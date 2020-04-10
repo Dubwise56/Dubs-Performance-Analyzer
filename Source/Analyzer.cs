@@ -197,6 +197,7 @@ namespace DubsAnalyzer
 
         public static bool LogStack = false;
 
+
         public static void Start(string key, Func<string> GetLabel = null, Type ty = null, Def def = null, Thing thing = null)
         {
             if (!running)

@@ -6,16 +6,26 @@ using Verse;
 
 namespace DubsAnalyzer
 {
+    [PerformancePatch]
+    [ProfileMode("Frame times", UpdateMode.Update, "frameTimeProfilerTip", true)]
     [HarmonyPatch(typeof(Root), nameof(Root.Update))]
     public class H_RootUpdate
     {
+        public static bool Active = false;
+        public static string _fpsText;
+        public static float _hudRefreshRate = 1f;
+        public static float _timer;
+        public static string tps;
+        private static DateTime PrevTime;
+        private static int PrevTicks;
+        private static int TPSActual;
         public static float delta;
         public static long memrise = 0;
         public static long LastMinGC = 0;
         public static long LastMaxGC = 0;
         public static void Prefix()
         {
-            if (Analyzer.Settings.AdvancedMode && (Analyzer.running || Analyzer.Settings.ShowOnMainTab))
+            if (Analyzer.running)
             {
                 var jam = Dialog_Analyzer.totalBytesOfMemoryUsed;
                 Dialog_Analyzer.totalBytesOfMemoryUsed = GC.GetTotalMemory(false);
@@ -42,15 +52,62 @@ namespace DubsAnalyzer
                     }
                     Dialog_Analyzer.stlank = $"{memrise.ToMb():0.00}MB +{vtec.ToMb():0.00}MB/s";
                 }
+
+
+                if (Time.unscaledTime > _timer)
+                {
+                    int fps = (int)(1f / Time.unscaledDeltaTime);
+                    _fpsText = "FPS: " + fps;
+                    _timer = Time.unscaledTime + _hudRefreshRate;
+                }
+
+                float TRM = Find.TickManager.TickRateMultiplier;
+                int TPSTarget = (int)Math.Round((TRM == 0f) ? 0f : (60f * TRM));
+
+                if (PrevTicks == -1)
+                {
+                    PrevTicks = GenTicks.TicksAbs;
+                    PrevTime = DateTime.Now;
+                }
+                else
+                {
+                    DateTime CurrTime = DateTime.Now;
+
+                    if (CurrTime.Second != PrevTime.Second)
+                    {
+                        PrevTime = CurrTime;
+                        TPSActual = GenTicks.TicksAbs - PrevTicks;
+                        PrevTicks = GenTicks.TicksAbs;
+                    }
+                }
+
+                tps = $"TPS: {TPSActual}({TPSTarget})";
+            }
+
+
+            if (Active)
+            {
+                Analyzer.Start("Game Update");
             }
         }
 
         public static void Postfix()
         {
+            if (Active)
+            {
+                Analyzer.Stop("Game Update");
+                Analyzer.Stop("Frame times");
+            }
+
             if (Analyzer.SelectedMode != null)
             {
                 if (Analyzer.SelectedMode.mode == UpdateMode.Update || Analyzer.SelectedMode.mode == UpdateMode.GUI)
                     Analyzer.UpdateEnd();
+            }
+
+            if (Active)
+            {
+                Analyzer.Start("Frame times");
             }
         }
     }

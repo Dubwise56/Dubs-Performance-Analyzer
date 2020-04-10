@@ -19,9 +19,10 @@ namespace DubsAnalyzer
     {
         public static readonly Texture2D black = SolidColorMaterials.NewSolidColorTexture(Color.black);
         public static readonly Texture2D grey = SolidColorMaterials.NewSolidColorTexture(Color.grey);
+        public static readonly Texture2D darkgrey = SolidColorMaterials.NewSolidColorTexture(Color.grey * 0.5f);
         public static readonly Texture2D clear = SolidColorMaterials.NewSolidColorTexture(Color.clear);
         public static readonly Texture2D red = SolidColorMaterials.NewSolidColorTexture(new Color32(160, 80, 90, 255));
-
+        public static Texture2D sav = ContentFinder<Texture2D>.Get("DPA/UI/sav", false);
         public static readonly Texture2D
             blue = SolidColorMaterials.NewSolidColorTexture(new Color32(80, 123, 160, 255));
 
@@ -285,7 +286,7 @@ namespace DubsAnalyzer
                             {
                                 TooltipHandler.TipRegion(row, keySetting.Value.tip);
                             }
-                           
+
                             //if (keySetting.Key.FieldType == typeof(float) || keySetting.Key.FieldType == typeof(int))
                             //{
 
@@ -377,31 +378,41 @@ namespace DubsAnalyzer
                 Analyzer.running = !Analyzer.running;
             }
 
-            TooltipHandler.TipRegion(rowby, "Start and stop logging");
+            TooltipHandler.TipRegion(rowby, "startstoplogTip".Translate());
             bool save = false;
-            if (Analyzer.Settings.AdvancedMode)
-            {
-                Rect searchbox = topslot.LeftPartPixels(topslot.width - 300f);
+           // if (Analyzer.Settings.AdvancedMode)
+         //   {
+                Rect searchbox = topslot.LeftPartPixels(topslot.width - 350f);
                 searchbox.x += 25f;
                 DubGUI.InputField(searchbox, "Search", ref TimesFilter, DubGUI.MintSearch);
-                rowby.x = searchbox.xMax;
-                rowby.width = 175f;
-                if (Widgets.ButtonTextSubtle(rowby, stlank, Mathf.Clamp01(Mathf.InverseLerp(H_RootUpdate.LastMinGC, H_RootUpdate.LastMaxGC, totalBytesOfMemoryUsed)), 5))
-                {
-                    totalBytesOfMemoryUsed = GC.GetTotalMemory(true);
-                }
-                TooltipHandler.TipRegion(rowby, "Approximation of total bytes currently allocated in managed memory + rate of new allocation\n\nClick to force GC");
+                rowby.x = searchbox.xMax + 5;
+                rowby.width = 130f;
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Text.Font = GameFont.Tiny;
+                Widgets.FillableBar(rowby, Mathf.Clamp01(Mathf.InverseLerp(H_RootUpdate.LastMinGC, H_RootUpdate.LastMaxGC, totalBytesOfMemoryUsed)), darkgrey);
+                Widgets.Label(rowby, stlank);
+                Text.Anchor = TextAnchor.UpperLeft;
+                TooltipHandler.TipRegion(rowby, "garbageTip".Translate());
 
-                rowby.x = rowby.xMax;
-                rowby.width = 100f;
-                save = Widgets.ButtonTextSubtle(rowby, "Save .CSV");
-                TooltipHandler.TipRegion(rowby, $"Save the current list of times to a csv file in {GenFilePaths.FolderUnderSaveData("Profiling")}");
-            }
-            else
-            {
-                Rect searchbox = topslot.RightPartPixels(topslot.width - 25f);
-                DubGUI.InputField(searchbox, "Search", ref TimesFilter, DubGUI.MintSearch);
-            }
+                rowby.x = rowby.xMax + 5;
+                rowby.width = 50f;
+                Widgets.Label(rowby, H_RootUpdate._fpsText);
+                TooltipHandler.TipRegion(rowby, "fpsTipperino".Translate());
+                rowby.x = rowby.xMax + 5;
+                rowby.width = 90f;
+                Widgets.Label(rowby, H_RootUpdate.tps);
+                TooltipHandler.TipRegion(rowby, "tpsTipperino".Translate());
+                rowby.x = rowby.xMax + 5;
+                rowby.width = 30f;
+                Text.Font = GameFont.Medium;
+                save = Widgets.ButtonImageFitted(rowby, sav);
+                TooltipHandler.TipRegion(rowby, "savecsvTip".Translate(GenFilePaths.FolderUnderSaveData("Profiling")));
+            //}
+            //else
+            //{
+            //    Rect searchbox = topslot.RightPartPixels(topslot.width - 25f);
+            //    DubGUI.InputField(searchbox, "Search", ref TimesFilter, DubGUI.MintSearch);
+            //}
 
             rowby.x = rowby.xMax;
             rowby.width = 25f;
