@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Reflection;
 using Verse;
 
 namespace DubsAnalyzer
@@ -16,8 +17,9 @@ namespace DubsAnalyzer
         public readonly float Percent;
         public readonly Type Type;
         public readonly Def Def;
+        public readonly MethodInfo Meth;
 
-        public ProfileLog(string label, string averageS, double average, float max, Def def, string key, string mod, float percent, Type type)
+        public ProfileLog(string label, string averageS, double average, float max, Def def, string key, string mod, float percent, Type type, MethodInfo meth = null)
         {
             Label = label;
             Average_s = averageS;
@@ -28,6 +30,7 @@ namespace DubsAnalyzer
             Mod = mod;
             Percent = percent;
             Type = type;
+            Meth = meth;
         }
     }
 }

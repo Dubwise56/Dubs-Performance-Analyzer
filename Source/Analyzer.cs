@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using HarmonyLib;
 using RimWorld;
@@ -35,7 +36,7 @@ namespace DubsAnalyzer
             //    }
             //}
 
-           // GenCommandLine.Restart();
+            // GenCommandLine.Restart();
         }
     }
 
@@ -80,7 +81,7 @@ namespace DubsAnalyzer
             {
                 var value = Profiles[key];
                 var av = value.History.GetAverageTime(AveragingTime);
-                newLogs.Add(new ProfileLog(value.label, string.Empty, av, (float)value.History.times.Max(), null, key, string.Empty, 0, value.type));
+                newLogs.Add(new ProfileLog(value.label, string.Empty, av, (float)value.History.times.Max(), null, key, string.Empty, 0, value.type, value.meth));
             }
 
             var dd = newLogs.Sum(x => x.Average);
@@ -89,7 +90,7 @@ namespace DubsAnalyzer
             {
                 var k = newLogs[index];
                 var pc = (float)(k.Average / dd);
-                var Log = new ProfileLog(k.Label, pc.ToStringPercent(), pc, k.Max, k.Def, k.Key, k.Mod, pc, k.Type);
+                var Log = new ProfileLog(k.Label, pc.ToStringPercent(), pc, k.Max, k.Def, k.Key, k.Mod, pc, k.Type, k.Meth);
                 newLogs[index] = Log;
             }
 
@@ -126,7 +127,7 @@ namespace DubsAnalyzer
             RequestStop = true;
         }
 
-        public static bool LogOpen=false;
+        public static bool LogOpen = false;
         public static float delta = 0;
         public static void UpdateEnd()
         {
@@ -140,7 +141,7 @@ namespace DubsAnalyzer
                 return;
             }
 
-            LogOpen =  Find.WindowStack.IsOpen(typeof(EditWindow_Log));
+            LogOpen = Find.WindowStack.IsOpen(typeof(EditWindow_Log));
 
             foreach (Profiler profiler in Profiles.Values)
             {
@@ -198,7 +199,7 @@ namespace DubsAnalyzer
         public static bool LogStack = false;
 
 
-        public static void Start(string key, Func<string> GetLabel = null, Type ty = null, Def def = null, Thing thing = null)
+        public static void Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodInfo meth = null)
         {
             if (!running)
             {
@@ -215,11 +216,11 @@ namespace DubsAnalyzer
                 {
                     if (GetLabel != null)
                     {
-                        Profiles[key] = new Profiler(key, GetLabel(), ty, def, thing);
+                        Profiles[key] = new Profiler(key, GetLabel(), type, def, thing, meth);
                     }
                     else
                     {
-                        Profiles[key] = new Profiler(key, key, ty, def, thing);
+                        Profiles[key] = new Profiler(key, key, type, def, thing, meth);
                     }
                 }
                 Profiles[key].Start();
