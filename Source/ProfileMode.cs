@@ -36,6 +36,7 @@ namespace DubsAnalyzer
         public UpdateMode mode;
         public bool Active = false;
         public Type typeRef;
+        public MethodInfo MouseOver;
         public MethodInfo Selected;
         public MethodInfo Clicked;
         public MethodInfo Checkbox;

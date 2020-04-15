@@ -54,7 +54,7 @@ namespace DubsAnalyzer
                                 var sett = fieldInfo.TryGetAttribute<Setting>();
                                 att.Settings.Add(fieldInfo, sett);
                             }
-
+                            att.MouseOver = AccessTools.Method(mode, "MouseOver");
                             att.Clicked = AccessTools.Method(mode, "Clicked");
                             att.Selected = AccessTools.Method(mode, "Selected");
                             att.Checkbox = AccessTools.Method(mode, "Checkbox");
@@ -380,33 +380,33 @@ namespace DubsAnalyzer
 
             TooltipHandler.TipRegion(rowby, "startstoplogTip".Translate());
             bool save = false;
-           // if (Analyzer.Settings.AdvancedMode)
-         //   {
-                Rect searchbox = topslot.LeftPartPixels(topslot.width - 350f);
-                searchbox.x += 25f;
-                DubGUI.InputField(searchbox, "Search", ref TimesFilter, DubGUI.MintSearch);
-                rowby.x = searchbox.xMax + 5;
-                rowby.width = 130f;
-                Text.Anchor = TextAnchor.MiddleCenter;
-                Text.Font = GameFont.Tiny;
-                Widgets.FillableBar(rowby, Mathf.Clamp01(Mathf.InverseLerp(H_RootUpdate.LastMinGC, H_RootUpdate.LastMaxGC, totalBytesOfMemoryUsed)), darkgrey);
-                Widgets.Label(rowby, stlank);
-                Text.Anchor = TextAnchor.UpperLeft;
-                TooltipHandler.TipRegion(rowby, "garbageTip".Translate());
+            // if (Analyzer.Settings.AdvancedMode)
+            //   {
+            Rect searchbox = topslot.LeftPartPixels(topslot.width - 350f);
+            searchbox.x += 25f;
+            DubGUI.InputField(searchbox, "Search", ref TimesFilter, DubGUI.MintSearch);
+            rowby.x = searchbox.xMax + 5;
+            rowby.width = 130f;
+            Text.Anchor = TextAnchor.MiddleCenter;
+            Text.Font = GameFont.Tiny;
+            Widgets.FillableBar(rowby, Mathf.Clamp01(Mathf.InverseLerp(H_RootUpdate.LastMinGC, H_RootUpdate.LastMaxGC, totalBytesOfMemoryUsed)), darkgrey);
+            Widgets.Label(rowby, stlank);
+            Text.Anchor = TextAnchor.UpperLeft;
+            TooltipHandler.TipRegion(rowby, "garbageTip".Translate());
 
-                rowby.x = rowby.xMax + 5;
-                rowby.width = 50f;
-                Widgets.Label(rowby, H_RootUpdate._fpsText);
-                TooltipHandler.TipRegion(rowby, "fpsTipperino".Translate());
-                rowby.x = rowby.xMax + 5;
-                rowby.width = 90f;
-                Widgets.Label(rowby, H_RootUpdate.tps);
-                TooltipHandler.TipRegion(rowby, "tpsTipperino".Translate());
-                rowby.x = rowby.xMax + 5;
-                rowby.width = 30f;
-                Text.Font = GameFont.Medium;
-                save = Widgets.ButtonImageFitted(rowby, sav);
-                TooltipHandler.TipRegion(rowby, "savecsvTip".Translate(GenFilePaths.FolderUnderSaveData("Profiling")));
+            rowby.x = rowby.xMax + 5;
+            rowby.width = 50f;
+            Widgets.Label(rowby, H_RootUpdate._fpsText);
+            TooltipHandler.TipRegion(rowby, "fpsTipperino".Translate());
+            rowby.x = rowby.xMax + 5;
+            rowby.width = 90f;
+            Widgets.Label(rowby, H_RootUpdate.tps);
+            TooltipHandler.TipRegion(rowby, "tpsTipperino".Translate());
+            rowby.x = rowby.xMax + 5;
+            rowby.width = 30f;
+            Text.Font = GameFont.Medium;
+            save = Widgets.ButtonImageFitted(rowby, sav);
+            TooltipHandler.TipRegion(rowby, "savecsvTip".Translate(GenFilePaths.FolderUnderSaveData("Profiling")));
             //}
             //else
             //{
@@ -505,6 +505,11 @@ namespace DubsAnalyzer
                         if (Dialog_Graph.key == log.Key)
                         {
                             Widgets.DrawHighlightSelected(r);
+                        }
+
+                        if (Mouse.IsOver(r))
+                        {
+                            Analyzer.SelectedMode.MouseOver?.Invoke(null, new object[] {r, profile, log });
                         }
 
 

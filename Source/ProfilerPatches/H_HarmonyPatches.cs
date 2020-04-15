@@ -15,6 +15,46 @@ namespace DubsAnalyzer
     {
         public static bool Active = false;
 
+        public static string TipCache = string.Empty;
+        public static string LogCache;
+
+        public static void MouseOver(Rect r, Profiler prof, ProfileLog log)
+        {
+            if (LogCache != log.Label)
+            {
+                LogCache = log.Label;
+                TipCache = string.Empty;
+             //   var patches = Harmony.GetAllPatchedMethods().ToList();
+
+            //    foreach (var methodBase in patches)
+            //    {
+                    var infos = Harmony.GetPatchInfo(log.Meth);
+                    //foreach (var infosPrefix in infos.Prefixes)
+                    //{
+                    //    if (infosPrefix.PatchMethod == log.Meth)
+                    //    {
+                    //        TipCache += $"{infosPrefix.owner} {infosPrefix.PatchMethod}\n";
+                    //    }
+                    //}
+                    //foreach (var infosPostfixesx in infos.Postfixes)
+                    //{
+                    //    if (infosPostfixesx.PatchMethod == log.Meth)
+                    //    {
+                    //        TipCache += $"{infosPostfixesx.owner} {infosPostfixesx.PatchMethod}\n";
+                    //    }
+                    //}
+                    foreach (var infosPostfixesx in infos.Transpilers)
+                    {
+                      //  if (infosPostfixesx.PatchMethod == log.Meth)
+                      //  {
+                            TipCache += $"{infosPostfixesx.owner} - {infosPostfixesx.PatchMethod.Name}\n\n";
+                       // }
+                    }
+               // }
+            }
+            TooltipHandler.TipRegion(r, TipCache);
+        }
+
         public static void Clicked(Profiler prof, ProfileLog log)
         {
             if (Input.GetKey(KeyCode.LeftControl))
@@ -105,7 +145,6 @@ namespace DubsAnalyzer
 
         public static void Clicked(Profiler prof, ProfileLog log)
         {
-
             if (Input.GetKey(KeyCode.LeftControl))
             {
                 if (log.Meth == null)
@@ -115,7 +154,7 @@ namespace DubsAnalyzer
                 }
 
                 var patches = Harmony.GetAllPatchedMethods().ToList();
-               // Patches patchInfo = Harmony.GetPatchInfo(log.Meth);
+                // Patches patchInfo = Harmony.GetPatchInfo(log.Meth);
 
                 foreach (var methodBase in patches)
                 {

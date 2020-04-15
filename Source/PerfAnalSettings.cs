@@ -37,7 +37,7 @@ namespace DubsAnalyzer
         public bool FixGame;
         public bool HumanoidOnlyWarden;
         public bool KillMusicMan;
-        public Dictionary<string, bool> Loggers = new Dictionary<string, bool>();
+              public Dictionary<string, bool> Loggers = new Dictionary<string, bool>();
         public bool MeshOnlyBuildings;
         public bool NeverCheckJobsOnDamage;
         public bool OptimizeDrawInspectGizmoGrid;
@@ -65,7 +65,7 @@ namespace DubsAnalyzer
             Scribe_Values.Look(ref OverrideAlerts, "OverrideAlerts");
             Scribe_Values.Look(ref KillMusicMan, "KillMusicMan");
           //  Scribe_Values.Look(ref MuteGC, "MuteGC");
-            Scribe_Collections.Look(ref Loggers, "Loggers");
+        //    Scribe_Collections.Look(ref Loggers, "Loggers");
 
             try
             {
