@@ -42,6 +42,7 @@ namespace DubsAnalyzer
         public bool NeverCheckJobsOnDamage;
         public bool OptimizeDrawInspectGizmoGrid;
         public bool OverrideAlerts;
+        public bool OptimiseAlerts;
         public bool OverrideBuildRoof;
         public bool ReplaceIngredientFinder;
         public bool ShowOnMainTab = true;
@@ -62,6 +63,7 @@ namespace DubsAnalyzer
             Scribe_Values.Look(ref NeverCheckJobsOnDamage, "NeverCheckJobsOnDamage");
             Scribe_Values.Look(ref HumanoidOnlyWarden, "HumanoidOnlyWarden");
             Scribe_Values.Look(ref OverrideBuildRoof, "OverrideBuildRoof");
+            Scribe_Values.Look(ref OptimiseAlerts, "OptimiseAlerts");
             Scribe_Values.Look(ref OverrideAlerts, "OverrideAlerts");
             Scribe_Values.Look(ref KillMusicMan, "KillMusicMan");
           //  Scribe_Values.Look(ref MuteGC, "MuteGC");
