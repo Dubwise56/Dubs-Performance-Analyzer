@@ -8,10 +8,6 @@ using Verse;
 
 namespace DubsAnalyzer
 {
-}
-
-namespace DubsAnalyzer
-{
     [PerformancePatch]
     [ProfileMode("Alerts", UpdateMode.Update, "AlertsTipKey",
         true)]

@@ -106,6 +106,7 @@ namespace DubsAnalyzer
                 ref Analyzer.Settings.FixGame);
          //   DubGUI.Checkbox("Fix memory leak on beds and room stats", listing, ref Analyzer.Settings.FixBedMemLeak);
             DubGUI.Checkbox("RoofOptimize".Translate(), listing, ref Analyzer.Settings.OverrideBuildRoof);
+            DubGUI.Checkbox("OptimiseAlerts".Translate(), listing, ref Analyzer.Settings.OptimiseAlerts);
             DubGUI.Checkbox("OverrideAlerts".Translate(), listing, ref Analyzer.Settings.OverrideAlerts);
             DubGUI.Checkbox("GizmoOpti".Translate(), listing, ref Analyzer.Settings.OptimizeDrawInspectGizmoGrid);
             var jam = Analyzer.Settings.MeshOnlyBuildings;
