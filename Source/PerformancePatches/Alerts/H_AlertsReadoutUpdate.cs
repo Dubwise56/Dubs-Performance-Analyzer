@@ -72,7 +72,11 @@ namespace DubsAnalyzer
 
         public static bool CheckAddOrRemoveAlert(AlertsReadout __instance, Alert alert, bool forceRemove)
         {
-        //    return false;
+            if (Analyzer.Settings.DisableAlerts)
+            {
+                return false;
+            }
+            //    return false;
             if (!Analyzer.Settings.OverrideAlerts && (!Analyzer.running || !Active))
             {
                 return true;
@@ -137,7 +141,12 @@ namespace DubsAnalyzer
 
         public static bool AlertsReadoutOnGUI(AlertsReadout __instance)
         {
-       //     return false;
+
+            if (Analyzer.Settings.DisableAlerts)
+            {
+                return false;
+            }
+
             if (!Analyzer.Settings.OverrideAlerts && (!Analyzer.running || !Active))
             {
                 return true;

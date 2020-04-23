@@ -4,7 +4,6 @@ using System.Text;
 using System.Threading;
 using HarmonyLib;
 using RimWorld;
-using Verse;
 
 namespace DubsAnalyzer
 {

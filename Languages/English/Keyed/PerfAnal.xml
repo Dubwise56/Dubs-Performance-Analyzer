@@ -1,9 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
+  <DisableAlerts>Disable alerts entirely</DisableAlerts>
+  <RepairOptimize>Optimize repair job</RepairOptimize>
   <OptimiseAlerts>Optimize alerts (Tattered Clothing and Unhappy Nudity)</OptimiseAlerts>
   <OverrideAlerts>Override alerts (Disable them in the Alerts tab)</OverrideAlerts>
   <OptimizationsAndFixes>Optimizations And Fixes</OptimizationsAndFixes>
-  <TempSpeedup>Speed up temperature stats (Fixes lots of stutters)</TempSpeedup>
+  <TempSpeedup>Optimize temperature stats (Fixes lots of stutters)</TempSpeedup>
   <RoofOptimize>Optimize build roof job scanner</RoofOptimize>
   <GizmoOpti>Optimize DrawInspectGizmoGrid (Buttons when selecting things)</GizmoOpti>
   <RealtimeCondu>Disable realtime drawing on walls and conduit</RealtimeCondu>

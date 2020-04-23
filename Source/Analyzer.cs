@@ -60,7 +60,7 @@ namespace DubsAnalyzer
         }
         public override string SettingsCategory()
         {
-            return "Dubs Optimizer";
+            return "Dubs Performance Analyzer";
         }
         private static int biff;
 

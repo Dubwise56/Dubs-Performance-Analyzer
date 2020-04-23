@@ -15,20 +15,16 @@ namespace DubsAnalyzer
         public static void Start(object __instance, MethodBase __originalMethod, ref string __state)
         {
             if (!Active || !Analyzer.running) return;
-
+            __state = string.Empty;
             if (__instance != null)
             {
-                __state = __instance.GetType().Name;
-            }
-            else if (__originalMethod.ReflectedType != null)
-            {
-                __state = __originalMethod.ReflectedType.Name;
+                __state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
             }
             else
+            if (__originalMethod.ReflectedType != null)
             {
-                __state = __originalMethod.GetType().Name;
+                __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-
             Analyzer.Start(__state);
         }
 
