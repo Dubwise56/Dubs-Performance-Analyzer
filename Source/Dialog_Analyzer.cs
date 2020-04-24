@@ -25,7 +25,7 @@ namespace DubsAnalyzer
         public static Texture2D sav = ContentFinder<Texture2D>.Get("DPA/UI/sav", false);
         public static readonly Texture2D
             blue = SolidColorMaterials.NewSolidColorTexture(new Color32(80, 123, 160, 255));
-
+        public static float patchListWidth =220f;
         private static float groaner = 9999999;
         private static Vector2 scrolpos = Vector2.zero;
         private static Vector2 scrolpostabs = Vector2.zero;
@@ -190,7 +190,7 @@ namespace DubsAnalyzer
 
             // TabDrawer.DrawTabs(canvas, MainTabs, 150f);
 
-            var ListerBox = canvas.LeftPart(0.30f);
+            var ListerBox = canvas.LeftPartPixels(patchListWidth);
             ListerBox.width -= 10f;
             Widgets.DrawMenuSection(ListerBox);
             ListerBox = ListerBox.ContractedBy(4f);
@@ -307,7 +307,7 @@ namespace DubsAnalyzer
             Widgets.EndScrollView();
 
 
-            var inner = canvas.RightPart(0.70f).Rounded();
+            var inner = canvas.RightPartPixels(canvas.width - patchListWidth).Rounded();
 
             if (ShowSettings)
             {
@@ -509,7 +509,7 @@ namespace DubsAnalyzer
 
                         if (Mouse.IsOver(r))
                         {
-                            Analyzer.SelectedMode.MouseOver?.Invoke(null, new object[] {r, profile, log });
+                            Analyzer.SelectedMode.MouseOver?.Invoke(null, new object[] { r, profile, log });
                         }
 
 

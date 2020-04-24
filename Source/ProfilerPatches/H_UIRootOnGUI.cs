@@ -35,7 +35,7 @@ namespace DubsAnalyzer
         }
         public static void Prefix(object __instance, MethodBase __originalMethod, ref string __state)
         {
-            if (Active)
+            if (Active || H_RootUpdate.Active)
             {
                 if (__instance != null)
                 {
@@ -57,7 +57,7 @@ namespace DubsAnalyzer
 
         public static void Postfix(string __state)
         {
-            if (Active)
+            if (Active || H_RootUpdate.Active)
             {
                 Analyzer.Stop(__state);
             }

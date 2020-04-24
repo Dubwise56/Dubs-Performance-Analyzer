@@ -27,7 +27,7 @@ namespace DubsAnalyzer
         private static Vector2 scrolpos = Vector2.zero;
 
         public static List<MethodInfo> GotMeth = new List<MethodInfo>();
-
+        public bool UnlockFramerate = false;
         public Color LineCol = new Color32(79, 147, 191, 255);
         public Color GraphCol = new Color32(17, 17, 17, 255);
         public static string MethSearch = string.Empty;
@@ -60,6 +60,7 @@ namespace DubsAnalyzer
             Scribe_Values.Look(ref ShowOnMainTab, "ShowOnMainTab");
             Scribe_Values.Look(ref FixRepair, "FixRepair");
             Scribe_Values.Look(ref FixGame, "FixGame");
+            Scribe_Values.Look(ref UnlockFramerate, "UnlockFramerate");
             //  Scribe_Values.Look(ref ReplaceIngredientFinder, "ReplaceIngredientFinder", false);
             // Scribe_Values.Look(ref FixBedMemLeak, "FixBedMemLeak");
             Scribe_Values.Look(ref OptimizeDrawInspectGizmoGrid, "OptimizeDrawInspectGizmoGrid");
@@ -109,9 +110,9 @@ namespace DubsAnalyzer
             DubGUI.Checkbox("TempSpeedup".Translate(), listing,
                 ref Analyzer.Settings.FixGame);
             //   DubGUI.Checkbox("Fix memory leak on beds and room stats", listing, ref Analyzer.Settings.FixBedMemLeak);
-            DubGUI.Checkbox("RoofOptimize".Translate(), listing, ref Analyzer.Settings.OverrideBuildRoof);
+            DubGUI.Checkbox("RoofOptimize".Translate(), listing, ref OverrideBuildRoof);
 
-            if (DubGUI.Checkbox("RepairOptimize".Translate(), listing, ref Analyzer.Settings.FixRepair))
+            if (DubGUI.Checkbox("RepairOptimize".Translate(), listing, ref FixRepair))
             {
                 if (Current.ProgramState == ProgramState.Playing)
                 {
@@ -144,21 +145,21 @@ namespace DubsAnalyzer
                 }
             }
 
-            DubGUI.Checkbox("OptimiseAlerts".Translate(), listing, ref Analyzer.Settings.OptimiseAlerts);
+            DubGUI.Checkbox("OptimiseAlerts".Translate(), listing, ref OptimiseAlerts);
             
-            DubGUI.Checkbox("GizmoOpti".Translate(), listing, ref Analyzer.Settings.OptimizeDrawInspectGizmoGrid);
+            DubGUI.Checkbox("GizmoOpti".Translate(), listing, ref OptimizeDrawInspectGizmoGrid);
             var jam = Analyzer.Settings.MeshOnlyBuildings;
-            DubGUI.Checkbox("RealtimeCondu".Translate(), listing, ref Analyzer.Settings.MeshOnlyBuildings);
+            DubGUI.Checkbox("RealtimeCondu".Translate(), listing, ref MeshOnlyBuildings);
             if (jam != Analyzer.Settings.MeshOnlyBuildings)
             {
                 H_FixWallsNConduits.Swapclasses();
             }
             // dirk("Never check jobs on take damage", ref Analyzer.Settings.NeverCheckJobsOnDamage);
             listing.GapLine();
-            DubGUI.Checkbox("OverrideAlerts".Translate(), listing, ref Analyzer.Settings.OverrideAlerts);
+            DubGUI.Checkbox("OverrideAlerts".Translate(), listing, ref OverrideAlerts);
             listing.GapLine();
-            DubGUI.Checkbox("KillMusicMan".Translate(), listing, ref Analyzer.Settings.KillMusicMan);
-            DubGUI.Checkbox("DisableAlerts".Translate(), listing, ref Analyzer.Settings.DisableAlerts);
+            DubGUI.Checkbox("KillMusicMan".Translate(), listing, ref KillMusicMan);
+            DubGUI.Checkbox("DisableAlerts".Translate(), listing, ref DisableAlerts);
             //  dirk("Replace bill ingredient finder (Testing only)", ref Analyzer.Settings.ReplaceIngredientFinder);
             //var dan = Analyzer.Settings.HumanoidOnlyWarden;
             //dirk("Replace warden jobs to only scan Humanoids (Testing only)", ref Analyzer.Settings.HumanoidOnlyWarden);
@@ -167,12 +168,25 @@ namespace DubsAnalyzer
             //    H_WardenRequest.Swapclasses();
             //}
             listing.GapLine();
-            DubGUI.Checkbox("ShowAnalBut".Translate(), listing, ref Analyzer.Settings.ShowOnMainTab);
+            DubGUI.Checkbox("ShowAnalBut".Translate(), listing, ref ShowOnMainTab);
             //   DubGUI.Checkbox("Mute GC messages", listing, ref Analyzer.Settings.MuteGC);
-            DubGUI.Checkbox("AdvProfMode".Translate(), listing, ref Analyzer.Settings.AdvancedMode);
+            DubGUI.Checkbox("AdvProfMode".Translate(), listing, ref AdvancedMode);
 
+            if (DubGUI.Checkbox("Unlock framerate", listing, ref UnlockFramerate))
+            {
+                if (UnlockFramerate)
+                {
+                    QualitySettings.vSyncCount = 0;
+                    Application.targetFrameRate = -1;
+                }
+                else
+                {
+                    QualitySettings.vSyncCount = 1;
+                    Application.targetFrameRate = 60;
+                }
+            }
 
-            if (Analyzer.Settings.AdvancedMode)
+            if (AdvancedMode)
             {
                 DubGUI.Checkbox("TickPawnTog".Translate(), listing, ref H_PawnTick.TickPawns);
 

@@ -28,6 +28,8 @@ namespace DubsAnalyzer
                 AccessTools.Method(mode, "PerformancePatch")?.Invoke(null, null);
             }
 
+
+
             //foreach (var workGiverDef in DefDatabase<WorkGiverDef>.AllDefsListForReading)
             //{
             //    if (workGiverDef.giverClass == typeof(WorkGiver_DoBill))
@@ -53,6 +55,7 @@ namespace DubsAnalyzer
         public static PerfAnalSettings Settings;
         public static bool running;
         private static bool RequestStop;
+        
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
@@ -69,6 +72,12 @@ namespace DubsAnalyzer
         public Analyzer(ModContentPack content) : base(content)
         {
             Settings = GetSettings<PerfAnalSettings>();
+
+            if (Settings.UnlockFramerate)
+            {
+                QualitySettings.vSyncCount = 0;
+                Application.targetFrameRate = 999;
+            }
         }
 
         public static object sync = new object();
@@ -118,8 +127,6 @@ namespace DubsAnalyzer
         public static void StartProfiling()
         {
             running = true;
-
-
         }
 
         public static void StopProfiling()
