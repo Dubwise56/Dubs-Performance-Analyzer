@@ -1,8 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
+  <DisableAlerts>Disable alerts entirely</DisableAlerts>
+  <RepairOptimize>Optimize repair job</RepairOptimize>
+  <OptimiseAlerts>Optimize alerts (Tattered Clothing and Unhappy Nudity)</OptimiseAlerts>
   <OverrideAlerts>Override alerts (Disable them in the Alerts tab)</OverrideAlerts>
   <OptimizationsAndFixes>Optimizations And Fixes</OptimizationsAndFixes>
-  <TempSpeedup>Speed up temperature stats (Fixes lots of stutters)</TempSpeedup>
+  <TempSpeedup>Optimize temperature stats (Fixes lots of stutters)</TempSpeedup>
   <RoofOptimize>Optimize build roof job scanner</RoofOptimize>
   <GizmoOpti>Optimize DrawInspectGizmoGrid (Buttons when selecting things)</GizmoOpti>
   <RealtimeCondu>Disable realtime drawing on walls and conduit</RealtimeCondu>
@@ -18,12 +21,12 @@
   <TryCustoPatch>Try patch</TryCustoPatch>
   <AlertsTipKey>Alerts appear on the right of the screen, these run constantly even while paused and can heavily impact performance, click the check boxes to disable them</AlertsTipKey>
   <DrawDynThinTipKey>Dynamic drawing of things on the map like colonists or animated buildings, things usually only draw when they are in view</DrawDynThinTipKey>
-  <TransPatchTipKey>Profiles any methods that have been modified using harmony transpiler, this is the total time for the whole method, not just the parts that were patched in</TransPatchTipKey>
+  <TransPatchTipKey>Profiles any methods that have been modified using harmony transpiler, this is the total time for the whole method, not just the parts that were patched in\n\nCtrl + click to permanently disable</TransPatchTipKey>
   <JobGiveTipKey>The scanners which issue jobs to pawns</JobGiveTipKey>
   <WindowPatchTipKey>Windows that open like this one or main tab windows like research</WindowPatchTipKey>
   <DetourWorkTipKey>This version detours the whole method, just used to confirm the other WorkGiver is accurate or do custom stuff</DetourWorkTipKey>
   <GizmoInspectTip>Profile drawing and getting gizmos separately</GizmoInspectTip>
-  <HarmPatchesTipKey>Tries to profile how long prefixes and postfixes from harmony patches take to execute, does not include code from transpilers</HarmPatchesTipKey>
+  <HarmPatchesTipKey>Tries to profile how long prefixes and postfixes from harmony patches take to execute, does not include code from transpilers\n\nCtrl + click to permanently disable</HarmPatchesTipKey>
   <TickThingsSelectTipKey>Log ticking on selected things</TickThingsSelectTipKey>
   <TickThingByDefTipKey>Log ticking of all things on the map by def</TickThingByDefTipKey>
   <LogTipThingTickByClass>Log ticking of all things on the map by class</LogTipThingTickByClass>

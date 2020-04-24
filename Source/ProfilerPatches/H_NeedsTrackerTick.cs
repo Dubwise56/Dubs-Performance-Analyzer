@@ -6,6 +6,10 @@ using Verse;
 
 namespace DubsAnalyzer
 {
+}
+
+namespace DubsAnalyzer
+{
     [ProfileMode("NeedsTracker", UpdateMode.Tick)]
     internal static class H_NeedsTrackerTick
     {

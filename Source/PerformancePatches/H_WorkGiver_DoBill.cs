@@ -76,4 +76,24 @@ namespace DubsAnalyzer
     //       // __result = null;
     //    }
     //}
+
+    //[HarmonyPatch(typeof(WorkGiver_Scanner), nameof(WorkGiver_Scanner.PotentialWorkThingRequest))]
+    //static class H_WorkGiver_DoBill
+    //{
+    //    public static void PatchMe()
+    //    {
+    //        //var jiff = AccessTools.Method(typeof(WorkGiver_DoBill), nameof(WorkGiver_DoBill.PotentialWorkThingRequest), new[] { typeof(Pawn) });
+    //        //var pre = new HarmonyMethod(typeof(H_ComfortableTemperatureRange), nameof(Prefix));
+    //        //Analyzer.harmony.Patch(jiff, pre);
+    //    }
+
+    //    public static void Postfix(WorkGiver_Scanner __instance, IEnumerable<Thing> __result)
+    //    {
+    //        if (__instance is WorkGiver_DoBill Clinton)
+    //        {
+
+    //        }
+    //        // __result = null;
+    //    }
+    //}
 }

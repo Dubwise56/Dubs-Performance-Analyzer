@@ -7,9 +7,9 @@ using Verse.AI.Group;
 
 namespace DubsAnalyzer
 {
-    [ProfileMode("MapComponentTick", UpdateMode.Tick)]
-   // [HarmonyPatch(typeof(MapComponentUtility), nameof(MapComponentUtility.MapComponentTick))]
-    internal class H_MapComponentTick
+    [ProfileMode("MapComponentUpdate", UpdateMode.Update)]
+    // [HarmonyPatch(typeof(MapComponentUtility), nameof(MapComponentUtility.MapComponentTick))]
+    internal class H_MapComponentUpdate
     {
         public static bool Active = false;
 
@@ -26,6 +26,7 @@ namespace DubsAnalyzer
             {
                 __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
+
             Analyzer.Start(__state);
         }
 
@@ -39,31 +40,34 @@ namespace DubsAnalyzer
 
         public static void ProfilePatch()
         {
-            var P = new HarmonyMethod(typeof(H_MapComponentTick), nameof(Prefix));
-            var D = AccessTools.Method(typeof(MapComponentUtility), nameof(MapComponentUtility.MapComponentTick));
+            var P = new HarmonyMethod(typeof(H_MapComponentUpdate), nameof(Prefix));
+            var D = AccessTools.Method(typeof(MapComponentUtility), nameof(MapComponentUtility.MapComponentUpdate));
             Analyzer.harmony.Patch(D, P);
 
 
-            var go = new HarmonyMethod(typeof(H_MapComponentTick), nameof(Start));
-            var biff = new HarmonyMethod(typeof(H_MapComponentTick), nameof(Stop));
+            var go = new HarmonyMethod(typeof(H_MapComponentUpdate), nameof(Start));
+            var biff = new HarmonyMethod(typeof(H_MapComponentUpdate), nameof(Stop));
 
             void slop(Type e, string s)
             {
                 Analyzer.harmony.Patch(AccessTools.Method(e, s), go, biff);
             }
 
-            slop(typeof(WildAnimalSpawner), nameof(WildAnimalSpawner.WildAnimalSpawnerTick));
-            slop(typeof(WildPlantSpawner), nameof(WildPlantSpawner.WildPlantSpawnerTick));
-            slop(typeof(PowerNetManager), nameof(PowerNetManager.PowerNetsTick));
-            slop(typeof(SteadyEnvironmentEffects), nameof(SteadyEnvironmentEffects.SteadyEnvironmentEffectsTick));
-            slop(typeof(LordManager), nameof(LordManager.LordManagerTick));
-            slop(typeof(PassingShipManager), nameof(PassingShipManager.PassingShipManagerTick));
-            slop(typeof(VoluntarilyJoinableLordsStarter), nameof(VoluntarilyJoinableLordsStarter.VoluntarilyJoinableLordsStarterTick));
-            slop(typeof(GameConditionManager), nameof(GameConditionManager.GameConditionManagerTick));
-            slop(typeof(WeatherManager), nameof(WeatherManager.WeatherManagerTick));
-            slop(typeof(ResourceCounter), nameof(ResourceCounter.ResourceCounterTick));
-            slop(typeof(WeatherDecider), nameof(WeatherDecider.WeatherDeciderTick));
-            slop(typeof(FireWatcher), nameof(FireWatcher.FireWatcherTick));
+            slop(typeof(SkyManager), nameof(SkyManager.SkyManagerUpdate));
+            slop(typeof(PowerNetManager), nameof(PowerNetManager.UpdatePowerNetsAndConnections_First));
+            slop(typeof(RegionGrid), nameof(RegionGrid.UpdateClean));
+            slop(typeof(RegionAndRoomUpdater), nameof(RegionAndRoomUpdater.TryRebuildDirtyRegionsAndRooms));
+            slop(typeof(GlowGrid), nameof(GlowGrid.GlowGridUpdate_First));
+            slop(typeof(LordManager), nameof(LordManager.LordManagerUpdate));
+            slop(typeof(AreaManager), nameof(AreaManager.AreaManagerUpdate));
+
+            slop(typeof(MapDrawer), nameof(MapDrawer.WholeMapChanged));
+            slop(typeof(MapDrawer), nameof(MapDrawer.MapMeshDrawerUpdate_First));
+            slop(typeof(MapDrawer), nameof(MapDrawer.DrawMapMesh));
+            slop(typeof(DynamicDrawManager), nameof(DynamicDrawManager.DrawDynamicThings));
+            slop(typeof(GameConditionManager), nameof(GameConditionManager.GameConditionManagerDraw));
+            slop(typeof(DesignationManager), nameof(DesignationManager.DrawDesignations));
+            slop(typeof(OverlayDrawer), nameof(OverlayDrawer.DrawAllOverlays));
         }
 
         private static bool Prefix(Map map)
@@ -82,7 +86,7 @@ namespace DubsAnalyzer
                     var comp = components[i];
 
                     Analyzer.Start(comp.GetType().FullName, () => $"{comp.GetType()}");
-                    comp.MapComponentTick();
+                    comp.MapComponentUpdate();
                     Analyzer.Stop(comp.GetType().FullName);
                 }
                 catch (Exception ex)

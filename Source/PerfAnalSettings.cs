@@ -27,45 +27,52 @@ namespace DubsAnalyzer
         private static Vector2 scrolpos = Vector2.zero;
 
         public static List<MethodInfo> GotMeth = new List<MethodInfo>();
-
-        public Color LineCol = new Color32(79,147,191, 255);
-        public Color GraphCol =  new Color32(17,17,17, 255);
+        public bool UnlockFramerate = false;
+        public Color LineCol = new Color32(79, 147, 191, 255);
+        public Color GraphCol = new Color32(17, 17, 17, 255);
         public static string MethSearch = string.Empty;
         public static string TypeSearch = string.Empty;
         public Dictionary<Type, bool> AlertFilter = new Dictionary<Type, bool>();
-       // public bool FixBedMemLeak;
+        // public bool FixBedMemLeak;
         public bool FixGame;
         public bool HumanoidOnlyWarden;
         public bool KillMusicMan;
         public Dictionary<string, bool> Loggers = new Dictionary<string, bool>();
         public bool MeshOnlyBuildings;
         public bool NeverCheckJobsOnDamage;
+        public bool FixRepair;
         public bool OptimizeDrawInspectGizmoGrid;
         public bool OverrideAlerts;
+        public bool OptimiseAlerts;
+        public bool DisableAlerts;
         public bool OverrideBuildRoof;
         public bool ReplaceIngredientFinder;
         public bool ShowOnMainTab = true;
         public bool AdvancedMode = false;
-      //  public bool MuteGC = false;
+        //  public bool MuteGC = false;
         public override void ExposeData()
         {
             base.ExposeData();
-            Scribe_Values.Look(ref LineCol, "LineCol",  new Color32(79,147,191, 255));
-            Scribe_Values.Look(ref GraphCol, "GraphCol",  new Color32(17,17,17, 255));
+            Scribe_Values.Look(ref LineCol, "LineCol", new Color32(79, 147, 191, 255));
+            Scribe_Values.Look(ref GraphCol, "GraphCol", new Color32(17, 17, 17, 255));
             Scribe_Values.Look(ref AdvancedMode, "AdvancedMode");
             Scribe_Values.Look(ref MeshOnlyBuildings, "MeshOnlyBuildings");
             Scribe_Values.Look(ref ShowOnMainTab, "ShowOnMainTab");
+            Scribe_Values.Look(ref FixRepair, "FixRepair");
             Scribe_Values.Look(ref FixGame, "FixGame");
+            Scribe_Values.Look(ref UnlockFramerate, "UnlockFramerate");
             //  Scribe_Values.Look(ref ReplaceIngredientFinder, "ReplaceIngredientFinder", false);
-           // Scribe_Values.Look(ref FixBedMemLeak, "FixBedMemLeak");
+            // Scribe_Values.Look(ref FixBedMemLeak, "FixBedMemLeak");
             Scribe_Values.Look(ref OptimizeDrawInspectGizmoGrid, "OptimizeDrawInspectGizmoGrid");
             Scribe_Values.Look(ref NeverCheckJobsOnDamage, "NeverCheckJobsOnDamage");
             Scribe_Values.Look(ref HumanoidOnlyWarden, "HumanoidOnlyWarden");
             Scribe_Values.Look(ref OverrideBuildRoof, "OverrideBuildRoof");
+            Scribe_Values.Look(ref OptimiseAlerts, "OptimiseAlerts");
             Scribe_Values.Look(ref OverrideAlerts, "OverrideAlerts");
+            Scribe_Values.Look(ref DisableAlerts, "DisableAlerts");
             Scribe_Values.Look(ref KillMusicMan, "KillMusicMan");
-          //  Scribe_Values.Look(ref MuteGC, "MuteGC");
-            Scribe_Collections.Look(ref Loggers, "Loggers");
+            //  Scribe_Values.Look(ref MuteGC, "MuteGC");
+            //    Scribe_Collections.Look(ref Loggers, "Loggers");
 
             try
             {
@@ -76,7 +83,7 @@ namespace DubsAnalyzer
                 Console.WriteLine(e);
                 throw;
             }
-           
+
         }
 
 
@@ -102,19 +109,57 @@ namespace DubsAnalyzer
             listing.Label("OptimizationsAndFixes".Translate());
             DubGUI.Checkbox("TempSpeedup".Translate(), listing,
                 ref Analyzer.Settings.FixGame);
-         //   DubGUI.Checkbox("Fix memory leak on beds and room stats", listing, ref Analyzer.Settings.FixBedMemLeak);
-            DubGUI.Checkbox("RoofOptimize".Translate(), listing, ref Analyzer.Settings.OverrideBuildRoof);
-            DubGUI.Checkbox("OverrideAlerts".Translate(), listing, ref Analyzer.Settings.OverrideAlerts);
-            DubGUI.Checkbox("GizmoOpti".Translate(), listing, ref Analyzer.Settings.OptimizeDrawInspectGizmoGrid);
+            //   DubGUI.Checkbox("Fix memory leak on beds and room stats", listing, ref Analyzer.Settings.FixBedMemLeak);
+            DubGUI.Checkbox("RoofOptimize".Translate(), listing, ref OverrideBuildRoof);
+
+            if (DubGUI.Checkbox("RepairOptimize".Translate(), listing, ref FixRepair))
+            {
+                if (Current.ProgramState == ProgramState.Playing)
+                {
+                    foreach (var gameMap in Current.Game.Maps)
+                    {
+                        foreach (var k in gameMap.listerBuildingsRepairable.repairables.Keys)
+                        {
+                            var bs = gameMap.listerBuildingsRepairable.repairables[k];
+                            foreach (var b in bs.ToList())
+                            {
+                                if (!b.def.building.repairable || !b.def.useHitPoints)
+                                {
+                                    gameMap.listerBuildingsRepairable.repairables[k].Remove(b);
+                                }
+                            }
+                        }
+
+                        foreach (var k in gameMap.listerBuildingsRepairable.repairablesSet.Keys)
+                        {
+                            var bs = gameMap.listerBuildingsRepairable.repairables[k];
+                            foreach (var b in bs.ToList())
+                            {
+                                if (!b.def.building.repairable || !b.def.useHitPoints)
+                                {
+                                    gameMap.listerBuildingsRepairable.repairables[k].Remove(b);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            DubGUI.Checkbox("OptimiseAlerts".Translate(), listing, ref OptimiseAlerts);
+            
+            DubGUI.Checkbox("GizmoOpti".Translate(), listing, ref OptimizeDrawInspectGizmoGrid);
             var jam = Analyzer.Settings.MeshOnlyBuildings;
-            DubGUI.Checkbox("RealtimeCondu".Translate(), listing, ref Analyzer.Settings.MeshOnlyBuildings);
+            DubGUI.Checkbox("RealtimeCondu".Translate(), listing, ref MeshOnlyBuildings);
             if (jam != Analyzer.Settings.MeshOnlyBuildings)
             {
                 H_FixWallsNConduits.Swapclasses();
             }
             // dirk("Never check jobs on take damage", ref Analyzer.Settings.NeverCheckJobsOnDamage);
-
-            DubGUI.Checkbox("KillMusicMan".Translate(), listing, ref Analyzer.Settings.KillMusicMan);
+            listing.GapLine();
+            DubGUI.Checkbox("OverrideAlerts".Translate(), listing, ref OverrideAlerts);
+            listing.GapLine();
+            DubGUI.Checkbox("KillMusicMan".Translate(), listing, ref KillMusicMan);
+            DubGUI.Checkbox("DisableAlerts".Translate(), listing, ref DisableAlerts);
             //  dirk("Replace bill ingredient finder (Testing only)", ref Analyzer.Settings.ReplaceIngredientFinder);
             //var dan = Analyzer.Settings.HumanoidOnlyWarden;
             //dirk("Replace warden jobs to only scan Humanoids (Testing only)", ref Analyzer.Settings.HumanoidOnlyWarden);
@@ -123,13 +168,30 @@ namespace DubsAnalyzer
             //    H_WardenRequest.Swapclasses();
             //}
             listing.GapLine();
-            DubGUI.Checkbox("ShowAnalBut".Translate(), listing, ref Analyzer.Settings.ShowOnMainTab);
-         //   DubGUI.Checkbox("Mute GC messages", listing, ref Analyzer.Settings.MuteGC);
-            DubGUI.Checkbox("AdvProfMode".Translate(), listing, ref Analyzer.Settings.AdvancedMode);
-            DubGUI.Checkbox("TickPawnTog".Translate(), listing, ref H_PawnTick.TickPawns);
-            listing.GapLine();
-            if (Analyzer.Settings.AdvancedMode)
+            DubGUI.Checkbox("ShowAnalBut".Translate(), listing, ref ShowOnMainTab);
+            //   DubGUI.Checkbox("Mute GC messages", listing, ref Analyzer.Settings.MuteGC);
+            DubGUI.Checkbox("AdvProfMode".Translate(), listing, ref AdvancedMode);
+
+            if (DubGUI.Checkbox("Unlock framerate", listing, ref UnlockFramerate))
             {
+                if (UnlockFramerate)
+                {
+                    QualitySettings.vSyncCount = 0;
+                    Application.targetFrameRate = -1;
+                }
+                else
+                {
+                    QualitySettings.vSyncCount = 1;
+                    Application.targetFrameRate = 60;
+                }
+            }
+
+            if (AdvancedMode)
+            {
+                DubGUI.Checkbox("TickPawnTog".Translate(), listing, ref H_PawnTick.TickPawns);
+
+                listing.GapLine();
+
                 listing.Label("CustoMethProfPatch".Translate());
                 var r = listing.GetRect(25f);
                 DubGUI.InputField(r, "Type:Method", ref methToPatch, ShowName: true);
@@ -148,7 +210,7 @@ namespace DubsAnalyzer
                 {
                     if (customPatchMode == UpdateMode.Tick)
                     {
-                        CustomProfilersTick.PatchMeth( methToPatch);
+                        CustomProfilersTick.PatchMeth(methToPatch);
                     }
                     else
                     {

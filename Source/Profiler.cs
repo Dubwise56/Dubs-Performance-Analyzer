@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using UnityEngine;
 using Verse;
@@ -20,9 +21,10 @@ namespace DubsAnalyzer
         public string label;
         public string key;
 
+        public MethodInfo meth;
        // public long memRise = 0;
-     //   public long LastBytesRecorded = 0;
-      //  public string memRiseStr;
+       //   public long LastBytesRecorded = 0;
+       //  public string memRiseStr;
 
         public double lastTime = 0;
         public double startTime = 0;
@@ -31,11 +33,12 @@ namespace DubsAnalyzer
 
         public string[] fullstack = new string[20000];
 
-        public Profiler(string kley , string lab, Type ty, Def indef, Thing inthing)
+        public Profiler(string kley , string lab, Type ty, Def indef, Thing inthing, MethodInfo inmeth)
         {
             key = kley;
             thing = inthing;
             def = indef;
+            meth = inmeth;
             label = lab;
             stopwatch = new Stopwatch();
             type = ty;

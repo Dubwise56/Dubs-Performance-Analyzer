@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
@@ -12,6 +13,7 @@ namespace DubsAnalyzer
     [ProfileMode("JobGiver_Work", UpdateMode.Tick, "JobGiveTipKey", true)]
     public static class H_TryIssueJobPackageTrans
     {
+
         [Setting("By Work Type")] public static bool ByWorkType = false;
 
         [Setting("Request Types")] public static bool RequestTypes = false;
@@ -79,7 +81,7 @@ namespace DubsAnalyzer
                 return;
             }
 
-          //  Log.Warning("start ");
+            //  Log.Warning("start ");
 
             wg = giver;
 
@@ -105,7 +107,7 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-              //  Log.Warning("stop");
+                //  Log.Warning("stop");
                 Analyzer.Stop(CurrentKey);
             }
         }
@@ -122,22 +124,22 @@ namespace DubsAnalyzer
             {
                 var instruction = instructionsList[i];
 
-                if (start ==false && instruction.opcode == OpCodes.Nop)
+                if (start == false && instruction.opcode == OpCodes.Nop)
                 {
                     yield return new CodeInstruction(OpCodes.Ldloc_S, (byte)8);
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(H_TryIssueJobPackageTrans), nameof(Start)));
                     yield return instruction;
                     start = true;
-                     // Log.Warning("prefixed start loop at " + instruction.opcode);
+                    // Log.Warning("prefixed start loop at " + instruction.opcode);
                 }
                 else if (endloop == false &&
                     instruction.opcode == OpCodes.Ldflda &&
                     instructionsList[i - 1].opcode == OpCodes.Ldloc_0 &&
-                    instructionsList[i - 2].opcode == OpCodes.Endfinally && 
+                    instructionsList[i - 2].opcode == OpCodes.Endfinally &&
                     instructionsList[i - 3].opcode == OpCodes.Leave_S
                 )
                 {
-                    
+
                     yield return new CodeInstruction(OpCodes.Ldloc_S, (byte)8);
                     yield return new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(H_TryIssueJobPackageTrans), nameof(Stop)));
                     yield return instruction;
@@ -152,7 +154,7 @@ namespace DubsAnalyzer
 
             if (start && endloop)
             {
-               // Log.Message("workgiver patched");
+                // Log.Message("workgiver patched");
             }
             else
             {
@@ -283,7 +285,6 @@ namespace DubsAnalyzer
                         name += $"{scanny.PotentialWorkThingRequest}";
                     }
 
-
                     try
                     {
                         var job2 = workGiver.NonScanJob(pawn);
@@ -292,21 +293,25 @@ namespace DubsAnalyzer
                             return new ThinkResult(job2, __instance, list[j].def.tagToGive);
                         }
 
-                       
-
                         if (workGiver is WorkGiver_Scanner scanner)
                         {
-
-                            Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
-
                             if (scanner.def.scanThings)
                             {
                                 bool Predicate(Thing t)
                                 {
                                     return !t.IsForbidden(pawn) && scanner.HasJobOnThing(pawn, t);
                                 }
+                                Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
+                                var enumerable = scanner.PotentialWorkThingsGlobal(pawn)?.Where(x => scanner.HasJobOnThing(pawn, x));
 
-                                var enumerable = scanner.PotentialWorkThingsGlobal(pawn);
+                                //if (scanner is WorkGiver_Repair repair)
+                                //{
+                                //    foreach (var repairableBuilding in pawn.Map.listerBuildingsRepairable.RepairableBuildings(pawn.Faction))
+                                //    {
+                                //        Log.Warning($"repair scan on {repairableBuilding}");
+                                //    }
+                                //}
+
                                 Thing thing;
                                 if (scanner.Prioritized)
                                 {
@@ -323,10 +328,10 @@ namespace DubsAnalyzer
                                     else
                                     {
                                         var traverseParams = TraverseParms.For(pawn, scanner.MaxPathDanger(pawn));
-                                        var validator = (Predicate<Thing>)Predicate;
+                                        // var validator = (Predicate<Thing>)Predicate;
                                         thing = GenClosest.ClosestThing_Global_Reachable(pawn.Position, pawn.Map,
                                             enumerable2,
-                                            scanner.PathEndMode, traverseParams, 9999f, validator,
+                                            scanner.PathEndMode, traverseParams, 9999f, Predicate,
                                             x => scanner.GetPriority(pawn, x));
                                     }
                                 }
@@ -346,15 +351,16 @@ namespace DubsAnalyzer
 
                                     giver = workGiver;
                                     key = name;
-                                    Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
+
                                     thing = GenClosest.ClosestThingReachable(pawn.Position, pawn.Map,
                                         scanner.PotentialWorkThingRequest,
                                         scanner.PathEndMode, TraverseParms.For(pawn, scanner.MaxPathDanger(pawn)),
                                         9999f, Predicate, enumerable, 0,
                                         scanner.MaxRegionsToScanBeforeGlobalSearch, enumerable != null);
-                                   
+
                                     giver = null;
                                 }
+                                Analyzer.Stop(name);
 
                                 if (thing != null)
                                 {
@@ -364,10 +370,9 @@ namespace DubsAnalyzer
                             }
 
 
-
-
                             if (scanner.def.scanCells)
                             {
+                                Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
                                 var closestDistSquared = 99999f;
                                 var bestPriority = float.MinValue;
                                 var prioritized = scanner.Prioritized;
@@ -413,15 +418,9 @@ namespace DubsAnalyzer
                                         bestPriority = num5;
                                     }
                                 }
+                                Analyzer.Stop(name);
                             }
-
-
-                            Analyzer.Stop(name);
                         }
-
-
-                        
-
                     }
                     catch (Exception ex)
                     {
@@ -432,6 +431,7 @@ namespace DubsAnalyzer
                     if (bestTargetOfLastPriority.IsValid)
                     {
                         //  pawn.mindState.lastGivenWorkType = workGiver.def.workType;
+                        Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
                         Job job3;
                         if (bestTargetOfLastPriority.HasThing)
                         {
@@ -441,7 +441,7 @@ namespace DubsAnalyzer
                         {
                             job3 = scannerWhoProvidedTarget.JobOnCell(pawn, bestTargetOfLastPriority.Cell);
                         }
-
+                        Analyzer.Stop(name);
                         if (job3 != null)
                         {
                             job3.workGiverDef = scannerWhoProvidedTarget.def;

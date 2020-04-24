@@ -1,14 +1,14 @@
 ﻿using System;
 using HarmonyLib;
-using RimWorld;
 using UnityEngine;
 using Verse;
 
 namespace DubsAnalyzer
 {
+
     [PerformancePatch]
     [ProfileMode("Frame times", UpdateMode.Update, "frameTimeProfilerTip", true)]
-    [HarmonyPatch(typeof(Root), nameof(Root.Update))]
+    [HarmonyPatch(typeof(Root_Play), nameof(Root_Play.Update))]
     public class H_RootUpdate
     {
         public static bool Active = false;
@@ -20,9 +20,10 @@ namespace DubsAnalyzer
         private static int PrevTicks;
         private static int TPSActual;
         public static float delta;
-        public static long memrise = 0;
-        public static long LastMinGC = 0;
-        public static long LastMaxGC = 0;
+        public static long memrise;
+        public static long LastMinGC;
+        public static long LastMaxGC;
+
         public static void Prefix()
         {
             if (Analyzer.running)
@@ -50,40 +51,50 @@ namespace DubsAnalyzer
                     {
                         vtec = 0;
                     }
+
                     Dialog_Analyzer.stlank = $"{memrise.ToMb():0.00}MB +{vtec.ToMb():0.00}MB/s";
                 }
 
 
                 if (Time.unscaledTime > _timer)
                 {
-                    int fps = (int)(1f / Time.unscaledDeltaTime);
+                    var fps = (int)(1f / Time.unscaledDeltaTime);
                     _fpsText = "FPS: " + fps;
                     _timer = Time.unscaledTime + _hudRefreshRate;
                 }
 
-                float TRM = Find.TickManager.TickRateMultiplier;
-                int TPSTarget = (int)Math.Round((TRM == 0f) ? 0f : (60f * TRM));
-
-                if (PrevTicks == -1)
+                try
                 {
-                    PrevTicks = GenTicks.TicksAbs;
-                    PrevTime = DateTime.Now;
-                }
-                else
-                {
-                    DateTime CurrTime = DateTime.Now;
-
-                    if (CurrTime.Second != PrevTime.Second)
+                    if (Current.ProgramState == ProgramState.Playing)
                     {
-                        PrevTime = CurrTime;
-                        TPSActual = GenTicks.TicksAbs - PrevTicks;
-                        PrevTicks = GenTicks.TicksAbs;
+                        var TRM = Find.TickManager.TickRateMultiplier;
+                        var TPSTarget = (int)Math.Round(TRM == 0f ? 0f : 60f * TRM);
+
+                        if (PrevTicks == -1)
+                        {
+                            PrevTicks = GenTicks.TicksAbs;
+                            PrevTime = DateTime.Now;
+                        }
+                        else
+                        {
+                            var CurrTime = DateTime.Now;
+
+                            if (CurrTime.Second != PrevTime.Second)
+                            {
+                                PrevTime = CurrTime;
+                                TPSActual = GenTicks.TicksAbs - PrevTicks;
+                                PrevTicks = GenTicks.TicksAbs;
+                            }
+                        }
+
+                        tps = $"TPS: {TPSActual}({TPSTarget})";
                     }
                 }
+                catch (Exception e)
+                {
 
-                tps = $"TPS: {TPSActual}({TPSTarget})";
+                }
             }
-
 
             if (Active)
             {
@@ -95,8 +106,8 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                Analyzer.Stop("Game Update");
                 Analyzer.Stop("Frame times");
+                Analyzer.Stop("Game Update");
             }
 
             if (Analyzer.SelectedMode != null)
