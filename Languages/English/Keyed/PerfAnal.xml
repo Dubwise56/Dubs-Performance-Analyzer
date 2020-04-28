@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
+  <OptimizeDrills>Optimize Deep Drills</OptimizeDrills>
   <DisableAlerts>Disable alerts entirely</DisableAlerts>
   <RepairOptimize>Optimize repair job</RepairOptimize>
   <OptimiseAlerts>Optimize alerts (Tattered Clothing and Unhappy Nudity)</OptimiseAlerts>
