@@ -44,6 +44,7 @@ namespace DubsAnalyzer
         public bool OptimizeDrawInspectGizmoGrid;
         public bool OverrideAlerts;
         public bool OptimiseAlerts;
+        public bool OptimizeDrills;
         public bool DisableAlerts;
         public bool OverrideBuildRoof;
         public bool ReplaceIngredientFinder;
@@ -60,6 +61,7 @@ namespace DubsAnalyzer
             Scribe_Values.Look(ref ShowOnMainTab, "ShowOnMainTab");
             Scribe_Values.Look(ref FixRepair, "FixRepair");
             Scribe_Values.Look(ref FixGame, "FixGame");
+            Scribe_Values.Look(ref OptimizeDrills, "OptimizeDrills");
             Scribe_Values.Look(ref UnlockFramerate, "UnlockFramerate");
             //  Scribe_Values.Look(ref ReplaceIngredientFinder, "ReplaceIngredientFinder", false);
             // Scribe_Values.Look(ref FixBedMemLeak, "FixBedMemLeak");
@@ -144,7 +146,7 @@ namespace DubsAnalyzer
                     }
                 }
             }
-
+            DubGUI.Checkbox("OptimizeDrills".Translate(), listing, ref OptimizeDrills);
             DubGUI.Checkbox("OptimiseAlerts".Translate(), listing, ref OptimiseAlerts);
             
             DubGUI.Checkbox("GizmoOpti".Translate(), listing, ref OptimizeDrawInspectGizmoGrid);

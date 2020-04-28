@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -24,33 +25,33 @@ namespace DubsAnalyzer
             {
                 LogCache = log.Label;
                 TipCache = string.Empty;
-             //   var patches = Harmony.GetAllPatchedMethods().ToList();
+                //   var patches = Harmony.GetAllPatchedMethods().ToList();
 
-            //    foreach (var methodBase in patches)
-            //    {
-                    var infos = Harmony.GetPatchInfo(log.Meth);
-                    //foreach (var infosPrefix in infos.Prefixes)
-                    //{
-                    //    if (infosPrefix.PatchMethod == log.Meth)
-                    //    {
-                    //        TipCache += $"{infosPrefix.owner} {infosPrefix.PatchMethod}\n";
-                    //    }
-                    //}
-                    //foreach (var infosPostfixesx in infos.Postfixes)
-                    //{
-                    //    if (infosPostfixesx.PatchMethod == log.Meth)
-                    //    {
-                    //        TipCache += $"{infosPostfixesx.owner} {infosPostfixesx.PatchMethod}\n";
-                    //    }
-                    //}
-                    foreach (var infosPostfixesx in infos.Transpilers)
-                    {
-                      //  if (infosPostfixesx.PatchMethod == log.Meth)
-                      //  {
-                            TipCache += $"{infosPostfixesx.owner} - {infosPostfixesx.PatchMethod.Name}\n\n";
-                       // }
-                    }
-               // }
+                //    foreach (var methodBase in patches)
+                //    {
+                var infos = Harmony.GetPatchInfo(log.Meth);
+                //foreach (var infosPrefix in infos.Prefixes)
+                //{
+                //    if (infosPrefix.PatchMethod == log.Meth)
+                //    {
+                //        TipCache += $"{infosPrefix.owner} {infosPrefix.PatchMethod}\n";
+                //    }
+                //}
+                //foreach (var infosPostfixesx in infos.Postfixes)
+                //{
+                //    if (infosPostfixesx.PatchMethod == log.Meth)
+                //    {
+                //        TipCache += $"{infosPostfixesx.owner} {infosPostfixesx.PatchMethod}\n";
+                //    }
+                //}
+                foreach (var infosPostfixesx in infos.Transpilers)
+                {
+                    //  if (infosPostfixesx.PatchMethod == log.Meth)
+                    //  {
+                    TipCache += $"{infosPostfixesx.owner} - {infosPostfixesx.PatchMethod.Name}\n\n";
+                    // }
+                }
+                // }
             }
             TooltipHandler.TipRegion(r, TipCache);
         }
@@ -72,6 +73,7 @@ namespace DubsAnalyzer
             }
         }
 
+        public static List<MethodBase> PatchedMeths = new List<MethodBase>();
         public static void ProfilePatch()
         {
             var go = new HarmonyMethod(typeof(H_HarmonyTranspilers), nameof(Prefix));
@@ -90,10 +92,10 @@ namespace DubsAnalyzer
                     if (!pilers.NullOrEmpty())
                     {
                         p++;
-                        bool F = pilers.Any(x => x.owner != Analyzer.harmony.Id);
 
-                        if (F)
+                        if (pilers.Any(x => x.owner != Analyzer.harmony.Id) && !PatchedMeths.Contains(mode))
                         {
+                            PatchedMeths.Add(mode);
                             Analyzer.harmony.Patch(mode, go, biff);
                             // Log.Warning($"Patched transpiler {mode}");
                         }
@@ -179,6 +181,8 @@ namespace DubsAnalyzer
             }
         }
 
+        public static List<Patch> PatchedPres = new List<Patch>();
+        public static List<Patch> PatchedPosts = new List<Patch>();
         public static void ProfilePatch()
         {
             var go = new HarmonyMethod(typeof(H_HarmonyPatches), nameof(Prefix));
@@ -187,18 +191,15 @@ namespace DubsAnalyzer
 
             foreach (var mode in patches)
             {
-
-
                 //  Log.Warning($"Found patch {mode as MethodInfo}");
-
                 Patches patchInfo = Harmony.GetPatchInfo(mode);
                 foreach (var fix in patchInfo.Prefixes)
                 {
-
                     try
                     {
-                        if (Analyzer.harmony.Id != fix.owner)
+                        if (Analyzer.harmony.Id != fix.owner && !PatchedPres.Contains(fix))
                         {
+                            PatchedPres.Add(fix);
                             //  Log.Warning($"Logging prefix on {mode.Name} by {fix.owner}");
                             Analyzer.harmony.Patch(fix.PatchMethod, go, biff);
                             //   Log.Message($"Patched prefix {fix.PatchMethod}");
@@ -218,8 +219,9 @@ namespace DubsAnalyzer
                 {
                     try
                     {
-                        if (Analyzer.harmony.Id != fix.owner)
+                        if (Analyzer.harmony.Id != fix.owner && !PatchedPosts.Contains(fix))
                         {
+                            PatchedPosts.Add(fix);
                             //   Log.Warning($"Logging postfix on {mode.Name} by {fix.owner}");
                             Analyzer.harmony.Patch(fix.PatchMethod, go, biff);
                             //  Log.Message($"Patched postfix {fix.PatchMethod}");
