@@ -4,6 +4,8 @@ using System.Text;
 using System.Threading;
 using HarmonyLib;
 using RimWorld;
+using RimWorld.Planet;
+using Verse;
 
 namespace DubsAnalyzer
 {
@@ -14,6 +16,9 @@ namespace DubsAnalyzer
         {
             Analyzer.harmony.Patch(AccessTools.Method(typeof(FactionManager), nameof(FactionManager.RecacheFactions)),
                 new HarmonyMethod(typeof(H_FactionManager), nameof(Prefix)));
+
+            Analyzer.harmony.Patch(AccessTools.Method(typeof(WorldObject), nameof(WorldObject.ExposeData)),
+                new HarmonyMethod(typeof(H_FactionManager), nameof(PrefixWorldObj)));
         }
 
         public static void Prefix(FactionManager __instance)
@@ -26,7 +31,21 @@ namespace DubsAnalyzer
                 }
             }
         }
+
+        public static void PrefixWorldObj(WorldObject __instance)
+        {
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                if (__instance.factionInt == null)
+                {
+                    __instance.Destroy();
+                }
+            }
+
+        }
     }
+
+
 
     //[PerformancePatch]
     //internal class H_ThreadLocalDeepProfiler

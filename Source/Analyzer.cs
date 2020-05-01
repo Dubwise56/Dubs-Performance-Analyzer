@@ -72,8 +72,8 @@ namespace DubsAnalyzer
         public Analyzer(ModContentPack content) : base(content)
         {
             Settings = GetSettings<PerfAnalSettings>();
-
-            if (Settings.UnlockFramerate)
+           
+                if (Settings.UnlockFramerate && Application.platform != RuntimePlatform.OSXPlayer)
             {
                 QualitySettings.vSyncCount = 0;
                 Application.targetFrameRate = 999;
