@@ -9,7 +9,7 @@ namespace DubsAnalyzer
     {
         public static void PerformancePatch()
         {
-            Analyzer.harmony.Patch(
+            Analyzer.perfharmony.Patch(
                 AccessTools.Method(typeof(ListerBuildingsRepairable), nameof(ListerBuildingsRepairable.UpdateBuilding)),
                 new HarmonyMethod(typeof(H_ListerBuildingsRepairable), nameof(Prefix)));
         }

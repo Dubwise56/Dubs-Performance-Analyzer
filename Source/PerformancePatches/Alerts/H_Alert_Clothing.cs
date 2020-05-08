@@ -23,15 +23,15 @@ namespace DubsAnalyzer
                 }); // pawn has removed a piece of clothing
 
             var reaction = new HarmonyMethod(typeof(H_Alert_Clothing), nameof(UpdateFlag));
-            Analyzer.harmony.Patch(firstFlag, null, reaction);
-            Analyzer.harmony.Patch(secondFlag, null, reaction);
-            Analyzer.harmony.Patch(thirdFlag, null, reaction);
+            Analyzer.perfharmony.Patch(firstFlag, null, reaction);
+            Analyzer.perfharmony.Patch(secondFlag, null, reaction);
+            Analyzer.perfharmony.Patch(thirdFlag, null, reaction);
 
             var meth = AccessTools.Method(typeof(Alert_Thought), nameof(Alert_Thought.GetReport));
             var pre = new HarmonyMethod(typeof(H_Alert_Clothing), nameof(AlertCheck));
             var post = new HarmonyMethod(typeof(H_Alert_Clothing), nameof(PostCheck));
 
-            Analyzer.harmony.Patch(meth, pre, post);
+            Analyzer.perfharmony.Patch(meth, pre, post);
         }
 
         public static void UpdateFlag()

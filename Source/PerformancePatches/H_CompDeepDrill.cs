@@ -9,7 +9,7 @@ namespace DubsAnalyzer
         public static void PerformancePatch()
         {
             var skiff = AccessTools.Method(typeof(CompDeepDrill), nameof(CompDeepDrill.CanDrillNow));
-            Analyzer.harmony.Patch(skiff, new HarmonyMethod(typeof(H_CompDeepDrill), nameof(Prefix)));
+            Analyzer.perfharmony.Patch(skiff, new HarmonyMethod(typeof(H_CompDeepDrill), nameof(Prefix)));
         }
 
         public static bool Prefix(CompDeepDrill __instance, ref bool __result)

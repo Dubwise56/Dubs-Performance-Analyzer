@@ -14,10 +14,10 @@ namespace DubsAnalyzer
     {
         public static void PerformancePatch()
         {
-            Analyzer.harmony.Patch(AccessTools.Method(typeof(FactionManager), nameof(FactionManager.RecacheFactions)),
+            Analyzer.perfharmony.Patch(AccessTools.Method(typeof(FactionManager), nameof(FactionManager.RecacheFactions)),
                 new HarmonyMethod(typeof(H_FactionManager), nameof(Prefix)));
 
-            Analyzer.harmony.Patch(AccessTools.Method(typeof(WorldObject), nameof(WorldObject.ExposeData)),
+            Analyzer.perfharmony.Patch(AccessTools.Method(typeof(WorldObject), nameof(WorldObject.ExposeData)),
                 new HarmonyMethod(typeof(H_FactionManager), nameof(PrefixWorldObj)));
         }
 

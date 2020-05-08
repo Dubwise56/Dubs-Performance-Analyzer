@@ -13,18 +13,18 @@ namespace DubsAnalyzer
         public static void PerformancePatch()
         {
             var orig = AccessTools.Method(typeof(JobDriver_BuildRoof), nameof(JobDriver_BuildRoof.DoEffect));
-            Analyzer.harmony.Patch(orig, null, new HarmonyMethod(typeof(H_JobDriver_BuildRoof), nameof(DoEffectPostfix)));
+            Analyzer.perfharmony.Patch(orig, null, new HarmonyMethod(typeof(H_JobDriver_BuildRoof), nameof(DoEffectPostfix)));
 
             orig = AccessTools.Method(typeof(WorkGiver_BuildRoof), nameof(WorkGiver_BuildRoof.PotentialWorkCellsGlobal));
-            Analyzer.harmony.Patch(orig, new HarmonyMethod(typeof(H_JobDriver_BuildRoof), nameof(Prefix)));
+            Analyzer.perfharmony.Patch(orig, new HarmonyMethod(typeof(H_JobDriver_BuildRoof), nameof(Prefix)));
 
             var dirt = new HarmonyMethod(typeof(H_JobDriver_BuildRoof), nameof(SetDirty));
 
             orig = AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof));
-            Analyzer.harmony.Patch(orig, dirt);
+            Analyzer.perfharmony.Patch(orig, dirt);
 
             orig = AccessTools.Method(typeof(Area), nameof(Area.MarkDirty));
-            Analyzer.harmony.Patch(orig, dirt);
+            Analyzer.perfharmony.Patch(orig, dirt);
         }
 
         public static Dictionary<int, bool> RoofDirty = new Dictionary<int, bool>();

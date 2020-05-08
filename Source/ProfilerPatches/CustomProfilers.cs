@@ -73,8 +73,15 @@ namespace DubsAnalyzer
     class CustomProfilersUpdate
     {
         public static bool Active = false;
+        public static List<string> PatchedAssemblies = new List<string>();
         public static void PatchMeth(string strde)
         {
+            if (strde.First() == '@')
+            {
+                PatchAssembly(strde.Substring(1, strde.Length - 1));
+                return;
+            }
+
             var listStrLineElements = strde.Split(',').ToList();
             foreach (var str in listStrLineElements)
             {
@@ -99,8 +106,49 @@ namespace DubsAnalyzer
             }
         }
 
+        public static void PatchAssembly(string AssemblyName)
+        {
+            return;
+
+            // WIP FUNCTIONALITY - CRASHES GAME WITH BIG ASSEMBLIES CURRENTLY
+
+            if(PatchedAssemblies.Contains(AssemblyName))
+            {
+                Messages.Message($"patching {AssemblyName} failed, already patched", MessageTypeDefOf.NegativeEvent, false);
+                return;
+            }
+            Mod mod = LoadedModManager.ModHandles.FirstOrDefault(m => m.Content.Name == AssemblyName);
+            Assembly assembly = mod.Content.assemblies.loadedAssemblies.First();
+
+            if (assembly != null)
+            {
+                try
+                {
+                    PatchedAssemblies.Add(AssemblyName);
+                    foreach (var type in assembly.DefinedTypes)
+                    {
+                        foreach (var method in AccessTools.GetDeclaredMethods(type))
+                        {
+                            try
+                            {
+                                Analyzer.harmony.Patch(method,
+                                    new HarmonyMethod(typeof(CustomProfilersUpdate), nameof(Prefix)),
+                                    new HarmonyMethod(typeof(CustomProfilersUpdate), nameof(Postfix))
+                                );
+                            } catch (Exception e) { Log.Warning($"Failed to log method {method.Name} erroed with the message {e.Message}"); }
+                        }
+                    }
+                    Messages.Message($"Patched {AssemblyName}", MessageTypeDefOf.TaskCompletion, false);
+                } catch (Exception e)
+                {
+                    Messages.Message($"catch. patching {AssemblyName} failed, {e.Message}", MessageTypeDefOf.NegativeEvent, false);
+                }
+            }
+        }
+
         public static void Prefix(object __instance, MethodBase __originalMethod, ref string __state)
         {
+            
             if (!Active)
             {
                 return;

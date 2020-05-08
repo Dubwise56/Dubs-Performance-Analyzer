@@ -10,7 +10,7 @@ namespace DubsAnalyzer
         public static void PerformancePatch()
         {
             var skiff = AccessTools.Method(typeof(MusicManagerPlay), nameof(MusicManagerPlay.MusicUpdate));
-            Analyzer.harmony.Patch(skiff, new HarmonyMethod(typeof(H_MusicUpdate), nameof(Prefix)));
+            Analyzer.perfharmony.Patch(skiff, new HarmonyMethod(typeof(H_MusicUpdate), nameof(Prefix)));
         }
 
         public static bool Prefix()

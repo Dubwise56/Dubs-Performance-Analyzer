@@ -23,18 +23,23 @@ namespace DubsAnalyzer
             var pre = new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Prefix));
             var post = new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Postfix));
             var skiff = AccessTools.Method(typeof(InspectGizmoGrid), nameof(InspectGizmoGrid.DrawInspectGizmoGridFor));
-            Analyzer.harmony.Patch(skiff, pre, post);
+            Analyzer.perfharmony.Patch(skiff, pre, post);
 
-            Analyzer.harmony.Patch(AccessTools.Method(typeof(GizmoGridDrawer), nameof(GizmoGridDrawer.DrawGizmoGrid)), new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Cacher)));
+            Analyzer.perfharmony.Patch(AccessTools.Method(typeof(GizmoGridDrawer), nameof(GizmoGridDrawer.DrawGizmoGrid)), new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Cacher)));
         }
 
         public static IEnumerable<Gizmo> cach;
-        public static void Cacher(IEnumerable<Gizmo> gizmos)
+        public static bool Cacher(IEnumerable<Gizmo> gizmos)
         {
+            // nullcheck for edge cases
+            if (gizmos == null) return false;
+
             if (Analyzer.Settings.OptimizeDrawInspectGizmoGrid)
             {
                 cach = gizmos.ToList();
             }
+
+            return true;
         }
 
         public static readonly string str = "InspectGizmoGrid.DrawInspectGizmoGridFor";
@@ -79,8 +84,6 @@ namespace DubsAnalyzer
         public static void Detour(IEnumerable<object> selectedObjects, ref Gizmo mouseoverGizmo)
         {
             var DoRebuild = !(Analyzer.Settings.OptimizeDrawInspectGizmoGrid && Event.current.type != EventType.Repaint);
-
-          
 
             if (DoRebuild)
             {

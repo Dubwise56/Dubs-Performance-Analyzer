@@ -16,7 +16,8 @@ namespace DubsAnalyzer
     {
         static Harmy()
         {
-            Analyzer.harmony = new Harmony("Dubwise.DubsOptimizer");
+            Analyzer.harmony = new Harmony("Dubwise.DubsProfiler"); 
+            Analyzer.perfharmony = new Harmony("Dubwise.DubsOptimizer"); // makes sense 
 
             H_KeyPresses.PatchMe();
 
@@ -45,6 +46,7 @@ namespace DubsAnalyzer
     public class Analyzer : Mod
     {
         public static Harmony harmony;
+        public static Harmony perfharmony;
         public static readonly int MaxHistoryEntries = 3000;
         public static readonly int AveragingTime = 3000;
         public static readonly int UpdateInterval = 60;
@@ -256,6 +258,13 @@ namespace DubsAnalyzer
             {
                 // ignored
             }
+        }
+
+        public static void unPatchMethods()
+        {
+            harmony.UnpatchAll(harmony.Id);
+            Log.Message("unpatched profiler methods");
+            Dialog_Analyzer.PatchedEverything = false;
         }
 
         //public static void DisplayTimerProperties()

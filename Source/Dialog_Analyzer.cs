@@ -103,6 +103,9 @@ namespace DubsAnalyzer
             Analyzer.StopProfiling();
             Analyzer.Reset();
             Analyzer.Settings.Write();
+
+            // we add new functionality
+            Analyzer.unPatchMethods();
         }
 
 

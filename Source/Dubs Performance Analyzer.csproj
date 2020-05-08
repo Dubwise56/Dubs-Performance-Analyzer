@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{CBA2EB7B-3765-1F06-8015-AE92EC16F8E3}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Dubs Performance Analyzer</RootNamespace>
+    <AssemblyName>PerformanceAnalyzer</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\1.1\Assemblies\</OutputPath>
+    <BaseIntermediateOutputPath>\bin-int\Debug\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\1.1\Assemblies\</OutputPath>
+    <BaseIntermediateOutputPath>\bin-int\Release\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
+    <DefineConstants>NDEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Analyzer.cs" />
+    <Compile Include="Dialog_Analyzer.cs" />
+    <Compile Include="Dialog_Graph.cs" />
+    <Compile Include="DubGUI.cs" />
+    <Compile Include="H_KeyPresses.cs" />
+    <Compile Include="H_RootUpdate.cs" />
+    <Compile Include="MainButtonWorker_ToggleAnalyzer.cs" />
+    <Compile Include="PerfAnalSettings.cs" />
+    <Compile Include="PerformancePatches\Alerts\AlertInfo.cs" />
+    <Compile Include="PerformancePatches\Alerts\H_Alert_Clothing.cs" />
+    <Compile Include="PerformancePatches\Alerts\H_AlertsReadoutUpdate.cs" />
+    <Compile Include="PerformancePatches\H_ComfortableTemperatureRange.cs" />
+    <Compile Include="PerformancePatches\H_CompDeepDrill.cs" />
+    <Compile Include="PerformancePatches\H_DrawFieldEdges.cs" />
+    <Compile Include="PerformancePatches\H_DrawInspectGizmoGridFor.cs" />
+    <Compile Include="PerformancePatches\H_Faction.cs" />
+    <Compile Include="PerformancePatches\H_FixWallsNConduits.cs" />
+    <Compile Include="PerformancePatches\H_JobDriver_BuildRoof.cs" />
+    <Compile Include="PerformancePatches\H_ListerBuildingsRepairable.cs" />
+    <Compile Include="PerformancePatches\H_MusicUpdate.cs" />
+    <Compile Include="PerformancePatches\H_PawnTick.cs" />
+    <Compile Include="PerformancePatches\H_Trash.cs" />
+    <Compile Include="PerformancePatches\H_WardenRequest.cs" />
+    <Compile Include="PerformancePatches\H_WorkGiver_DoBill.cs" />
+    <Compile Include="ProfileLog.cs" />
+    <Compile Include="ProfileMode.cs" />
+    <Compile Include="ProfileTab.cs" />
+    <Compile Include="Profiler.cs" />
+    <Compile Include="ProfilerHistory.cs" />
+    <Compile Include="ProfilerPatches\CustomProfilers.cs" />
+    <Compile Include="ProfilerPatches\H_ColonistBarOnGUI.cs" />
+    <Compile Include="ProfilerPatches\H_DoButtons.cs" />
+    <Compile Include="ProfilerPatches\H_DoSingleTick.cs" />
+    <Compile Include="ProfilerPatches\H_DoSingleTickUpdate.cs" />
+    <Compile Include="ProfilerPatches\H_DoTabs.cs" />
+    <Compile Include="ProfilerPatches\H_DrawDynamicThings.cs" />
+    <Compile Include="ProfilerPatches\H_FindPath.cs" />
+    <Compile Include="ProfilerPatches\H_GetStatValue.cs" />
+    <Compile Include="ProfilerPatches\H_HarmonyPatches.cs" />
+    <Compile Include="ProfilerPatches\H_JobGiver_AITrashBuildingsDistant.cs" />
+    <Compile Include="ProfilerPatches\H_MapComponentTick.cs" />
+    <Compile Include="ProfilerPatches\H_MapComponentUpdate.cs" />
+    <Compile Include="ProfilerPatches\H_MouseoverReadoutOnGUI.cs" />
+    <Compile Include="ProfilerPatches\H_NeedsTrackerTick.cs" />
+    <Compile Include="ProfilerPatches\H_PawnTickProfile.cs" />
+    <Compile Include="ProfilerPatches\H_RenderPawnAt.cs" />
+    <Compile Include="ProfilerPatches\H_ResourceReadoutOnGUI.cs" />
+    <Compile Include="ProfilerPatches\H_Room.cs" />
+    <Compile Include="ProfilerPatches\H_Root.cs" />
+    <Compile Include="ProfilerPatches\H_ThinkNodes.cs" />
+    <Compile Include="ProfilerPatches\H_TickListTick.cs" />
+    <Compile Include="ProfilerPatches\H_TryFindBestBillIngredients.cs" />
+    <Compile Include="ProfilerPatches\H_TryIssueJobPackageTrans.cs" />
+    <Compile Include="ProfilerPatches\H_UIRootOnGUI.cs" />
+    <Compile Include="ProfilerPatches\H_UIRootUpdate.cs" />
+    <Compile Include="ProfilerPatches\H_WindowStackOnGUI.cs" />
+    <Compile Include="ProfilerPatches\H_WorldPawns.cs" />
+    <Compile Include="UpdateMode.cs" />
+    <Compile Include="colourPicker.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony, Version=2.0.0.8, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\workshop\content\294100\2009463077\v1.1\Assemblies\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp_publicized">
+      <HintPath>..\..\..\RimWorldWin64_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputModule">
+      <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.InputModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
