@@ -262,9 +262,20 @@ namespace DubsAnalyzer
 
         public static void unPatchMethods()
         {
+            Log.Message("Beginning to unpatch methods");
+            Thread.CurrentThread.IsBackground = true;
+            Dialog_Analyzer.CurrentlyUnpatching = true;
+
+            foreach (var maintab in Dialog_Analyzer.MainTabs)
+            {
+                maintab.Modes.Clear();
+            }
+
             harmony.UnpatchAll(harmony.Id);
-            Log.Message("unpatched profiler methods");
+            Dialog_Analyzer.CurrentlyUnpatching = false;
             Dialog_Analyzer.PatchedEverything = false;
+
+            Log.Message("Successfully finished unpatching methods");
         }
 
         //public static void DisplayTimerProperties()

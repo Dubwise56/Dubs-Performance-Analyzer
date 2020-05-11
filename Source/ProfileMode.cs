@@ -52,6 +52,7 @@ namespace DubsAnalyzer
             this.Basics = Basics;
         }
 
+
         public void ProfilePatch()
         {
             if (Patchinator == null)
@@ -60,8 +61,11 @@ namespace DubsAnalyzer
                 {
                     try
                     {
-                        AccessTools.Method(typeRef, "ProfilePatch")?.Invoke(null, null);
-                        IsPatched = true;
+                        if (!Dialog_Analyzer.CurrentlyUnpatching)
+                        {
+                            AccessTools.Method(typeRef, "ProfilePatch")?.Invoke(null, null);
+                            IsPatched = true;
+                        }
                     }
                     catch (Exception e)
                     {

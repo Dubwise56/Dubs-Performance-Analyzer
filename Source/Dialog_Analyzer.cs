@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -30,12 +31,14 @@ namespace DubsAnalyzer
         private static Vector2 scrolpos = Vector2.zero;
         private static Vector2 scrolpostabs = Vector2.zero;
         public static bool ShowSettings = true;
-        public static bool PatchedEverything;
+        public static bool PatchedEverything = false; // shouldn't start as anything but false
+        public static bool CurrentlyUnpatching = false;
+        static Thread CleanupPatches = null;
 
         public override void PreOpen()
         {
             base.PreOpen();
-            if (!PatchedEverything)
+            if (!PatchedEverything && !CurrentlyUnpatching)
             {
                 Log.Message("Applying profiling patches...");
                 try
@@ -52,7 +55,7 @@ namespace DubsAnalyzer
                             foreach (var fieldInfo in mode.GetFields().Where(m => m.TryGetAttribute<Setting>(out _)))
                             {
                                 var sett = fieldInfo.TryGetAttribute<Setting>();
-                                att.Settings.Add(fieldInfo, sett);
+                                att.Settings.SetOrAdd(fieldInfo, sett);
                             }
                             att.MouseOver = AccessTools.Method(mode, "MouseOver");
                             att.Clicked = AccessTools.Method(mode, "Clicked");
@@ -64,7 +67,7 @@ namespace DubsAnalyzer
                             {
                                 if (att.mode == profileTab.UpdateMode)
                                 {
-                                    profileTab.Modes.Add(att, mode);
+                                    profileTab.Modes.SetOrAdd(att, mode);
                                 }
                             }
                         }
@@ -74,7 +77,6 @@ namespace DubsAnalyzer
                         }
 
                     }
-
                     try
                     {
                         Analyzer.harmony.PatchAll(Assembly.GetExecutingAssembly());
@@ -105,7 +107,8 @@ namespace DubsAnalyzer
             Analyzer.Settings.Write();
 
             // we add new functionality
-            Analyzer.unPatchMethods();
+            CleanupPatches = new Thread(() => Analyzer.unPatchMethods());
+            CleanupPatches.Start();
         }
 
 

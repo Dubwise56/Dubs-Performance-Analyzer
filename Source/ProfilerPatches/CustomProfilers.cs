@@ -108,6 +108,7 @@ namespace DubsAnalyzer
 
         public static void PatchAssembly(string AssemblyName)
         {
+            Log.Warning("WIP Functionality");
             return;
 
             // WIP FUNCTIONALITY - CRASHES GAME WITH BIG ASSEMBLIES CURRENTLY
