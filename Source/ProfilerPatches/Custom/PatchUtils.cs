@@ -29,7 +29,7 @@ namespace DubsAnalyzer
                 listStrLineElements.AddRange(name.Split(';'));
             else
                 listStrLineElements.Add(name);
-            
+
             return listStrLineElements;
         }
 
@@ -83,7 +83,7 @@ namespace DubsAnalyzer
                 Messages.Message($"catch. patching {assembly.FullName} failed, {e.Message}", MessageTypeDefOf.NegativeEvent, false);
             }
         }
-        
+
         public static void PatchType(string name, HarmonyMethod pre, HarmonyMethod post)
         {
             Type type = AccessTools.TypeByName(name);
@@ -95,7 +95,7 @@ namespace DubsAnalyzer
             }
             else
             {
-                Messages.Message($"Failed to patch {name}", MessageTypeDefOf.NegativeEvent, false);
+                Log.Warning($"Failed to patch {name}");
             }
         }
         private static void PatchTypeFull(Type type, HarmonyMethod pre, HarmonyMethod post)
@@ -104,7 +104,7 @@ namespace DubsAnalyzer
             {
                 if (PatchedTypes.Contains(type.FullName))
                 {
-                    Messages.Message($"patching {type.FullName} failed, already patched", MessageTypeDefOf.NegativeEvent, false);
+                    Log.Message($"patching {type.FullName} failed, already patched");
                     return;
                 }
 
@@ -122,14 +122,14 @@ namespace DubsAnalyzer
                     }
                     PatchedMethods.Add(method.Name);
                 }
-                Messages.Message($"Patched {type.FullName}", MessageTypeDefOf.TaskCompletion, false);
+                Log.Message($"Patched {type.FullName}");
             }
             catch (Exception e)
             {
-                Messages.Message($"catch. patching {type.FullName} failed, {e.Message}", MessageTypeDefOf.NegativeEvent, false);
+                Log.Warning($"catch. patching {type.FullName} failed, {e.Message}");
             }
         }
-       
+
         public static void PatchMethod(string name, HarmonyMethod pre, HarmonyMethod post)
         {
             MethodInfo method = AccessTools.Method(name);
@@ -140,25 +140,25 @@ namespace DubsAnalyzer
             }
             else
             {
-                Messages.Message($"Failed to patch {name}", MessageTypeDefOf.NegativeEvent, false);
+                Log.Warning($"Failed to patch {name}");
             }
         }
         private static void PatchMethodFull(MethodInfo method, HarmonyMethod pre, HarmonyMethod post)
         {
             if (PatchedMethods.Contains(method.Name))
             {
-                Messages.Message($"patching {method.Name} failed, already patched", MessageTypeDefOf.NegativeEvent, false);
+                Log.Warning($"patching {method.Name} failed, already patched");
                 return;
             }
 
-            PatchedTypes.Add(method.Name);
+            PatchedMethods.Add(method.Name);
             try
             {
                 Analyzer.harmony.Patch(method, pre, post);
             }
             catch (Exception e) { Log.Warning($"Failed to log method {method.Name} errored with the message {e.Message}"); }
 
-            Messages.Message($"Patched {method.Name}", MessageTypeDefOf.TaskCompletion, false);
+            Log.Message($"Patched {method.Name}");
         }
 
         public static void PatchMethodPatches(string name, HarmonyMethod pre, HarmonyMethod post)
@@ -179,6 +179,50 @@ namespace DubsAnalyzer
             foreach (Patch patch in patches.Transpilers)
             {
                 PatchMethodFull(patch.PatchMethod, pre, post);
+            }
+        }
+
+        public static void PatchTypePatches(string name, HarmonyMethod pre, HarmonyMethod post)
+        {
+            Type type = AccessTools.TypeByName(name);
+
+            if (type != null)
+            {
+                PatchTypePatchesFull(type, pre, post);
+            }
+            else
+            {
+                Log.Warning($"Failed to patch {name}");
+            }
+        }
+        private static void PatchTypePatchesFull(Type type, HarmonyMethod pre, HarmonyMethod post)
+        {
+            try
+            {
+                foreach (var method in AccessTools.GetDeclaredMethods(type))
+                {
+                    Patches patches = Harmony.GetPatchInfo(method);
+                    if (patches == null) continue;
+
+                    foreach (Patch patch in patches.Prefixes)
+                    {
+                        PatchMethodFull(patch.PatchMethod, pre, post);
+                    }
+                    foreach (Patch patch in patches.Postfixes)
+                    {
+                        PatchMethodFull(patch.PatchMethod, pre, post);
+                    }
+                    foreach (Patch patch in patches.Transpilers)
+                    {
+                        PatchMethodFull(patch.PatchMethod, pre, post);
+                    }
+                }
+
+                Log.Message($"Patched {type.FullName}");
+            }
+            catch (Exception e)
+            {
+                Log.Warning($"catch. patching {type.FullName} failed, {e.Message}");
             }
         }
 

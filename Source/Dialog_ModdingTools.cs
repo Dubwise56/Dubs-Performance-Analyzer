@@ -13,7 +13,7 @@ namespace DubsAnalyzer
 {
     public enum CurrentInput
     {
-        Method, Type, MethodHarmony //, Assembly
+        Method, Type, MethodHarmony, TypeHarmony //, Assembly
     }
 
     [StaticConstructorOnStartup]
@@ -60,7 +60,8 @@ namespace DubsAnalyzer
                 case CurrentInput.Method: FieldDescription = "Type:Method"; break;
                 case CurrentInput.Type: FieldDescription = "Type"; break;
                 case CurrentInput.MethodHarmony: FieldDescription = "Type:Method"; break;
-                //case CurrentInput.Assembly: FieldDescription = "AssemblyName"; break;
+                case CurrentInput.TypeHarmony: FieldDescription = "Type"; break;
+                    //case CurrentInput.Assembly: FieldDescription = "AssemblyName"; break;
             }
 
             Rect inputBox = listing.GetRect(25f);
@@ -85,6 +86,9 @@ namespace DubsAnalyzer
                         case CurrentInput.MethodHarmony:
                             CustomProfilersHarmony.PatchMeth(currentInput);
                             break;
+                        case CurrentInput.TypeHarmony:
+                            CustomProfilersHarmony.PatchType(currentInput);
+                            break;
                     }
                 }
             }
@@ -108,20 +112,25 @@ namespace DubsAnalyzer
 
         public static void DisplayInputTypes(Listing_Standard listing)
         {
-            Rect r = listing.GetRect(25f).LeftPartPixels(150);
+            Rect r = listing.GetRect(25f).LeftPartPixels(450);
             if (Widgets.RadioButtonLabeled(r, "inputMethod".Translate(), input == CurrentInput.Method))
             {
                 input = CurrentInput.Method;
             }
-            r = listing.GetRect(25f).LeftPartPixels(250);
+            r = listing.GetRect(25f).LeftPartPixels(450);
             if (Widgets.RadioButtonLabeled(r, "inputType".Translate(), input == CurrentInput.Type))
             {
                 input = CurrentInput.Type;
             }
-            r = listing.GetRect(25f).LeftPartPixels(250);
+            r = listing.GetRect(25f).LeftPartPixels(450);
             if (Widgets.RadioButtonLabeled(r, "inputMethodHarmony".Translate(), input == CurrentInput.MethodHarmony))
             {
                 input = CurrentInput.MethodHarmony;
+            }
+            r = listing.GetRect(25f).LeftPartPixels(450);
+            if (Widgets.RadioButtonLabeled(r, "inputTypeHarmony".Translate(), input == CurrentInput.TypeHarmony))
+            {
+                input = CurrentInput.TypeHarmony;
             }
         }
     }

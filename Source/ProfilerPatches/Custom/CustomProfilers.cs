@@ -116,14 +116,14 @@ namespace DubsAnalyzer
         {
             foreach (var str in PatchUtils.GetSplitString(strde))
             {
-                PatchUtils.PatchMethod(str, pre, post);
+                PatchUtils.PatchMethodPatches(str, pre, post);
             }
         }
         public static void PatchType(string strde)
         {
             foreach (var str in PatchUtils.GetSplitString(strde))
             {
-                PatchUtils.PatchType(str, pre, post);
+                PatchUtils.PatchTypePatches(str, pre, post);
             }
         }
 

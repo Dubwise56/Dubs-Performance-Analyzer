@@ -20,6 +20,10 @@
   <CustoMethProfPatch>Profile a method e.g. ResourceReadout:ResourceReadoutOnGUI</CustoMethProfPatch>
   <CustoTickPatch>Custom Tick</CustoTickPatch>
   <CustoUpdatePatch>Custom Update</CustoUpdatePatch>
+  <inputMethod>Profile a method</inputMethod>
+  <inputType>Profile all the methods in a type</inputType>
+  <inputMethodHarmony>Profile all the harmony patches of a method</inputMethodHarmony>
+  <inputTypeHarmony>Profile all the harmony patches effecting a type</inputTypeHarmony>
   <TryCustoPatch>Try patch</TryCustoPatch>
   <AlertsTipKey>Alerts appear on the right of the screen, these run constantly even while paused and can heavily impact performance, click the check boxes to disable them</AlertsTipKey>
   <DrawDynThinTipKey>Dynamic drawing of things on the map like colonists or animated buildings, things usually only draw when they are in view</DrawDynThinTipKey>
