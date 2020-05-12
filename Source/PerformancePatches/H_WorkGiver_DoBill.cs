@@ -52,7 +52,7 @@ namespace DubsAnalyzer
     {
         public override IEnumerable<Thing> PotentialWorkThingsGlobal(Pawn pawn)
         {
-            var flange = 0;
+            //var flange = 0;
             return base.PotentialWorkThingsGlobal(pawn);
         }
     }

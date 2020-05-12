@@ -4,6 +4,7 @@ using Verse;
 
 namespace DubsAnalyzer
 {
+
     [StaticConstructorOnStartup]
     public static class Dialog_Graph
     {
@@ -26,7 +27,7 @@ namespace DubsAnalyzer
       //  private static long maxBytes;
       //  private static long minBytes;
 
-        private static long LASTtotalBytesStr;
+      //  private static long LASTtotalBytesStr;
         private static string totalBytesStr;
 
       //  private static bool ShowMem = false;
@@ -205,7 +206,9 @@ namespace DubsAnalyzer
                 WindowMax = (float)max;
             }
 
+#pragma warning disable CS0219 
             var DoHover = false;
+#pragma warning restore CS0219 
 
             for (var i = 0; i < mescou; i++)
             {

@@ -33,7 +33,7 @@ namespace DubsAnalyzer
                         Messages.Message($"{str} not found", MessageTypeDefOf.NegativeEvent, false);
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Messages.Message($"catch. {str} failed", MessageTypeDefOf.NegativeEvent, false);
                 }
@@ -99,7 +99,7 @@ namespace DubsAnalyzer
                         Messages.Message($"{str} not found", MessageTypeDefOf.NegativeEvent, false);
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Messages.Message($"catch. {str} failed", MessageTypeDefOf.NegativeEvent, false);
                 }
@@ -113,7 +113,9 @@ namespace DubsAnalyzer
 
             // WIP FUNCTIONALITY - CRASHES GAME WITH BIG ASSEMBLIES CURRENTLY
 
-            if(PatchedAssemblies.Contains(AssemblyName))
+#pragma warning disable CS0162 // Unreachable code detected
+            if (PatchedAssemblies.Contains(AssemblyName))
+#pragma warning restore CS0162 // Unreachable code detected
             {
                 Messages.Message($"patching {AssemblyName} failed, already patched", MessageTypeDefOf.NegativeEvent, false);
                 return;

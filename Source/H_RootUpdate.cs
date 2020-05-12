@@ -90,9 +90,9 @@ namespace DubsAnalyzer
                         tps = $"TPS: {TPSActual}({TPSTarget})";
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-
+                    
                 }
             }
 

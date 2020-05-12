@@ -57,7 +57,8 @@ namespace DubsAnalyzer
         public static PerfAnalSettings Settings;
         public static bool running;
         private static bool RequestStop;
-        
+
+        private const int NumSecondsForPatchClear = 30;
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
@@ -67,7 +68,7 @@ namespace DubsAnalyzer
         {
             return "Dubs Performance Analyzer";
         }
-        private static int biff;
+        //private static int biff;
 
         public static string SortBy = "Usage";
         public static Thread t1;
@@ -219,7 +220,7 @@ namespace DubsAnalyzer
             {
                 Profiles[key].Start();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 if (!Profiles.ContainsKey(key))
                 {
@@ -254,7 +255,7 @@ namespace DubsAnalyzer
                     Profiles[key].Stop(false);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 // ignored
             }
@@ -262,20 +263,43 @@ namespace DubsAnalyzer
 
         public static void unPatchMethods()
         {
-            Log.Message("Beginning to unpatch methods");
             Thread.CurrentThread.IsBackground = true;
-            Dialog_Analyzer.CurrentlyUnpatching = true;
+            Dialog_Analyzer.State = CurrentState.UnpatchingQueued;
 
+            for(int i = 0; i < NumSecondsForPatchClear; i++)
+            {
+                // This should result in no overlap
+                // If there are issues regarding spamming open and close, you can lower thread
+                // sleep by x% and multiply NumSecondsForPatchClear to balance
+                // I.e. Thread.Sleep(500), i < NumSecondsForPatchClear * 2;
+                Thread.Sleep(1000);
+                if (Dialog_Analyzer.State != CurrentState.UnpatchingQueued)
+                    return;
+            }
+
+            Dialog_Analyzer.State = CurrentState.Unpatching;
+
+            Log.Message("Beginning to unpatch methods");
+
+            ClearState();
+            harmony.UnpatchAll(harmony.Id);
+
+            Log.Message("Successfully finished unpatching methods");
+
+            Dialog_Analyzer.State = CurrentState.Unitialised;
+        }
+
+        public static void ClearState()
+        {
             foreach (var maintab in Dialog_Analyzer.MainTabs)
             {
                 maintab.Modes.Clear();
             }
 
-            harmony.UnpatchAll(harmony.Id);
-            Dialog_Analyzer.CurrentlyUnpatching = false;
-            Dialog_Analyzer.PatchedEverything = false;
+            H_HarmonyPatches.PatchedPres = new List<Patch>();
+            H_HarmonyPatches.PatchedPosts = new List<Patch>();
 
-            Log.Message("Successfully finished unpatching methods");
+            Reset();
         }
 
         //public static void DisplayTimerProperties()

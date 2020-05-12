@@ -118,10 +118,8 @@ namespace ColourPicker
             {
                 Setcol();
             }
-            catch (Exception e)
-            {
-
-            }
+            catch (Exception)
+            {   }
 
 
             if (refresh)

@@ -57,15 +57,15 @@ namespace DubsAnalyzer
         {
             if (Patchinator == null)
             {
+                if (Dialog_Analyzer.State == CurrentState.Unpatching) // We are currently unpatching methods, we should not be currently patching more methods
+                    return;
+
                 Patchinator = new Thread(() =>
                 {
                     try
                     {
-                        if (!Dialog_Analyzer.CurrentlyUnpatching)
-                        {
-                            AccessTools.Method(typeRef, "ProfilePatch")?.Invoke(null, null);
-                            IsPatched = true;
-                        }
+                        AccessTools.Method(typeRef, "ProfilePatch")?.Invoke(null, null);
+                        IsPatched = true;
                     }
                     catch (Exception e)
                     {

@@ -101,7 +101,7 @@ namespace DubsAnalyzer
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -209,7 +209,7 @@ namespace DubsAnalyzer
                             // Log.Error($"skipping our own patch on {fix.PatchMethod}");
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
 
                     }
@@ -231,7 +231,7 @@ namespace DubsAnalyzer
                             //   Log.Warning($"skipping our own patch on {fix.PatchMethod}");
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
 
                     }

@@ -47,7 +47,7 @@ namespace DubsAnalyzer
             {
                 RoofDirty[id] = true;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 RoofDirty.Add(id, true);
             }
@@ -59,7 +59,7 @@ namespace DubsAnalyzer
             {
                 RoofDirty[map.uniqueID] = false;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 RoofDirty.Add(map.uniqueID, false);
             }
@@ -94,7 +94,7 @@ namespace DubsAnalyzer
                         return true;
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     RoofDirty.Add(pawn.Map.uniqueID, true);
                     return true;

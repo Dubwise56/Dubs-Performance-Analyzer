@@ -15,6 +15,11 @@ using Verse;
 
 namespace DubsAnalyzer
 {
+    public enum CurrentState
+    {
+        Unitialised, Patching, Open, UnpatchingQueued, Unpatching
+    }
+
     [StaticConstructorOnStartup]
     public class Dialog_Analyzer : Window
     {
@@ -31,15 +36,16 @@ namespace DubsAnalyzer
         private static Vector2 scrolpos = Vector2.zero;
         private static Vector2 scrolpostabs = Vector2.zero;
         public static bool ShowSettings = true;
-        public static bool PatchedEverything = false; // shouldn't start as anything but false
-        public static bool CurrentlyUnpatching = false;
+        public static CurrentState State = CurrentState.Unitialised;
+
         static Thread CleanupPatches = null;
 
         public override void PreOpen()
         {
             base.PreOpen();
-            if (!PatchedEverything && !CurrentlyUnpatching)
+            if (State == CurrentState.Unitialised)
             {
+                State = CurrentState.Patching;
                 Log.Message("Applying profiling patches...");
                 try
                 {
@@ -86,8 +92,6 @@ namespace DubsAnalyzer
                         Log.Error(e.ToString());
                     }
 
-
-                    PatchedEverything = true;
                     Log.Message("Done");
                 }
                 catch (Exception e)
@@ -95,7 +99,7 @@ namespace DubsAnalyzer
                     Log.Error(e.ToString());
                 }
             }
-
+            State = CurrentState.Open;
             Analyzer.StartProfiling();
         }
 
@@ -324,7 +328,7 @@ namespace DubsAnalyzer
                 try
                 {
 
-                    if (PatchedEverything)
+                    if (State == CurrentState.Open)
                     {
                         if (Dialog_Graph.key != string.Empty)
                         {
@@ -353,7 +357,7 @@ namespace DubsAnalyzer
                     }
 
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     // Console.WriteLine(e);
                     //  throw;
