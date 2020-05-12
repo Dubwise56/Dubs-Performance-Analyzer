@@ -299,6 +299,9 @@ namespace DubsAnalyzer
             H_HarmonyPatches.PatchedPres = new List<Patch>();
             H_HarmonyPatches.PatchedPosts = new List<Patch>();
 
+            PatchUtils.PatchedTypes = new List<string>();
+            PatchUtils.PatchedAssemblies = new List<string>();
+
             Reset();
         }
 

@@ -64,10 +64,11 @@
     <Compile Include="PerformancePatches\H_WorkGiver_DoBill.cs" />
     <Compile Include="ProfileLog.cs" />
     <Compile Include="ProfileMode.cs" />
+    <Compile Include="ProfilerPatches\Custom\PatchUtils.cs" />
     <Compile Include="ProfileTab.cs" />
     <Compile Include="Profiler.cs" />
     <Compile Include="ProfilerHistory.cs" />
-    <Compile Include="ProfilerPatches\CustomProfilers.cs" />
+    <Compile Include="ProfilerPatches\Custom\CustomProfilers.cs" />
     <Compile Include="ProfilerPatches\H_ColonistBarOnGUI.cs" />
     <Compile Include="ProfilerPatches\H_DoButtons.cs" />
     <Compile Include="ProfilerPatches\H_DoSingleTick.cs" />
