@@ -41,6 +41,7 @@
     <Compile Include="Analyzer.cs" />
     <Compile Include="Dialog_Analyzer.cs" />
     <Compile Include="Dialog_Graph.cs" />
+    <Compile Include="Dialog_ModdingTools.cs" />
     <Compile Include="DubGUI.cs" />
     <Compile Include="H_KeyPresses.cs" />
     <Compile Include="H_RootUpdate.cs" />

@@ -35,7 +35,10 @@ namespace DubsAnalyzer
         private static float groaner = 9999999;
         private static Vector2 scrolpos = Vector2.zero;
         private static Vector2 scrolpostabs = Vector2.zero;
+
         public static bool ShowSettings = true;
+        public static bool ShowModderTools = false;
+
         public static CurrentState State = CurrentState.Unitialised;
 
         static Thread CleanupPatches = null;
@@ -119,7 +122,8 @@ namespace DubsAnalyzer
 
         public static List<ProfileTab> MainTabs = new List<ProfileTab>
         {
-            new ProfileTab("Home", () => ShowSettings = true, () => ShowSettings, UpdateMode.Dead, "Settings and utils"),
+            new ProfileTab("Home", () => { ShowSettings = true; ShowModderTools = false; }, () => ShowSettings, UpdateMode.Dead, "Settings and utils"),
+            new ProfileTab("Modder Tools", () => {ShowSettings = false; ShowModderTools = true; }, () => ShowModderTools, UpdateMode.Dead, "Modder Tools"),
             new ProfileTab("Tick", () => { }, () => false, UpdateMode.Tick, "Things that run on tick"),
             new ProfileTab("Update", () => { }, () => false, UpdateMode.Update, "Things that run per frame"),
             new ProfileTab("GUI", () => { }, () => false, UpdateMode.GUI, "Things that run on GUI")
@@ -245,9 +249,10 @@ namespace DubsAnalyzer
                     Widgets.Label(row, mode.Key.name);
                     if (Widgets.ButtonInvisible(row))
                     {
-                        if (ShowSettings)
+                        if (ShowSettings || ShowModderTools)
                         {
                             ShowSettings = false;
+                            ShowModderTools = false;
                             Analyzer.Settings.Write();
                         }
                         if (Analyzer.SelectedMode != null)
@@ -322,6 +327,12 @@ namespace DubsAnalyzer
             if (ShowSettings)
             {
                 Analyzer.Settings.DoSettings(inner);
+                ShowModderTools = false;
+            }
+            else if(ShowModderTools)
+            {
+                Dialog_ModdingTools.DoWindowContents(inner);
+                ShowSettings = false;
             }
             else
             {
