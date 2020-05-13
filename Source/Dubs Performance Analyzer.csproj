@@ -66,6 +66,7 @@
     <Compile Include="ProfileLog.cs" />
     <Compile Include="ProfileMode.cs" />
     <Compile Include="ProfilerPatches\Custom\PatchUtils.cs" />
+    <Compile Include="ProfilerPatches\Custom\UnPatchUtils.cs" />
     <Compile Include="ProfileTab.cs" />
     <Compile Include="Profiler.cs" />
     <Compile Include="ProfilerHistory.cs" />
@@ -109,6 +110,9 @@
     <Reference Include="Assembly-CSharp_publicized">
       <HintPath>..\..\..\RimWorldWin64_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll</HintPath>
       <Private>False</Private>
+    </Reference>
+    <Reference Include="ImGui.NET">
+      <HintPath>..\..\..\..\..\..\..\..\Users\Finley\Desktop\ImGui.NET-docking\bin\Debug\ImGui.NET\netstandard2.0\ImGui.NET.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine">

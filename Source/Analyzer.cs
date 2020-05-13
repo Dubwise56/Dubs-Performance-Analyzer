@@ -261,20 +261,23 @@ namespace DubsAnalyzer
             }
         }
 
-        public static void unPatchMethods()
+        public static void unPatchMethods(bool forceThrough = false)
         {
             Thread.CurrentThread.IsBackground = true;
             Dialog_Analyzer.State = CurrentState.UnpatchingQueued;
 
-            for(int i = 0; i < NumSecondsForPatchClear; i++)
+            if (!forceThrough)
             {
-                // This should result in no overlap
-                // If there are issues regarding spamming open and close, you can lower thread
-                // sleep by x% and multiply NumSecondsForPatchClear to balance
-                // I.e. Thread.Sleep(500), i < NumSecondsForPatchClear * 2;
-                Thread.Sleep(1000);
-                if (Dialog_Analyzer.State != CurrentState.UnpatchingQueued)
-                    return;
+                for (int i = 0; i < NumSecondsForPatchClear; i++)
+                {
+                    // This should result in no overlap
+                    // If there are issues regarding spamming open and close, you can lower thread
+                    // sleep by x% and multiply NumSecondsForPatchClear to balance
+                    // I.e. Thread.Sleep(500), i < NumSecondsForPatchClear * 2;
+                    Thread.Sleep(1000);
+                    if (Dialog_Analyzer.State != CurrentState.UnpatchingQueued)
+                        return;
+                }
             }
 
             Dialog_Analyzer.State = CurrentState.Unpatching;
