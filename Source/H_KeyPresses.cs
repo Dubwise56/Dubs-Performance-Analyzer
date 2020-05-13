@@ -16,14 +16,14 @@ namespace DubsAnalyzer
         {
             var biff = new HarmonyMethod(typeof(H_KeyPresses).GetMethod(nameof(pertwee)));
             var skiff = typeof(MapInterface).GetMethod(nameof(MapInterface.MapInterfaceOnGUI_BeforeMainTabs));
-            Analyzer.harmony.Patch(skiff, biff);
+            Analyzer.perfharmony.Patch(skiff, biff);
 
             biff = new HarmonyMethod(typeof(H_KeyPresses).GetMethod(nameof(OnGUI)));
             skiff = typeof(UIRoot_Entry).GetMethod(nameof(UIRoot_Entry.UIRootOnGUI));
-            Analyzer.harmony.Patch(skiff, biff);
+            Analyzer.perfharmony.Patch(skiff, biff);
 
             skiff = typeof(UIRoot_Play).GetMethod(nameof(UIRoot_Play.UIRootOnGUI));
-            Analyzer.harmony.Patch(skiff, biff);
+            Analyzer.perfharmony.Patch(skiff, biff);
         }
 
         public static void OnGUI()

@@ -25,12 +25,14 @@ namespace DubsAnalyzer
 
 
         public static string currentInput = null;
+        public static string currentUnPatch = null;
 
         public static void DoWindowContents(Rect rect)
         {
             Listing_Standard listing = new Listing_Standard();
             listing.Begin(rect.ContractedBy(10f));
-            listing.Label("CustoMethProfPatch".Translate());
+
+            Heading(listing, "Patch Methods");
 
             DisplayInputTypes(listing);
 
@@ -45,8 +47,21 @@ namespace DubsAnalyzer
 
             listing.GapLine(12f);
 
+            Heading(listing, "Unpatch Methods");
+
+            DisplayUnPatchTypes(listing);
+            DisplayUnPatchInputField(listing);
+            DisplayUnPatchButton(listing);
         }
 
+        public static void Heading(Listing_Standard listing, string label)
+        {
+            Text.Font = GameFont.Medium;
+            Text.Anchor = TextAnchor.MiddleCenter;
+            Widgets.Label(listing.GetRect(30), label);
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
+        }
 
         public static void DisplayInputTypes(Listing_Standard listing)
         {
@@ -114,18 +129,47 @@ namespace DubsAnalyzer
 
         public static void DisplayUnPatchTypes(Listing_Standard listing)
         {
-
+            // Method, MethodsOnMethod, All
+            Rect r = listing.GetRect(25f).LeftPartPixels(450);
+            if (Widgets.RadioButtonLabeled(r, "CustoUnPatchMeth".Translate(), unPatchType == UnPatchType.Method))
+            {
+                unPatchType = UnPatchType.Method;
+            }
+            r = listing.GetRect(25f).LeftPartPixels(450);
+            if (Widgets.RadioButtonLabeled(r, "CustoUnPatchAllOnMeth".Translate(), unPatchType == UnPatchType.MethodsOnMethod))
+            {
+                unPatchType = UnPatchType.Method;
+            }
+            r = listing.GetRect(25f).LeftPartPixels(450);
+            if (Widgets.RadioButtonLabeled(r, "CustoUnPatchAll".Translate(), unPatchType == UnPatchType.All))
+            {
+                unPatchType = UnPatchType.All;
+            }
         }
         public static void DisplayUnPatchButton(Listing_Standard listing)
         {
             Rect patchBox = listing.GetRect(25f);
             if (Widgets.ButtonText(patchBox.LeftPartPixels(100), "TryCustoUnPatch".Translate()))
             {
-                if (currentInput != null)
+                if (currentInput != null || unPatchType == UnPatchType.All)
                 {
                     ExecuteUnPatch();
                 }
             }
+        }
+        public static void DisplayUnPatchInputField(Listing_Standard listing)
+        {
+            string FieldDescription = null;
+
+            switch (unPatchType)
+            {
+                case UnPatchType.Method:            FieldDescription = "Type:Method";   break;
+                case UnPatchType.MethodsOnMethod:   FieldDescription = "Type:Method";   break;
+                case UnPatchType.All:               FieldDescription = "N/A";           break;
+            }
+
+            Rect inputBox = listing.GetRect(25f);
+            DubGUI.InputField(inputBox, FieldDescription, ref currentUnPatch, ShowName: true);
         }
         public static void ExecutePatch()
         {
@@ -150,7 +194,12 @@ namespace DubsAnalyzer
         }
         public static void ExecuteUnPatch()
         {
-
+            switch (unPatchType)
+            {
+                case UnPatchType.Method:            UnPatchUtils.UnpatchMethod(currentUnPatch);   break;
+                case UnPatchType.MethodsOnMethod:   UnPatchUtils.UnpatchMethod(currentUnPatch);   break;
+                case UnPatchType.All:               Analyzer.unPatchMethods(true);              break;
+            }
         }
     }
 

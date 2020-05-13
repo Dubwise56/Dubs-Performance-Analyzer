@@ -18,7 +18,7 @@ namespace DubsAnalyzer
         public static HarmonyMethod post = new HarmonyMethod(typeof(CustomProfilersTick), nameof(Postfix));
 
         public static void PatchMeth(string strde)
-        {
+        {            
             foreach (var str in PatchUtils.GetSplitString(strde))
             {
                 PatchUtils.PatchMethod(str, pre, post);

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using RimWorld;
@@ -23,10 +24,13 @@ namespace DubsAnalyzer
         public static void ProfilePatch()
         {
             Log.Message("Patching stats");
-            var jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValue));
+
+            var jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValue), new Type[] { typeof(Thing), typeof(StatDef), typeof(bool) } );
+            var jiff2 = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValue), new Type[] { typeof(Thing), typeof(StatDef), typeof(Pawn), typeof(bool) });
             var pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(Prefix));
             var post = new HarmonyMethod(typeof(H_GetStatValue), nameof(Postfix));
             Analyzer.harmony.Patch(jiff, pre, post);
+            Analyzer.harmony.Patch(jiff2, pre, post);
 
 
             jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueAbstract), new []{ typeof(BuildableDef), typeof(StatDef), typeof(ThingDef) });

@@ -26,6 +26,9 @@
   <inputTypeHarmony>Profile all the harmony patches effecting a type</inputTypeHarmony>
   <TryCustoPatch>Try patch</TryCustoPatch>
   <TryCustoUnPatch>Try unpatch</TryCustoUnPatch>
+  <CustoUnPatchMeth>Unpatch a Method</CustoUnPatchMeth>
+  <CustoUnPatchAllOnMeth>Unpatch the patches on a method</CustoUnPatchAllOnMeth>
+  <CustoUnPatchAll>Unpatch all profiler patches</CustoUnPatchAll>
   <AlertsTipKey>Alerts appear on the right of the screen, these run constantly even while paused and can heavily impact performance, click the check boxes to disable them</AlertsTipKey>
   <DrawDynThinTipKey>Dynamic drawing of things on the map like colonists or animated buildings, things usually only draw when they are in view</DrawDynThinTipKey>
   <TransPatchTipKey>Profiles any methods that have been modified using harmony transpiler, this is the total time for the whole method, not just the parts that were patched in\n\nCtrl + click to permanently disable</TransPatchTipKey>

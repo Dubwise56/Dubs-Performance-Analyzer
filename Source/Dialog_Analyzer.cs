@@ -114,8 +114,11 @@ namespace DubsAnalyzer
             Analyzer.Settings.Write();
 
             // we add new functionality
-            CleanupPatches = new Thread(() => Analyzer.unPatchMethods());
-            CleanupPatches.Start();
+            if (State != CurrentState.Unitialised)
+            {
+                CleanupPatches = new Thread(() => Analyzer.unPatchMethods());
+                CleanupPatches.Start();
+            }
         }
 
 
