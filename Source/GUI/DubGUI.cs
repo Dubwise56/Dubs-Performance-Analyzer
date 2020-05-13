@@ -153,5 +153,25 @@ namespace DubsAnalyzer
 
             return InFocus;
         }
+
+        public static void ResetFont()
+        {
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
+        }
+
+        public static void Heading(Listing_Standard listing, string label)
+        {
+            Heading(listing.GetRect(30), label);
+        }
+        public static void Heading(Rect rect, string label)
+        {
+            Text.Font = GameFont.Medium;
+            Text.Anchor = TextAnchor.MiddleCenter;
+            Widgets.Label(rect, label);
+            ResetFont();
+        }
     }
+
+
 }

@@ -16,7 +16,7 @@ namespace DubsAnalyzer
     {
         static Harmy()
         {
-            Analyzer.harmony = new Harmony("Dubwise.DubsProfiler"); 
+            Analyzer.harmony = new Harmony("Dubwise.DubsProfiler");
             Analyzer.perfharmony = new Harmony("Dubwise.DubsOptimizer"); // makes sense 
 
             H_KeyPresses.PatchMe();
@@ -75,8 +75,8 @@ namespace DubsAnalyzer
         public Analyzer(ModContentPack content) : base(content)
         {
             Settings = GetSettings<PerfAnalSettings>();
-           
-                if (Settings.UnlockFramerate && Application.platform != RuntimePlatform.OSXPlayer)
+
+            if (Settings.UnlockFramerate && Application.platform != RuntimePlatform.OSXPlayer)
             {
                 QualitySettings.vSyncCount = 0;
                 Application.targetFrameRate = 999;

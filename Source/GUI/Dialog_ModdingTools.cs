@@ -32,7 +32,7 @@ namespace DubsAnalyzer
             Listing_Standard listing = new Listing_Standard();
             listing.Begin(rect.ContractedBy(10f));
 
-            Heading(listing, "Patch Methods");
+            DubGUI.Heading(listing, "Patch Methods");
 
             DisplayInputTypes(listing);
 
@@ -47,21 +47,14 @@ namespace DubsAnalyzer
 
             listing.GapLine(12f);
 
-            Heading(listing, "Unpatch Methods");
+            DubGUI.Heading(listing, "Unpatch Methods");
 
             DisplayUnPatchTypes(listing);
             DisplayUnPatchInputField(listing);
             DisplayUnPatchButton(listing);
         }
 
-        public static void Heading(Listing_Standard listing, string label)
-        {
-            Text.Font = GameFont.Medium;
-            Text.Anchor = TextAnchor.MiddleCenter;
-            Widgets.Label(listing.GetRect(30), label);
-            Text.Font = GameFont.Small;
-            Text.Anchor = TextAnchor.UpperLeft;
-        }
+
 
         public static void DisplayInputTypes(Listing_Standard listing)
         {
