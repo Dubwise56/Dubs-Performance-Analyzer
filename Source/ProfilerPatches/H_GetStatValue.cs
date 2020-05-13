@@ -25,8 +25,8 @@ namespace DubsAnalyzer
         {
             Log.Message("Patching stats");
 
-            var jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValue), new Type[] { typeof(Thing), typeof(StatDef), typeof(bool) } );
-            var jiff2 = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValue), new Type[] { typeof(Thing), typeof(StatDef), typeof(Pawn), typeof(bool) });
+            var jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValue));
+            var jiff2 = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueForPawn));
             var pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(Prefix));
             var post = new HarmonyMethod(typeof(H_GetStatValue), nameof(Postfix));
             Analyzer.harmony.Patch(jiff, pre, post);
