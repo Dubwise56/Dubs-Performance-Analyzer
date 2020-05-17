@@ -42,8 +42,12 @@
     <Compile Include="GUI\Dialog_Analyzer.cs" />
     <Compile Include="GUI\Dialog_Graph.cs" />
     <Compile Include="GUI\Dialog_ModdingTools.cs" />
-    <Compile Include="GUI\DrawLog.cs" />
+    <Compile Include="GUI\Dialog_LogAdditional.cs" />
+    <Compile Include="GUI\DrawStackedGraph.cs" />
     <Compile Include="GUI\DubGUI.cs" />
+    <Compile Include="ProfilerPatches\Custom\InternalMethods.cs" />
+    <Compile Include="ProfilerPatches\Custom\InternalMethodUtility.cs" />
+    <Compile Include="Statistics\GetStatLogic.cs" />
     <Compile Include="H_KeyPresses.cs" />
     <Compile Include="H_RootUpdate.cs" />
     <Compile Include="MainButtonWorker_ToggleAnalyzer.cs" />
@@ -64,7 +68,7 @@
     <Compile Include="PerformancePatches\H_Trash.cs" />
     <Compile Include="PerformancePatches\H_WardenRequest.cs" />
     <Compile Include="PerformancePatches\H_WorkGiver_DoBill.cs" />
-    <Compile Include="ProfileLog.cs" />
+    <Compile Include="Statistics\ProfileLog.cs" />
     <Compile Include="ProfileMode.cs" />
     <Compile Include="ProfilerPatches\Custom\PatchUtils.cs" />
     <Compile Include="ProfilerPatches\Custom\UnPatchUtils.cs" />

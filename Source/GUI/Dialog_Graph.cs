@@ -1,4 +1,5 @@
 ﻿using ColourPicker;
+using HarmonyLib;
 using UnityEngine;
 using Verse;
 
@@ -23,14 +24,7 @@ namespace DubsAnalyzer
 
         private static double max;
         private static string MaxStr;
-
-      //  private static long maxBytes;
-      //  private static long minBytes;
-
-      //  private static long LASTtotalBytesStr;
         private static string totalBytesStr;
-
-      //  private static bool ShowMem = false;
 
         public static void RunKey(string s)
         {
@@ -41,8 +35,6 @@ namespace DubsAnalyzer
         public static void reset()
         {
             WindowMax = 0;
-       //     maxBytes = 0;
-       //     minBytes = 0;
             max = 0;
             totalBytesStr = string.Empty;
             key = string.Empty;
@@ -66,41 +58,28 @@ namespace DubsAnalyzer
             var settings = position.TopPartPixels(30f);
             position = position.BottomPartPixels(position.height - 30f);
 
-
-
             Widgets.DrawBoxSolid(position, Analyzer.Settings.GraphCol);
-
 
             GUI.color = Color.grey;
             Widgets.DrawBox(position, 2);
             GUI.color = Color.white;
 
-            if (!Analyzer.Profiles.ContainsKey(key))
-            {
-                return;
-            }
+            if (!Analyzer.Profiles.ContainsKey(key)) return;
 
             var prof = Analyzer.Profiles[key];
 
-            if (prof.History.times.Length <= 0)
-            {
-                return;
-            }
-
+            if (prof.History.times.Length <= 0) return;
 
             var mescou = prof.History.times.Length;
 
             if (mescou > entryCount)
-            {
                 mescou = entryCount;
-            }
 
             var gap = position.width / mescou;
 
             var car = settings.RightPartPixels(200f);
             car.x -= 15;
-            entryCount = (int)Widgets.HorizontalSlider(car, entryCount, 10, 2000, true,
-                string.Intern($"{entryCount} Entries"));
+            entryCount = (int)Widgets.HorizontalSlider(car, entryCount, 10, 2000, true, string.Intern($"{entryCount} Entries"));
 
             car = new Rect(car.xMax + 5, car.y + 2, 10, 10);
             Widgets.DrawBoxSolid(car, Analyzer.Settings.LineCol);
@@ -108,7 +87,7 @@ namespace DubsAnalyzer
             {
                 if (Find.WindowStack.WindowOfType<colourPicker>() != null)
                 {
-                Find.WindowStack.RemoveWindowsOfType(typeof(colourPicker));
+                    Find.WindowStack.RemoveWindowsOfType(typeof(colourPicker));
                 }
                 else
                 {
@@ -213,7 +192,7 @@ namespace DubsAnalyzer
             for (var i = 0; i < mescou; i++)
             {
             //    var bytes = prof.History.mem[i];
-                var TM = prof.History.times[i];
+                float TM = (float)prof.History.times[i];
 
                 var y = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)TM);
               //  var MEMy = GenMath.LerpDoubleClamped(minBytes, maxBytes, position.height, position.y, bytes);
@@ -245,7 +224,6 @@ namespace DubsAnalyzer
                             hoverVal = i;
                             hoverValStr = $"{TM} {prof.History.hits[i]} calls";
                         }
-
                         SimpleCurveDrawer.DrawPoint(screenPoint);
                     }
                 }

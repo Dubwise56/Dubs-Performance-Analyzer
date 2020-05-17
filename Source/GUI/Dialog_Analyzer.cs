@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading;
 using HarmonyLib;
@@ -29,20 +30,27 @@ namespace DubsAnalyzer
         public static readonly Texture2D clear = SolidColorMaterials.NewSolidColorTexture(Color.clear);
         public static readonly Texture2D red = SolidColorMaterials.NewSolidColorTexture(new Color32(160, 80, 90, 255));
         public static Texture2D sav = ContentFinder<Texture2D>.Get("DPA/UI/sav", false);
-        public static readonly Texture2D
-            blue = SolidColorMaterials.NewSolidColorTexture(new Color32(80, 123, 160, 255));
+        public static readonly Texture2D blue = SolidColorMaterials.NewSolidColorTexture(new Color32(80, 123, 160, 255));
+
+        const float boxHeight = 40f;
         public static float patchListWidth = 220f;
         private static float groaner = 9999999;
+        public static float yOffset = 0f;
+        public static Listing_Standard listing = new Listing_Standard();
+
+
         private static Vector2 scrolpos = Vector2.zero;
         private static Vector2 scrolpostabs = Vector2.zero;
-        const float boxHeight = 60f;
 
+        public static string stlank = string.Empty;
+        public static string stVector = string.Empty;
+
+        public static long totalBytesOfMemoryUsed;
 
         public static bool ShowSettings = true;
         public static bool ShowModderTools = false;
-
         public static CurrentState State = CurrentState.Unitialised;
-
+        public static string CurrentKey = string.Empty;
         static Thread CleanupPatches = null;
 
         public override void PreOpen()
@@ -134,21 +142,12 @@ namespace DubsAnalyzer
             new ProfileTab("GUI", () => { }, () => false, UpdateMode.GUI, "Things that run on GUI")
         };
 
-        public static Listing_Standard listing = new Listing_Standard();
-        public static float yOffset = 0f;
-
-
         //public static FloatMenu FM = new FloatMenu(new List<FloatMenuOption>
         //{
         //    new FloatMenuOption("First", () => Analyzer.SortBy = "First"),
         //    new FloatMenuOption("Usage", () => Analyzer.SortBy = "Usage"),
         //    new FloatMenuOption("A-Z", () => Analyzer.SortBy = "A-Z")
         //});
-
-        public static string stlank = string.Empty;
-        public static string stVector = string.Empty;
-        public static long totalBytesOfMemoryUsed;
-
 
         public Dialog_Analyzer()
         {
@@ -167,7 +166,7 @@ namespace DubsAnalyzer
             resizeable = true;
         }
 
-        public override Vector2 InitialSize => new Vector2(750, 650);
+        public override Vector2 InitialSize => new Vector2(850, 650);
 
         public override void SetInitialSizeAndPosition()
         {
@@ -210,8 +209,6 @@ namespace DubsAnalyzer
             baseRect.width -= 16f;
             baseRect.height = moaner;
 
-
-
             {
                 Text.Anchor = TextAnchor.MiddleLeft;
                 Text.Font = GameFont.Tiny;
@@ -240,11 +237,15 @@ namespace DubsAnalyzer
             {
                 Analyzer.Settings.DoSettings(inner);
                 ShowModderTools = false;
+                if (windowRect.width > InitialSize.x)
+                    windowRect.width -= 450;
             }
             else if (ShowModderTools)
             {
                 Dialog_ModdingTools.DoWindowContents(inner);
                 ShowSettings = false;
+                if (windowRect.width > InitialSize.x)
+                    windowRect.width -= 450;
             }
             else
             {
@@ -255,13 +256,17 @@ namespace DubsAnalyzer
                     {
                         if (Dialog_Graph.key != string.Empty)
                         {
-                            Rect blurg = inner.TopPart(0.75f).Rounded();
+                            if (windowRect.width <= InitialSize.x)
+                                windowRect.width += 450;
+
+                            Rect blurg = inner;
+                            blurg.width -= 450;
                             Widgets.DrawMenuSection(blurg);
                             blurg = blurg.ContractedBy(6f);
                             DoThingTab(blurg);
-                            blurg = inner.BottomPart(0.25f).Rounded();
-                            //blurg = blurg.BottomPartPixels(inner.height - 10f);
-                            Dialog_Graph.DoGraph(blurg);
+
+                            Rect r = new Rect(canvas.x + (windowRect.width - 478), canvas.y, 432, canvas.height);
+                            Dialog_LogAdditional.DoWindowContents(r);
                         }
                         else
                         {
@@ -276,7 +281,6 @@ namespace DubsAnalyzer
                         Text.Anchor = TextAnchor.MiddleCenter;
                         Widgets.Label(inner, $"Loading{GenText.MarchingEllipsis(0f)}");
                         DubGUI.ResetFont();
-
                     }
 
                 }
@@ -396,9 +400,12 @@ namespace DubsAnalyzer
                 Widgets.DrawHighlightIfMouseover(visible);
 
                 if (Widgets.ButtonInvisible(visible))
+                {
                     Dialog_Graph.RunKey(log.Key);
+                    CurrentKey = log.Key;
+                }
 
-                if (Dialog_Graph.key == log.Key)
+                if (CurrentKey == log.Key)
                     Widgets.DrawHighlightSelected(visible);
 
                 if (Mouse.IsOver(visible))

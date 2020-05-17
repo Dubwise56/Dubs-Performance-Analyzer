@@ -2,8 +2,6 @@
 
 namespace DubsAnalyzer
 {
-
-
     public enum UpdateMode
     {
         Dead,

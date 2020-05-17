@@ -52,7 +52,6 @@ namespace DubsAnalyzer
             this.Basics = Basics;
         }
 
-
         public void ProfilePatch()
         {
             if (Patchinator == null)

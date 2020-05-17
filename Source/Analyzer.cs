@@ -1,23 +1,21 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using HarmonyLib;
-using RimWorld;
 using UnityEngine;
 using Verse;
 
 namespace DubsAnalyzer
 {
-
     [StaticConstructorOnStartup]
     public static class Harmy
     {
         static Harmy()
         {
             Analyzer.harmony = new Harmony("Dubwise.DubsProfiler");
-            Analyzer.perfharmony = new Harmony("Dubwise.DubsOptimizer"); // makes sense 
+            Analyzer.perfharmony = new Harmony("Dubwise.DubsOptimizer"); // makes sense
 
             H_KeyPresses.PatchMe();
 
@@ -29,7 +27,10 @@ namespace DubsAnalyzer
                 AccessTools.Method(mode, "PerformancePatch")?.Invoke(null, null);
             }
 
+            //var meth = AccessTools.Method("DubsBadHygiene.Building_AssignableFixture:SetGender");
+            //var pa = new HarmonyMethod(typeof(InternalMethods), "Transpiler");
 
+            //Analyzer.harmony.Patch(meth, null, null, pa);
 
             //foreach (var workGiverDef in DefDatabase<WorkGiverDef>.AllDefsListForReading)
             //{
@@ -46,32 +47,31 @@ namespace DubsAnalyzer
     public class Analyzer : Mod
     {
         public static Harmony harmony;
-        public static Harmony perfharmony;
-        public static readonly int MaxHistoryEntries = 3000;
-        public static readonly int AveragingTime = 3000;
-        public static readonly int UpdateInterval = 60;
+        public static Harmony perfharmony; // For all our performance patches, we don't want to accidentally unpatch them
+
         public static ProfileMode SelectedMode;
         public static Dictionary<string, Profiler> Profiles = new Dictionary<string, Profiler>();
         public static List<ProfileLog> Logs = new List<ProfileLog>();
-        public static double AverageSum;
-        public static PerfAnalSettings Settings;
-        public static bool running;
-        private static bool RequestStop;
+
+        public static Thread LogicThread = null;
+        public static object sync = new object();
 
         private const int NumSecondsForPatchClear = 30;
 
-        public override void DoSettingsWindowContents(Rect inRect)
-        {
-            Settings.DoSettings(inRect);
-        }
-        public override string SettingsCategory()
-        {
-            return "Dubs Performance Analyzer";
-        }
-        //private static int biff;
+        public static readonly int MaxHistoryEntries = 3000;
+        public static readonly int AveragingTime = 3000;
+        public static readonly int UpdateInterval = 60;
 
+        public static double AverageSum;
+        public static PerfAnalSettings Settings;
+        public static float delta = 0;
         public static string SortBy = "Usage";
-        public static Thread t1;
+
+        public static bool running;
+        private static bool RequestStop;
+        public static bool LogOpen = false;
+        public static bool LogStack = false;
+
         public Analyzer(ModContentPack content) : base(content)
         {
             Settings = GetSettings<PerfAnalSettings>();
@@ -83,7 +83,16 @@ namespace DubsAnalyzer
             }
         }
 
-        public static object sync = new object();
+        public override void DoSettingsWindowContents(Rect inRect)
+        {
+            Settings.DoSettings(inRect);
+        }
+
+        public override string SettingsCategory()
+        {
+            return "Dubs Performance Analyzer";
+        }
+
         private static void ThreadStart(Dictionary<string, Profiler> Profiles)
         {
             Thread.CurrentThread.IsBackground = true;
@@ -114,14 +123,11 @@ namespace DubsAnalyzer
             }
         }
 
-
         public static void Reset()
         {
             Dialog_Graph.reset();
             foreach (var profiler in Profiles)
-            {
                 profiler.Value.Stop(false);
-            }
 
             Profiles.Clear();
             Logs.Clear();
@@ -137,26 +143,14 @@ namespace DubsAnalyzer
             RequestStop = true;
         }
 
-        public static bool LogOpen = false;
-        public static float delta = 0;
         public static void UpdateEnd()
         {
-            if (!running)
-            {
-                return;
-            }
-
-            if (SelectedMode == null)
-            {
-                return;
-            }
+            if (!running || SelectedMode == null) return;
 
             LogOpen = Find.WindowStack.IsOpen(typeof(EditWindow_Log));
 
             foreach (Profiler profiler in Profiles.Values)
-            {
                 profiler.RecordMeasurement();
-            }
 
             var ShouldUpdate = false;
             if (SelectedMode.mode == UpdateMode.Update || SelectedMode.mode == UpdateMode.GUI)
@@ -175,13 +169,9 @@ namespace DubsAnalyzer
 
             if (ShouldUpdate)
             {
-                //foreach (Profiler profiler in Profiles.Values)
-                //{
-                //    profiler.MemRiseUpdate();
-                //}
                 ShouldUpdate = false;
-                t1 = new Thread(() => ThreadStart(Profiles));
-                t1.Start();
+                LogicThread = new Thread(() => ThreadStart(Profiles));
+                LogicThread.Start();
             }
 
             if (RequestStop)
@@ -194,27 +184,18 @@ namespace DubsAnalyzer
         public static void HotStart(string key, UpdateMode mode)
         {
             if (SelectedMode?.mode == mode)
-            {
                 Start(key);
-            }
         }
+
         public static void HotStop(string key, UpdateMode mode)
         {
             if (SelectedMode?.mode == mode)
-            {
                 Stop(key);
-            }
         }
-
-        public static bool LogStack = false;
-
 
         public static void Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodInfo meth = null)
         {
-            if (!running)
-            {
-                return;
-            }
+            if (!running) return;
 
             try
             {
@@ -225,13 +206,9 @@ namespace DubsAnalyzer
                 if (!Profiles.ContainsKey(key))
                 {
                     if (GetLabel != null)
-                    {
                         Profiles[key] = new Profiler(key, GetLabel(), type, def, thing, meth);
-                    }
                     else
-                    {
                         Profiles[key] = new Profiler(key, key, type, def, thing, meth);
-                    }
                 }
                 Profiles[key].Start();
             }
@@ -239,26 +216,16 @@ namespace DubsAnalyzer
 
         public static void Stop(string key)
         {
-            if (!running)
-            {
-                return;
-            }
+            if (!running) return;
 
             try
             {
                 if (LogOpen && Dialog_Graph.key == key)
-                {
                     Profiles[key].Stop(true);
-                }
                 else
-                {
                     Profiles[key].Stop(false);
-                }
             }
-            catch (Exception)
-            {
-                // ignored
-            }
+            catch (Exception) { }
         }
 
         public static void unPatchMethods(bool forceThrough = false)

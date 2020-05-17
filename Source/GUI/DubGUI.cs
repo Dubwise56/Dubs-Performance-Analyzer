@@ -107,8 +107,7 @@ namespace DubsAnalyzer
             return source?.IndexOf(toCheck, comp) >= 0;
         }
 
-        public static bool InputField(Rect rect, string name, ref string buff, Texture2D icon = null, int max = 999,
-            bool readOnly = false, bool forceFocus = false, bool ShowName = false)
+        public static bool InputField(Rect rect, string name, ref string buff, Texture2D icon = null, int max = 999, bool readOnly = false, bool forceFocus = false, bool ShowName = false)
         {
             if (buff == null)
             {
