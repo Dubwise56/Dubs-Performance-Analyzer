@@ -1,18 +1,20 @@
-﻿
-
+﻿using HarmonyLib;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Text;
 using System.Threading;
-using HarmonyLib;
-using RimWorld;
 using UnityEngine;
 using Verse;
 
+/*  Naming Wise
+ *  Tabs on the side, Ex 'HarmonyPatches', SideTab
+ *  Categories for them, Ex 'Tick', SideTabCategories
+ *  A Log inside a SideTab, is a 'Log', each Log belongs to a SideTab
+ */
 
 namespace DubsAnalyzer
 {
@@ -21,37 +23,37 @@ namespace DubsAnalyzer
         Unitialised, Patching, Open, UnpatchingQueued, Unpatching
     }
 
+    public enum CurrentSideTab
+    {
+        Home, ModderTools, Categories
+    }
+
     [StaticConstructorOnStartup]
     public class Dialog_Analyzer : Window
     {
-        public static readonly Texture2D black = SolidColorMaterials.NewSolidColorTexture(Color.black);
-        public static readonly Texture2D grey = SolidColorMaterials.NewSolidColorTexture(Color.grey);
-        public static readonly Texture2D darkgrey = SolidColorMaterials.NewSolidColorTexture(Color.grey * 0.5f);
-        public static readonly Texture2D clear = SolidColorMaterials.NewSolidColorTexture(Color.clear);
-        public static readonly Texture2D red = SolidColorMaterials.NewSolidColorTexture(new Color32(160, 80, 90, 255));
-        public static Texture2D sav = ContentFinder<Texture2D>.Get("DPA/UI/sav", false);
-        public static readonly Texture2D blue = SolidColorMaterials.NewSolidColorTexture(new Color32(80, 123, 160, 255));
-
-        const float boxHeight = 40f;
+        public override Vector2 InitialSize => new Vector2(850, 650);
+        private const float boxHeight = 40f;
         public static float patchListWidth = 220f;
-        private static float groaner = 9999999;
         public static float yOffset = 0f;
+        private float ListHeight = 0;
         public static Listing_Standard listing = new Listing_Standard();
 
+        private static Vector2 ScrollPosition = Vector2.zero;
+        private static Vector2 ScrollPosition_TabList = Vector2.zero;
 
-        private static Vector2 scrolpos = Vector2.zero;
-        private static Vector2 scrolpostabs = Vector2.zero;
+        public static string GarbageCollectionInfo = string.Empty;
 
-        public static string stlank = string.Empty;
-        public static string stVector = string.Empty;
+        public static string TimesFilter = string.Empty;
+        public static StringBuilder csv = new StringBuilder();
+        public Rect GizmoListRect;
+
 
         public static long totalBytesOfMemoryUsed;
 
-        public static bool ShowSettings = true;
-        public static bool ShowModderTools = false;
+        public static CurrentSideTab CurrentSideTab = CurrentSideTab.Home;
         public static CurrentState State = CurrentState.Unitialised;
         public static string CurrentKey = string.Empty;
-        static Thread CleanupPatches = null;
+        private static Thread CleanupPatches = null;
 
         public override void PreOpen()
         {
@@ -82,19 +84,16 @@ namespace DubsAnalyzer
                             att.Checkbox = AccessTools.Method(mode, "Checkbox");
                             att.typeRef = mode;
 
-                            foreach (var profileTab in MainTabs)
+                            foreach (var profileTab in SideTabCategories)
                             {
                                 if (att.mode == profileTab.UpdateMode)
-                                {
                                     profileTab.Modes.SetOrAdd(att, mode);
-                                }
                             }
                         }
                         catch (Exception e)
                         {
                             Log.Error(e.ToString());
                         }
-
                     }
                     try
                     {
@@ -131,23 +130,15 @@ namespace DubsAnalyzer
             }
         }
 
-
-
-        public static List<ProfileTab> MainTabs = new List<ProfileTab>
+        public static List<ProfileTab> SideTabCategories = new List<ProfileTab>
         {
-            new ProfileTab("Home", () => { ShowSettings = true; ShowModderTools = false; }, () => ShowSettings, UpdateMode.Dead, "Settings and utils"),
-            new ProfileTab("Modder Tools", () => {ShowSettings = false; ShowModderTools = true; }, () => ShowModderTools, UpdateMode.Dead, "Modder Tools"),
-            new ProfileTab("Tick", () => { }, () => false, UpdateMode.Tick, "Things that run on tick"),
-            new ProfileTab("Update", () => { }, () => false, UpdateMode.Update, "Things that run per frame"),
-            new ProfileTab("GUI", () => { }, () => false, UpdateMode.GUI, "Things that run on GUI")
+            new ProfileTab("Home",          () => { CurrentSideTab = CurrentSideTab.Home; },         () => CurrentSideTab == CurrentSideTab.Home,            UpdateMode.Dead,    "Settings and utils"),
+            new ProfileTab("Modder Tools",  () => { CurrentSideTab = CurrentSideTab.ModderTools; },  () => CurrentSideTab == CurrentSideTab.ModderTools,     UpdateMode.Dead,    "Utilities for modders and advanced users to profile mods!"),
+            new ProfileTab("Tick",          () => { CurrentSideTab = CurrentSideTab.Categories; },   () => false,                                            UpdateMode.Tick,    "Things that run on tick"),
+            new ProfileTab("Update",        () => { CurrentSideTab = CurrentSideTab.Categories; },   () => false,                                            UpdateMode.Update,  "Things that run per frame"),
+            new ProfileTab("GUI",           () => { CurrentSideTab = CurrentSideTab.Categories; },   () => false,                                            UpdateMode.GUI,      "Things that run on GUI")
+            // we don't actually ever want the 'category' tabs (currently) to be shown as selected, because there is (currently) nothing to be shown if it were to be selected
         };
-
-        //public static FloatMenu FM = new FloatMenu(new List<FloatMenuOption>
-        //{
-        //    new FloatMenuOption("First", () => Analyzer.SortBy = "First"),
-        //    new FloatMenuOption("Usage", () => Analyzer.SortBy = "Usage"),
-        //    new FloatMenuOption("A-Z", () => Analyzer.SortBy = "A-Z")
-        //});
 
         public Dialog_Analyzer()
         {
@@ -166,7 +157,6 @@ namespace DubsAnalyzer
             resizeable = true;
         }
 
-        public override Vector2 InitialSize => new Vector2(850, 650);
 
         public override void SetInitialSizeAndPosition()
         {
@@ -191,7 +181,6 @@ namespace DubsAnalyzer
             }
         }
 
-        private float moaner = 0;
 
         public override void DoWindowContents(Rect canvas)
         {
@@ -207,43 +196,41 @@ namespace DubsAnalyzer
 
             var baseRect = ListerBox.AtZero();
             baseRect.width -= 16f;
-            baseRect.height = moaner;
+            baseRect.height = ListHeight;
 
-            {
+            { // Scope this for clarity
                 Text.Anchor = TextAnchor.MiddleLeft;
                 Text.Font = GameFont.Tiny;
 
-                Widgets.BeginScrollView(ListerBox, ref scrolpostabs, baseRect);
+                yOffset = 0f;
+
+                Widgets.BeginScrollView(ListerBox, ref ScrollPosition_TabList, baseRect);
                 GUI.BeginGroup(baseRect);
                 listing.Begin(baseRect);
 
-                yOffset = 0f;
-                foreach (var maintab in MainTabs)
-                {
-                    DrawTab(maintab);
-                }
+                foreach (var maintab in SideTabCategories)
+                    DrawSideTabList(maintab);
 
                 listing.End();
-                moaner = yOffset;
                 GUI.EndGroup();
-                DubGUI.ResetFont();
                 Widgets.EndScrollView();
+
+
+                ListHeight = yOffset;
+                DubGUI.ResetFont();
             }
 
             var inner = canvas.RightPartPixels(canvas.width - patchListWidth).Rounded();
 
-
-            if (ShowSettings)
+            if (CurrentSideTab == CurrentSideTab.Home)
             {
                 Analyzer.Settings.DoSettings(inner);
-                ShowModderTools = false;
                 if (windowRect.width > InitialSize.x)
                     windowRect.width -= 450;
             }
-            else if (ShowModderTools)
+            else if (CurrentSideTab == CurrentSideTab.ModderTools)
             {
                 Dialog_ModdingTools.DoWindowContents(inner);
-                ShowSettings = false;
                 if (windowRect.width > InitialSize.x)
                     windowRect.width -= 450;
             }
@@ -251,7 +238,6 @@ namespace DubsAnalyzer
             {
                 try
                 {
-
                     if (State == CurrentState.Open)
                     {
                         if (Dialog_Graph.key != string.Empty)
@@ -282,20 +268,13 @@ namespace DubsAnalyzer
                         Widgets.Label(inner, $"Loading{GenText.MarchingEllipsis(0f)}");
                         DubGUI.ResetFont();
                     }
-
                 }
-                catch (Exception)
-                {
-                }
+                catch (Exception) { }
             }
         }
 
-        public static string TimesFilter = string.Empty;
-        public static StringBuilder csv = new StringBuilder();
-        public Rect GizmoListRect;
         private void DoThingTab(Rect rect)
         {
-
             if (!Analyzer.SelectedMode.IsPatched)
             {
                 DubGUI.Heading(rect, $"Loading{GenText.MarchingEllipsis(0f)}");
@@ -313,27 +292,14 @@ namespace DubsAnalyzer
             innerRect.height = yOffset;
 
             GizmoListRect = rect.AtZero();
-            GizmoListRect.y += scrolpos.y;
-            Widgets.BeginScrollView(rect, ref scrolpos, innerRect);
+            GizmoListRect.y += ScrollPosition.y;
+            Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect);
 
             GUI.BeginGroup(innerRect);
 
             listing.Begin(innerRect);
 
             float currentListHeight = 0;
-
-            //if (Analyzer.SortBy == "First")
-            //{
-            //    logs = Analyzer.Logs.ToList();
-            //}
-            //else if (Analyzer.SortBy == "A-Z")
-            //{
-            //    logs = Analyzer.Logs.ToList().OrderBy(x => x.Key).ToList();
-            //}
-            //else if (Analyzer.SortBy == "Usage")
-            //{
-            //    logs = Analyzer.Logs.ToList().OrderByDescending(x => x.Average).ToList();
-            //}
 
             Text.Anchor = TextAnchor.MiddleLeft;
             Text.Font = GameFont.Tiny;
@@ -355,7 +321,6 @@ namespace DubsAnalyzer
             }
 
             listing.End();
-            groaner = currentListHeight;
             GUI.EndGroup();
 
             DubGUI.ResetFont();
@@ -388,9 +353,9 @@ namespace DubsAnalyzer
 
                 if (Analyzer.SelectedMode.Checkbox != null)
                 {
-                    var r2 = new Rect(visible.x, visible.y, 25f, visible.height);
+                    var checkboxRect = new Rect(visible.x, visible.y, 25f, visible.height);
                     visible.x += 25f;
-                    if (DubGUI.Checkbox(r2, "", ref on))
+                    if (DubGUI.Checkbox(checkboxRect, "", ref on))
                     {
                         Analyzer.SelectedMode.Checkbox?.Invoke(null, new object[] { profile, log });
                         Analyzer.Settings.Write();
@@ -411,13 +376,13 @@ namespace DubsAnalyzer
                 if (Mouse.IsOver(visible))
                     Analyzer.SelectedMode.MouseOver?.Invoke(null, new object[] { visible, profile, log });
 
-                var col = grey;
+                var color = DubResources.grey;
                 if (log.Percent > 0.25f)
-                    col = blue;
+                    color = DubResources.blue;
                 else if (log.Percent > 0.75f)
-                    col = red;
+                    color = DubResources.red;
 
-                Widgets.FillableBar(visible.BottomPartPixels(8f), log.Percent, col, clear, false);
+                Widgets.FillableBar(visible.BottomPartPixels(8f), log.Percent, color, DubResources.clear, false);
 
                 visible = visible.LeftPartPixels(60);
 
@@ -465,8 +430,8 @@ namespace DubsAnalyzer
             row.width = 130f;
             Text.Anchor = TextAnchor.MiddleCenter;
             Text.Font = GameFont.Tiny;
-            Widgets.FillableBar(row, Mathf.Clamp01(Mathf.InverseLerp(H_RootUpdate.LastMinGC, H_RootUpdate.LastMaxGC, totalBytesOfMemoryUsed)), darkgrey);
-            Widgets.Label(row, stlank);
+            Widgets.FillableBar(row, Mathf.Clamp01(Mathf.InverseLerp(H_RootUpdate.LastMinGC, H_RootUpdate.LastMaxGC, totalBytesOfMemoryUsed)), DubResources.darkgrey);
+            Widgets.Label(row, GarbageCollectionInfo);
             Text.Anchor = TextAnchor.UpperLeft;
             TooltipHandler.TipRegion(row, "garbageTip".Translate());
 
@@ -481,7 +446,7 @@ namespace DubsAnalyzer
             row.x = row.xMax + 5;
             row.width = 30f;
             Text.Font = GameFont.Medium;
-            save = Widgets.ButtonImageFitted(row, sav);
+            save = Widgets.ButtonImageFitted(row, DubResources.sav);
             TooltipHandler.TipRegion(row, "savecsvTip".Translate(GenFilePaths.FolderUnderSaveData("Profiling")));
 
             row.x = row.xMax;
@@ -489,9 +454,9 @@ namespace DubsAnalyzer
 
             rect.y += 25f;
             rect.height -= 25f;
-
         }
-        private void DrawTab(ProfileTab tab)
+
+        private void DrawSideTabList(ProfileTab tab)
         {
             DubGUI.ResetFont();
             yOffset += 40f;
@@ -510,11 +475,11 @@ namespace DubsAnalyzer
 
             foreach (var mode in tab.Modes)
             {
-                DrawMode(ref row, mode);
+                DrawSideTab(ref row, mode);
             }
         }
 
-        private void DrawMode(ref Rect row, KeyValuePair<ProfileMode, Type> mode)
+        private void DrawSideTab(ref Rect row, KeyValuePair<ProfileMode, Type> mode)
         {
             if (!mode.Key.Basics && !Analyzer.Settings.AdvancedMode) return;
 
@@ -530,16 +495,13 @@ namespace DubsAnalyzer
 
             if (Widgets.ButtonInvisible(row))
             {
-                if (ShowSettings || ShowModderTools)
+                if (!(CurrentSideTab == CurrentSideTab.Categories))
                 {
-                    ShowSettings = false;
-                    ShowModderTools = false;
+                    CurrentSideTab = CurrentSideTab.Categories;
                     Analyzer.Settings.Write();
                 }
                 if (Analyzer.SelectedMode != null)
-                {
                     AccessTools.Field(Analyzer.SelectedMode.typeRef, "Active").SetValue(null, false);
-                }
 
                 AccessTools.Field(mode.Value, "Active").SetValue(null, true);
                 Analyzer.SelectedMode = mode.Key;

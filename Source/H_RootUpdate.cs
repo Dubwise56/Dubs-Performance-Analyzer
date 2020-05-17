@@ -35,7 +35,7 @@ namespace DubsAnalyzer
                 {
                     LastMinGC = Dialog_Analyzer.totalBytesOfMemoryUsed;
                     LastMaxGC = jam;
-                    Dialog_Analyzer.stlank = $"{Dialog_Analyzer.totalBytesOfMemoryUsed.ToMb()}MB";
+                    Dialog_Analyzer.GarbageCollectionInfo = $"{Dialog_Analyzer.totalBytesOfMemoryUsed.ToMb()}MB";
                     //if (Analyzer.running && !Analyzer.Settings.MuteGC)
                     //    Messages.Message($"GC at {jam.ToMb()} MB", MessageTypeDefOf.TaskCompletion, false);
                 }
@@ -52,7 +52,7 @@ namespace DubsAnalyzer
                         vtec = 0;
                     }
 
-                    Dialog_Analyzer.stlank = $"{memrise.ToMb():0.00}MB +{vtec.ToMb():0.00}MB/s";
+                    Dialog_Analyzer.GarbageCollectionInfo = $"{memrise.ToMb():0.00}MB +{vtec.ToMb():0.00}MB/s";
                 }
 
 

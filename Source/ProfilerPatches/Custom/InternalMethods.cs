@@ -3,6 +3,7 @@ using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
@@ -42,10 +43,12 @@ namespace DubsAnalyzer
         {
             MethodInfo currentMethod = (MethodInfo)instruction.operand;
 
-            Type[] parameters = new Type[currentMethod.GetParameters().Count()];
-            int index = 0;
-            foreach (var a in currentMethod.GetParameters())
-                parameters[index++] = a.ParameterType;
+            Type[] parameters = null;
+
+            if (!currentMethod.IsStatic)
+                parameters = currentMethod.GetParameters().Select(param => param.ParameterType).ToArray();
+            else
+                parameters = currentMethod.GetParameters().Select(param => param.ParameterType).ToArray();
 
             var meth = new DynamicMethod(
                 currentMethod.Name + "_runtimeReplacement", // name
@@ -66,20 +69,20 @@ namespace DubsAnalyzer
             // dynamically add our parameters, as many as they are, into our method
 
             for (int i = 0; i < parameters.Count(); i++)
-            {
                 gen.Emit(OpCodes.Ldarg_S, i);
-            }
 
             gen.EmitCall(instruction.opcode, currentMethod, parameters); // call our original method, as per our arguments, etc.
-            gen.Emit(OpCodes.Ldarg_0);
-            gen.Emit(OpCodes.Ret);
 
             InsertEndIL(gen, key); // wrap out function up, return a value if required
 
             var inst = new CodeInstruction(instruction);
 
-            inst.operand = meth; // more complicated than this
+            parameters.Prepend(currentMethod.DeclaringType).Append(currentMethod.ReturnType).ToArray();
 
+            var delegateType = Expression.GetDelegateType(parameters);
+            var dele = meth.CreateDelegate(delegateType, null);
+
+            inst.operand = dele;
             return inst;
         }
 

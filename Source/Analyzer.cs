@@ -27,10 +27,10 @@ namespace DubsAnalyzer
                 AccessTools.Method(mode, "PerformancePatch")?.Invoke(null, null);
             }
 
-            //var meth = AccessTools.Method("DubsBadHygiene.Building_AssignableFixture:SetGender");
-            //var pa = new HarmonyMethod(typeof(InternalMethods), "Transpiler");
+            var meth = AccessTools.Method("DubsBadHygiene.Building_AssignableFixture:SetGender");
+            var pa = new HarmonyMethod(typeof(InternalMethods), "Transpiler");
 
-            //Analyzer.harmony.Patch(meth, null, null, pa);
+            Analyzer.harmony.Patch(meth, null, null, pa);
 
             //foreach (var workGiverDef in DefDatabase<WorkGiverDef>.AllDefsListForReading)
             //{
@@ -261,7 +261,7 @@ namespace DubsAnalyzer
 
         public static void ClearState()
         {
-            foreach (var maintab in Dialog_Analyzer.MainTabs)
+            foreach (var maintab in Dialog_Analyzer.SideTabCategories)
             {
                 maintab.Modes.Clear();
             }

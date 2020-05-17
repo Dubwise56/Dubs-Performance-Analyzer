@@ -45,6 +45,7 @@
     <Compile Include="GUI\Dialog_LogAdditional.cs" />
     <Compile Include="GUI\DrawStackedGraph.cs" />
     <Compile Include="GUI\DubGUI.cs" />
+    <Compile Include="GUI\DubResources.cs" />
     <Compile Include="ProfilerPatches\Custom\InternalMethods.cs" />
     <Compile Include="ProfilerPatches\Custom\InternalMethodUtility.cs" />
     <Compile Include="Statistics\GetStatLogic.cs" />
