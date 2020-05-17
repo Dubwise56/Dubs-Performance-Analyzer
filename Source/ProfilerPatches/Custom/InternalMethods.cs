@@ -45,10 +45,13 @@ namespace DubsAnalyzer
 
             Type[] parameters = null;
 
-            if (!currentMethod.IsStatic)
+            if (currentMethod.IsStatic) // If we have a static method, we don't need to grab the instance
                 parameters = currentMethod.GetParameters().Select(param => param.ParameterType).ToArray();
-            else
-                parameters = currentMethod.GetParameters().Select(param => param.ParameterType).ToArray();
+            else if (currentMethod.DeclaringType.IsValueType) // if we have a struct, we need to make the struct a ref, otherwise you resort to black magic
+                parameters = currentMethod.GetParameters().Select(param => param.ParameterType).Prepend(currentMethod.DeclaringType.MakeByRefType()).ToArray();
+            else // otherwise, we have an instance-nonstruct class, lets all our instance, and our parameter types
+                parameters = currentMethod.GetParameters().Select(param => param.ParameterType).Prepend(currentMethod.DeclaringType).ToArray();
+
 
             var meth = new DynamicMethod(
                 currentMethod.Name + "_runtimeReplacement", // name
@@ -57,10 +60,10 @@ namespace DubsAnalyzer
                 currentMethod.ReturnType, // returntype
                 parameters, // parameters
                 currentMethod.DeclaringType.IsInterface ? typeof(void) : currentMethod.DeclaringType, // owner
-                false // skipVisibility
+                true // skipVisibility
                 );
 
-            ILGenerator gen = meth.GetILGenerator(256);
+            ILGenerator gen = meth.GetILGenerator(512);
 
             string key = currentMethod.Name.GetHashCode().ToString();
 
@@ -73,22 +76,19 @@ namespace DubsAnalyzer
 
             gen.EmitCall(instruction.opcode, currentMethod, parameters); // call our original method, as per our arguments, etc.
 
+            
             InsertEndIL(gen, key); // wrap out function up, return a value if required
 
             var inst = new CodeInstruction(instruction);
+            inst.operand = meth;
 
-            parameters.Prepend(currentMethod.DeclaringType).Append(currentMethod.ReturnType).ToArray();
 
-            var delegateType = Expression.GetDelegateType(parameters);
-            var dele = meth.CreateDelegate(delegateType, null);
-
-            inst.operand = dele;
             return inst;
         }
 
         public static void InsertStartIL(ILGenerator ilGen, string key)
         {
-            ilGen.Emit(OpCodes.Ldstr, key); // this doesn't feel right either... but I can't tell until my meth call works
+            ilGen.Emit(OpCodes.Ldstr, key); 
             ilGen.Emit(OpCodes.Call, AnalyzerStartMeth);
         }
 
@@ -102,7 +102,6 @@ namespace DubsAnalyzer
             ilGen.Emit(OpCodes.Ldstr, key);
             ilGen.Emit(OpCodes.Call, AnalyzerEndMeth);
 
-            ilGen.Emit(OpCodes.Ldloc_0); // don't think this is necessary... can't test until meth call works
             ilGen.Emit(OpCodes.Ret);
         }
 

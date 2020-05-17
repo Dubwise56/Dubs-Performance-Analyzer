@@ -19,6 +19,8 @@ namespace DubsAnalyzer
 
             H_KeyPresses.PatchMe();
 
+            Harmony.DEBUG = true;
+
             var modes = GenTypes.AllTypes.Where(m => m.TryGetAttribute<PerformancePatch>(out _));
 
             foreach (var mode in modes)
@@ -27,7 +29,7 @@ namespace DubsAnalyzer
                 AccessTools.Method(mode, "PerformancePatch")?.Invoke(null, null);
             }
 
-            var meth = AccessTools.Method("DubsBadHygiene.Building_AssignableFixture:SetGender");
+            var meth = AccessTools.Method("Pawn:Tick");
             var pa = new HarmonyMethod(typeof(InternalMethods), "Transpiler");
 
             Analyzer.harmony.Patch(meth, null, null, pa);
