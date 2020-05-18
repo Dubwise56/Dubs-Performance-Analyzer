@@ -14,9 +14,6 @@ namespace DubsAnalyzer
 {
     public static class InternalMethods
     {
-        //public static MethodInfo GetHashCode = AccessTools.Method("System.Object:GetHashCode");
-        //public static MethodInfo ToString = AccessTools.Method("System.Int32:ToString"); // We use this to convert our hashcode into a string
-
         public static MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(InternalMethods), nameof(AnalyzerStart));
         public static MethodInfo AnalyzerEndMeth = AccessTools.Method(typeof(InternalMethods), nameof(AnalyzerEnd));
 
@@ -29,15 +26,17 @@ namespace DubsAnalyzer
             {
                 if (InternalMethodUtility.IsFunctionCall(instructions[i].opcode))
                 {
-                    instructions[i] = SupplantMethodCall(instructions[i]);
+                    if(i != 0 || instructions[i-1].opcode != OpCodes.Constrained) // lets ignore complicated cases
+                        instructions[i] = SupplantMethodCall(instructions[i]);
                 }
             }
 
-            foreach (var l in instructions)
-                InternalMethodUtility.LogInstruction(l);
+            //foreach (var l in instructions)
+            //    InternalMethodUtility.LogInstruction(l);
 
             return instructions;
         }
+        public static int a = 0;
 
         public static CodeInstruction SupplantMethodCall(CodeInstruction instruction)
         {
@@ -45,7 +44,7 @@ namespace DubsAnalyzer
 
             Type[] parameters = null;
 
-            if (currentMethod.IsStatic) // If we have a static method, we don't need to grab the instance
+            if (currentMethod.Attributes.HasFlag(MethodAttributes.Static)) // If we have a static method, we don't need to grab the instance
                 parameters = currentMethod.GetParameters().Select(param => param.ParameterType).ToArray();
             else if (currentMethod.DeclaringType.IsValueType) // if we have a struct, we need to make the struct a ref, otherwise you resort to black magic
                 parameters = currentMethod.GetParameters().Select(param => param.ParameterType).Prepend(currentMethod.DeclaringType.MakeByRefType()).ToArray();
@@ -55,7 +54,7 @@ namespace DubsAnalyzer
 
             var meth = new DynamicMethod(
                 currentMethod.Name + "_runtimeReplacement", // name
-                currentMethod.Attributes, // attributes
+                MethodAttributes.Public, // attributes
                 currentMethod.CallingConvention, // callingconvention
                 currentMethod.ReturnType, // returntype
                 parameters, // parameters
@@ -65,30 +64,28 @@ namespace DubsAnalyzer
 
             ILGenerator gen = meth.GetILGenerator(512);
 
-            string key = currentMethod.Name.GetHashCode().ToString();
+            string key = currentMethod.Name;
 
             InsertStartIL(gen, key);
 
             // dynamically add our parameters, as many as they are, into our method
-
             for (int i = 0; i < parameters.Count(); i++)
                 gen.Emit(OpCodes.Ldarg_S, i);
 
             gen.EmitCall(instruction.opcode, currentMethod, parameters); // call our original method, as per our arguments, etc.
 
-            
-            InsertEndIL(gen, key); // wrap out function up, return a value if required
+            InsertEndIL(gen, key); // wrap our function up, return a value if required
 
             var inst = new CodeInstruction(instruction);
+            inst.opcode = OpCodes.Call;
             inst.operand = meth;
-
 
             return inst;
         }
 
         public static void InsertStartIL(ILGenerator ilGen, string key)
         {
-            ilGen.Emit(OpCodes.Ldstr, key); 
+            ilGen.Emit(OpCodes.Ldstr, key);
             ilGen.Emit(OpCodes.Call, AnalyzerStartMeth);
         }
 
@@ -107,7 +104,7 @@ namespace DubsAnalyzer
 
         public static void AnalyzerEnd(string key)
         {
-            Analyzer.Start(key);
+            Analyzer.Stop(key);
         }
     }
 }
