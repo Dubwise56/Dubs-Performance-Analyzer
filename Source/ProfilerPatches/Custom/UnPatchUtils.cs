@@ -44,6 +44,8 @@ namespace DubsAnalyzer
                     if (infosPrefix.PatchMethod == meth)
                     {
                         Analyzer.harmony.Unpatch(methodBase, meth);
+                        currentlyPatching = false;
+                        return;
                     }
                 }
                 foreach (var infosPostfixesx in infos.Postfixes)
@@ -51,10 +53,12 @@ namespace DubsAnalyzer
                     if (infosPostfixesx.PatchMethod == meth)
                     {
                         Analyzer.harmony.Unpatch(methodBase, meth);
+                        currentlyPatching = false;
+                        return;
                     }
                 }
             }
-
+            Log.Error("Failed to locate method to unpatch");
             currentlyPatching = false;
         }
 
@@ -78,15 +82,7 @@ namespace DubsAnalyzer
                 return;
             }
 
-            foreach (var methodBase in Harmony.GetAllPatchedMethods())
-            {
-                if (!(methodBase == meth))
-                    continue;
-
-                var infos = Harmony.GetPatchInfo(methodBase);
-
-                Analyzer.harmony.Unpatch(methodBase, HarmonyPatchType.All, "*");
-            }
+            Analyzer.harmony.Unpatch(meth, HarmonyPatchType.All, "*");
 
             currentlyPatching = false;
         }

@@ -36,9 +36,9 @@ namespace DubsAnalyzer
            // slop(typeof(PathFinder), nameof(PathFinder.CalculateDestinationRect));
            slop(typeof(PathFinder), nameof(PathFinder.GetAllowedArea));
            slop(typeof(PawnUtility), nameof(PawnUtility.ShouldCollideWithPawns));
-            slop(typeof(PathFinder), nameof(PathFinder.DetermineHeuristicStrength));
-            slop(typeof(PathFinder), nameof(PathFinder.CalculateAndAddDisallowedCorners));
-            slop(typeof(PathFinder), nameof(PathFinder.InitStatusesAndPushStartNode));
+           slop(typeof(PathFinder), nameof(PathFinder.DetermineHeuristicStrength));
+           slop(typeof(PathFinder), nameof(PathFinder.CalculateAndAddDisallowedCorners));
+           slop(typeof(PathFinder), nameof(PathFinder.InitStatusesAndPushStartNode));
         }
 
         public static void Start(MethodBase __originalMethod, ref string __state)

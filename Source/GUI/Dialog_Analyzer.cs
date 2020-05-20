@@ -8,12 +8,13 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Verse;
 
 /*  Naming Wise
  *  Tabs on the side, Ex 'HarmonyPatches', SideTab
  *  Categories for them, Ex 'Tick', SideTabCategories
- *  A Log inside a SideTab, is a 'Log', each Log belongs to a SideTab
+ *  A Log 'inside' a SideTab, is a 'Log', each Log belongs to a SideTab
  */
 
 namespace DubsAnalyzer
@@ -46,7 +47,6 @@ namespace DubsAnalyzer
         public static string TimesFilter = string.Empty;
         public static StringBuilder csv = new StringBuilder();
         public Rect GizmoListRect;
-
 
         public static long totalBytesOfMemoryUsed;
 
@@ -137,7 +137,6 @@ namespace DubsAnalyzer
             new ProfileTab("Tick",          () => { CurrentSideTab = CurrentSideTab.Categories; },   () => false,                                            UpdateMode.Tick,    "Things that run on tick"),
             new ProfileTab("Update",        () => { CurrentSideTab = CurrentSideTab.Categories; },   () => false,                                            UpdateMode.Update,  "Things that run per frame"),
             new ProfileTab("GUI",           () => { CurrentSideTab = CurrentSideTab.Categories; },   () => false,                                            UpdateMode.GUI,      "Things that run on GUI")
-            // we don't actually ever want the 'category' tabs (currently) to be shown as selected, because there is (currently) nothing to be shown if it were to be selected
         };
 
         public Dialog_Analyzer()
@@ -156,7 +155,6 @@ namespace DubsAnalyzer
             onlyOneOfTypeAllowed = true;
             resizeable = true;
         }
-
 
         public override void SetInitialSizeAndPosition()
         {
@@ -180,7 +178,6 @@ namespace DubsAnalyzer
                 }
             }
         }
-
 
         public override void DoWindowContents(Rect canvas)
         {
@@ -249,7 +246,7 @@ namespace DubsAnalyzer
                             blurg.width -= 450;
                             Widgets.DrawMenuSection(blurg);
                             blurg = blurg.ContractedBy(6f);
-                            DoThingTab(blurg);
+                            DrawLogs(blurg);
 
                             Rect r = new Rect(canvas.x + (windowRect.width - 478), canvas.y, 432, canvas.height);
                             Dialog_LogAdditional.DoWindowContents(r);
@@ -257,7 +254,7 @@ namespace DubsAnalyzer
                         else
                         {
                             Widgets.DrawMenuSection(inner);
-                            DoThingTab(inner.ContractedBy(6f));
+                            DrawLogs(inner.ContractedBy(6f));
                         }
                     }
                     else
@@ -273,7 +270,7 @@ namespace DubsAnalyzer
             }
         }
 
-        private void DoThingTab(Rect rect)
+        private void DrawLogs(Rect rect)
         {
             if (!Analyzer.SelectedMode.IsPatched)
             {
@@ -293,10 +290,9 @@ namespace DubsAnalyzer
 
             GizmoListRect = rect.AtZero();
             GizmoListRect.y += ScrollPosition.y;
+
             Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect);
-
             GUI.BeginGroup(innerRect);
-
             listing.Begin(innerRect);
 
             float currentListHeight = 0;
@@ -322,9 +318,9 @@ namespace DubsAnalyzer
 
             listing.End();
             GUI.EndGroup();
+            Widgets.EndScrollView();
 
             DubGUI.ResetFont();
-            Widgets.EndScrollView();
         }
 
         private void DrawLog(ProfileLog log, bool save, ref float currentListHeight)
@@ -376,6 +372,16 @@ namespace DubsAnalyzer
                 if (Mouse.IsOver(visible))
                     Analyzer.SelectedMode.MouseOver?.Invoke(null, new object[] { visible, profile, log });
 
+                if (Input.GetMouseButtonDown(1)) // mouse button right
+                {
+                    if (visible.Contains(Event.current.mousePosition))
+                    {
+                        List<FloatMenuOption> options = (from opt in RightClickDropDown(log) select opt.option).ToList();
+                        Find.WindowStack.Add(new FloatMenu(options));
+                    }
+                }
+
+
                 var color = DubResources.grey;
                 if (log.Percent > 0.25f)
                     color = DubResources.blue;
@@ -411,6 +417,52 @@ namespace DubsAnalyzer
             listing.GapLine(0f);
             currentListHeight += 4f;
             currentListHeight += visible.height;
+        }
+        private static IEnumerable<Widgets.DropdownMenuElement<int>> RightClickDropDown(ProfileLog log)
+        {
+            // You may be wondering... why the returntype of int...
+
+
+            // good question?
+
+            if (Analyzer.Settings.AdvancedMode)
+            {
+                if (CurrentKey.Contains("Harmony")) // we can return an 'unpatch'
+                {
+                    yield return new Widgets.DropdownMenuElement<int>
+                    {
+                        option = new FloatMenuOption("Unpatch Method", delegate
+                        {
+                            if(log.Meth != null)
+                            {
+                                UnPatchUtils.UnpatchMethod(log.Meth.Name);
+                            } else // lets try to get the damn method by label/name
+                            {
+                                
+                            }
+                        }),
+                        payload = 1
+                    };
+                }
+
+                yield return new Widgets.DropdownMenuElement<int>
+                {
+                    option = new FloatMenuOption("Unpatch methods that patch", delegate
+                    {
+                        UnPatchUtils.UnpatchMethodsOnMethod(log.Meth.Name);
+                    }),
+                    payload = 2
+                };
+
+                yield return new Widgets.DropdownMenuElement<int>
+                {
+                    option = new FloatMenuOption("Profile the internal methods of", delegate
+                    {
+                        InternalMethods.PatchMethod(log.Meth);
+                    }),
+                    payload = 3
+                };
+            }
         }
 
         private void DrawTopRow(ref Rect rect, Rect topRow, ref bool save)

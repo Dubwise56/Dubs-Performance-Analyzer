@@ -12,7 +12,7 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                Analyzer.Start("ResourceReadoutOnGUI");
+                Analyzer.Start("ResourceReadoutOnGUI");//, () => "ResourceReadout.ResourceReadoutOnGUI");
             }
             return true;
         }

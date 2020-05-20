@@ -12,9 +12,12 @@ namespace DubsAnalyzer
 {
     public static class InternalMethodUtility
     {
+        private static MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(InternalMethodUtility), nameof(AnalyzerStart));
+        private static MethodInfo AnalyzerEndMeth = AccessTools.Method(typeof(InternalMethodUtility), nameof(AnalyzerEnd));
+
         public static bool IsFunctionCall(OpCode instruction)
         {
-            return (instruction == OpCodes.Call || instruction == OpCodes.Callvirt || instruction == OpCodes.Calli);
+            return (instruction == OpCodes.Call || instruction == OpCodes.Callvirt);// || instruction == OpCodes.Calli);
         }
 
         public static void LogInstruction(CodeInstruction instruction)
@@ -44,6 +47,31 @@ namespace DubsAnalyzer
                     builder.Append($" with the label: {l.ToString()}");
             }
             Log.Message(builder.ToString());
+        }
+
+
+        public static void InsertStartIL(ILGenerator ilGen, string key)
+        {
+            ilGen.Emit(OpCodes.Ldstr, key);
+            ilGen.Emit(OpCodes.Call, AnalyzerStartMeth);
+        }
+
+        public static void AnalyzerStart(string key)
+        {
+            Analyzer.Start(key);
+        }
+
+        public static void InsertEndIL(ILGenerator ilGen, string key)
+        {
+            ilGen.Emit(OpCodes.Ldstr, key);
+            ilGen.Emit(OpCodes.Call, AnalyzerEndMeth);
+
+            ilGen.Emit(OpCodes.Ret);
+        }
+
+        private static void AnalyzerEnd(string key)
+        {
+            Analyzer.Stop(key);
         }
     }
 }

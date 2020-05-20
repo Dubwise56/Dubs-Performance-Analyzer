@@ -125,9 +125,9 @@ namespace DubsAnalyzer
             {
                 if (__originalMethod.ReflectedType != null)
                 {
-                    return $"{__originalMethod.Name} {__originalMethod.ReflectedType.FullName}";
+                    return $"{__originalMethod.Name} - {__originalMethod.ReflectedType.FullName}";
                 }
-                return $"{__originalMethod.Name} {__originalMethod.GetType().FullName}";
+                return $"{__originalMethod.Name} - {__originalMethod.GetType().FullName}";
             }, __originalMethod.GetType(), null, null, __originalMethod as MethodInfo);
         }
 
@@ -144,7 +144,6 @@ namespace DubsAnalyzer
     internal class H_HarmonyPatches
     {
         public static bool Active = false;
-
         public static void Clicked(Profiler prof, ProfileLog log)
         {
             if (Input.GetKey(KeyCode.LeftControl))
@@ -252,9 +251,9 @@ namespace DubsAnalyzer
             {
                 if (__originalMethod.ReflectedType != null)
                 {
-                    return $"{__originalMethod.ToString()} {__originalMethod.ReflectedType.FullName}";
+                    return $"{__originalMethod.ToString()} - {__originalMethod.ReflectedType.FullName}";
                 }
-                return $"{__originalMethod.ToString()} {__originalMethod.GetType().FullName}";
+                return $"{__originalMethod.ToString()} - {__originalMethod.GetType().FullName}";
             }, __originalMethod.GetType(), null, null, __originalMethod as MethodInfo);
         }
 

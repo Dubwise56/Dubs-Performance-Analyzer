@@ -11,23 +11,20 @@ namespace DubsAnalyzer
 {
     public static class Dialog_LogAdditional
     {
+        public static Profiler currentProfiler = null;
+
         public static void DoWindowContents(Rect position)
         {
+            currentProfiler = Analyzer.Profiles[Dialog_Analyzer.CurrentKey];
+
+
             Widgets.DrawMenuSection(position);
             Listing_Standard listing = new Listing_Standard();
             listing.Begin(position);
 
-            DrawHarmony(listing);
-            
-            listing.GapLine(12f);
-
             DrawStatistics(listing);
 
             listing.End();
-        }
-        public static void DrawHarmony(Listing_Standard listing)
-        {
-            DubGUI.Heading(listing, "Harmony");
         }
 
         public static void DrawStatistics(Listing_Standard listing)
@@ -36,19 +33,17 @@ namespace DubsAnalyzer
 
             if (!Analyzer.Profiles.ContainsKey(Dialog_Analyzer.CurrentKey)) return;
 
-            var prof = Analyzer.Profiles[Dialog_Analyzer.CurrentKey];
-
-            if (!GetStatLogic.IsActiveThread)
+            if (!LogStats.IsActiveThread)
             {
-                var s = new GetStatLogic();
-                s.GenerateStats(prof.History.times, prof.History.hits);
+                var s = new LogStats();
+                s.GenerateStats(currentProfiler.History.times, currentProfiler.History.hits);
             }
 
-            if (CurrentStats.stats == null)
+            if (CurrentLogStats.stats == null)
                 listing.Label("Loading Stats!");
             else
             {
-                lock (CurrentStats.sync)
+                lock (CurrentLogStats.sync)
                 {
                     DrawStatsPage(listing.GetRect(400f));
                 }

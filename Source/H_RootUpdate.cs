@@ -18,9 +18,10 @@ namespace DubsAnalyzer
         public static string tps;
         private static DateTime PrevTime;
         private static int PrevTicks;
-        private static int TPSActual;
+        public static int TPSActual;
         public static float delta;
-        public static long memrise;
+
+        public static long CurrentAllocatedMemory;
         public static long LastMinGC;
         public static long LastMaxGC;
 
@@ -28,7 +29,7 @@ namespace DubsAnalyzer
         {
             if (Analyzer.running)
             {
-                var jam = Dialog_Analyzer.totalBytesOfMemoryUsed;
+                long jam = Dialog_Analyzer.totalBytesOfMemoryUsed;
                 Dialog_Analyzer.totalBytesOfMemoryUsed = GC.GetTotalMemory(false);
 
                 if (jam > Dialog_Analyzer.totalBytesOfMemoryUsed)
@@ -44,23 +45,23 @@ namespace DubsAnalyzer
                 if (delta >= 1f)
                 {
                     delta -= 1f;
-                    var compare = memrise;
-                    memrise = GC.GetTotalMemory(false);
-                    var vtec = memrise - compare;
-                    if (vtec < 0)
-                    {
-                        vtec = 0;
-                    }
 
-                    Dialog_Analyzer.GarbageCollectionInfo = $"{memrise.ToMb():0.00}MB +{vtec.ToMb():0.00}MB/s";
+                    var PreviouslyAllocatedMemory = CurrentAllocatedMemory;
+                    CurrentAllocatedMemory = GC.GetTotalMemory(false);
+
+                    var MemoryDifference = CurrentAllocatedMemory - PreviouslyAllocatedMemory;
+                    if (MemoryDifference < 0)
+                        MemoryDifference = 0;
+
+                    Dialog_Analyzer.GarbageCollectionInfo = $"{CurrentAllocatedMemory.ToMb():0.00}MB +{MemoryDifference.ToMb():0.00}MB/s";
                 }
 
 
-                if (Time.unscaledTime > _timer)
+                if (Time.unscaledTime > _timer) 
                 {
-                    var fps = (int)(1f / Time.unscaledDeltaTime);
+                    int fps = (int)(1f / Time.unscaledDeltaTime);
                     _fpsText = "FPS: " + fps;
-                    _timer = Time.unscaledTime + _hudRefreshRate;
+                    _timer = Time.unscaledTime + _hudRefreshRate; // Every second we update our fps
                 }
 
                 try
@@ -70,36 +71,24 @@ namespace DubsAnalyzer
                         var TRM = Find.TickManager.TickRateMultiplier;
                         var TPSTarget = (int)Math.Round(TRM == 0f ? 0f : 60f * TRM);
 
-                        if (PrevTicks == -1)
-                        {
-                            PrevTicks = GenTicks.TicksAbs;
-                            PrevTime = DateTime.Now;
-                        }
-                        else
-                        {
-                            var CurrTime = DateTime.Now;
+                        var CurrTime = DateTime.Now;
 
-                            if (CurrTime.Second != PrevTime.Second)
-                            {
-                                PrevTime = CurrTime;
-                                TPSActual = GenTicks.TicksAbs - PrevTicks;
-                                PrevTicks = GenTicks.TicksAbs;
-                            }
+                        if (CurrTime.Second != PrevTime.Second)
+                        {
+                            PrevTime = CurrTime;
+                            TPSActual = GenTicks.TicksAbs - PrevTicks;
+                            PrevTicks = GenTicks.TicksAbs;
                         }
 
                         tps = $"TPS: {TPSActual}({TPSTarget})";
                     }
                 }
-                catch (Exception)
-                {
-                    
-                }
+                catch (Exception) { }
             }
 
             if (Active)
-            {
                 Analyzer.Start("Game Update");
-            }
+
         }
 
         public static void Postfix()
@@ -110,16 +99,12 @@ namespace DubsAnalyzer
                 Analyzer.Stop("Game Update");
             }
 
-            if (Analyzer.SelectedMode != null)
-            {
-                if (Analyzer.SelectedMode.mode == UpdateMode.Update || Analyzer.SelectedMode.mode == UpdateMode.GUI)
-                    Analyzer.UpdateEnd();
-            }
+            if (Analyzer.SelectedMode?.mode == UpdateMode.Update || Analyzer.SelectedMode?.mode == UpdateMode.GUI)
+                Analyzer.UpdateEnd();
 
             if (Active)
-            {
                 Analyzer.Start("Frame times");
-            }
+
         }
     }
 }

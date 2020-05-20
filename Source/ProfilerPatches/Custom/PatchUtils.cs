@@ -37,7 +37,7 @@ namespace DubsAnalyzer
         public static void PatchAssembly(string name, HarmonyMethod pre, HarmonyMethod post)
         {
             Mod mod = LoadedModManager.ModHandles.FirstOrDefault(m => m.Content.Name == name);
-            Assembly assembly = mod.Content.assemblies.loadedAssemblies.First();
+            Assembly assembly = mod.Content?.assemblies?.loadedAssemblies?.First();
 
             if (assembly != null)
             {
@@ -62,21 +62,9 @@ namespace DubsAnalyzer
 
                 foreach (var type in assembly.DefinedTypes)
                 {
-                    foreach (var method in AccessTools.GetDeclaredMethods(type))
-                    {
-                        if (method.DeclaringType == type && !method.IsSpecialName && !method.IsAssembly)
-                        {
-                            try
-                            {
-                                Analyzer.harmony.Patch(method, pre, post);
-                            }
-                            catch (Exception e) { Log.Warning($"Failed to log method {method.Name} errored with the message {e.Message}"); }
-
-                            PatchedMethods.Add(method.Name);
-                        }
-                    }
-                    PatchedTypes.Add(type.FullName);
+                    PatchTypeFull(type, pre, post);
                 }
+
                 Messages.Message($"Patched {assembly.FullName}", MessageTypeDefOf.TaskCompletion, false);
             }
             catch (Exception e)
@@ -87,17 +75,19 @@ namespace DubsAnalyzer
 
         public static void PatchType(string name, HarmonyMethod pre, HarmonyMethod post)
         {
-            Type type = AccessTools.TypeByName(name);
+            Type type = null;
+            try
+            {
+                type = AccessTools.TypeByName(name);
+            }
+            catch (Exception e)
+            {
+                Messages.Message($"Failed to locate type {name}, errored with the message {e.Message}", MessageTypeDefOf.NegativeEvent, false);
+                return;
+            }
 
-            if (type != null)
-            {
-                patchTypeThread = new Thread(() => PatchTypeFull(type, pre, post));
-                patchTypeThread.Start();
-            }
-            else
-            {
-                Log.Warning($"Failed to patch {name}");
-            }
+            patchTypeThread = new Thread(() => PatchTypeFull(type, pre, post));
+            patchTypeThread.Start();
         }
         private static void PatchTypeFull(Type type, HarmonyMethod pre, HarmonyMethod post)
         {
@@ -133,16 +123,19 @@ namespace DubsAnalyzer
 
         public static void PatchMethod(string name, HarmonyMethod pre, HarmonyMethod post)
         {
-            MethodInfo method = AccessTools.Method(name);
+            MethodInfo method = null;
+            try
+            {
+                method = AccessTools.Method(name);
+            }
+            catch (Exception e)
+            {
+                Messages.Message($"Failed to locate method {name}, errored with the message {e.Message}", MessageTypeDefOf.NegativeEvent, false);
+                return;
+            }
 
-            if (method != null)
-            {
-                PatchMethodFull(method, pre, post);
-            }
-            else
-            {
-                Log.Warning($"Failed to patch {name}");
-            }
+            
+            PatchMethodFull(method, pre, post);
         }
         private static void PatchMethodFull(MethodInfo method, HarmonyMethod pre, HarmonyMethod post)
         {
@@ -162,9 +155,18 @@ namespace DubsAnalyzer
             Log.Message($"Patched {method.Name}");
         }
 
-        public static void PatchMethodPatches(string name, HarmonyMethod pre, HarmonyMethod post)
+        public static void PatchMethodPatches(string name, HarmonyMethod pre, HarmonyMethod post)   
         {
-            MethodInfo method = AccessTools.Method(name);
+            MethodInfo method = null;
+            try
+            {
+                method = AccessTools.Method(name);
+            }
+            catch (Exception e)
+            {
+                Messages.Message($"Failed to locate method {name}, errored with the message {e.Message}", MessageTypeDefOf.NegativeEvent, false);
+                return;
+            }
 
             Patches patches = Harmony.GetPatchInfo(method);
             if (patches == null) return;
@@ -185,16 +187,18 @@ namespace DubsAnalyzer
 
         public static void PatchTypePatches(string name, HarmonyMethod pre, HarmonyMethod post)
         {
-            Type type = AccessTools.TypeByName(name);
+            Type type = null;
+            try
+            {
+                type = AccessTools.TypeByName(name);
+            }
+            catch (Exception e)
+            {
+                Messages.Message($"Failed to locate type {name}, errored with the message {e.Message}", MessageTypeDefOf.NegativeEvent, false);
+                return;
+            }
 
-            if (type != null)
-            {
-                PatchTypePatchesFull(type, pre, post);
-            }
-            else
-            {
-                Log.Warning($"Failed to patch {name}");
-            }
+            PatchTypePatchesFull(type, pre, post);
         }
         private static void PatchTypePatchesFull(Type type, HarmonyMethod pre, HarmonyMethod post)
         {
@@ -226,14 +230,5 @@ namespace DubsAnalyzer
                 Log.Warning($"catch. patching {type.FullName} failed, {e.Message}");
             }
         }
-
-        //public static void PatchInternalMethods(MethodInfo name, HarmonyMethod pre, HarmonyMethod post)
-        //{
-
-        //    return name.GetMethodBody().GetILAsByteArray()  .Body.Instructions
-        //    .Where(x => x.OpCode == OpCodes.Call)
-        //    .Select(x => (MethodDefinition)x.Operand);
-        //}
-
     }
 }

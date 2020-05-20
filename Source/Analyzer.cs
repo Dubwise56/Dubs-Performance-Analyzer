@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -26,13 +27,6 @@ namespace DubsAnalyzer
                 //AccessTools.Method(mode, "ProfilePatch")?.Invoke(null, null);
                 AccessTools.Method(mode, "PerformancePatch")?.Invoke(null, null);
             }
-
-            Harmony.DEBUG = true;
-
-            var meth = AccessTools.Method("Verse.Pawn:Tick");
-            var pa = new HarmonyMethod(typeof(InternalMethods), "Transpiler");
-
-            Analyzer.harmony.Patch(meth, null, null, pa);
 
             //foreach (var workGiverDef in DefDatabase<WorkGiverDef>.AllDefsListForReading)
             //{
@@ -73,6 +67,7 @@ namespace DubsAnalyzer
         private static bool RequestStop;
         public static bool LogOpen = false;
         public static bool LogStack = false;
+
 
         public Analyzer(ModContentPack content) : base(content)
         {
@@ -207,6 +202,7 @@ namespace DubsAnalyzer
             {
                 if (!Profiles.ContainsKey(key))
                 {
+                    Log.Message("Added new key " + key + " size of the array: " + Profiles.Count.ToString());
                     if (GetLabel != null)
                         Profiles[key] = new Profiler(key, GetLabel(), type, def, thing, meth);
                     else

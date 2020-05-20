@@ -14,31 +14,91 @@ namespace DubsAnalyzer
 {
     public static class InternalMethods
     {
-        public static MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(InternalMethods), nameof(AnalyzerStart));
-        public static MethodInfo AnalyzerEndMeth = AccessTools.Method(typeof(InternalMethods), nameof(AnalyzerEnd));
 
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> codeInstructions)
+        private static Harmony inst = null;
+        private static Harmony Harmony
         {
+            get
+            {
+                if (inst == null)
+                    inst = new Harmony("Dubs.InternalMethodProfiling");
+                return inst;
+            }
+        }
+        private static Dictionary<MethodInfo, List<CodeInstruction>> PatchedInternals = new Dictionary<MethodInfo, List<CodeInstruction>>();
+        private static MethodInfo curMeth = null;
+        
+        public static void PatchMethod(MethodInfo method)
+        {
+            if (PatchedInternals.ContainsKey(method))
+            {
+                Log.Error("Trying to re-transpile an already profiled internal method");
+                return;
+            }
+            HarmonyMethod transpiler = new HarmonyMethod(typeof(InternalMethods), nameof(Transpiler));
+            curMeth = method;
+            PatchedInternals.Add(method, null);
+            Harmony.Patch(method, null, null, transpiler);
+        }
 
-            List<CodeInstruction> instructions = new List<CodeInstruction>(codeInstructions);
+        public static void UnpatchMethod(MethodInfo method)
+        {
+            HarmonyMethod untranspiler = new HarmonyMethod(typeof(InternalMethods), nameof(UnTranspiler));
+            curMeth = method;
+            Harmony.Patch(method, null, null, untranspiler);
+            PatchedInternals.Remove(method);
+        }
+
+        private static IEnumerable<CodeInstruction> UnTranspiler(IEnumerable<CodeInstruction> codeInstructions)
+        {
+            var instructions = new List<CodeInstruction>(codeInstructions);
+
+            var oldInstructions = PatchedInternals[curMeth];
 
             for (int i = 0; i < instructions.Count(); i++)
             {
                 if (InternalMethodUtility.IsFunctionCall(instructions[i].opcode))
                 {
-                    if(i != 0 || instructions[i-1].opcode != OpCodes.Constrained) // lets ignore complicated cases
-                        instructions[i] = SupplantMethodCall(instructions[i]);
+                    if (i != 0 || instructions[i - 1].opcode != OpCodes.Constrained)
+                    {// if we have the same conditions we had when we patched it, lets unpatch it!
+                        instructions[i] = oldInstructions[i];
+                    }   
                 }
             }
 
-            //foreach (var l in instructions)
-            //    InternalMethodUtility.LogInstruction(l);
+            return instructions;
+        }
+        
+        public static void UnpatchAllMethods()
+        {
+            foreach(var meth in PatchedInternals.Keys)
+            {
+                curMeth = meth;
+                UnpatchMethod(meth);
+            }
+        }
+
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> codeInstructions)
+        {
+            var instructions = new List<CodeInstruction>(codeInstructions);
+            var oldInstructions = new List<CodeInstruction>();
+
+            for (int i = 0; i < instructions.Count(); i++)
+            {
+                if (InternalMethodUtility.IsFunctionCall(instructions[i].opcode))
+                {
+                    if (i != 0 || instructions[i - 1].opcode != OpCodes.Constrained) // lets ignore complicated cases
+                    {
+                        oldInstructions.Add(instructions[i]);
+                        instructions[i] = SupplantMethodCall(instructions[i]);
+                    }
+                }
+            }
+            PatchedInternals[curMeth] = oldInstructions;
 
             return instructions;
         }
-        public static int a = 0;
-
-        public static CodeInstruction SupplantMethodCall(CodeInstruction instruction)
+        private static CodeInstruction SupplantMethodCall(CodeInstruction instruction)
         {
             MethodInfo currentMethod = (MethodInfo)instruction.operand;
 
@@ -66,7 +126,7 @@ namespace DubsAnalyzer
 
             string key = currentMethod.Name;
 
-            InsertStartIL(gen, key);
+            InternalMethodUtility.InsertStartIL(gen, key);
 
             // dynamically add our parameters, as many as they are, into our method
             for (int i = 0; i < parameters.Count(); i++)
@@ -74,7 +134,7 @@ namespace DubsAnalyzer
 
             gen.EmitCall(instruction.opcode, currentMethod, parameters); // call our original method, as per our arguments, etc.
 
-            InsertEndIL(gen, key); // wrap our function up, return a value if required
+            InternalMethodUtility.InsertEndIL(gen, key); // wrap our function up, return a value if required
 
             var inst = new CodeInstruction(instruction);
             inst.opcode = OpCodes.Call;
@@ -83,28 +143,5 @@ namespace DubsAnalyzer
             return inst;
         }
 
-        public static void InsertStartIL(ILGenerator ilGen, string key)
-        {
-            ilGen.Emit(OpCodes.Ldstr, key);
-            ilGen.Emit(OpCodes.Call, AnalyzerStartMeth);
-        }
-
-        public static void AnalyzerStart(string key)
-        {
-            Analyzer.Start(key);
-        }
-
-        public static void InsertEndIL(ILGenerator ilGen, string key)
-        {
-            ilGen.Emit(OpCodes.Ldstr, key);
-            ilGen.Emit(OpCodes.Call, AnalyzerEndMeth);
-
-            ilGen.Emit(OpCodes.Ret);
-        }
-
-        public static void AnalyzerEnd(string key)
-        {
-            Analyzer.Stop(key);
-        }
     }
 }

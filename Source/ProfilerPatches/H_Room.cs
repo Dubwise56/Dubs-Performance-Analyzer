@@ -28,7 +28,7 @@ namespace DubsAnalyzer
                 foreach (RoomStatDef roomStatDef in DefDatabase<RoomStatDef>.AllDefs.OrderByDescending((RoomStatDef x) => x.updatePriority))
                 {
                     var str = roomStatDef.defName;
-                    Analyzer.Start(str, () => $"{str} {roomStatDef.workerClass}");
+                    Analyzer.Start(str, () => $"{str} - {roomStatDef.workerClass}");
                     __instance.stats[roomStatDef] = roomStatDef.Worker.GetScore(__instance);
                     Analyzer.Stop(str);
                 }

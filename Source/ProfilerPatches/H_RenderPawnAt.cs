@@ -25,7 +25,7 @@ namespace DubsAnalyzer
                 return;
             }
             __state = __instance.pawn.GetHashCode().ToString();
-            Analyzer.Start(__state, () => $"{__instance.pawn.Label} {__instance.pawn.ThingID}");
+            Analyzer.Start(__state, () => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}");
         }
 
         public static void Postfix(string __state)

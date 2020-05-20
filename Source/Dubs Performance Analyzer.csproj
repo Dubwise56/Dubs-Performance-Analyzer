@@ -46,9 +46,10 @@
     <Compile Include="GUI\DrawStackedGraph.cs" />
     <Compile Include="GUI\DubGUI.cs" />
     <Compile Include="GUI\DubResources.cs" />
+    <Compile Include="LinkedQueue.cs" />
     <Compile Include="ProfilerPatches\Custom\InternalMethods.cs" />
     <Compile Include="ProfilerPatches\Custom\InternalMethodUtility.cs" />
-    <Compile Include="Statistics\GetStatLogic.cs" />
+    <Compile Include="Statistics\LogStats.cs" />
     <Compile Include="H_KeyPresses.cs" />
     <Compile Include="H_RootUpdate.cs" />
     <Compile Include="MainButtonWorker_ToggleAnalyzer.cs" />
@@ -69,13 +70,14 @@
     <Compile Include="PerformancePatches\H_Trash.cs" />
     <Compile Include="PerformancePatches\H_WardenRequest.cs" />
     <Compile Include="PerformancePatches\H_WorkGiver_DoBill.cs" />
+    <Compile Include="Statistics\TabStats.cs" />
     <Compile Include="Statistics\ProfileLog.cs" />
     <Compile Include="ProfileMode.cs" />
     <Compile Include="ProfilerPatches\Custom\PatchUtils.cs" />
     <Compile Include="ProfilerPatches\Custom\UnPatchUtils.cs" />
     <Compile Include="ProfileTab.cs" />
-    <Compile Include="Profiler.cs" />
-    <Compile Include="ProfilerHistory.cs" />
+    <Compile Include="Statistics\Profiler.cs" />
+    <Compile Include="Statistics\ProfilerHistory.cs" />
     <Compile Include="ProfilerPatches\Custom\CustomProfilers.cs" />
     <Compile Include="ProfilerPatches\H_ColonistBarOnGUI.cs" />
     <Compile Include="ProfilerPatches\H_DoButtons.cs" />
@@ -104,6 +106,7 @@
     <Compile Include="ProfilerPatches\H_UIRootUpdate.cs" />
     <Compile Include="ProfilerPatches\H_WindowStackOnGUI.cs" />
     <Compile Include="ProfilerPatches\H_WorldPawns.cs" />
+    <Compile Include="Statistics\Wave.cs" />
     <Compile Include="UpdateMode.cs" />
     <Compile Include="GUI\colourPicker.cs" />
   </ItemGroup>

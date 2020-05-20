@@ -11,14 +11,14 @@ using Verse.AI.Group;
 
 namespace DubsAnalyzer
 {
-    public static class CurrentStats // 'Current' stats that our drawing will access
+    public static class CurrentLogStats // 'Current' stats that our drawing will access
     {
         public static object sync = new object();
-        public static GetStatLogic stats = null;
+        public static LogStats stats = null;
     }
 
 
-    public class GetStatLogic 
+    public class LogStats
     {
         // Per Tick
         public float MeanCallsPerTick;
@@ -45,7 +45,6 @@ namespace DubsAnalyzer
         public float[] LocalCalls;
 
         public static Thread thread = null;
-        public static object sync = new object();
         public static bool IsActiveThread = false;
 
         public void GenerateStats(double[] times, int[] calls)
@@ -54,7 +53,7 @@ namespace DubsAnalyzer
             thread.Start();
         }
 
-        private static void ExecuteWorker(GetStatLogic logic, double[] times, int[] calls)
+        private static void ExecuteWorker(LogStats logic, double[] times, int[] calls)
         {
             IsActiveThread = true;
             Thread.CurrentThread.IsBackground = true;
@@ -88,9 +87,9 @@ namespace DubsAnalyzer
             float callsMean = GetMean(logic.LocalCalls, sumNotNull);
             //logic.CallsPerTick = callsMean;
 
-            lock (CurrentStats.sync) // Dump our current statistics into our static class which our drawing class uses
+            lock (CurrentLogStats.sync) // Dump our current statistics into our static class which our drawing class uses
             {
-                CurrentStats.stats = logic;
+                CurrentLogStats.stats = logic;
             }
 
             IsActiveThread = false;
