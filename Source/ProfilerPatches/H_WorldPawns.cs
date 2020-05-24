@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using RimWorld;
@@ -8,8 +7,6 @@ using Verse;
 
 namespace DubsAnalyzer
 {
-
-
     [ProfileMode("World Tick", UpdateMode.Tick)]
     public static class H_WorldPawns 
     {

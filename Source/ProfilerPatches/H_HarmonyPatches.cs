@@ -93,7 +93,7 @@ namespace DubsAnalyzer
                     {
                         p++;
 
-                        if (pilers.Any(x => x.owner != Analyzer.harmony.Id) && !PatchedMeths.Contains(mode))
+                        if (pilers.Any(x => x.owner != Analyzer.harmony.Id && x.owner != Analyzer.perfharmony.Id) && !PatchedMeths.Contains(mode))
                         {
                             PatchedMeths.Add(mode);
                             Analyzer.harmony.Patch(mode, go, biff);
@@ -197,7 +197,7 @@ namespace DubsAnalyzer
                 {
                     try
                     {
-                        if (Analyzer.harmony.Id != fix.owner && !PatchedPres.Contains(fix))
+                        if (Analyzer.harmony.Id != fix.owner && Analyzer.perfharmony.Id != fix.owner && !PatchedPres.Contains(fix))
                         {
                             PatchedPres.Add(fix);
                             //  Log.Warning($"Logging prefix on {mode.Name} by {fix.owner}");
@@ -219,7 +219,7 @@ namespace DubsAnalyzer
                 {
                     try
                     {
-                        if (Analyzer.harmony.Id != fix.owner && !PatchedPosts.Contains(fix))
+                        if (Analyzer.harmony.Id != fix.owner && Analyzer.perfharmony.Id != fix.owner && !PatchedPosts.Contains(fix))
                         {
                             PatchedPosts.Add(fix);
                             //   Log.Warning($"Logging postfix on {mode.Name} by {fix.owner}");

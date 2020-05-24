@@ -7,9 +7,9 @@ namespace DubsAnalyzer
     [PerformancePatch]
     internal class H_ListerBuildingsRepairable
     {
-        public static void PerformancePatch()
+        public static void PerformancePatch(Harmony harmony)
         {
-            Analyzer.harmony.Patch(
+            harmony.Patch(
                 AccessTools.Method(typeof(ListerBuildingsRepairable), nameof(ListerBuildingsRepairable.UpdateBuilding)),
                 new HarmonyMethod(typeof(H_ListerBuildingsRepairable), nameof(Prefix)));
         }

@@ -3,7 +3,6 @@ using Verse;
 
 namespace DubsAnalyzer
 {
-
     [HarmonyPatch(typeof(Pawn), nameof(Pawn.Tick))]
     internal static class H_PawnTick
     {

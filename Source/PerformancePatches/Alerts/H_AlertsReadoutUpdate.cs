@@ -55,14 +55,14 @@ namespace DubsAnalyzer
             return true;
         }
 
-        public static void PerformancePatch()
+        public static void PerformancePatch(Harmony harmony)
         {
             var biff = new HarmonyMethod(typeof(H_AlertsReadoutUpdate), nameof(CheckAddOrRemoveAlert));
             var skiff = AccessTools.Method(typeof(AlertsReadout), nameof(AlertsReadout.CheckAddOrRemoveAlert));
-            Analyzer.harmony.Patch(skiff, biff);
+            harmony.Patch(skiff, biff);
 
             var skiff2 = AccessTools.Method(typeof(AlertsReadout), nameof(AlertsReadout.AlertsReadoutOnGUI));
-            Analyzer.harmony.Patch(skiff2, new HarmonyMethod(typeof(H_AlertsReadoutUpdate), nameof(AlertsReadoutOnGUI)));
+            harmony.Patch(skiff2, new HarmonyMethod(typeof(H_AlertsReadoutUpdate), nameof(AlertsReadoutOnGUI)));
 
              //   skiff2 = AccessTools.Method(typeof(AlertsReadout), nameof(AlertsReadout.AlertsReadoutUpdate));
                // Analyzer.harmony.Patch(skiff2, new HarmonyMethod(typeof(H_AlertsReadoutUpdate), nameof(AlertsReadoutUpdate)));

@@ -237,7 +237,7 @@ namespace DubsAnalyzer
                     else
                     {
                         daffy =
-                            $"{workGiver.def?.defName} - {workGiver.def?.workType.defName} - {workGiver.def?.modContentPack?.Name}";
+                            $"{j} {workGiver.def?.defName} - {workGiver.def?.workType.defName} - {workGiver.def?.modContentPack?.Name}";
                     }
 
                     //if (true)
@@ -372,6 +372,7 @@ namespace DubsAnalyzer
 
                             if (scanner.def.scanCells)
                             {
+                              //  Log.Warning("bullshit");
                                 Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
                                 var closestDistSquared = 99999f;
                                 var bestPriority = float.MinValue;

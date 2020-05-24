@@ -6,10 +6,10 @@ namespace DubsAnalyzer
     [PerformancePatch]
     internal class H_CompDeepDrill
     {
-        public static void PerformancePatch()
+        public static void PerformancePatch(Harmony harmony)
         {
             var skiff = AccessTools.Method(typeof(CompDeepDrill), nameof(CompDeepDrill.CanDrillNow));
-            Analyzer.harmony.Patch(skiff, new HarmonyMethod(typeof(H_CompDeepDrill), nameof(Prefix)));
+            harmony.Patch(skiff, new HarmonyMethod(typeof(H_CompDeepDrill), nameof(Prefix)));
         }
 
         public static bool Prefix(CompDeepDrill __instance, ref bool __result)

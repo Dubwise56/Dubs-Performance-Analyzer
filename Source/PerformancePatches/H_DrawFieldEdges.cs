@@ -7,7 +7,7 @@ namespace DubsAnalyzer
     //[PerformancePatch]
     //internal class H_DrawFieldEdges
     //{
-    //    public static void PerformancePatch()
+    //    public static void PerformancePatch(Harmony harmony)
     //    {
     //        var biff = new HarmonyMethod(typeof(H_DrawFieldEdges), nameof(Prefix));
     //        var skiff = AccessTools.Method(typeof(Room), nameof(Room.DrawFieldEdges));

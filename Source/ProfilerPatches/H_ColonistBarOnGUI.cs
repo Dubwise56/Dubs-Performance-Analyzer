@@ -2,12 +2,10 @@
 using RimWorld;
 using RimWorld.Planet;
 using UnityEngine;
-using Verse;
+using Verse.AI.Group;
 
 namespace DubsAnalyzer
 {
-
-
     [ProfileMode("ColonistBarOnGUI", UpdateMode.GUI)]
     [HarmonyPatch(typeof(ColonistBar), nameof(ColonistBar.ColonistBarOnGUI))]
     internal class H_ColonistBarOnGUI

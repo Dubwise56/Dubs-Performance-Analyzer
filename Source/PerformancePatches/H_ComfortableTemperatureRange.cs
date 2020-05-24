@@ -8,12 +8,12 @@ namespace DubsAnalyzer
     static class H_ComfortableTemperatureRange
     {
 
-        public static void PerformancePatch()
+        public static void PerformancePatch(Harmony harmony)
         {
             var jiff = AccessTools.Method(typeof(GenTemperature), nameof(GenTemperature.ComfortableTemperatureRange), new[] { typeof(Pawn) });
             var pre = new HarmonyMethod(typeof(H_ComfortableTemperatureRange), nameof(Prefix));
             var post = new HarmonyMethod(typeof(H_ComfortableTemperatureRange), nameof(Postfix));
-            Analyzer.harmony.Patch(jiff, pre, post);
+           harmony.Patch(jiff, pre, post);
         }
 
         public static Dictionary<int, FloatRange> tempCache = new Dictionary<int, FloatRange>();

@@ -56,18 +56,20 @@ namespace DubsAnalyzer
         {
             if (Patchinator == null)
             {
+                if (Dialog_Analyzer.State == CurrentState.Unpatching) return;
+
                 Patchinator = new Thread(() =>
+            {
+                try
                 {
-                    try
-                    {
-                        AccessTools.Method(typeRef, "ProfilePatch")?.Invoke(null, null);
-                        IsPatched = true;
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error(e.ToString());
-                    }
-                });
+                    AccessTools.Method(typeRef, "ProfilePatch")?.Invoke(null, null);
+                    IsPatched = true;
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e.ToString());
+                }
+            });
                 Patchinator.Start();
             }
         }

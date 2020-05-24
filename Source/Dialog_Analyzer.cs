@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -25,22 +26,23 @@ namespace DubsAnalyzer
         public static Texture2D sav = ContentFinder<Texture2D>.Get("DPA/UI/sav", false);
         public static readonly Texture2D
             blue = SolidColorMaterials.NewSolidColorTexture(new Color32(80, 123, 160, 255));
-        public static float patchListWidth =220f;
+        public static float patchListWidth = 220f;
         private static float groaner = 9999999;
         private static Vector2 scrolpos = Vector2.zero;
         private static Vector2 scrolpostabs = Vector2.zero;
         public static bool ShowSettings = true;
-        public static bool PatchedEverything;
-
+        static Thread CleanupPatches = null;
+        public static CurrentState State = CurrentState.Unitialised;
         public override void PreOpen()
         {
             base.PreOpen();
-            if (!PatchedEverything)
+            if (State == CurrentState.Unitialised)
             {
+                State = CurrentState.Patching;
                 Log.Message("Applying profiling patches...");
                 try
                 {
-                    var modes = GenTypes.AllTypes.Where(m => m.TryGetAttribute<ProfileMode>(out _)).OrderBy(m => m.TryGetAttribute<ProfileMode>().name);
+                    var modes = GenTypes.AllTypes.Where(m => m.TryGetAttribute<ProfileMode>(out _)).OrderBy(m => m.TryGetAttribute<ProfileMode>().name).ToList();
 
                     foreach (var mode in modes)
                     {
@@ -52,7 +54,7 @@ namespace DubsAnalyzer
                             foreach (var fieldInfo in mode.GetFields().Where(m => m.TryGetAttribute<Setting>(out _)))
                             {
                                 var sett = fieldInfo.TryGetAttribute<Setting>();
-                                att.Settings.Add(fieldInfo, sett);
+                                att.Settings.SetOrAdd(fieldInfo, sett);
                             }
                             att.MouseOver = AccessTools.Method(mode, "MouseOver");
                             att.Clicked = AccessTools.Method(mode, "Clicked");
@@ -64,7 +66,7 @@ namespace DubsAnalyzer
                             {
                                 if (att.mode == profileTab.UpdateMode)
                                 {
-                                    profileTab.Modes.Add(att, mode);
+                                    profileTab.Modes.SetOrAdd(att, mode);
                                 }
                             }
                         }
@@ -84,8 +86,6 @@ namespace DubsAnalyzer
                         Log.Error(e.ToString());
                     }
 
-
-                    PatchedEverything = true;
                     Log.Message("Done");
                 }
                 catch (Exception e)
@@ -93,7 +93,7 @@ namespace DubsAnalyzer
                     Log.Error(e.ToString());
                 }
             }
-
+            State = CurrentState.Open;
             Analyzer.StartProfiling();
         }
 
@@ -103,6 +103,11 @@ namespace DubsAnalyzer
             Analyzer.StopProfiling();
             Analyzer.Reset();
             Analyzer.Settings.Write();
+            if (State != CurrentState.Unitialised)
+            {
+                CleanupPatches = new Thread(() => Analyzer.unPatchMethods());
+                CleanupPatches.Start();
+            }
         }
 
 
@@ -318,7 +323,7 @@ namespace DubsAnalyzer
                 try
                 {
 
-                    if (PatchedEverything)
+                    if (State == CurrentState.Open)
                     {
                         if (Dialog_Graph.key != string.Empty)
                         {

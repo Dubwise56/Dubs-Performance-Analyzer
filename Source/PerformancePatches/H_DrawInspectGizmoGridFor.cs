@@ -18,23 +18,28 @@ namespace DubsAnalyzer
         [Setting("Detour Mode", "GizmoInspectTip")]
         public static bool DetourMode = false;
 
-        public static void PerformancePatch()
+        public static void PerformancePatch(Harmony harmony)
         {
             var pre = new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Prefix));
             var post = new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Postfix));
             var skiff = AccessTools.Method(typeof(InspectGizmoGrid), nameof(InspectGizmoGrid.DrawInspectGizmoGridFor));
-            Analyzer.harmony.Patch(skiff, pre, post);
+            harmony.Patch(skiff, pre, post);
 
-            Analyzer.harmony.Patch(AccessTools.Method(typeof(GizmoGridDrawer), nameof(GizmoGridDrawer.DrawGizmoGrid)), new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Cacher)));
+            harmony.Patch(AccessTools.Method(typeof(GizmoGridDrawer), nameof(GizmoGridDrawer.DrawGizmoGrid)), new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Cacher)));
         }
 
         public static IEnumerable<Gizmo> cach;
-        public static void Cacher(IEnumerable<Gizmo> gizmos)
+        public static bool Cacher(IEnumerable<Gizmo> gizmos)
         {
+            // nullcheck for edge cases
+            if (gizmos == null) return false;
+
             if (Analyzer.Settings.OptimizeDrawInspectGizmoGrid)
             {
                 cach = gizmos.ToList();
             }
+
+            return true;
         }
 
         public static readonly string str = "InspectGizmoGrid.DrawInspectGizmoGridFor";

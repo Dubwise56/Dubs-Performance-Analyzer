@@ -10,21 +10,21 @@ namespace DubsAnalyzer
     [PerformancePatch]
     internal class H_JobDriver_BuildRoof
     {
-        public static void PerformancePatch()
+        public static void PerformancePatch(Harmony harmony)
         {
             var orig = AccessTools.Method(typeof(JobDriver_BuildRoof), nameof(JobDriver_BuildRoof.DoEffect));
-            Analyzer.harmony.Patch(orig, null, new HarmonyMethod(typeof(H_JobDriver_BuildRoof), nameof(DoEffectPostfix)));
+            harmony.Patch(orig, null, new HarmonyMethod(typeof(H_JobDriver_BuildRoof), nameof(DoEffectPostfix)));
 
             orig = AccessTools.Method(typeof(WorkGiver_BuildRoof), nameof(WorkGiver_BuildRoof.PotentialWorkCellsGlobal));
-            Analyzer.harmony.Patch(orig, new HarmonyMethod(typeof(H_JobDriver_BuildRoof), nameof(Prefix)));
+            harmony.Patch(orig, new HarmonyMethod(typeof(H_JobDriver_BuildRoof), nameof(Prefix)));
 
             var dirt = new HarmonyMethod(typeof(H_JobDriver_BuildRoof), nameof(SetDirty));
 
             orig = AccessTools.Method(typeof(RoofGrid), nameof(RoofGrid.SetRoof));
-            Analyzer.harmony.Patch(orig, dirt);
+            harmony.Patch(orig, dirt);
 
             orig = AccessTools.Method(typeof(Area), nameof(Area.MarkDirty));
-            Analyzer.harmony.Patch(orig, dirt);
+            harmony.Patch(orig, dirt);
         }
 
         public static Dictionary<int, bool> RoofDirty = new Dictionary<int, bool>();

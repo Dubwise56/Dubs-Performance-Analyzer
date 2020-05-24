@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using RimWorld;
@@ -47,26 +48,33 @@ namespace DubsAnalyzer
 
             foreach (var allLeafSubclass in typeof(StatPart).AllSubclassesNonAbstract())
             {
-                var mef = AccessTools.Method(allLeafSubclass, nameof(StatPart.TransformValue));
-                if (mef.DeclaringType == allLeafSubclass)
+                try
                 {
-                    var info = Harmony.GetPatchInfo(mef);
-                    var F = true;
-                    if (info != null)
+                    var mef = AccessTools.Method(allLeafSubclass, nameof(StatPart.TransformValue));
+                    if (mef.DeclaringType == allLeafSubclass)
                     {
-                        foreach (var infoPrefix in info.Prefixes)
+                        var info = Harmony.GetPatchInfo(mef);
+                        var F = true;
+                        if (info != null)
                         {
-                            if (infoPrefix.PatchMethod == go.method)
+                            foreach (var infoPrefix in info.Prefixes)
                             {
-                                F = false;
+                                if (infoPrefix.PatchMethod == go.method)
+                                {
+                                    F = false;
+                                }
                             }
                         }
-                    }
 
-                    if (F)
-                    {
-                        Analyzer.harmony.Patch(mef, go, biff);
+                        if (F)
+                        {
+                            Analyzer.harmony.Patch(mef, go, biff);
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"Failed to patch {allLeafSubclass} from {allLeafSubclass.Assembly.FullName} for profiling");
                 }
 
             }

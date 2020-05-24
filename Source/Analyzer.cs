@@ -16,7 +16,8 @@ namespace DubsAnalyzer
     {
         static Harmy()
         {
-            Analyzer.harmony = new Harmony("Dubwise.DubsOptimizer");
+            Analyzer.harmony = new Harmony("Dubwise.DubsProfiler");
+            Analyzer.perfharmony = new Harmony("Dubwise.DubsOptimizer");
 
             H_KeyPresses.PatchMe();
 
@@ -25,7 +26,7 @@ namespace DubsAnalyzer
             foreach (var mode in modes)
             {
                 //AccessTools.Method(mode, "ProfilePatch")?.Invoke(null, null);
-                AccessTools.Method(mode, "PerformancePatch")?.Invoke(null, null);
+                AccessTools.Method(mode, "PerformancePatch")?.Invoke(null, new object[]{ Analyzer.perfharmony });
             }
 
 
@@ -44,6 +45,7 @@ namespace DubsAnalyzer
 
     public class Analyzer : Mod
     {
+        public static Harmony perfharmony;
         public static Harmony harmony;
         public static readonly int MaxHistoryEntries = 3000;
         public static readonly int AveragingTime = 3000;
@@ -55,7 +57,53 @@ namespace DubsAnalyzer
         public static PerfAnalSettings Settings;
         public static bool running;
         private static bool RequestStop;
-        
+        private const int NumSecondsForPatchClear = 30;
+        public static void unPatchMethods(bool forceThrough = false)
+        {
+            Thread.CurrentThread.IsBackground = true;
+            Dialog_Analyzer.State = CurrentState.UnpatchingQueued;
+
+            if (!forceThrough)
+            {
+                for (int i = 0; i < NumSecondsForPatchClear; i++)
+                {
+                    // This should result in no overlap
+                    // If there are issues regarding spamming open and close, you can lower thread
+                    // sleep by x% and multiply NumSecondsForPatchClear to balance
+                    // I.e. Thread.Sleep(500), i < NumSecondsForPatchClear * 2;
+                    Thread.Sleep(1000);
+                    if (Dialog_Analyzer.State != CurrentState.UnpatchingQueued)
+                        return;
+                }
+            }
+
+            Dialog_Analyzer.State = CurrentState.Unpatching;
+
+            Log.Message("Beginning to unpatch methods");
+
+            ClearState();
+            harmony.UnpatchAll(harmony.Id);
+
+            Log.Message("Successfully finished unpatching methods");
+
+            Dialog_Analyzer.State = CurrentState.Unitialised;
+        }
+
+        public static void ClearState()
+        {
+            foreach (var maintab in Dialog_Analyzer.MainTabs)
+            {
+                maintab.Modes.Clear();
+            }
+
+            H_HarmonyPatches.PatchedPres = new List<Patch>();
+            H_HarmonyPatches.PatchedPosts = new List<Patch>();
+
+            PatchUtils.PatchedTypes = new List<string>();
+            PatchUtils.PatchedAssemblies = new List<string>();
+
+            Reset();
+        }
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
