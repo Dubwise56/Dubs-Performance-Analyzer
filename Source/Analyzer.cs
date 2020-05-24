@@ -96,6 +96,7 @@ namespace DubsAnalyzer
                 maintab.Modes.Clear();
             }
 
+            H_HarmonyTranspilers.PatchedMeths = new List<MethodBase>();
             H_HarmonyPatches.PatchedPres = new List<Patch>();
             H_HarmonyPatches.PatchedPosts = new List<Patch>();
 
