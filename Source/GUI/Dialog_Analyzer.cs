@@ -275,6 +275,8 @@ namespace DubsAnalyzer
                 catch (Exception) { }
             }
 
+            GUI.EndGroup();
+
             foreach(var action in QueuedMessages)
                 action();
 
@@ -307,7 +309,6 @@ namespace DubsAnalyzer
             listing.Begin(innerRect);
 
             float currentListHeight = 0;
-
 
             // Lets have a 'tab' summary 
             // We will get stats like a; total time on tab

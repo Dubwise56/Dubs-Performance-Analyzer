@@ -251,7 +251,6 @@ namespace DubsAnalyzer
             Widgets.DrawLine(new Vector2(position.x, LogMaxY), new Vector2(position.xMax, LogMaxY), Color.red, 1f);
 
             last = Vector2.zero;
-            GUI.EndGroup();
         }
     }
 }

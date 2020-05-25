@@ -25,6 +25,7 @@ namespace DubsAnalyzer
             DrawStatistics(listing);
 
             listing.End();
+            
         }
 
         public static void DrawStatistics(Listing_Standard listing)
