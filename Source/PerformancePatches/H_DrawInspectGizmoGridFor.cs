@@ -18,14 +18,14 @@ namespace DubsAnalyzer
         [Setting("Detour Mode", "GizmoInspectTip")]
         public static bool DetourMode = false;
 
-        public static void PerformancePatch()
+        public static void PerformancePatch(Harmony harmony)
         {
             var pre = new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Prefix));
             var post = new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Postfix));
             var skiff = AccessTools.Method(typeof(InspectGizmoGrid), nameof(InspectGizmoGrid.DrawInspectGizmoGridFor));
-            Analyzer.perfharmony.Patch(skiff, pre, post);
+            harmony.Patch(skiff, pre, post);
 
-            Analyzer.perfharmony.Patch(AccessTools.Method(typeof(GizmoGridDrawer), nameof(GizmoGridDrawer.DrawGizmoGrid)), new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Cacher)));
+            harmony.Patch(AccessTools.Method(typeof(GizmoGridDrawer), nameof(GizmoGridDrawer.DrawGizmoGrid)), new HarmonyMethod(typeof(H_DrawInspectGizmoGridFor), nameof(Cacher)));
         }
 
         public static IEnumerable<Gizmo> cach;

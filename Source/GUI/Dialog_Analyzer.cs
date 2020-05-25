@@ -64,7 +64,7 @@ namespace DubsAnalyzer
                 Log.Message("Applying profiling patches...");
                 try
                 {
-                    var modes = GenTypes.AllTypes.Where(m => m.TryGetAttribute<ProfileMode>(out _)).OrderBy(m => m.TryGetAttribute<ProfileMode>().name);
+                    var modes = GenTypes.AllTypes.Where(m => m.TryGetAttribute<ProfileMode>(out _)).OrderBy(m => m.TryGetAttribute<ProfileMode>().name).ToList();
 
                     foreach (var mode in modes)
                     {
@@ -376,7 +376,7 @@ namespace DubsAnalyzer
                 {
                     if (visible.Contains(Event.current.mousePosition))
                     {
-                        List<FloatMenuOption> options = (from opt in RightClickDropDown(log) select opt.option).ToList();
+                        List<FloatMenuOption> options = RightClickDropDown(log).ToList();
                         Find.WindowStack.Add(new FloatMenu(options));
                     }
                 }
@@ -418,50 +418,35 @@ namespace DubsAnalyzer
             currentListHeight += 4f;
             currentListHeight += visible.height;
         }
-        private static IEnumerable<Widgets.DropdownMenuElement<int>> RightClickDropDown(ProfileLog log)
+
+        private static IEnumerable<FloatMenuOption> RightClickDropDown(ProfileLog log)
         {
-            // You may be wondering... why the returntype of int...
-
-
-            // good question?
-
             if (Analyzer.Settings.AdvancedMode)
             {
                 if (CurrentKey.Contains("Harmony")) // we can return an 'unpatch'
                 {
-                    yield return new Widgets.DropdownMenuElement<int>
-                    {
-                        option = new FloatMenuOption("Unpatch Method", delegate
+                    yield return new FloatMenuOption("Unpatch Method", delegate
                         {
-                            if(log.Meth != null)
+                            if (log.Meth != null)
                             {
                                 UnPatchUtils.UnpatchMethod(log.Meth.Name);
-                            } else // lets try to get the damn method by label/name
-                            {
-                                
                             }
-                        }),
-                        payload = 1
-                    };
+                            else // lets try to get the damn method by label/name
+                            {
+
+                            }
+                        });
                 }
 
-                yield return new Widgets.DropdownMenuElement<int>
-                {
-                    option = new FloatMenuOption("Unpatch methods that patch", delegate
+                yield return new FloatMenuOption("Unpatch methods that patch", delegate
                     {
                         UnPatchUtils.UnpatchMethodsOnMethod(log.Meth.Name);
-                    }),
-                    payload = 2
-                };
+                    });
 
-                yield return new Widgets.DropdownMenuElement<int>
-                {
-                    option = new FloatMenuOption("Profile the internal methods of", delegate
+                yield return new FloatMenuOption("Profile the internal methods of", delegate
                     {
                         InternalMethods.PatchMethod(log.Meth);
-                    }),
-                    payload = 3
-                };
+                    });
             }
         }
 

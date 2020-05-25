@@ -47,9 +47,12 @@ namespace DubsAnalyzer
         public bool OptimizeDrills;
         public bool DisableAlerts;
         public bool OverrideBuildRoof;
+        public bool FactionRemovalMode;
         public bool ReplaceIngredientFinder;
         public bool ShowOnMainTab = true;
         public bool AdvancedMode = false;
+        public bool SnowOptimize = false;
+
         //  public bool MuteGC = false;
         public override void ExposeData()
         {
@@ -61,6 +64,7 @@ namespace DubsAnalyzer
             Scribe_Values.Look(ref ShowOnMainTab, "ShowOnMainTab");
             Scribe_Values.Look(ref FixRepair, "FixRepair");
             Scribe_Values.Look(ref FixGame, "FixGame");
+            Scribe_Values.Look(ref SnowOptimize, "SnowOptimize");
             Scribe_Values.Look(ref OptimizeDrills, "OptimizeDrills");
             Scribe_Values.Look(ref UnlockFramerate, "UnlockFramerate");
             //  Scribe_Values.Look(ref ReplaceIngredientFinder, "ReplaceIngredientFinder", false);
@@ -88,10 +92,22 @@ namespace DubsAnalyzer
 
         }
 
+        private static Vector2 scrollPos;
+        public static float settingsHeight = 500;
 
         public void DoSettings(Rect canvas)
         {
-            listing.Begin(canvas.ContractedBy(10f));
+            if (Event.current.type == EventType.Layout)
+            {
+                return;
+            }
+
+            var view = canvas.AtZero();
+            view.height = settingsHeight;
+            Widgets.BeginScrollView(canvas, ref scrollPos, view);
+            GUI.BeginGroup(view);
+            view.height = 9999;
+            listing.Begin(view.ContractedBy(10f));
 
             var rec = listing.GetRect(24f);
             Widgets.DrawTextureFitted(rec.LeftPartPixels(40f), Gfx.Support, 1f);
@@ -146,9 +162,10 @@ namespace DubsAnalyzer
                     }
                 }
             }
+            DubGUI.Checkbox("SnowOptimize".Translate(), listing, ref SnowOptimize);
             DubGUI.Checkbox("OptimizeDrills".Translate(), listing, ref OptimizeDrills);
             DubGUI.Checkbox("OptimiseAlerts".Translate(), listing, ref OptimiseAlerts);
-            
+
             DubGUI.Checkbox("GizmoOpti".Translate(), listing, ref OptimizeDrawInspectGizmoGrid);
             var jam = Analyzer.Settings.MeshOnlyBuildings;
             DubGUI.Checkbox("RealtimeCondu".Translate(), listing, ref MeshOnlyBuildings);
@@ -156,12 +173,13 @@ namespace DubsAnalyzer
             {
                 H_FixWallsNConduits.Swapclasses();
             }
-            // dirk("Never check jobs on take damage", ref Analyzer.Settings.NeverCheckJobsOnDamage);
+            DubGUI.Checkbox("DamageJobRecheck".Translate(), listing, ref NeverCheckJobsOnDamage);
             listing.GapLine();
             DubGUI.Checkbox("OverrideAlerts".Translate(), listing, ref OverrideAlerts);
             listing.GapLine();
             DubGUI.Checkbox("KillMusicMan".Translate(), listing, ref KillMusicMan);
             DubGUI.Checkbox("DisableAlerts".Translate(), listing, ref DisableAlerts);
+            DubGUI.Checkbox("FactionRemovalMode".Translate(), listing, ref FactionRemovalMode);
             //  dirk("Replace bill ingredient finder (Testing only)", ref Analyzer.Settings.ReplaceIngredientFinder);
             //var dan = Analyzer.Settings.HumanoidOnlyWarden;
             //dirk("Replace warden jobs to only scan Humanoids (Testing only)", ref Analyzer.Settings.HumanoidOnlyWarden);
@@ -188,7 +206,46 @@ namespace DubsAnalyzer
                 }
             }
 
+            if (AdvancedMode)
+            {
+                DubGUI.Checkbox("TickPawnTog".Translate(), listing, ref H_PawnTick.TickPawns);
+
+                listing.GapLine();
+
+                listing.Label("CustoMethProfPatch".Translate());
+                var r = listing.GetRect(25f);
+                DubGUI.InputField(r, "Type:Method", ref methToPatch, ShowName: true);
+                r = listing.GetRect(25f).LeftPartPixels(150);
+                if (Widgets.RadioButtonLabeled(r, "CustoTickPatch".Translate(), customPatchMode == UpdateMode.Tick))
+                {
+                    customPatchMode = UpdateMode.Tick;
+                }
+                r = listing.GetRect(25f).LeftPartPixels(150);
+                if (Widgets.RadioButtonLabeled(r, "CustoUpdatePatch".Translate(), customPatchMode == UpdateMode.Update))
+                {
+                    customPatchMode = UpdateMode.Update;
+                }
+                var b = listing.GetRect(25);
+                if (Widgets.ButtonText(b.LeftPartPixels(100), "TryCustoPatch".Translate()))
+                {
+                    if (customPatchMode == UpdateMode.Tick)
+                    {
+                        CustomProfilersTick.PatchMeth(methToPatch);
+                    }
+                    else
+                    {
+                        CustomProfilersUpdate.PatchMeth(methToPatch);
+                    }
+                }
+            }
+
+            settingsHeight = listing.GetRect(25).yMax;
             listing.End();
+
+            GUI.EndGroup();
+
+
+            Widgets.EndScrollView();
         }
 
         public static UpdateMode customPatchMode = UpdateMode.Tick;

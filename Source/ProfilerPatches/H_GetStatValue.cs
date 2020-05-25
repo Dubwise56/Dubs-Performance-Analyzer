@@ -24,24 +24,21 @@ namespace DubsAnalyzer
         public static void ProfilePatch()
         {
             Log.Message("Patching stats");
-
             var jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValue));
-            var jiff2 = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueForPawn));
             var pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(Prefix));
             var post = new HarmonyMethod(typeof(H_GetStatValue), nameof(Postfix));
             Analyzer.harmony.Patch(jiff, pre, post);
-            Analyzer.harmony.Patch(jiff2, pre, post);
 
 
-            jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueAbstract), new []{ typeof(BuildableDef), typeof(StatDef), typeof(ThingDef) });
+            jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueAbstract), new[] { typeof(BuildableDef), typeof(StatDef), typeof(ThingDef) });
             pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(PrefixAb));
             Analyzer.harmony.Patch(jiff, pre, post);
 
-            jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueAbstract), new []{ typeof(AbilityDef), typeof(StatDef) });
+            jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueAbstract), new[] { typeof(AbilityDef), typeof(StatDef) });
             pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(PrefixAbility));
             Analyzer.harmony.Patch(jiff, pre, post);
 
-            jiff = AccessTools.Method(typeof(StatWorker), nameof(StatWorker.GetValue), new []{ typeof(StatRequest), typeof(bool) });
+            jiff = AccessTools.Method(typeof(StatWorker), nameof(StatWorker.GetValue), new[] { typeof(StatRequest), typeof(bool) });
             pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(GetValueDetour));
             Analyzer.harmony.Patch(jiff, pre);
 
@@ -51,26 +48,33 @@ namespace DubsAnalyzer
 
             foreach (var allLeafSubclass in typeof(StatPart).AllSubclassesNonAbstract())
             {
-                var mef = AccessTools.Method(allLeafSubclass, nameof(StatPart.TransformValue));
-                if (mef.DeclaringType == allLeafSubclass)
+                try
                 {
-                    var info = Harmony.GetPatchInfo(mef);
-                    var F = true;
-                    if (info != null)
+                    var mef = AccessTools.Method(allLeafSubclass, nameof(StatPart.TransformValue));
+                    if (mef.DeclaringType == allLeafSubclass)
                     {
-                        foreach (var infoPrefix in info.Prefixes)
+                        var info = Harmony.GetPatchInfo(mef);
+                        var F = true;
+                        if (info != null)
                         {
-                            if (infoPrefix.PatchMethod == go.method)
+                            foreach (var infoPrefix in info.Prefixes)
                             {
-                                F = false;
+                                if (infoPrefix.PatchMethod == go.method)
+                                {
+                                    F = false;
+                                }
                             }
                         }
-                    }
 
-                    if (F)
-                    {
-                        Analyzer.harmony.Patch(mef, go, biff);
+                        if (F)
+                        {
+                            Analyzer.harmony.Patch(mef, go, biff);
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    Log.Error($"Failed to patch {allLeafSubclass} from {allLeafSubclass.Assembly.FullName} for profiling");
                 }
 
             }
@@ -142,7 +146,7 @@ namespace DubsAnalyzer
                 {
                     slag = $"{__instance.stat.defName} FinalizeValue";
                 }
-                
+
                 Analyzer.Start(slag);
                 sw.FinalizeValue(req, ref valueUnfinalized, applyPostProcess);
                 Analyzer.Stop(slag);
@@ -193,7 +197,7 @@ namespace DubsAnalyzer
                 {
                     __state = $"{stat.defName} abstract";
                 }
-               
+
                 Analyzer.Start(__state);
             }
             return true;
@@ -212,7 +216,7 @@ namespace DubsAnalyzer
                 {
                     __state = $"{stat.defName} abstract";
                 }
-               
+
                 Analyzer.Start(__state);
             }
             return true;

@@ -7,7 +7,7 @@
     <ProjectGuid>{CBA2EB7B-3765-1F06-8015-AE92EC16F8E3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dubs Performance Analyzer</RootNamespace>
+    <RootNamespace>DubsAnalyzer</RootNamespace>
     <AssemblyName>PerformanceAnalyzer</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -47,6 +47,7 @@
     <Compile Include="GUI\DubGUI.cs" />
     <Compile Include="GUI\DubResources.cs" />
     <Compile Include="LinkedQueue.cs" />
+    <Compile Include="PerformancePatches\H_Notify_PawnDamaged.cs" />
     <Compile Include="ProfilerPatches\Custom\InternalMethods.cs" />
     <Compile Include="ProfilerPatches\Custom\InternalMethodUtility.cs" />
     <Compile Include="Statistics\LogStats.cs" />

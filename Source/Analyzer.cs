@@ -25,7 +25,7 @@ namespace DubsAnalyzer
             foreach (var mode in modes)
             {
                 //AccessTools.Method(mode, "ProfilePatch")?.Invoke(null, null);
-                AccessTools.Method(mode, "PerformancePatch")?.Invoke(null, null);
+                AccessTools.Method(mode, "PerformancePatch")?.Invoke(null, new object[] { Analyzer.perfharmony });
             }
 
             //foreach (var workGiverDef in DefDatabase<WorkGiverDef>.AllDefsListForReading)
@@ -266,6 +266,7 @@ namespace DubsAnalyzer
 
             H_HarmonyPatches.PatchedPres = new List<Patch>();
             H_HarmonyPatches.PatchedPosts = new List<Patch>();
+            H_HarmonyTranspilers.PatchedMeths = new List<MethodBase>();
 
             PatchUtils.PatchedTypes = new List<string>();
             PatchUtils.PatchedAssemblies = new List<string>();

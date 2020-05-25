@@ -10,7 +10,7 @@ namespace DubsAnalyzer
         public static AlertInfo tattered = new AlertInfo();
         public static AlertInfo nudist = new AlertInfo();
 
-        public static void PerformancePatch()
+        public static void PerformancePatch(Harmony harmony)
         {
             var firstFlag = AccessTools.Method(typeof(Pawn_ApparelTracker),
                 nameof(Pawn_ApparelTracker.TakeWearoutDamageForDay)); // pawns apparel has taken wearout damage
@@ -23,15 +23,15 @@ namespace DubsAnalyzer
                 }); // pawn has removed a piece of clothing
 
             var reaction = new HarmonyMethod(typeof(H_Alert_Clothing), nameof(UpdateFlag));
-            Analyzer.perfharmony.Patch(firstFlag, null, reaction);
-            Analyzer.perfharmony.Patch(secondFlag, null, reaction);
-            Analyzer.perfharmony.Patch(thirdFlag, null, reaction);
+            harmony.Patch(firstFlag, null, reaction);
+            harmony.Patch(secondFlag, null, reaction);
+            harmony.Patch(thirdFlag, null, reaction);
 
             var meth = AccessTools.Method(typeof(Alert_Thought), nameof(Alert_Thought.GetReport));
             var pre = new HarmonyMethod(typeof(H_Alert_Clothing), nameof(AlertCheck));
             var post = new HarmonyMethod(typeof(H_Alert_Clothing), nameof(PostCheck));
 
-            Analyzer.perfharmony.Patch(meth, pre, post);
+            harmony.Patch(meth, pre, post);
         }
 
         public static void UpdateFlag()

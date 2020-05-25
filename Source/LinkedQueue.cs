@@ -8,7 +8,8 @@ using Verse;
 
 namespace DubsAnalyzer
 {
-    // To eventually be used as the data structure for holding Log & Frametime History
+    // Makes a lot of junk, is faster tho
+    // backburner TM
 
     public class LinkedQueue<T>
     {
@@ -24,14 +25,16 @@ namespace DubsAnalyzer
                 next = null;
                 previous = null;
             }
+
         }
 
-        private Node head; // the head of the queue is actually the 'newest' member
-        private Node tail; // the tail of the queue is the 'oldest' member
-        private int maxValues = int.MaxValue;
-        public int MaxValues { get; set; }
+        private Node head; // the head of the queue is actually the 'oldest' member
+        private Node tail; // the tail of the queue is the 'newest' member
+        public int MaxValues { get; set; } = int.MaxValue;
         private int count = 0;
         public int Count => count;
+
+        private Tuple<Node, int> Current { get; set; }
 
         public LinkedQueue()
         {
@@ -40,28 +43,44 @@ namespace DubsAnalyzer
         }
         public LinkedQueue(int maxValue)
         {
-            head = null;
-            tail = head;
+            tail = null;
+            head = tail;
             this.MaxValues = maxValue;
+        }
+
+        public LinkedQueue(IEnumerable<T> collection, int maxValue)
+        {
+            tail = null;
+            head = tail;
+            this.MaxValues = maxValue;
+            foreach (T item in collection)
+            {
+                Enqueue(item);
+                count++;
+            }
         }
 
         public LinkedQueue<T> Enqueue(T data)
         {
             Node toAddNode = new Node(data);
-            toAddNode.next = head;
+
+            toAddNode.next = tail;
             toAddNode.previous = null;
 
-            if (head != null)
-                head.previous = toAddNode;
+            if (tail != null)
+                tail.previous = toAddNode;
+            else
+                head = toAddNode;
 
-            head = toAddNode;
+            tail = toAddNode;
             count++;
 
-            if (count > maxValues) // pop excessive values for memory
+            if (count > MaxValues) // pop excessive values
             {
-                tail = tail.next;
-                tail.previous = null;
+                head = head.previous;
+                head.next = null;
             }
+
             return this;
         }
         public T Peak()
@@ -69,7 +88,8 @@ namespace DubsAnalyzer
             try
             {
                 return head.data;
-            } catch (Exception)
+            }
+            catch (Exception)
             {
                 return default(T);
             }
@@ -78,29 +98,84 @@ namespace DubsAnalyzer
         {
             try
             {
-                T returnValue = tail.data;
-                tail = null;
+                T returnValue = head.data;
+                head = head.previous;
+                head.next = null;
                 count--;
+
                 return returnValue;
-            } catch (Exception)
+            }
+            catch (Exception)
             {
                 return default(T);
             }
         }
+        public T At(int index)
+        {
+            if (index > count || index < 0)
+                return default(T);
+
+            if (Current != null && (index - Current.Item2) * (index - Current.Item2) <= (count / 2) * (count / 2))
+            {
+                if (index >= Current.Item2)
+                {
+                    return SearchDown(Current.Item2, Current.Item1, index);
+                }
+                else
+                {
+                    return SearchUp(Current.Item2, Current.Item1, index);
+                }
+            }
+            else if (index >= count / 2)
+            {
+                return SearchUp(count, tail, index);
+            }
+            else
+            {
+                return SearchDown(0, head, index);
+            }
+        }
+
+        private T SearchDown(int startLocation, Node node, int target)
+        {
+            while (startLocation != target)
+            {
+                node = node.previous;
+                startLocation++;
+            }
+
+            Current = new Tuple<Node, int>(node, target);
+            return node.data;
+        }
+        private T SearchUp(int startLocation, Node node, int target)
+        {
+            while (startLocation != target)
+            {
+                node = node.next;
+                startLocation--;
+            }
+
+            Current = new Tuple<Node, int>(node, target);
+            return node.data;
+        }
         public bool Remove(T data)
         {
             Node node = head;
-            while(node != null)
+            while (node != null)
             {
-                if(node.data.Equals(data)) // we can use linkedqueues for structs
+                if (node.data.Equals(data)) //mfor structs
                 {
                     Node nextNode = node.next;
                     Node prevNode = node.previous;
 
-                    if(nextNode != null)
+                    if (nextNode != null)
+                    {
                         nextNode.previous = prevNode;
-                    if(prevNode != null)
+                    }
+                    if (prevNode != null)
+                    {
                         prevNode.next = nextNode;
+                    }
 
                     node = null;
                     count--;
@@ -110,13 +185,17 @@ namespace DubsAnalyzer
             return false;
         }
 
+        public IEnumerator<T> GetEnumerator()
+        {
+            return Enumerator();
+        }
         public IEnumerator<T> Enumerator()
         {
             Node current = head;
             while (current != null)
             {
                 yield return current.data;
-                current = current.next;
+                current = current.previous;
             }
         }
         public IEnumerator<Tuple<T, int>> EnumeratorIndexed()
@@ -126,7 +205,7 @@ namespace DubsAnalyzer
             while (current != null)
             {
                 yield return new Tuple<T, int>(current.data, localCount++);
-                current = current.next;
+                current = current.previous;
             }
         }
 
@@ -136,7 +215,7 @@ namespace DubsAnalyzer
             while (current != null)
             {
                 yield return current.data;
-                current = current.previous;
+                current = current.next;
             }
         }
         public IEnumerator<Tuple<T, int>> ReverseEnumeratorIndexed()
@@ -146,7 +225,7 @@ namespace DubsAnalyzer
             while (current != null)
             {
                 yield return new Tuple<T, int>(current.data, localCount--);
-                current = current.previous;
+                current = current.next;
             }
         }
 
@@ -154,7 +233,7 @@ namespace DubsAnalyzer
         {
             List<T> returnList = new List<T>(count);
             Node node = head;
-            while(node != null)
+            while (node != null)
             {
                 returnList.Add(node.data);
                 node = node.next;
@@ -166,6 +245,12 @@ namespace DubsAnalyzer
             var list = AsList();
             list.Sort();
             return list;
+        }
+
+        public void Clear()
+        {
+            tail = null;
+            head = tail;
         }
     }
 }
