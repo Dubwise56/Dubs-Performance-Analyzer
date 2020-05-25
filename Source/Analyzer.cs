@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -254,7 +255,7 @@ namespace DubsAnalyzer
 
             InternalMethods.UnpatchAllMethods();
 
-            Log.Message("Successfully finished unpatching methods");
+            Messages.Message("Dubs Performance Analyzer: Successfully finished unpatching methods", MessageTypeDefOf.NeutralEvent);
 
             Dialog_Analyzer.State = CurrentState.Unitialised;
         }
@@ -262,9 +263,7 @@ namespace DubsAnalyzer
         public static void ClearState()
         {
             foreach (var maintab in Dialog_Analyzer.SideTabCategories)
-            {
                 maintab.Modes.Clear();
-            }
 
             H_HarmonyPatches.PatchedPres = new List<Patch>();
             H_HarmonyPatches.PatchedPosts = new List<Patch>();

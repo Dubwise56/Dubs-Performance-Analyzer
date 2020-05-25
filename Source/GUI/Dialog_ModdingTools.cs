@@ -172,6 +172,7 @@ namespace DubsAnalyzer
                         CustomProfilersTick.PatchMeth(currentInput);
                     else
                         CustomProfilersUpdate.PatchMeth(currentInput);
+                    
                     break;
                 case CurrentInput.Type:
                     CustomProfilersUpdate.PatchType(currentInput);
@@ -188,8 +189,8 @@ namespace DubsAnalyzer
         {
             switch (unPatchType)
             {
-                case UnPatchType.Method:            UnPatchUtils.UnpatchMethod(currentUnPatch);   break;
-                case UnPatchType.MethodsOnMethod:   UnPatchUtils.UnpatchMethod(currentUnPatch);   break;
+                case UnPatchType.Method:            PatchUtils.UnpatchMethod(currentUnPatch);   break;
+                case UnPatchType.MethodsOnMethod:   PatchUtils.UnpatchMethod(currentUnPatch);   break;
                 case UnPatchType.All:               Analyzer.unPatchMethods(true);              break;
             }
         }

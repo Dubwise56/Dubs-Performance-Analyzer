@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.Experimental.PlayerLoop;
 using UnityEngine.UIElements;
 using Verse;
 
@@ -26,7 +27,7 @@ namespace DubsAnalyzer
 
     public enum CurrentSideTab
     {
-        Home, ModderTools, Categories
+        Home, ModderTools, Tick, Update, GUI
     }
 
     [StaticConstructorOnStartup]
@@ -54,6 +55,8 @@ namespace DubsAnalyzer
         public static CurrentState State = CurrentState.Unitialised;
         public static string CurrentKey = string.Empty;
         private static Thread CleanupPatches = null;
+
+        public static List<Action> QueuedMessages = new List<Action>();
 
         public override void PreOpen()
         {
@@ -134,9 +137,9 @@ namespace DubsAnalyzer
         {
             new ProfileTab("Home",          () => { CurrentSideTab = CurrentSideTab.Home; },         () => CurrentSideTab == CurrentSideTab.Home,            UpdateMode.Dead,    "Settings and utils"),
             new ProfileTab("Modder Tools",  () => { CurrentSideTab = CurrentSideTab.ModderTools; },  () => CurrentSideTab == CurrentSideTab.ModderTools,     UpdateMode.Dead,    "Utilities for modders and advanced users to profile mods!"),
-            new ProfileTab("Tick",          () => { CurrentSideTab = CurrentSideTab.Categories; },   () => false,                                            UpdateMode.Tick,    "Things that run on tick"),
-            new ProfileTab("Update",        () => { CurrentSideTab = CurrentSideTab.Categories; },   () => false,                                            UpdateMode.Update,  "Things that run per frame"),
-            new ProfileTab("GUI",           () => { CurrentSideTab = CurrentSideTab.Categories; },   () => false,                                            UpdateMode.GUI,      "Things that run on GUI")
+            new ProfileTab("Tick",          () => { CurrentSideTab = CurrentSideTab.Tick; },         () => CurrentSideTab == CurrentSideTab.Tick,            UpdateMode.Tick,    "Things that run on tick"),
+            new ProfileTab("Update",        () => { CurrentSideTab = CurrentSideTab.Update; },       () => CurrentSideTab == CurrentSideTab.Update,          UpdateMode.Update,  "Things that run per frame"),
+            new ProfileTab("GUI",           () => { CurrentSideTab = CurrentSideTab.GUI; },          () => CurrentSideTab == CurrentSideTab.GUI,             UpdateMode.GUI,      "Things that run on GUI")
         };
 
         public Dialog_Analyzer()
@@ -242,11 +245,11 @@ namespace DubsAnalyzer
                             if (windowRect.width <= InitialSize.x)
                                 windowRect.width += 450;
 
-                            Rect blurg = inner;
-                            blurg.width -= 450;
-                            Widgets.DrawMenuSection(blurg);
-                            blurg = blurg.ContractedBy(6f);
-                            DrawLogs(blurg);
+                            Rect expandedRect = inner;
+                            expandedRect.width -= 450;
+                            Widgets.DrawMenuSection(expandedRect);
+                            expandedRect = expandedRect.ContractedBy(6f);
+                            DrawLogs(expandedRect);
 
                             Rect r = new Rect(canvas.x + (windowRect.width - 478), canvas.y, 432, canvas.height);
                             if (CurrentKey == "Overview")
@@ -271,6 +274,11 @@ namespace DubsAnalyzer
                 }
                 catch (Exception) { }
             }
+
+            foreach(var action in QueuedMessages)
+                action();
+
+            QueuedMessages.Clear();
         }
 
         private void DrawLogs(Rect rect)
@@ -301,10 +309,12 @@ namespace DubsAnalyzer
             float currentListHeight = 0;
 
 
-            // Lets have a button for a 'tab' summary
+            // Lets have a 'tab' summary 
+            // We will get stats like a; total time on tab
             Rect visible = listing.GetRect(20);
 
             Text.Anchor = TextAnchor.MiddleCenter;
+
             DrawTabOverview(visible);
 
             currentListHeight += 24;
@@ -330,6 +340,7 @@ namespace DubsAnalyzer
             }
 
             listing.End();
+
             GUI.EndGroup();
             Widgets.EndScrollView();
 
@@ -471,13 +482,13 @@ namespace DubsAnalyzer
                 {
                     yield return new FloatMenuOption("Unpatch Method", delegate
                         {
-                            UnPatchUtils.UnpatchMethod(meth.Name);
+                            PatchUtils.UnpatchMethod(meth.Name);
                         });
                 }
 
                 yield return new FloatMenuOption("Unpatch methods that patch", delegate
                     {
-                        UnPatchUtils.UnpatchMethodsOnMethod(meth.Name);
+                        PatchUtils.UnpatchMethodsOnMethod(meth.Name);
                     });
 
                 yield return new FloatMenuOption("Profile the internal methods of", delegate
@@ -549,11 +560,11 @@ namespace DubsAnalyzer
 
             foreach (var mode in tab.Modes)
             {
-                DrawSideTab(ref row, mode);
+                DrawSideTab(ref row, mode, tab.UpdateMode);
             }
         }
 
-        private void DrawSideTab(ref Rect row, KeyValuePair<ProfileMode, Type> mode)
+        private void DrawSideTab(ref Rect row, KeyValuePair<ProfileMode, Type> mode, UpdateMode updateMode)
         {
             if (!mode.Key.Basics && !Analyzer.Settings.AdvancedMode) return;
 
@@ -568,23 +579,7 @@ namespace DubsAnalyzer
             Widgets.Label(row, mode.Key.name);
 
             if (Widgets.ButtonInvisible(row))
-            {
-                if (!(CurrentSideTab == CurrentSideTab.Categories))
-                {
-                    CurrentSideTab = CurrentSideTab.Categories;
-                    Analyzer.Settings.Write();
-                }
-                if (Analyzer.SelectedMode != null)
-                    AccessTools.Field(Analyzer.SelectedMode.typeRef, "Active").SetValue(null, false);
-
-                AccessTools.Field(mode.Value, "Active").SetValue(null, true);
-                Analyzer.SelectedMode = mode.Key;
-                CurrentKey = "Overview";
-                Analyzer.Reset();
-
-                if (!mode.Key.IsPatched)
-                    mode.Key.ProfilePatch();
-            }
+                SwapTab(mode, updateMode);
 
             TooltipHandler.TipRegion(row, mode.Key.tip);
 
@@ -627,6 +622,37 @@ namespace DubsAnalyzer
                     firstEntry = false;
                 }
             }
+        }
+    
+        
+        public static void SwapTab(KeyValuePair<ProfileMode, Type> mode, UpdateMode updateMode)
+        {
+            if (!(CurrentSideTab == UpdateToSideTab(updateMode)))
+            {
+                CurrentSideTab = UpdateToSideTab(updateMode);
+                Analyzer.Settings.Write();
+            }
+            if (Analyzer.SelectedMode != null)
+                AccessTools.Field(Analyzer.SelectedMode.typeRef, "Active").SetValue(null, false);
+
+            AccessTools.Field(mode.Value, "Active").SetValue(null, true);
+            Analyzer.SelectedMode = mode.Key;
+            CurrentKey = "Overview";
+            Analyzer.Reset();
+
+            if (!mode.Key.IsPatched)
+                mode.Key.ProfilePatch();
+        }
+
+        public static CurrentSideTab UpdateToSideTab(UpdateMode updateMode)
+        {
+            switch(updateMode)
+            {
+                case UpdateMode.Dead:   return CurrentSideTab.Home; 
+                case UpdateMode.Tick:   return CurrentSideTab.Tick; 
+                case UpdateMode.Update: return CurrentSideTab.Update; 
+            }
+            return CurrentSideTab.GUI;
         }
     }
 }

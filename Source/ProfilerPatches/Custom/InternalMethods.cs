@@ -36,10 +36,17 @@ namespace DubsAnalyzer
                 Log.Error("Trying to re-transpile an already profiled internal method");
                 return;
             }
-            HarmonyMethod transpiler = new HarmonyMethod(typeof(InternalMethods), nameof(Transpiler));
-            curMeth = method;
-            PatchedInternals.Add(method, null);
-            Harmony.Patch(method, null, null, transpiler);
+            try
+            {
+                HarmonyMethod transpiler = new HarmonyMethod(typeof(InternalMethods), nameof(Transpiler));
+                curMeth = method;
+                PatchedInternals.Add(method, null);
+                Harmony.Patch(method, null, null, transpiler);
+            } catch(Exception e)
+            {
+                Log.Error("Failed to patch internal methods, failed with the error " + e.Message);
+                PatchedInternals.Remove(method);
+            }
         }
 
         public static void UnpatchMethod(MethodInfo method)

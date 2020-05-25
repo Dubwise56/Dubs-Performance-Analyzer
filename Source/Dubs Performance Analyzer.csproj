@@ -82,7 +82,6 @@
     <Compile Include="Statistics\ProfileLog.cs" />
     <Compile Include="ProfileMode.cs" />
     <Compile Include="ProfilerPatches\Custom\PatchUtils.cs" />
-    <Compile Include="ProfilerPatches\Custom\UnPatchUtils.cs" />
     <Compile Include="ProfileTab.cs" />
     <Compile Include="Statistics\Profiler.cs" />
     <Compile Include="Statistics\ProfilerHistory.cs" />

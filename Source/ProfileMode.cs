@@ -60,7 +60,7 @@ namespace DubsAnalyzer
                     return;
 
                 Patchinator = new Thread(() =>
-                {
+                {                     
                     try
                     {
                         AccessTools.Method(typeRef, "ProfilePatch")?.Invoke(null, null);

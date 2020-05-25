@@ -12,7 +12,6 @@ namespace DubsAnalyzer
     [ProfileMode("Job AI", UpdateMode.Update)]
     class H_JobAI
     {
-        //TryFindAndStartJob
         public static bool Active = false;
 
         public static void ProfilePatch()
