@@ -20,13 +20,7 @@ namespace DubsAnalyzer
             var go = new HarmonyMethod(typeof(H_JobAI), nameof(Prefix));
             var biff = new HarmonyMethod(typeof(H_JobAI), nameof(Postfix));
 
-
-            Analyzer.harmony.Patch(AccessTools.Method(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.TryFindAndStartJob)), go, biff);
-            Analyzer.harmony.Patch(AccessTools.Method(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.EndCurrentJob)), go, biff);
-            Analyzer.harmony.Patch(AccessTools.Method(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.TryOpportunisticJob)), go, biff);
-            Analyzer.harmony.Patch(AccessTools.Method(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.StartJob)), go, biff);
-            Analyzer.harmony.Patch(AccessTools.Method(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.EndCurrentOrQueuedJob)), go, biff);
-            Analyzer.harmony.Patch(AccessTools.Method(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.EndCurrentJob)), go, biff);
+            PatchUtils.PatchType("Pawn_JobTracker", go, biff);
         }
 
         public static void Prefix(MethodBase __originalMethod, ref string __state)

@@ -420,10 +420,7 @@ namespace DubsAnalyzer
                                     Find.WindowStack.Add(new FloatMenu(options));
                                 }
                             }
-                            catch (Exception)
-                            {
-
-                            }
+                            catch (Exception) { }
                         }
                     }
                 }
