@@ -15,6 +15,10 @@ namespace DubsAnalyzer
         private static MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(InternalMethodUtility), nameof(AnalyzerStart));
         private static MethodInfo AnalyzerEndMeth = AccessTools.Method(typeof(InternalMethodUtility), nameof(AnalyzerEnd));
 
+        private static FieldInfo AnalyzerKeyDict = AccessTools.Field(typeof(InternalMethods), "KeyMethods");
+        private static MethodInfo AnalyzerGetValue = AccessTools.Method(typeof(Dictionary<string, MethodInfo>), "get_Item");
+
+
         public static bool IsFunctionCall(OpCode instruction)
         {
             return (instruction == OpCodes.Call || instruction == OpCodes.Callvirt);// || instruction == OpCodes.Calli);
@@ -52,13 +56,21 @@ namespace DubsAnalyzer
 
         public static void InsertStartIL(ILGenerator ilGen, string key)
         {
+            ilGen.Emit(OpCodes.Ldstr, key); 
+            // load our string to memory
+
+            ilGen.Emit(OpCodes.Ldsfld, AnalyzerKeyDict); // KeyMethods
             ilGen.Emit(OpCodes.Ldstr, key);
+            ilGen.Emit(OpCodes.Call, AnalyzerGetValue); // KeyMethods.get_Item(key) or KeyMethods[key]
+            // KeyMethods[key]
+
             ilGen.Emit(OpCodes.Call, AnalyzerStartMeth);
+            // AnalyzerStart(key, KeyMethods[key]);
         }
 
-        public static void AnalyzerStart(string key)
+        public static void AnalyzerStart(string key, MethodInfo meth = null)
         {
-            Analyzer.Start(key);
+            Analyzer.Start(key, null, null, null , null, meth);
         }
 
         public static void InsertEndIL(ILGenerator ilGen, string key)

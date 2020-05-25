@@ -202,7 +202,6 @@ namespace DubsAnalyzer
             {
                 if (!Profiles.ContainsKey(key))
                 {
-                    Log.Message("Added new key " + key + " size of the array: " + Profiles.Count.ToString());
                     if (GetLabel != null)
                         Profiles[key] = new Profiler(key, GetLabel(), type, def, thing, meth);
                     else

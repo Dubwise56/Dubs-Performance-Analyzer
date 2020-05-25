@@ -52,7 +52,7 @@ namespace DubsAnalyzer
                         result = __instance.subNodes[i].TryIssueJobPackage(pawn, jobParams);
                         Analyzer.Stop(__state);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         Analyzer.Stop(__state);
                     }
@@ -82,10 +82,10 @@ namespace DubsAnalyzer
             var go = new HarmonyMethod(typeof(H_GetLord), nameof(Start));
             var biff = new HarmonyMethod(typeof(H_GetLord), nameof(Stop));
 
-            void slop(Type e, string s, Type[] types)
-            {
-                Analyzer.harmony.Patch(AccessTools.Method(e, s, types), go, biff);
-            }
+            //void slop(Type e, string s, Type[] types)
+            //{
+            //    Analyzer.harmony.Patch(AccessTools.Method(e, s, types), go, biff);
+            //}
             //   slop(typeof(LordUtility), nameof(LordUtility.GetLord), new Type[] { typeof(Pawn) });
             //  slop(typeof(LordUtility), nameof(LordUtility.GetLord), new Type[] { typeof(Building) });
             Analyzer.harmony.Patch(AccessTools.Method(typeof(CastPositionFinder), nameof(CastPositionFinder.TryFindCastPosition)), null, new HarmonyMethod(typeof(H_GetLord), nameof(Frangle)));

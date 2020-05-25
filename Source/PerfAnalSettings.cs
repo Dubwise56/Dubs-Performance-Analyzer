@@ -206,38 +206,10 @@ namespace DubsAnalyzer
                 }
             }
 
-            if (AdvancedMode)
-            {
-                DubGUI.Checkbox("TickPawnTog".Translate(), listing, ref H_PawnTick.TickPawns);
+            DubGUI.Checkbox("TickPawnTog".Translate(), listing, ref H_PawnTick.TickPawns);
 
-                listing.GapLine();
+            listing.GapLine();
 
-                listing.Label("CustoMethProfPatch".Translate());
-                var r = listing.GetRect(25f);
-                DubGUI.InputField(r, "Type:Method", ref methToPatch, ShowName: true);
-                r = listing.GetRect(25f).LeftPartPixels(150);
-                if (Widgets.RadioButtonLabeled(r, "CustoTickPatch".Translate(), customPatchMode == UpdateMode.Tick))
-                {
-                    customPatchMode = UpdateMode.Tick;
-                }
-                r = listing.GetRect(25f).LeftPartPixels(150);
-                if (Widgets.RadioButtonLabeled(r, "CustoUpdatePatch".Translate(), customPatchMode == UpdateMode.Update))
-                {
-                    customPatchMode = UpdateMode.Update;
-                }
-                var b = listing.GetRect(25);
-                if (Widgets.ButtonText(b.LeftPartPixels(100), "TryCustoPatch".Translate()))
-                {
-                    if (customPatchMode == UpdateMode.Tick)
-                    {
-                        CustomProfilersTick.PatchMeth(methToPatch);
-                    }
-                    else
-                    {
-                        CustomProfilersUpdate.PatchMeth(methToPatch);
-                    }
-                }
-            }
 
             settingsHeight = listing.GetRect(25).yMax;
             listing.End();

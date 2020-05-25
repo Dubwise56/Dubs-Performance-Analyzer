@@ -376,8 +376,22 @@ namespace DubsAnalyzer
                 {
                     if (visible.Contains(Event.current.mousePosition))
                     {
-                        List<FloatMenuOption> options = RightClickDropDown(log).ToList();
-                        Find.WindowStack.Add(new FloatMenu(options));
+                        if (log.Meth != null)
+                        {
+                            List<FloatMenuOption> options = RightClickDropDown(log.Meth).ToList();
+                            Find.WindowStack.Add(new FloatMenu(options));
+                        } else
+                        {
+                            try
+                            {
+                                var meth = AccessTools.Method(log.Key);
+                                List<FloatMenuOption> options = RightClickDropDown(meth).ToList();
+                                Find.WindowStack.Add(new FloatMenu(options));
+                            } catch(Exception)
+                            {
+
+                            }
+                        }
                     }
                 }
 
@@ -419,7 +433,7 @@ namespace DubsAnalyzer
             currentListHeight += visible.height;
         }
 
-        private static IEnumerable<FloatMenuOption> RightClickDropDown(ProfileLog log)
+        private static IEnumerable<FloatMenuOption> RightClickDropDown(MethodInfo meth)
         {
             if (Analyzer.Settings.AdvancedMode)
             {
@@ -427,25 +441,18 @@ namespace DubsAnalyzer
                 {
                     yield return new FloatMenuOption("Unpatch Method", delegate
                         {
-                            if (log.Meth != null)
-                            {
-                                UnPatchUtils.UnpatchMethod(log.Meth.Name);
-                            }
-                            else // lets try to get the damn method by label/name
-                            {
-
-                            }
+                            UnPatchUtils.UnpatchMethod(meth.Name);
                         });
                 }
 
                 yield return new FloatMenuOption("Unpatch methods that patch", delegate
                     {
-                        UnPatchUtils.UnpatchMethodsOnMethod(log.Meth.Name);
+                        UnPatchUtils.UnpatchMethodsOnMethod(meth.Name);
                     });
 
                 yield return new FloatMenuOption("Profile the internal methods of", delegate
                     {
-                        InternalMethods.PatchMethod(log.Meth);
+                        InternalMethods.PatchMethod(meth);
                     });
             }
         }

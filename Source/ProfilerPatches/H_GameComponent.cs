@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using HarmonyLib;
 using Verse;
 
@@ -15,7 +16,7 @@ namespace DubsAnalyzer
             Analyzer.harmony.Patch(AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentTick)), new HarmonyMethod(typeof(H_GameComponent), nameof(GameComponentTick)));
         }
 
-        public static bool GameComponentTick()
+        public static bool GameComponentTick(MethodBase __originalMethod)
         {
             if (!Active) return true;
 
@@ -25,7 +26,7 @@ namespace DubsAnalyzer
                 try
                 {
                     var trash = components[i].GetType().Name;
-                    Analyzer.Start(trash);
+                    Analyzer.Start(trash, null, components[i].GetType(), null, null, __originalMethod as MethodInfo);
                     components[i].GameComponentTick();
                     Analyzer.Stop(trash);
                 }
@@ -48,7 +49,7 @@ namespace DubsAnalyzer
             Analyzer.harmony.Patch(AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentUpdate)), new HarmonyMethod(typeof(H_GameComponentUpdate), nameof(GameComponentTick)));
         }
 
-        public static bool GameComponentTick()
+        public static bool GameComponentTick(MethodBase __originalMethod)
         {
             if (!Active) return true;
 
@@ -58,7 +59,7 @@ namespace DubsAnalyzer
                 try
                 {
                     var trash = components[i].GetType().Name;
-                    Analyzer.Start(trash);
+                    Analyzer.Start(trash, null, components[i].GetType(), null, null, __originalMethod as MethodInfo);
                     components[i].GameComponentUpdate();
                     Analyzer.Stop(trash);
                 }
@@ -81,7 +82,7 @@ namespace DubsAnalyzer
             Analyzer.harmony.Patch(AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentOnGUI)), new HarmonyMethod(typeof(H_GameComponentUpdateGUI), nameof(GameComponentTick)));
         }
 
-        public static bool GameComponentTick()
+        public static bool GameComponentTick(MethodBase __originalMethod)
         {
             if (!Active) return true;
 
@@ -91,7 +92,7 @@ namespace DubsAnalyzer
                 try
                 {
                     var trash = components[i].GetType().Name;
-                    Analyzer.Start(trash);
+                    Analyzer.Start(trash, null, components[i].GetType(), null, null, __originalMethod as MethodInfo);
                     components[i].GameComponentOnGUI();
                     Analyzer.Stop(trash);
                 }

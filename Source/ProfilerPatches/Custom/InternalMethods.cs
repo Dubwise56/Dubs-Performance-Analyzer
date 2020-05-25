@@ -26,6 +26,7 @@ namespace DubsAnalyzer
             }
         }
         private static Dictionary<MethodInfo, List<CodeInstruction>> PatchedInternals = new Dictionary<MethodInfo, List<CodeInstruction>>();
+        public static Dictionary<string, MethodInfo> KeyMethods = new Dictionary<string, MethodInfo>();
         private static MethodInfo curMeth = null;
         
         public static void PatchMethod(MethodInfo method)
@@ -51,46 +52,40 @@ namespace DubsAnalyzer
 
         private static IEnumerable<CodeInstruction> UnTranspiler(IEnumerable<CodeInstruction> codeInstructions)
         {
-            var instructions = new List<CodeInstruction>(codeInstructions);
-
             var oldInstructions = PatchedInternals[curMeth];
 
-            for (int i = 0; i < instructions.Count(); i++)
-            {
-                if (InternalMethodUtility.IsFunctionCall(instructions[i].opcode))
-                {
-                    if (i != 0 || instructions[i - 1].opcode != OpCodes.Constrained)
-                    {// if we have the same conditions we had when we patched it, lets unpatch it!
-                        instructions[i] = oldInstructions[i];
-                    }   
-                }
-            }
-
-            return instructions;
+            return oldInstructions;
         }
         
         public static void UnpatchAllMethods()
         {
-            foreach(var meth in PatchedInternals.Keys)
+            foreach (var meth in PatchedInternals.Keys.ToList())
             {
+                HarmonyMethod untranspiler = new HarmonyMethod(typeof(InternalMethods), nameof(UnTranspiler));
                 curMeth = meth;
-                UnpatchMethod(meth);
+                Harmony.Patch(meth, null, null, untranspiler);
             }
+
+            PatchedInternals.Clear();
+            curMeth = null;
         }
 
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> codeInstructions)
         {
             var instructions = new List<CodeInstruction>(codeInstructions);
-            var oldInstructions = new List<CodeInstruction>();
+            var oldInstructions = new List<CodeInstruction>(codeInstructions);
 
             for (int i = 0; i < instructions.Count(); i++)
             {
                 if (InternalMethodUtility.IsFunctionCall(instructions[i].opcode))
                 {
-                    if (i != 0 || instructions[i - 1].opcode != OpCodes.Constrained) // lets ignore complicated cases
+                    if (i != 0 || (i != 0 && instructions[i - 1].opcode != OpCodes.Constrained)) // lets ignore complicated cases
                     {
-                        oldInstructions.Add(instructions[i]);
-                        instructions[i] = SupplantMethodCall(instructions[i]);
+                        var inst = SupplantMethodCall(instructions[i]);
+                        if(inst != instructions[i])
+                        {
+                            instructions[i] = inst;
+                        }
                     }
                 }
             }
@@ -100,7 +95,14 @@ namespace DubsAnalyzer
         }
         private static CodeInstruction SupplantMethodCall(CodeInstruction instruction)
         {
-            MethodInfo currentMethod = (MethodInfo)instruction.operand;
+            MethodInfo currentMethod = null;
+            try
+            {
+                currentMethod = (MethodInfo)instruction.operand;
+            } catch(Exception)
+            {
+                return instruction;
+            }
 
             Type[] parameters = null;
 
@@ -124,9 +126,10 @@ namespace DubsAnalyzer
 
             ILGenerator gen = meth.GetILGenerator(512);
 
-            string key = currentMethod.Name;
+            string key = currentMethod.DeclaringType.FullName + "." + currentMethod.Name;
 
             InternalMethodUtility.InsertStartIL(gen, key);
+            KeyMethods.SetOrAdd(key, currentMethod);
 
             // dynamically add our parameters, as many as they are, into our method
             for (int i = 0; i < parameters.Count(); i++)

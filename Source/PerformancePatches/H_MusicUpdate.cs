@@ -7,7 +7,7 @@ namespace DubsAnalyzer
     [PerformancePatch]
     internal class H_MusicUpdate
     {
-        public static void PerformancePatch()
+        public static void PerformancePatch(Harmony harmony)
         {
             var skiff = AccessTools.Method(typeof(MusicManagerPlay), nameof(MusicManagerPlay.MusicUpdate));
             harmony.Patch(skiff, new HarmonyMethod(typeof(H_MusicUpdate), nameof(Prefix)));

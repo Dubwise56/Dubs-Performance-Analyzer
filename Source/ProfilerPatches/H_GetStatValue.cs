@@ -72,7 +72,7 @@ namespace DubsAnalyzer
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Log.Error($"Failed to patch {allLeafSubclass} from {allLeafSubclass.Assembly.FullName} for profiling");
                 }
@@ -95,7 +95,7 @@ namespace DubsAnalyzer
                     __state = __originalMethod.GetType().ToString();
                 }
 
-                Analyzer.Start(__state);
+                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
             }
         }
 
@@ -107,7 +107,7 @@ namespace DubsAnalyzer
             }
         }
 
-        public static bool GetValueDetour(StatWorker __instance, StatRequest req, ref float __result, bool applyPostProcess = true)
+        public static bool GetValueDetour(MethodBase __originalMethod, StatWorker __instance, StatRequest req, ref float __result, bool applyPostProcess = true)
         {
             if (Active && GetValDetour && __instance is StatWorker sw)
             {
@@ -147,7 +147,7 @@ namespace DubsAnalyzer
                     slag = $"{__instance.stat.defName} FinalizeValue";
                 }
 
-                Analyzer.Start(slag);
+                Analyzer.Start(slag, null, null, null, null, __originalMethod as MethodInfo);
                 sw.FinalizeValue(req, ref valueUnfinalized, applyPostProcess);
                 Analyzer.Stop(slag);
 
@@ -157,7 +157,7 @@ namespace DubsAnalyzer
             return true;
         }
 
-        public static bool Prefix(Thing thing, StatDef stat, ref string __state)
+        public static bool Prefix(MethodBase __originalMethod, Thing thing, StatDef stat, ref string __state)
         {
             if (Active && !GetValDetour)
             {
@@ -170,7 +170,7 @@ namespace DubsAnalyzer
                     __state = stat.defName;
                 }
 
-                Analyzer.Start(__state);
+                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
             }
 
             return true;
@@ -184,7 +184,7 @@ namespace DubsAnalyzer
             }
         }
 
-        public static bool PrefixAb(BuildableDef def, StatDef stat, ref string __state)
+        public static bool PrefixAb(MethodBase __originalMethod, BuildableDef def, StatDef stat, ref string __state)
         {
 
             if (Active && !GetValDetour)
@@ -198,12 +198,12 @@ namespace DubsAnalyzer
                     __state = $"{stat.defName} abstract";
                 }
 
-                Analyzer.Start(__state);
+                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
             }
             return true;
         }
 
-        public static bool PrefixAbility(AbilityDef def, StatDef stat, ref string __state)
+        public static bool PrefixAbility(MethodBase __originalMethod, AbilityDef def, StatDef stat, ref string __state)
         {
 
             if (Active && !GetValDetour)
@@ -217,7 +217,7 @@ namespace DubsAnalyzer
                     __state = $"{stat.defName} abstract";
                 }
 
-                Analyzer.Start(__state);
+                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
             }
             return true;
         }

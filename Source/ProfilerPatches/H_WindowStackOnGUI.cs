@@ -14,10 +14,7 @@ namespace DubsAnalyzer
 
         public static bool Prefix(WindowStack __instance)
         {
-            if (!Active)
-            {
-                return true;
-            }
+            if (!Active) return true;
 
             __instance.windowStackOnGUITmpList.Clear();
             __instance.windowStackOnGUITmpList.AddRange(__instance.windows);
