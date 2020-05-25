@@ -123,6 +123,7 @@ namespace DubsAnalyzer
         public static void Reset()
         {
             Dialog_Graph.reset();
+            TabStats.reset();
             foreach (var profiler in Profiles)
                 profiler.Value.Stop(false);
 
@@ -250,6 +251,8 @@ namespace DubsAnalyzer
 
             ClearState();
             harmony.UnpatchAll(harmony.Id);
+
+            InternalMethods.UnpatchAllMethods();
 
             Log.Message("Successfully finished unpatching methods");
 

@@ -43,9 +43,10 @@
     <Compile Include="GUI\Dialog_Graph.cs" />
     <Compile Include="GUI\Dialog_ModdingTools.cs" />
     <Compile Include="GUI\Dialog_LogAdditional.cs" />
-    <Compile Include="GUI\DrawStackedGraph.cs" />
+    <Compile Include="GUI\Dialog_StackedGraph.cs" />
     <Compile Include="GUI\DubGUI.cs" />
     <Compile Include="GUI\DubResources.cs" />
+    <Compile Include="GUI\H_TickMonitor.cs" />
     <Compile Include="LinkedQueue.cs" />
     <Compile Include="PerformancePatches\H_Notify_PawnDamaged.cs" />
     <Compile Include="PerformancePatches\H_SectionLayer_Snow.cs" />
@@ -54,6 +55,7 @@
     <Compile Include="ProfilerPatches\H_GameComponent.cs" />
     <Compile Include="ProfilerPatches\H_GetLord.cs" />
     <Compile Include="ProfilerPatches\H_InfoCard.cs" />
+    <Compile Include="ProfilerPatches\H_JobAI.cs" />
     <Compile Include="ProfilerPatches\H_RegenerateLayers.cs" />
     <Compile Include="Statistics\LogStats.cs" />
     <Compile Include="H_KeyPresses.cs" />

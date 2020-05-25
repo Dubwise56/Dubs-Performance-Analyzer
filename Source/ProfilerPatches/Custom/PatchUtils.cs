@@ -28,8 +28,12 @@ namespace DubsAnalyzer
                 listStrLineElements.AddRange(name.Split(','));
             if (name.Contains(';'))
                 listStrLineElements.AddRange(name.Split(';'));
+            else if (name.Contains('.'))
+                listStrLineElements.Add(name.Replace('.', ':'));
             else
                 listStrLineElements.Add(name);
+
+       
 
             return listStrLineElements;
         }

@@ -57,7 +57,9 @@ namespace DubsAnalyzer
 
         public void RecordMeasurement()
         {
-            History.AddMeasurement(stopwatch.Elapsed.TotalMilliseconds, HitCounter);
+            double timeElapsed = stopwatch.Elapsed.TotalMilliseconds;
+            History.AddMeasurement(timeElapsed, HitCounter);
+
             if (stopwatch.IsRunning)
             {
                 Log.Error($"{key} was still running when recorded");
@@ -66,7 +68,7 @@ namespace DubsAnalyzer
             stopwatch.Stop();
             stopwatch.Reset();
             HitCounter = 0;
-            lastTime = 0;
+            lastTime = timeElapsed;
         }
     }
 

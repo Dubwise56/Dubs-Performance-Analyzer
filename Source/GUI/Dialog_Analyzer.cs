@@ -237,7 +237,7 @@ namespace DubsAnalyzer
                 {
                     if (State == CurrentState.Open)
                     {
-                        if (Dialog_Graph.key != string.Empty)
+                        if (Dialog_Graph.key != string.Empty || CurrentKey == "Overview")
                         {
                             if (windowRect.width <= InitialSize.x)
                                 windowRect.width += 450;
@@ -249,7 +249,10 @@ namespace DubsAnalyzer
                             DrawLogs(blurg);
 
                             Rect r = new Rect(canvas.x + (windowRect.width - 478), canvas.y, 432, canvas.height);
-                            Dialog_LogAdditional.DoWindowContents(r);
+                            if (CurrentKey == "Overview")
+                                Dialog_StackedGraph.Display(r);
+                            else
+                                Dialog_LogAdditional.DoWindowContents(r);
                         }
                         else
                         {
@@ -297,6 +300,16 @@ namespace DubsAnalyzer
 
             float currentListHeight = 0;
 
+
+            // Lets have a button for a 'tab' summary
+            Rect visible = listing.GetRect(20);
+
+            Text.Anchor = TextAnchor.MiddleCenter;
+            DrawTabOverview(visible);
+
+            currentListHeight += 24;
+            listing.GapLine(0f);
+
             Text.Anchor = TextAnchor.MiddleLeft;
             Text.Font = GameFont.Tiny;
 
@@ -321,6 +334,20 @@ namespace DubsAnalyzer
             Widgets.EndScrollView();
 
             DubGUI.ResetFont();
+        }
+
+        private void DrawTabOverview(Rect rect)
+        {
+
+            Widgets.Label(rect, Analyzer.SelectedMode.name);
+
+            Widgets.DrawHighlightIfMouseover(rect);
+
+            if (Widgets.ButtonInvisible(rect))
+                CurrentKey = "Overview";
+
+            if (CurrentKey == "Overview")
+                Widgets.DrawHighlightSelected(rect);
         }
 
         private void DrawLog(ProfileLog log, bool save, ref float currentListHeight)
@@ -380,14 +407,20 @@ namespace DubsAnalyzer
                         {
                             List<FloatMenuOption> options = RightClickDropDown(log.Meth).ToList();
                             Find.WindowStack.Add(new FloatMenu(options));
-                        } else
+                        }
+                        else
                         {
                             try
                             {
-                                var meth = AccessTools.Method(log.Key);
-                                List<FloatMenuOption> options = RightClickDropDown(meth).ToList();
-                                Find.WindowStack.Add(new FloatMenu(options));
-                            } catch(Exception)
+                                var methnames = PatchUtils.GetSplitString(log.Key);
+                                foreach (var n in methnames)
+                                {
+                                    var meth = AccessTools.Method(n);
+                                    List<FloatMenuOption> options = RightClickDropDown(meth).ToList();
+                                    Find.WindowStack.Add(new FloatMenu(options));
+                                }
+                            }
+                            catch (Exception)
                             {
 
                             }
@@ -549,6 +582,7 @@ namespace DubsAnalyzer
 
                 AccessTools.Field(mode.Value, "Active").SetValue(null, true);
                 Analyzer.SelectedMode = mode.Key;
+                CurrentKey = "Overview";
                 Analyzer.Reset();
 
                 if (!mode.Key.IsPatched)
