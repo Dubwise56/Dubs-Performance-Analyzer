@@ -253,7 +253,7 @@ namespace DubsAnalyzer
             ClearState();
             harmony.UnpatchAll(harmony.Id);
 
-            InternalMethods.UnpatchAllMethods();
+            PatchUtils.UnpatchAllInternalMethods();
 
             Messages.Message("Dubs Performance Analyzer: Successfully finished unpatching methods", MessageTypeDefOf.NeutralEvent);
 

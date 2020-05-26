@@ -245,17 +245,22 @@ namespace DubsAnalyzer
                             if (windowRect.width <= InitialSize.x)
                                 windowRect.width += 450;
 
-                            Rect expandedRect = inner;
-                            expandedRect.width -= 450;
-                            Widgets.DrawMenuSection(expandedRect);
-                            expandedRect = expandedRect.ContractedBy(6f);
-                            DrawLogs(expandedRect);
+                            Rect innerLogRect = inner;
+                            innerLogRect.width -= 450;
+                            Widgets.DrawMenuSection(innerLogRect);
+                            innerLogRect = innerLogRect.ContractedBy(6f);
+                            DrawLogs(innerLogRect);
 
                             Rect r = new Rect(canvas.x + (windowRect.width - 478), canvas.y, 432, canvas.height);
                             if (CurrentKey == "Overview")
+                            {
                                 Dialog_StackedGraph.Display(r);
+                            }
                             else
+                            {
                                 Dialog_LogAdditional.DoWindowContents(r);
+                                GUI.EndGroup();
+                            }
                         }
                         else
                         {
@@ -275,7 +280,6 @@ namespace DubsAnalyzer
                 catch (Exception) { }
             }
 
-            GUI.EndGroup();
 
             foreach(var action in QueuedMessages)
                 action();
@@ -483,18 +487,18 @@ namespace DubsAnalyzer
                 {
                     yield return new FloatMenuOption("Unpatch Method", delegate
                         {
-                            PatchUtils.UnpatchMethod(meth.Name);
+                            PatchUtils.UnpatchMethod(meth);
                         });
                 }
 
                 yield return new FloatMenuOption("Unpatch methods that patch", delegate
                     {
-                        PatchUtils.UnpatchMethodsOnMethod(meth.Name);
+                        PatchUtils.UnpatchMethodsOnMethod(meth);
                     });
 
                 yield return new FloatMenuOption("Profile the internal methods of", delegate
                     {
-                        InternalMethods.PatchMethod(meth);
+                        PatchUtils.PatchInternalMethod(meth);
                     });
             }
         }
@@ -624,8 +628,7 @@ namespace DubsAnalyzer
                 }
             }
         }
-    
-        
+       
         public static void SwapTab(KeyValuePair<ProfileMode, Type> mode, UpdateMode updateMode)
         {
             if (!(CurrentSideTab == UpdateToSideTab(updateMode)))

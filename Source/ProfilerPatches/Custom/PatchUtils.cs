@@ -292,6 +292,97 @@ namespace DubsAnalyzer
             }
         }
 
+        /*
+         * Internal Method Patching
+         */
+
+        public static void PatchInternalMethod(string name)
+        {
+            MethodInfo method = null;
+            try
+            {
+                method = AccessTools.Method(name);
+            }
+            catch (Exception e)
+            {
+                Error($"Failed to locate method {name}, errored with the message {e.Message}");
+                return;
+            }
+        }
+        public static void PatchInternalMethod(MethodInfo method)
+        {
+            if (InternalMethodUtility.PatchedInternals.ContainsKey(method))
+            {
+                Warn("Trying to re-transpile an already profiled internal method");
+                return;
+            }
+            PatchInternalMethodFull(method);
+        }
+        private static void PatchInternalMethodFull(MethodInfo method)
+        {
+            try
+            {
+                InternalMethodUtility.curMeth = method;
+                InternalMethodUtility.PatchedInternals.Add(method, null);
+                InternalMethodUtility.Harmony.Patch(method, null, null, InternalMethodUtility.InternalProfiler);
+            }
+            catch (Exception e)
+            {
+                Error("Failed to patch internal methods, failed with the error " + e.Message);
+                InternalMethodUtility.PatchedInternals.Remove(method);
+            }
+        }
+
+        public static void UnpatchInternalMethod(string name)
+        {
+            MethodInfo method = null;
+            try
+            {
+                method = AccessTools.Method(name);
+            }
+            catch (Exception e)
+            {
+                Error($"Failed to locate method {name}, errored with the message {e.Message}");
+                return;
+            }
+            UnpatchInternalMethod(method);
+        }
+        public static void UnpatchInternalMethod(MethodInfo method)
+        {
+            if(!InternalMethodUtility.PatchedInternals.ContainsKey(method))
+            {
+                Warn($"There is no method with the name {method.Name} that has been noted as profiled");
+                return;
+            }
+            UnpatchInternalMethodFull(method);
+        }
+        private static void UnpatchInternalMethodFull(MethodInfo method)
+        {
+            InternalMethodUtility.curMeth = method;
+            InternalMethodUtility.Harmony.Patch(method, null, null, InternalMethodUtility.UnProfiler);
+            InternalMethodUtility.PatchedInternals.Remove(method);
+        }
+
+        public static void UnpatchAllInternalMethods()
+        {
+            UnpatchAllInternalMethodsFull();
+        }
+        private static void UnpatchAllInternalMethodsFull()
+        {
+            foreach(var meth in InternalMethodUtility.PatchedInternals.Keys.ToList())
+            {
+                InternalMethodUtility.curMeth = meth;
+                InternalMethodUtility.Harmony.Patch(meth, null, null, InternalMethodUtility.UnProfiler);
+            }
+
+            InternalMethodUtility.PatchedInternals.Clear();
+            InternalMethodUtility.curMeth = null;
+        }
+
+
+        /*
+         * WIP
+         */
         public static void PatchAssembly(string name, HarmonyMethod pre, HarmonyMethod post)
         {
             Mod mod = LoadedModManager.ModHandles.FirstOrDefault(m => m.Content.Name == name);

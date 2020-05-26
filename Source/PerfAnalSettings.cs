@@ -332,8 +332,7 @@ namespace DubsAnalyzer
             groaner = goat;
             GUI.EndGroup();
 
-            Text.Font = GameFont.Small;
-            Text.Anchor = TextAnchor.UpperLeft;
+            DubGUI.ResetFont();
             Widgets.EndScrollView();
         }
     }
