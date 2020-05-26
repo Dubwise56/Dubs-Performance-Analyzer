@@ -39,6 +39,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Analyzer.cs" />
+    <Compile Include="AnalyzerState.cs" />
     <Compile Include="GUI\Dialog_Analyzer.cs" />
     <Compile Include="GUI\Dialog_Graph.cs" />
     <Compile Include="GUI\Dialog_ModdingTools.cs" />

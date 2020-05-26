@@ -34,7 +34,7 @@ namespace DubsAnalyzer
 
         public void GenerateStats()
         {
-            thread = new Thread(() => ExecuteWorker(this, Analyzer.Profiles.Values.ToList()));
+            thread = new Thread(() => ExecuteWorker(this, AnalyzerState.CurrentProfiles.Values.ToList()));
             thread.Start();
         }
 

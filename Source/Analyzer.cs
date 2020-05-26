@@ -46,13 +46,6 @@ namespace DubsAnalyzer
         public static Harmony harmony;
         public static Harmony perfharmony; // For all our performance patches, we don't want to accidentally unpatch them
 
-        public static ProfileMode SelectedMode;
-        public static Dictionary<string, Profiler> Profiles = new Dictionary<string, Profiler>();
-        public static List<ProfileLog> Logs = new List<ProfileLog>();
-
-        public static Thread LogicThread = null;
-        public static object sync = new object();
-
         private const int NumSecondsForPatchClear = 30;
 
         public static readonly int MaxHistoryEntries = 3000;
@@ -64,11 +57,12 @@ namespace DubsAnalyzer
         public static float delta = 0;
         public static string SortBy = "Usage";
 
-        public static bool running;
         private static bool RequestStop;
         public static bool LogOpen = false;
         public static bool LogStack = false;
 
+        public static Thread LogicThread = null;
+        public static object sync = new object();
 
         public Analyzer(ModContentPack content) : base(content)
         {
@@ -117,24 +111,18 @@ namespace DubsAnalyzer
 
             lock (sync)
             {
-                Logs = newLogs;
+                AnalyzerState.Logs = newLogs;
             }
         }
 
         public static void Reset()
         {
-            Dialog_Graph.reset();
-            TabStats.reset();
-            foreach (var profiler in Profiles)
-                profiler.Value.Stop(false);
-
-            Profiles.Clear();
-            Logs.Clear();
+            AnalyzerState.ResetState();
         }
 
         public static void StartProfiling()
         {
-            running = true;
+            AnalyzerState.CurrentlyRunning = true;
         }
 
         public static void StopProfiling()
@@ -144,15 +132,15 @@ namespace DubsAnalyzer
 
         public static void UpdateEnd()
         {
-            if (!running || SelectedMode == null) return;
+            if (!AnalyzerState.CurrentlyRunning || AnalyzerState.CurrentTab == null) return;
 
             LogOpen = Find.WindowStack.IsOpen(typeof(EditWindow_Log));
 
-            foreach (Profiler profiler in Profiles.Values)
+            foreach (Profiler profiler in AnalyzerState.CurrentProfiles.Values)
                 profiler.RecordMeasurement();
 
             var ShouldUpdate = false;
-            if (SelectedMode.mode == UpdateMode.Update || SelectedMode.mode == UpdateMode.GUI)
+            if (AnalyzerState.CurrentTab.mode == UpdateMode.Update || AnalyzerState.CurrentTab.mode == UpdateMode.GUI)
             {
                 delta += Time.deltaTime;
                 if (delta >= 1f)
@@ -161,7 +149,7 @@ namespace DubsAnalyzer
                     delta -= 1f;
                 }
             }
-            else if (SelectedMode.mode == UpdateMode.Tick)
+            else if (AnalyzerState.CurrentTab.mode == UpdateMode.Tick)
             {
                 ShouldUpdate = GenTicks.TicksGame % UpdateInterval == 0;
             }
@@ -169,60 +157,60 @@ namespace DubsAnalyzer
             if (ShouldUpdate)
             {
                 ShouldUpdate = false;
-                LogicThread = new Thread(() => ThreadStart(Profiles));
+                LogicThread = new Thread(() => ThreadStart(AnalyzerState.CurrentProfiles));
                 LogicThread.Start();
             }
 
             if (RequestStop)
             {
-                running = false;
+                AnalyzerState.CurrentlyRunning = false;
                 RequestStop = false;
             }
         }
 
         public static void HotStart(string key, UpdateMode mode)
         {
-            if (SelectedMode?.mode == mode)
+            if (AnalyzerState.CurrentTab?.mode == mode)
                 Start(key);
         }
 
         public static void HotStop(string key, UpdateMode mode)
         {
-            if (SelectedMode?.mode == mode)
+            if (AnalyzerState.CurrentTab?.mode == mode)
                 Stop(key);
         }
 
         public static void Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodInfo meth = null)
         {
-            if (!running) return;
+            if (!AnalyzerState.CurrentlyRunning) return;
 
             try
             {
-                Profiles[key].Start();
+                AnalyzerState.CurrentProfiles[key].Start();
             }
             catch (Exception)
             {
-                if (!Profiles.ContainsKey(key))
+                if (!AnalyzerState.CurrentProfiles.ContainsKey(key))
                 {
                     if (GetLabel != null)
-                        Profiles[key] = new Profiler(key, GetLabel(), type, def, thing, meth);
+                        AnalyzerState.CurrentProfiles[key] = new Profiler(key, GetLabel(), type, def, thing, meth);
                     else
-                        Profiles[key] = new Profiler(key, key, type, def, thing, meth);
+                        AnalyzerState.CurrentProfiles[key] = new Profiler(key, key, type, def, thing, meth);
                 }
-                Profiles[key].Start();
+                AnalyzerState.CurrentProfiles[key].Start();
             }
         }
 
         public static void Stop(string key)
         {
-            if (!running) return;
+            if (!AnalyzerState.CurrentlyRunning) return;
 
             try
             {
                 if (LogOpen && Dialog_Graph.key == key)
-                    Profiles[key].Stop(true);
+                    AnalyzerState.CurrentProfiles[key].Stop(true);
                 else
-                    Profiles[key].Stop(false);
+                    AnalyzerState.CurrentProfiles[key].Stop(false);
             }
             catch (Exception) { }
         }
@@ -230,7 +218,7 @@ namespace DubsAnalyzer
         public static void unPatchMethods(bool forceThrough = false)
         {
             Thread.CurrentThread.IsBackground = true;
-            Dialog_Analyzer.State = CurrentState.UnpatchingQueued;
+            AnalyzerState.State = CurrentState.UnpatchingQueued;
 
             if (!forceThrough)
             {
@@ -241,12 +229,12 @@ namespace DubsAnalyzer
                     // sleep by x% and multiply NumSecondsForPatchClear to balance
                     // I.e. Thread.Sleep(500), i < NumSecondsForPatchClear * 2;
                     Thread.Sleep(1000);
-                    if (Dialog_Analyzer.State != CurrentState.UnpatchingQueued)
+                    if (AnalyzerState.State != CurrentState.UnpatchingQueued)
                         return;
                 }
             }
 
-            Dialog_Analyzer.State = CurrentState.Unpatching;
+            AnalyzerState.State = CurrentState.Unpatching;
 
             Log.Message("Beginning to unpatch methods");
 
@@ -257,7 +245,7 @@ namespace DubsAnalyzer
 
             Messages.Message("Dubs Performance Analyzer: Successfully finished unpatching methods", MessageTypeDefOf.NeutralEvent);
 
-            Dialog_Analyzer.State = CurrentState.Unitialised;
+            AnalyzerState.State = CurrentState.Unitialised;
         }
 
         public static void ClearState()

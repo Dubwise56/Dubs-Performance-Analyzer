@@ -64,9 +64,9 @@ namespace DubsAnalyzer
             Widgets.DrawBox(position, 2);
             GUI.color = Color.white;
 
-            if (!Analyzer.Profiles.ContainsKey(key)) return;
+            if (!AnalyzerState.HasProfile(key)) return;
 
-            var prof = Analyzer.Profiles[key];
+            var prof = AnalyzerState.GetProfile(key);
 
             if (prof.History.times.Length <= 0) return;
 

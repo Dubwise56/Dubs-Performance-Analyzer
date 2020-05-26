@@ -15,8 +15,7 @@ namespace DubsAnalyzer
 
         public static void DoWindowContents(Rect position)
         {
-            currentProfiler = Analyzer.Profiles[Dialog_Analyzer.CurrentKey];
-
+            currentProfiler = AnalyzerState.CurrentProfiler();
 
             Widgets.DrawMenuSection(position);
             Listing_Standard listing = new Listing_Standard();
@@ -32,7 +31,7 @@ namespace DubsAnalyzer
         {
             DubGUI.Heading(listing, "Statistics");
 
-            if (!Analyzer.Profiles.ContainsKey(Dialog_Analyzer.CurrentKey)) return;
+            if (AnalyzerState.CurrentProfiler() == null) return;
 
             if (!LogStats.IsActiveThread)
             {

@@ -24,7 +24,7 @@ namespace DubsAnalyzer
 
         public static void Prefix(MethodBase __originalMethod, ref string __state)
         {
-            if (!Active || !Analyzer.running) return;
+            if (!Active || !AnalyzerState.CurrentlyRunning) return;
 
             __state = __originalMethod.Name;
 

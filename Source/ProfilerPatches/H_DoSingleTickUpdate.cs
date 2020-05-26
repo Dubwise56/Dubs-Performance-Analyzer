@@ -8,9 +8,9 @@ namespace DubsAnalyzer
     {
         public static void Postfix()
         {
-            if (Analyzer.SelectedMode != null)
+            if (AnalyzerState.CurrentTab != null)
             {
-                if (Analyzer.SelectedMode.mode == UpdateMode.Tick)
+                if (AnalyzerState.CurrentTab.mode == UpdateMode.Tick)
                     Analyzer.UpdateEnd();
             }
         }

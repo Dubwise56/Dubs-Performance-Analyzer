@@ -42,7 +42,7 @@ namespace DubsAnalyzer
                 __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
 
-            Analyzer.Start(__state);
+            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
         }
 
         public static void Postfix(string __state)
@@ -94,7 +94,7 @@ namespace DubsAnalyzer
                 __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
 
-            Analyzer.Start(__state);
+            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
         }
 
         public static void Postfix(string __state)
@@ -145,7 +145,7 @@ namespace DubsAnalyzer
                 __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
 
-            Analyzer.Start(__state);
+            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
         }
 
         public static void Postfix(string __state)

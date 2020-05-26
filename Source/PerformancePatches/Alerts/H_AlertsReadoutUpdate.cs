@@ -77,7 +77,7 @@ namespace DubsAnalyzer
                 return false;
             }
             //    return false;
-            if (!Analyzer.Settings.OverrideAlerts && (!Analyzer.running || !Active))
+            if (!Analyzer.Settings.OverrideAlerts && (!AnalyzerState.CurrentlyRunning || !Active))
             {
                 return true;
             }
@@ -147,7 +147,7 @@ namespace DubsAnalyzer
                 return false;
             }
 
-            if (!Analyzer.Settings.OverrideAlerts && (!Analyzer.running || !Active))
+            if (!Analyzer.Settings.OverrideAlerts && (!AnalyzerState.CurrentlyRunning || !Active))
             {
                 return true;
             }
@@ -231,7 +231,7 @@ namespace DubsAnalyzer
         public static bool AlertsReadoutUpdate(AlertsReadout __instance)
         {
          //   return false;
-            if (!Analyzer.Settings.OverrideAlerts && !Analyzer.running)
+            if (!Analyzer.Settings.OverrideAlerts && !AnalyzerState.CurrentlyRunning)
             {
                 return true;
             }

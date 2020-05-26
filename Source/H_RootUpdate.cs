@@ -27,7 +27,7 @@ namespace DubsAnalyzer
 
         public static void Prefix()
         {
-            if (Analyzer.running)
+            if (AnalyzerState.CurrentlyRunning)
             {
                 long jam = Dialog_Analyzer.totalBytesOfMemoryUsed;
                 Dialog_Analyzer.totalBytesOfMemoryUsed = GC.GetTotalMemory(false);
@@ -99,7 +99,7 @@ namespace DubsAnalyzer
                 Analyzer.Stop("Game Update");
             }
 
-            if (Analyzer.SelectedMode?.mode == UpdateMode.Update || Analyzer.SelectedMode?.mode == UpdateMode.GUI)
+            if (AnalyzerState.CurrentTab?.mode == UpdateMode.Update || AnalyzerState.CurrentTab?.mode == UpdateMode.GUI)
                 Analyzer.UpdateEnd();
 
             if (Active)

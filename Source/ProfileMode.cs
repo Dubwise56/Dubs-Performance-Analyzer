@@ -56,7 +56,7 @@ namespace DubsAnalyzer
         {
             if (Patchinator == null)
             {
-                if (Dialog_Analyzer.State == CurrentState.Unpatching) // We are currently unpatching methods, we should not be currently patching more methods
+                if (AnalyzerState.State == CurrentState.Unpatching) // We are currently unpatching methods, we should not be currently patching more methods
                     return;
 
                 Patchinator = new Thread(() =>
