@@ -7,7 +7,7 @@ namespace DubsAnalyzer
     [HarmonyPatch(typeof(InspectPaneUtility), "DoTabs")]
     internal class H_DoTabs
     {
-        public static bool Active=false;
+        public static bool Active = false;
         public static void Prefix(ref string __state)
         {
             if (Active)
