@@ -34,6 +34,15 @@ namespace DubsAnalyzer
         public static string CurrentProfileKey = string.Empty;
         public static List<ProfileLog> Logs = new List<ProfileLog>();
 
+        public static List<ProfileTab> SideTabCategories = new List<ProfileTab>
+        {
+            new ProfileTab("Home",          () => { CurrentSideTabCategory = SideTabCategory.Home; },         () => CurrentSideTabCategory == SideTabCategory.Home,            UpdateMode.Dead,    "Settings and utils"),
+            new ProfileTab("Modder Tools",  () => { CurrentSideTabCategory = SideTabCategory.ModderTools; },  () => CurrentSideTabCategory == SideTabCategory.ModderTools,     UpdateMode.Dead,    "Utilities for modders and advanced users to profile mods!"),
+            new ProfileTab("Tick",          () => { CurrentSideTabCategory = SideTabCategory.Tick; },         () => CurrentSideTabCategory == SideTabCategory.Tick,            UpdateMode.Tick,    "Things that run on tick"),
+            new ProfileTab("Update",        () => { CurrentSideTabCategory = SideTabCategory.Update; },       () => CurrentSideTabCategory == SideTabCategory.Update,          UpdateMode.Update,  "Things that run per frame"),
+            new ProfileTab("GUI",           () => { CurrentSideTabCategory = SideTabCategory.GUI; },          () => CurrentSideTabCategory == SideTabCategory.GUI,             UpdateMode.GUI,      "Things that run on GUI")
+        };
+
         public static void ResetState()
         {
             Dialog_Graph.reset();
@@ -64,6 +73,20 @@ namespace DubsAnalyzer
             return CurrentProfiles.ContainsKey(key);
         }
 
+        public static void MakeAndSwitchTab(string tabName, UpdateMode mode)
+        {
+            ProfileMode newMode = new ProfileMode(tabName, mode);
+            newMode.typeRef = null;
+
+            foreach (var profileTab in SideTabCategories)
+            {
+                if (mode == profileTab.UpdateMode)
+                    profileTab.Modes.SetOrAdd(newMode, null);
+            }
+
+            SwapTab(new KeyValuePair<ProfileMode, Type>(newMode, null), mode);
+        }
+        
         public static bool CanPatch()
         {
             return (State == CurrentState.Open || State == CurrentState.Unitialised || State == CurrentState.UnpatchingQueued);
@@ -86,8 +109,8 @@ namespace DubsAnalyzer
             AccessTools.Field(mode.Value, "Active").SetValue(null, true);
             CurrentTab = mode.Key;
             CurrentProfileKey = "Overview";
-            Analyzer.Reset();
-
+            ResetState();
+                
             if (!mode.Key.IsPatched)
                 mode.Key.ProfilePatch();
         }

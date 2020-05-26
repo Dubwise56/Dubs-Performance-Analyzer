@@ -74,7 +74,7 @@ namespace DubsAnalyzer
                             att.Checkbox = AccessTools.Method(mode, "Checkbox");
                             att.typeRef = mode;
 
-                            foreach (var profileTab in SideTabCategories)
+                            foreach (var profileTab in AnalyzerState.SideTabCategories)
                             {
                                 if (att.mode == profileTab.UpdateMode)
                                     profileTab.Modes.SetOrAdd(att, mode);
@@ -120,14 +120,6 @@ namespace DubsAnalyzer
             }
         }
 
-        public static List<ProfileTab> SideTabCategories = new List<ProfileTab>
-        {
-            new ProfileTab("Home",          () => { AnalyzerState.CurrentSideTabCategory = SideTabCategory.Home; },         () => AnalyzerState.CurrentSideTabCategory == SideTabCategory.Home,            UpdateMode.Dead,    "Settings and utils"),
-            new ProfileTab("Modder Tools",  () => { AnalyzerState.CurrentSideTabCategory = SideTabCategory.ModderTools; },  () => AnalyzerState.CurrentSideTabCategory == SideTabCategory.ModderTools,     UpdateMode.Dead,    "Utilities for modders and advanced users to profile mods!"),
-            new ProfileTab("Tick",          () => { AnalyzerState.CurrentSideTabCategory = SideTabCategory.Tick; },         () => AnalyzerState.CurrentSideTabCategory == SideTabCategory.Tick,            UpdateMode.Tick,    "Things that run on tick"),
-            new ProfileTab("Update",        () => { AnalyzerState.CurrentSideTabCategory = SideTabCategory.Update; },       () => AnalyzerState.CurrentSideTabCategory == SideTabCategory.Update,          UpdateMode.Update,  "Things that run per frame"),
-            new ProfileTab("GUI",           () => { AnalyzerState.CurrentSideTabCategory = SideTabCategory.GUI; },          () => AnalyzerState.CurrentSideTabCategory == SideTabCategory.GUI,             UpdateMode.GUI,      "Things that run on GUI")
-        };
 
         public Dialog_Analyzer()
         {
@@ -195,7 +187,7 @@ namespace DubsAnalyzer
                 GUI.BeginGroup(baseRect);
                 listing.Begin(baseRect);
 
-                foreach (var maintab in SideTabCategories)
+                foreach (var maintab in AnalyzerState.SideTabCategories)
                     DrawSideTabList(maintab);
 
                 listing.End();
@@ -306,9 +298,7 @@ namespace DubsAnalyzer
             Rect visible = listing.GetRect(20);
 
             Text.Anchor = TextAnchor.MiddleCenter;
-
             DrawTabOverview(visible);
-
             currentListHeight += 24;
             listing.GapLine(0f);
 
@@ -604,6 +594,7 @@ namespace DubsAnalyzer
                         {
                             keySetting.Key.SetValue(null, cur);
                             Analyzer.Reset();
+                            ScrollPosition = Vector2.zero;
                         }
                     }
 

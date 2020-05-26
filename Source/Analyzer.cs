@@ -250,7 +250,7 @@ namespace DubsAnalyzer
 
         public static void ClearState()
         {
-            foreach (var maintab in Dialog_Analyzer.SideTabCategories)
+            foreach (var maintab in AnalyzerState.SideTabCategories)
                 maintab.Modes.Clear();
 
             H_HarmonyPatches.PatchedPres = new List<Patch>();

@@ -9,11 +9,9 @@ using Verse;
 namespace DubsAnalyzer
 {
 
-
     [ProfileMode("World Tick", UpdateMode.Tick)]
     public static class H_WorldPawns 
     {
-
         public static bool Active = false;
         public static void SetActive(bool t)
         {

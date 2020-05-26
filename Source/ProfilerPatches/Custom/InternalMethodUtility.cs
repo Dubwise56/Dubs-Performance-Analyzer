@@ -91,7 +91,7 @@ namespace DubsAnalyzer
             {
                 if (IsFunctionCall(instructions[i].opcode))
                 {
-                    if (i != 0 || (i != 0 && instructions[i - 1].opcode != OpCodes.Constrained)) // lets ignore complicated cases
+                    if (i == 0 || (i != 0 && instructions[i - 1].opcode != OpCodes.Constrained)) // lets ignore complicated cases
                     {
                         var inst = SupplantMethodCall(instructions[i]);
                         if (inst != instructions[i])
