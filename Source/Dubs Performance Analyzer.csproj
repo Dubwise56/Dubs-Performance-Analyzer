@@ -23,7 +23,7 @@
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <WarningLevel>0</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
@@ -49,6 +49,7 @@
     <Compile Include="GUI\DubResources.cs" />
     <Compile Include="GUI\H_TickMonitor.cs" />
     <Compile Include="LinkedQueue.cs" />
+    <Compile Include="PerformancePatches\H_JobGiver_OptimizeApparel.cs" />
     <Compile Include="PerformancePatches\H_Notify_PawnDamaged.cs" />
     <Compile Include="PerformancePatches\H_SectionLayer_Snow.cs" />
     <Compile Include="ProfilerPatches\Custom\InternalMethodUtility.cs" />

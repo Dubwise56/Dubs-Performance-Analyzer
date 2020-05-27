@@ -20,7 +20,6 @@ namespace DubsAnalyzer
     {
         public static Listing_Standard listing = new Listing_Standard();
 
-
         public static string methToPatch = string.Empty;
 
         private static float groaner = 9999999;
@@ -49,6 +48,7 @@ namespace DubsAnalyzer
         public bool OverrideBuildRoof;
         public bool FactionRemovalMode;
         public bool ReplaceIngredientFinder;
+        public bool OptimiseJobGiverOptimise;
         public bool ShowOnMainTab = true;
         public bool AdvancedMode = false;
         public bool SnowOptimize = false;
@@ -77,6 +77,8 @@ namespace DubsAnalyzer
             Scribe_Values.Look(ref OverrideAlerts, "OverrideAlerts");
             Scribe_Values.Look(ref DisableAlerts, "DisableAlerts");
             Scribe_Values.Look(ref KillMusicMan, "KillMusicMan");
+            Scribe_Values.Look(ref OptimiseJobGiverOptimise, "OptimiseJobGiverOptimise");
+            
             //  Scribe_Values.Look(ref MuteGC, "MuteGC");
             //    Scribe_Collections.Look(ref Loggers, "Loggers");
 
@@ -165,6 +167,7 @@ namespace DubsAnalyzer
             DubGUI.Checkbox("SnowOptimize".Translate(), listing, ref SnowOptimize);
             DubGUI.Checkbox("OptimizeDrills".Translate(), listing, ref OptimizeDrills);
             DubGUI.Checkbox("OptimiseAlerts".Translate(), listing, ref OptimiseAlerts);
+            DubGUI.Checkbox("JobGiverOptimise".Translate(), listing, ref OptimiseJobGiverOptimise);
 
             DubGUI.Checkbox("GizmoOpti".Translate(), listing, ref OptimizeDrawInspectGizmoGrid);
             var jam = Analyzer.Settings.MeshOnlyBuildings;

@@ -6,6 +6,7 @@
   <OptimizeDrills>Optimize Deep Drills</OptimizeDrills>
   <DisableAlerts>Disable alerts entirely</DisableAlerts>
   <RepairOptimize>Optimize repair job</RepairOptimize>
+  <JobGiverOptimise>Optimise the royalty thing</JobGiverOptimise>
   <OptimiseAlerts>Optimize alerts (Tattered Clothing and Unhappy Nudity)</OptimiseAlerts>
   <OverrideAlerts>Override alerts (Disable them in the Alerts tab)</OverrideAlerts>
   <OptimizationsAndFixes>Optimizations And Fixes</OptimizationsAndFixes>

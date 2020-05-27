@@ -64,7 +64,11 @@ namespace DubsAnalyzer
                 {
                     builder.Append(" With no parameters");
                 }
+            } else
+            {
+                builder.Append($" with the operand: {instruction.operand.ToString()}");
             }
+
             if (instruction.labels?.Count != 0)
             {
                 foreach (var l in instruction.labels)
