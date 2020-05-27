@@ -12,7 +12,7 @@ using Verse;
 
 namespace DubsAnalyzer
 {
-    public enum CurrentInput { Method, Type, MethodHarmony, TypeHarmony /*, Assembly */ }
+    public enum CurrentInput { Method, Type, MethodHarmony, TypeHarmony , Assembly }
     public enum UnPatchType { Method, MethodsOnMethod, All }
 
     [StaticConstructorOnStartup]
@@ -77,6 +77,11 @@ namespace DubsAnalyzer
             {
                 input = CurrentInput.TypeHarmony;
             }
+            r = listing.GetRect(25f).LeftPartPixels(450);
+            if (Widgets.RadioButtonLabeled(r, "Assembly Patching (WIP)", input == CurrentInput.Assembly))
+            {
+                input = CurrentInput.Assembly;
+            }
         }
         public static void DisplayPatchTypes(Listing_Standard listing)
         {
@@ -101,7 +106,7 @@ namespace DubsAnalyzer
                 case CurrentInput.Type: FieldDescription = "Type"; break;
                 case CurrentInput.MethodHarmony: FieldDescription = "Type:Method"; break;
                 case CurrentInput.TypeHarmony: FieldDescription = "Type"; break;
-                    //case CurrentInput.Assembly: FieldDescription = "AssemblyName"; break;
+                case CurrentInput.Assembly: FieldDescription = "AssemblyName"; break;
             }
 
             Rect inputBox = listing.GetRect(25f);
@@ -182,6 +187,9 @@ namespace DubsAnalyzer
                     break;
                 case CurrentInput.TypeHarmony:
                     CustomProfilersHarmony.PatchType(currentInput);
+                    break;
+                case CurrentInput.Assembly:
+                    CustomProfilersUpdate.PatchAssembly(currentInput);
                     break;
             }
         }

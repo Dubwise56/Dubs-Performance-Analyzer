@@ -18,7 +18,7 @@ namespace DubsAnalyzer
         public static HarmonyMethod post = new HarmonyMethod(typeof(CustomProfilersTick), nameof(Postfix));
 
         public static void PatchMeth(string strde)
-        {            
+        {
             foreach (var str in PatchUtils.GetSplitString(strde))
             {
                 PatchUtils.PatchMethod(str, pre, post);
@@ -76,9 +76,14 @@ namespace DubsAnalyzer
             }
         }
 
+        public static void PatchAssembly(string strde)
+        {
+            PatchUtils.PatchAssembly(strde, pre, post);
+        }
+
         public static void Prefix(object __instance, MethodBase __originalMethod, ref string __state)
         {
-            
+
             if (!Active)
             {
                 return;

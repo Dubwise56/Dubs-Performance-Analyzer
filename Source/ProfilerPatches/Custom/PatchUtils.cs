@@ -216,7 +216,7 @@ namespace DubsAnalyzer
 
                 foreach (var method in AccessTools.GetDeclaredMethods(type))
                 {
-                    if (!PatchedMethods.Contains(method.Name) && method.DeclaringType == type && !method.IsSpecialName && !method.IsAssembly)
+                    if (!PatchedMethods.Contains(method.Name) && method.DeclaringType == type && !method.IsSpecialName && !method.IsAssembly && method.HasMethodBody())
                     {
                         try
                         {
@@ -373,7 +373,10 @@ namespace DubsAnalyzer
         public static void PatchAssembly(string name, HarmonyMethod pre, HarmonyMethod post)
         {
             Mod mod = LoadedModManager.ModHandles.FirstOrDefault(m => m.Content.Name == name);
-            Assembly assembly = mod.Content?.assemblies?.loadedAssemblies?.First();
+            Assembly assembly = mod.Content?
+                .assemblies?
+                .loadedAssemblies?
+                .First(w => !w.FullName.Contains("Harmony") && !w.FullName.Contains("0MultiplayerAPI"));
 
             if (assembly != null)
             {
@@ -396,9 +399,10 @@ namespace DubsAnalyzer
                 }
                 PatchedAssemblies.Add(assembly.FullName);
 
-                foreach (var type in assembly.DefinedTypes)
+                foreach (var type in assembly.GetTypes())
                 {
-                    PatchTypeFull(type, pre, post);
+                    if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null)
+                        PatchTypeFull(type, pre, post);
                 }
 
                 Messages.Message($"Patched {assembly.FullName}", MessageTypeDefOf.TaskCompletion, false);
