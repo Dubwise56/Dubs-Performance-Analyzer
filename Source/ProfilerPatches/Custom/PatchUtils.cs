@@ -53,21 +53,29 @@ namespace DubsAnalyzer
             Dialog_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.NegativeEvent, false); });
         }
 
+        private static bool GetMethod(string name, bool silence, out MethodInfo methodInfo)
+        {
+            methodInfo = null;
+            try
+            {
+                methodInfo = AccessTools.Method(name);
+            }
+            catch (Exception e)
+            {
+                if(!silence)
+                    Error($"failed to locate method {name}, errored with the message {e.Message}");
+                return true;
+            }
+            return false;
+        }
         /*
          * Method Patching
          */
         public static void PatchMethod(string name, HarmonyMethod pre, HarmonyMethod post)
         {
-            MethodInfo method = null;
-            try
-            {
-                method = AccessTools.Method(name);
-            }
-            catch (Exception e)
-            {
-                Error($"failed to locate method {name}, errored with the message {e.Message}");
+            if (GetMethod(name, false, out var method))
                 return;
-            }
+
             PatchMethod(method, pre, post);
         }
         public static void PatchMethod(MethodInfo method, HarmonyMethod pre, HarmonyMethod post)
@@ -93,16 +101,9 @@ namespace DubsAnalyzer
         }
         public static void PatchMethodPatches(string name, HarmonyMethod pre, HarmonyMethod post)
         {
-            MethodInfo method = null;
-            try
-            {
-                method = AccessTools.Method(name);
-            }
-            catch (Exception e)
-            {
-                Error($"Failed to locate method {name}, errored with the message {e.Message}");
+            if (GetMethod(name, false, out var method))
                 return;
-            }
+
             PatchMethodPatches(method, pre, post);
         }
         public static void PatchMethodPatches(MethodInfo method, HarmonyMethod pre, HarmonyMethod post)
@@ -129,16 +130,9 @@ namespace DubsAnalyzer
          */
         public static void UnpatchMethod(string name)
         {
-            MethodInfo method = null;
-            try
-            {
-                method = AccessTools.Method(name);
-            }
-            catch (Exception e)
-            {
-                Error($"Failed to locate method {name}, errored with the message {e.Message}");
+            if (GetMethod(name, false, out var method))
                 return;
-            }
+
             UnpatchMethod(method);
         }
         public static void UnpatchMethod(MethodInfo method)
@@ -171,16 +165,9 @@ namespace DubsAnalyzer
         }
         public static void UnpatchMethodsOnMethod(string name)
         {
-            MethodInfo method = null;
-            try
-            {
-                method = AccessTools.Method(name);
-            }
-            catch (Exception e)
-            {
-                Error($"Failed to locate method {name}, errored with the message {e.Message}");
+            if (GetMethod(name, false, out var method))
                 return;
-            }
+
             UnpatchMethodsOnMethod(method);
         }
         public static void UnpatchMethodsOnMethod(MethodInfo method)
