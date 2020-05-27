@@ -25,14 +25,16 @@ namespace DubsAnalyzer
     public class Dialog_Analyzer : Window
     {
         public override Vector2 InitialSize => new Vector2(850, 650);
+        public Vector2 GraphSize = new Vector2(1300, 650);
+
+        private SideTab sideTab;
+
         private const float boxHeight = 40f;
-        public static float patchListWidth = 220f;
         public static float yOffset = 0f;
         private float ListHeight = 0;
         public static Listing_Standard listing = new Listing_Standard();
 
         private static Vector2 ScrollPosition = Vector2.zero;
-        private static Vector2 ScrollPosition_TabList = Vector2.zero;
 
         public static string GarbageCollectionInfo = string.Empty;
 
@@ -85,6 +87,22 @@ namespace DubsAnalyzer
                             Log.Error(e.ToString());
                         }
                     }
+
+
+                    foreach (var profileMode in ProfileMode.instances)
+                    {
+                        foreach (var profileTab in AnalyzerState.SideTabCategories)
+                        {
+                            if (profileMode.mode == profileTab.UpdateMode)
+                            {
+                                if (profileTab.Modes.Keys.All(x => x.name != profileMode.name))
+                                {
+                                    profileTab.Modes.Add(profileMode, null);
+                                }
+                            }
+                        }
+                    }
+
                     try
                     {
                         Analyzer.harmony.PatchAll(Assembly.GetExecutingAssembly());
@@ -136,6 +154,8 @@ namespace DubsAnalyzer
             preventCameraMotion = false;
             onlyOneOfTypeAllowed = true;
             resizeable = true;
+
+            sideTab = new SideTab(this);
         }
 
         public override void SetInitialSizeAndPosition()
@@ -163,108 +183,78 @@ namespace DubsAnalyzer
 
         public override void DoWindowContents(Rect canvas)
         {
-            if (Event.current.type == EventType.Layout)
-            {
-                return;
-            }
+            if (Event.current.type == EventType.Layout) return;
 
-            var ListerBox = canvas.LeftPartPixels(patchListWidth);
-            ListerBox.width -= 10f;
-            Widgets.DrawMenuSection(ListerBox);
-            ListerBox = ListerBox.ContractedBy(4f);
+            /*
+             * Draw our side tab, including our:
+             * - Categories (Home, Modding Tools, Tick, Update, GUI)
+             * - Content (Patches inside each of the above categories)
+             */
 
-            var baseRect = ListerBox.AtZero();
-            baseRect.width -= 16f;
-            baseRect.height = ListHeight;
-
-            { // Scope this for clarity
-                Text.Anchor = TextAnchor.MiddleLeft;
-                Text.Font = GameFont.Tiny;
-
-                yOffset = 0f;
-
-                Widgets.BeginScrollView(ListerBox, ref ScrollPosition_TabList, baseRect);
-                GUI.BeginGroup(baseRect);
-                listing.Begin(baseRect);
-
-                foreach (var maintab in AnalyzerState.SideTabCategories)
-                    DrawSideTabList(maintab);
-
-                listing.End();
-                GUI.EndGroup();
-                Widgets.EndScrollView();
-
-
-                ListHeight = yOffset;
-                DubGUI.ResetFont();
-            }
-
-            var inner = canvas.RightPartPixels(canvas.width - patchListWidth).Rounded();
-
-            if (AnalyzerState.CurrentSideTabCategory == SideTabCategory.Home)
-            {
-                Analyzer.Settings.DoSettings(inner);
-                if (windowRect.width > InitialSize.x)
-                    windowRect.width -= 450;
-            }
-            else if (AnalyzerState.CurrentSideTabCategory == SideTabCategory.ModderTools)
-            {
-                Dialog_ModdingTools.DoWindowContents(inner);
-                if (windowRect.width > InitialSize.x)
-                    windowRect.width -= 450;
-            }
-            else
-            {
-                try
-                {
-                    if (AnalyzerState.State == CurrentState.Open)
-                    {
-                        if (Dialog_Graph.key != string.Empty || AnalyzerState.CurrentProfileKey == "Overview")
-                        {
-                            if (windowRect.width <= InitialSize.x)
-                                windowRect.width += 450;
-
-                            Rect innerLogRect = inner;
-                            innerLogRect.width -= 450;
-                            Widgets.DrawMenuSection(innerLogRect);
-                            innerLogRect = innerLogRect.ContractedBy(6f);
-                            DrawLogs(innerLogRect);
-
-                            Rect r = new Rect(canvas.x + (windowRect.width - 478), canvas.y, 432, canvas.height);
-                            if (AnalyzerState.CurrentProfileKey == "Overview")
-                            {
-                                Dialog_StackedGraph.Display(r);
-                            }
-                            else
-                            {
-                                Dialog_LogAdditional.DoWindowContents(r);
-                                GUI.EndGroup();
-                            }
-                        }
-                        else
-                        {
-                            Widgets.DrawMenuSection(inner);
-                            DrawLogs(inner.ContractedBy(6f));
-                        }
-                    }
-                    else
-                    {
-                        Widgets.DrawMenuSection(inner);
-                        Text.Font = GameFont.Medium;
-                        Text.Anchor = TextAnchor.MiddleCenter;
-                        Widgets.Label(inner, $"Loading{GenText.MarchingEllipsis(0f)}");
-                        DubGUI.ResetFont();
-                    }
-                }
-                catch (Exception) { }
-            }
-
-
-            foreach(var action in QueuedMessages)
-                action();
-
-            QueuedMessages.Clear();
+            sideTab.Draw(canvas);
         }
+        //    var inner = canvas.RightPartPixels(canvas.width - SideTab.width).Rounded();
+
+        //    if (AnalyzerState.CurrentSideTabCategory == SideTabCategory.Home)
+        //    {
+        //        Analyzer.Settings.DoSettings(inner);
+        //    }
+        //    else if (AnalyzerState.CurrentSideTabCategory == SideTabCategory.ModderTools)
+        //    {
+        //        Dialog_ModdingTools.DoWindowContents(inner);
+        //    }
+        //    else
+        //    {
+        //        try
+        //        {
+        //            if (AnalyzerState.State == CurrentState.Open)
+        //            {
+        //                if (Dialog_Graph.key != string.Empty || AnalyzerState.CurrentProfileKey == "Overview")
+        //                {
+        //                    windowRect.width = GraphSize.x;
+
+        //                    Rect innerLogRect = inner;
+        //                    innerLogRect.width -= 450;
+        //                    Widgets.DrawMenuSection(innerLogRect);
+        //                    innerLogRect = innerLogRect.ContractedBy(6f);
+        //                    DrawLogs(innerLogRect);
+
+        //                    var size = inner.x + inner.width;
+        //                    Rect r = new Rect(size, canvas.y, windowRect.width-size, canvas.height);
+        //                    if (AnalyzerState.CurrentProfileKey == "Overview")
+        //                    {
+        //                        Dialog_StackedGraph.Display(r);
+        //                    }
+        //                    else
+        //                    {
+        //                        Dialog_LogAdditional.DoWindowContents(r);
+        //                        GUI.EndGroup();
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    Widgets.DrawMenuSection(inner);
+        //                    DrawLogs(inner.ContractedBy(6f));
+        //                }
+        //            }
+        //            else
+        //            {
+        //                Widgets.DrawMenuSection(inner);
+        //                Text.Font = GameFont.Medium;
+        //                Text.Anchor = TextAnchor.MiddleCenter;
+        //                Widgets.Label(inner, $"Loading{GenText.MarchingEllipsis(0f)}");
+        //                DubGUI.ResetFont();
+        //            }
+        //        }
+        //        catch (Exception) { }
+        //    }
+
+
+        //    foreach(var action in QueuedMessages)
+        //        action();
+
+        //    QueuedMessages.Clear();
+        //}
 
         private void DrawLogs(Rect rect)
         {
@@ -278,7 +268,9 @@ namespace DubsAnalyzer
 
             bool save = false;
 
-            DrawTopRow(ref rect, topslot, ref save);
+            DrawTopRow(topslot, ref save);
+            rect.y += 25f;
+            rect.height -= 25f;
 
             var innerRect = rect.AtZero();
             innerRect.width -= 16f;
@@ -287,8 +279,8 @@ namespace DubsAnalyzer
             GizmoListRect = rect.AtZero();
             GizmoListRect.y += ScrollPosition.y;
 
-            Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect);
             GUI.BeginGroup(innerRect);
+            Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect);
             listing.Begin(innerRect);
 
             float currentListHeight = 0;
@@ -322,9 +314,8 @@ namespace DubsAnalyzer
             }
 
             listing.End();
-
-            GUI.EndGroup();
             Widgets.EndScrollView();
+            GUI.EndGroup();
 
             DubGUI.ResetFont();
         }
@@ -480,7 +471,7 @@ namespace DubsAnalyzer
             }
         }
 
-        private void DrawTopRow(ref Rect rect, Rect topRow, ref bool save)
+        private void DrawTopRow(Rect topRow, ref bool save)
         {
             Rect row = topRow.LeftPartPixels(25f);
 
@@ -518,94 +509,152 @@ namespace DubsAnalyzer
 
             row.x = row.xMax;
             row.width = 25f;
-
-            rect.y += 25f;
-            rect.height -= 25f;
         }
 
-        private void DrawSideTabList(ProfileTab tab)
+
+        internal class SideTab
         {
-            DubGUI.ResetFont();
-            yOffset += 40f;
-            var row = listing.GetRect(30f);
-
-            if (tab.Selected) Widgets.DrawOptionSelected(row);
-            if (Widgets.ButtonInvisible(row)) tab.clickedAction();
-
-            row.x += 5f;
-            Widgets.Label(row, tab.label);
-
-            TooltipHandler.TipRegion(row, tab.Tip);
-
-            Text.Anchor = TextAnchor.MiddleLeft;
-            Text.Font = GameFont.Tiny;
-
-            foreach (var mode in tab.Modes)
+            private Dialog_Analyzer super = null;
+            public static float width = 220f;
+            private static Vector2 ScrollPosition = Vector2.zero;
+            public SideTab(Dialog_Analyzer super)
             {
-                DrawSideTab(ref row, mode, tab.UpdateMode);
+                this.super = super;
             }
-        }
 
-        private void DrawSideTab(ref Rect row, KeyValuePair<ProfileMode, Type> mode, UpdateMode updateMode)
-        {
-            if (!mode.Key.Basics && !Analyzer.Settings.AdvancedMode) return;
-
-            row = listing.GetRect(30f);
-            Widgets.DrawHighlightIfMouseover(row);
-
-            if (AnalyzerState.CurrentTab == mode.Key) 
-                Widgets.DrawOptionSelected(row);
-
-            row.x += 20f;
-            yOffset += 30f;
-
-            Widgets.Label(row, mode.Key.name);
-
-            if (Widgets.ButtonInvisible(row))
-                AnalyzerState.SwapTab(mode, updateMode);
-
-            TooltipHandler.TipRegion(row, mode.Key.tip);
-
-            if (AnalyzerState.CurrentTab == mode.Key)
+            public void Draw(Rect rect)
             {
-                bool firstEntry = true;
-                foreach (var keySetting in mode.Key.Settings)
+                var ListerBox = rect.LeftPartPixels(width);
+                ListerBox.width -= 10f;
+                Widgets.DrawMenuSection(ListerBox);
+                ListerBox = ListerBox.ContractedBy(4f);
+
+                var baseRect = ListerBox.AtZero();
+                baseRect.width -= 16f;
+                baseRect.height = super.ListHeight;
+
+                Text.Anchor = TextAnchor.MiddleLeft;
+                Text.Font = GameFont.Tiny;
+
+                yOffset = 0f;
+
+                { // Begin Scope for Scroll & GUI Group/View
+                    Widgets.BeginScrollView(ListerBox, ref ScrollPosition, baseRect);
+                    GUI.BeginGroup(baseRect);
+                    listing.Begin(baseRect);
+
+                    foreach (var maintab in AnalyzerState.SideTabCategories)
+                        DrawSideTabList(maintab);
+
+                    listing.End();
+                    GUI.EndGroup();
+                    Widgets.EndScrollView();
+                }
+
+
+                DubGUI.ResetFont();
+                super.ListHeight = yOffset;
+            }
+
+            private void DrawSideTabList(ProfileTab tab)
+            {
+                DubGUI.ResetFont();
+                yOffset += 40f;
+
+                var row = listing.GetRect(30f);
+
+                if (tab.Selected) Widgets.DrawOptionSelected(row);
+                if (tab.label == "Home" || tab.label == "Modder Tools")
                 {
-                    if (keySetting.Key.FieldType == typeof(bool))
-                    {
-                        row = listing.GetRect(30f);
-                        row.x += 20f;
-                        GUI.color = Widgets.OptionSelectedBGBorderColor;
-                        Widgets.DrawLineVertical(row.x, row.y, 15f);
+                    if (Widgets.ButtonInvisible(row)) 
+                        tab.clickedAction(); 
+                }
+                else
+                { 
+                    if (Widgets.ButtonInvisible(row.LeftPart(0.9f))) 
+                        tab.clickedAction(); 
+                    if (Widgets.ButtonImage(row.RightPart(0.1f).ContractedBy(1f), tab.Collapsed ? TexButton.Reveal : TexButton.Collapse)) 
+                        tab.Collapsed = !tab.Collapsed;
+                }
+                row.x += 5f;
+                Widgets.Label(row, tab.label);
 
-                        if (firstEntry)
-                        {
-                            Widgets.DrawLineVertical(row.x, row.y - 15f, 15f);
-                        }
+                TooltipHandler.TipRegion(row, tab.Tip);
 
-                        row.x += 10f;
-                        Widgets.DrawLineHorizontal(row.x - 10f, row.y + 15f, 10f);
-                        GUI.color = Color.white;
-                        yOffset += 30f;
+                Text.Anchor = TextAnchor.MiddleLeft;
+                Text.Font = GameFont.Tiny;
 
-                        bool cur = (bool)keySetting.Key.GetValue(null);
-
-                        if (DubGUI.Checkbox(row, keySetting.Value.name, ref cur))
-                        {
-                            keySetting.Key.SetValue(null, cur);
-                            Analyzer.Reset();
-                            ScrollPosition = Vector2.zero;
-                        }
-                    }
-
-                    if (keySetting.Value.tip != null)
-                    {
-                        TooltipHandler.TipRegion(row, keySetting.Value.tip);
-                    }
-
-                    firstEntry = false;
+                if (tab.Collapsed) return;
+                
+                foreach (var mode in tab.Modes)
+                {
+                    DrawSideTab(ref row, mode, tab.UpdateMode);
                 }
             }
-        }
+
+            private void DrawSideTab(ref Rect row, KeyValuePair<ProfileMode, Type> mode, UpdateMode updateMode)
+            {
+                if (!mode.Key.Basics && !Analyzer.Settings.AdvancedMode) return;
+
+                row = listing.GetRect(30f);
+                Widgets.DrawHighlightIfMouseover(row);
+
+                if (AnalyzerState.CurrentTab == mode.Key)
+                    Widgets.DrawOptionSelected(row);
+
+                row.x += 20f;
+                yOffset += 30f;
+
+                Widgets.Label(row, mode.Key.name);
+
+                if (Widgets.ButtonInvisible(row))
+                {
+                    AnalyzerState.SwapTab(mode, updateMode);
+                }
+
+                TooltipHandler.TipRegion(row, mode.Key.tip);
+
+                if (AnalyzerState.CurrentTab == mode.Key)
+                {
+                    bool firstEntry = true;
+                    foreach (var keySetting in mode.Key.Settings)
+                    {
+                        if (keySetting.Key.FieldType == typeof(bool))
+                        {
+                            row = listing.GetRect(30f);
+                            row.x += 20f;
+                            GUI.color = Widgets.OptionSelectedBGBorderColor;
+                            Widgets.DrawLineVertical(row.x, row.y, 15f);
+
+                            if (!firstEntry)
+                            {
+                                Widgets.DrawLineVertical(row.x, row.y - 15f, 15f);
+                            }
+
+                            row.x += 10f;
+                            Widgets.DrawLineHorizontal(row.x - 10f, row.y + 15f, 10f);
+                            GUI.color = Color.white;
+                            yOffset += 30f;
+
+                            bool cur = (bool)keySetting.Key.GetValue(null);
+
+                            if (DubGUI.Checkbox(row, keySetting.Value.name, ref cur))
+                            {
+                                keySetting.Key.SetValue(null, cur);
+                                Analyzer.Reset();
+                            }
+                        }
+
+                        if (keySetting.Value.tip != null)
+                        {
+                            TooltipHandler.TipRegion(row, keySetting.Value.tip);
+                        }
+
+                        firstEntry = false;
+                    }
+                }
+            }
+
+        } 
     }
 }

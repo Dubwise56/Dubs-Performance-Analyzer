@@ -4,14 +4,16 @@ using Verse;
 
 namespace DubsAnalyzer
 {
-    [ProfileMode("Sections", UpdateMode.Update)]
+    [StaticConstructorOnStartup]
     [HarmonyPatch(typeof(Section), nameof(Section.RegenerateLayers))]
     internal class H_RegenerateLayers
     {
+        public static ProfileMode p = ProfileMode.Create("Sections", UpdateMode.Update);
+
         public static bool Active = false;
         public static bool Prefix(Section __instance, MapMeshFlag changeType, ref string __state)
         {
-            if (Active)
+            if (p.Active)
             {
                 for (int i = 0; i < __instance.layers.Count; i++)
                 {
@@ -21,9 +23,9 @@ namespace DubsAnalyzer
                         try
                         {
                             __state = __instance.layers[i].GetType().FullName;
-                            Analyzer.Start(__state);
+                            p.Start(__state);
                             sectionLayer.Regenerate();
-                            Analyzer.Stop(__state);
+                            p.Stop(__state);
                         }
                         catch (Exception ex)
                         {

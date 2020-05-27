@@ -9,7 +9,7 @@ using Verse.AI;
 
 namespace DubsAnalyzer
 {
-    [ProfileMode("PathFinder", UpdateMode.Tick)]
+    [StaticConstructorOnStartup]
     [HarmonyPatch(typeof(PathFinder), nameof(PathFinder.FindPath), typeof(IntVec3), typeof(LocalTargetInfo), typeof(TraverseParms), typeof(PathEndMode))]
     internal class H_FindPath
     {
@@ -19,6 +19,7 @@ namespace DubsAnalyzer
 
         public static int NodeIndex = 0;
 
+        public static ProfileMode p = ProfileMode.Create("PathFinder", UpdateMode.Tick, null, false, typeof(H_FindPath));
         public static void ProfilePatch()
         {
             var go = new HarmonyMethod(typeof(H_FindPath), nameof(Start));
@@ -33,47 +34,49 @@ namespace DubsAnalyzer
                 new[] { typeof(IntVec3), typeof(LocalTargetInfo), typeof(PathEndMode), typeof(TraverseParms) });
             Analyzer.harmony.Patch(mad, go, biff);
 
-           // slop(typeof(PathFinder), nameof(PathFinder.CalculateDestinationRect));
-           slop(typeof(PathFinder), nameof(PathFinder.GetAllowedArea));
-           slop(typeof(PawnUtility), nameof(PawnUtility.ShouldCollideWithPawns));
-           slop(typeof(PathFinder), nameof(PathFinder.DetermineHeuristicStrength));
-           slop(typeof(PathFinder), nameof(PathFinder.CalculateAndAddDisallowedCorners));
-           slop(typeof(PathFinder), nameof(PathFinder.InitStatusesAndPushStartNode));
+            // slop(typeof(PathFinder), nameof(PathFinder.CalculateDestinationRect));
+            slop(typeof(PathFinder), nameof(PathFinder.GetAllowedArea));
+            slop(typeof(PawnUtility), nameof(PawnUtility.ShouldCollideWithPawns));
+            slop(typeof(PathFinder), nameof(PathFinder.DetermineHeuristicStrength));
+            slop(typeof(PathFinder), nameof(PathFinder.CalculateAndAddDisallowedCorners));
+            slop(typeof(PathFinder), nameof(PathFinder.InitStatusesAndPushStartNode));
         }
 
         public static void Start(MethodBase __originalMethod, ref string __state)
         {
-            if (Active && pathing)
+            if (p.Active && pathing)
             {
-                __state = __originalMethod.Name;
-                Analyzer.Start(__state);
+                {
+                    __state = __originalMethod.Name;
+                    p.Start(__state);
+                }
             }
         }
 
         public static void Stop(string __state)
         {
-            if (Active && pathing)
+            if (p.Active && pathing)
             {
-                Analyzer.Stop(__state);
+                p.Stop(__state);
             }
         }
 
         public static void Prefix(ref string __state)
         {
-            if (Active)
+            if (p.Active)
             {
                 __state = "PathFinder.FindPath";
-                Analyzer.Start(__state);
+                p.Start(__state);
                 pathing = true;
             }
         }
 
         public static void Postfix(string __state)
         {
-            if (Active)
+            if (p.Active)
             {
                 pathing = false;
-                Analyzer.Stop(__state);
+                p.Stop(__state);
             }
         }
     }

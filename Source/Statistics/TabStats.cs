@@ -70,7 +70,7 @@ namespace DubsAnalyzer
 
             double[] sums = new double[Vertices];
             int counter = 0;
-            foreach (var value in logic.timePoints.Values)
+            foreach (var value in logic.timePoints.Values)// .AsParalell - to try
             {
                 counter = 0;
                 foreach (var val in value)
@@ -79,7 +79,8 @@ namespace DubsAnalyzer
                 }
             }
 
-            double largest = sums.Max(); // this is the value we now need to use as the 'highest' value in our graph, everything else needs a percentage value based upon this value!
+            // this is the value we now need to use as the 'highest' value in our graph, everything else needs a percentage value based upon this value!
+            double largest = sums.Max(); 
 
             // get our top LogsPerGraph
             
@@ -106,7 +107,7 @@ namespace DubsAnalyzer
             {
                 clearOld = false;
             }
-
+            // take the top off of our sum if req'd
             if (timePoints.First().Value.Count == timePoints.First().Value.MaxValues)
                 foreach (var point in timePoints.Values)
                     CurrentSum -= point.Peak();

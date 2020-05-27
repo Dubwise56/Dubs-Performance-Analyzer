@@ -12,6 +12,7 @@ namespace DubsAnalyzer
         public Dictionary<ProfileMode, Type> Modes = new Dictionary<ProfileMode, Type>();
         public bool Selected => selectedGetter?.Invoke() ?? false;
         public string Tip;
+        public bool Collapsed = false;
 
         public ProfileTab(string label, Action clickedAction, Func<bool> selected, UpdateMode um, string Tip)
         {

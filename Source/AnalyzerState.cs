@@ -36,7 +36,11 @@ namespace DubsAnalyzer
 
         public static List<ProfileTab> SideTabCategories = new List<ProfileTab>
         {
-            new ProfileTab("Home",          () => { CurrentSideTabCategory = SideTabCategory.Home; },         () => CurrentSideTabCategory == SideTabCategory.Home,            UpdateMode.Dead,    "Settings and utils"),
+            new ProfileTab("Home", // category name
+                () => { CurrentSideTabCategory = SideTabCategory.Home; }, // onclick action   
+                () => CurrentSideTabCategory == SideTabCategory.Home, // how do we determine that this is selected
+                UpdateMode.Dead, // update mode
+                "Settings and utils"), // tooltip
             new ProfileTab("Modder Tools",  () => { CurrentSideTabCategory = SideTabCategory.ModderTools; },  () => CurrentSideTabCategory == SideTabCategory.ModderTools,     UpdateMode.Dead,    "Utilities for modders and advanced users to profile mods!"),
             new ProfileTab("Tick",          () => { CurrentSideTabCategory = SideTabCategory.Tick; },         () => CurrentSideTabCategory == SideTabCategory.Tick,            UpdateMode.Tick,    "Things that run on tick"),
             new ProfileTab("Update",        () => { CurrentSideTabCategory = SideTabCategory.Update; },       () => CurrentSideTabCategory == SideTabCategory.Update,          UpdateMode.Update,  "Things that run per frame"),
@@ -103,10 +107,11 @@ namespace DubsAnalyzer
                 CurrentSideTabCategory = UpdateToSideTab(updateMode);
                 Analyzer.Settings.Write();
             }
-            if (CurrentTab != null)
-                AccessTools.Field(CurrentTab.typeRef, "Active").SetValue(null, false);
 
-            AccessTools.Field(mode.Value, "Active").SetValue(null, true);
+            if (CurrentTab != null)
+                AnalyzerState.CurrentTab.SetActive(false);
+
+            mode.Key.SetActive(true);
             CurrentTab = mode.Key;
             CurrentProfileKey = "Overview";
             ResetState();

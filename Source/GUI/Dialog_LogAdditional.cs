@@ -21,10 +21,9 @@ namespace DubsAnalyzer
             Listing_Standard listing = new Listing_Standard();
             listing.Begin(position);
 
-            DrawStatistics(listing);
+            //DrawStatistics(listing);
 
             listing.End();
-            
         }
 
         public static void DrawStatistics(Listing_Standard listing)

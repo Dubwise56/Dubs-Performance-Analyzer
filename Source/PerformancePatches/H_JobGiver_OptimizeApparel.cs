@@ -79,7 +79,7 @@ namespace DubsAnalyzer
 		{
 			var instList = instructions.ToList();
 			var targetFunc = AccessTools.Method(typeof(List<RoyalTitle>), "get_Count");
-			var activeFunc = AccessTools.Method(typeof(H_Jobgiver_OptimizeApparel_ScoreRaw), "IsActive");
+			var inActiveFunc = AccessTools.Method(typeof(H_Jobgiver_OptimizeApparel_ScoreRaw), "IsInactive");
 			var qual = AccessTools.Field(typeof(H_JobGiver_OptimizeApparel_TryGiveJob), "tmpQualityCategory");
 
 			bool HasSeenFirst = false;
@@ -101,7 +101,7 @@ namespace DubsAnalyzer
 					yield return instList[i++];
 					yield return instList[i++];
 					HasSeenFirst = true;
-					yield return new CodeInstruction(OpCodes.Call, activeFunc);
+					yield return new CodeInstruction(OpCodes.Call, inActiveFunc);
 					yield return new CodeInstruction(OpCodes.Brfalse, skipLabel);
 				}
 				if(HasSeenFirst && !HasAddedSkip && instList[i].opcode == OpCodes.Endfinally && instList[i-2].opcode == OpCodes.Constrained)
@@ -114,9 +114,10 @@ namespace DubsAnalyzer
 					// we are doing a tenary :-)
 					var trueLabel = generator.DefineLabel();
 					var endLabel = generator.DefineLabel();
+
 					// this is equivalent to IsActive() ? ldloc_5 : H_JobGiver_OptimizeApparel_TryGiveJob.tmpQualityCategory
 
-					yield return new CodeInstruction(OpCodes.Call, activeFunc); // get our bool on the stack
+					yield return new CodeInstruction(OpCodes.Call, inActiveFunc); // get our bool on the stack
 					yield return new CodeInstruction(OpCodes.Brtrue, trueLabel); // is it true? lets move to that.
 					yield return instList[i]; // if it is false, we stick with what we had originally
 					yield return new CodeInstruction(OpCodes.Br, endLabel); // if we had false, goto the next section of code
@@ -138,7 +139,7 @@ namespace DubsAnalyzer
 
 		// the pinnacle of laziness, instead of accessing Analyzer.Settings.OptimiseJobGiverOptimise
 		// we do it through a method :D ~Wiri
-		public static bool IsActive()
+		public static bool IsInactive()
 		{
 			return !Analyzer.Settings.OptimiseJobGiverOptimise;
 		}

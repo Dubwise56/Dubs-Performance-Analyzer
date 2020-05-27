@@ -259,6 +259,7 @@ namespace DubsAnalyzer
 
             PatchUtils.PatchedTypes = new List<string>();
             PatchUtils.PatchedAssemblies = new List<string>();
+            
 
             Reset();
         }
