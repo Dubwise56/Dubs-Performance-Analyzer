@@ -372,8 +372,9 @@ namespace DubsAnalyzer
          */
         public static void PatchAssembly(string name, HarmonyMethod pre, HarmonyMethod post)
         {
-            Mod mod = LoadedModManager.ModHandles.FirstOrDefault(m => m.Content.Name == name);
-            Assembly assembly = mod.Content?
+            Mod mod = LoadedModManager.ModHandles.FirstOrDefault(m => m.Content.Name == name || m.Content.PackageId == name);
+
+            Assembly assembly = mod?.Content?
                 .assemblies?
                 .loadedAssemblies?
                 .First(w => !w.FullName.Contains("Harmony") && !w.FullName.Contains("0MultiplayerAPI"));
