@@ -9,11 +9,13 @@ using Verse.AI;
 
 namespace DubsAnalyzer
 {
-    [ProfileMode("PathFinder", UpdateMode.Tick)]
+    [StaticConstructorOnStartup]
     [HarmonyPatch(typeof(PathFinder), nameof(PathFinder.FindPath), typeof(IntVec3), typeof(LocalTargetInfo), typeof(TraverseParms), typeof(PathEndMode))]
     internal class H_FindPath
     {
-        public static bool Active = false;
+
+        public static ProfileMode p = ProfileMode.Create("PathFinder", UpdateMode.Tick, null, false, typeof(H_FindPath));
+
 
         public static bool pathing;
 
@@ -43,37 +45,37 @@ namespace DubsAnalyzer
 
         public static void Start(MethodBase __originalMethod, ref string __state)
         {
-            if (Active && pathing)
+            if (p.Active && pathing)
             {
                 __state = __originalMethod.Name;
-                Analyzer.Start(__state);
+                p.Start(__state);
             }
         }
 
         public static void Stop(string __state)
         {
-            if (Active && pathing)
+            if (p.Active && pathing)
             {
-                Analyzer.Stop(__state);
+                p.Stop(__state);
             }
         }
 
         public static void Prefix(ref string __state)
         {
-            if (Active)
+            if (p.Active)
             {
                 __state = "PathFinder.FindPath";
-                Analyzer.Start(__state);
+                p.Start(__state);
                 pathing = true;
             }
         }
 
         public static void Postfix(string __state)
         {
-            if (Active)
+            if (p.Active)
             {
                 pathing = false;
-                Analyzer.Stop(__state);
+                p.Stop(__state);
             }
         }
     }

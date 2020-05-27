@@ -74,7 +74,20 @@ namespace DubsAnalyzer
                         {
                             Log.Error(e.ToString());
                         }
+                    }
 
+                    foreach (var profileMode in ProfileMode.instances)
+                    {
+                        foreach (var profileTab in MainTabs)
+                        {
+                            if (profileMode.mode == profileTab.UpdateMode)
+                            {
+                                if (profileTab.Modes.Keys.All(x => x.name != profileMode.name))
+                                {
+                                    profileTab.Modes.Add(profileMode, null);
+                                }
+                            }
+                        }
                     }
 
                     try
@@ -181,6 +194,85 @@ namespace DubsAnalyzer
 
         private float moaner = 0;
 
+
+        public void DoMode(KeyValuePair<ProfileMode,Type> mode, Rect row)
+        {
+            if (!mode.Key.Basics && !Analyzer.Settings.AdvancedMode)
+            {
+                return;
+            }
+            row = listing.GetRect(30f);
+            Widgets.DrawHighlightIfMouseover(row);
+            if (Analyzer.SelectedMode == mode.Key) Widgets.DrawOptionSelected(row);
+            row.x += 20f;
+            goat += 30f;
+            Widgets.Label(row, mode.Key.name);
+            if (Widgets.ButtonInvisible(row))
+            {
+                if (ShowSettings)
+                {
+                    ShowSettings = false;
+                    Analyzer.Settings.Write();
+                }
+                if (Analyzer.SelectedMode != null)
+                {
+                    Analyzer.SelectedMode.SetActive(false);
+                }
+                mode.Key.SetActive(true);
+
+                Analyzer.SelectedMode = mode.Key;
+                Analyzer.Reset();
+
+                if (!mode.Key.IsPatched)
+                {
+                    mode.Key.ProfilePatch();
+                }
+            }
+            TooltipHandler.TipRegion(row, mode.Key.tip);
+
+            if (Analyzer.SelectedMode == mode.Key)
+            {
+                var doo = 0;
+                foreach (var keySetting in mode.Key.Settings)
+                {
+                    if (keySetting.Key.FieldType == typeof(bool))
+                    {
+                        row = listing.GetRect(30f);
+                        row.x += 20f;
+                        GUI.color = Widgets.OptionSelectedBGBorderColor;
+                        Widgets.DrawLineVertical(row.x, row.y, 15f);
+                        if (doo != 0)
+                        {
+                            Widgets.DrawLineVertical(row.x, row.y - 15f, 15f);
+                        }
+                        row.x += 10f;
+                        Widgets.DrawLineHorizontal(row.x - 10f, row.y + 15f, 10f);
+                        GUI.color = Color.white;
+                        goat += 30f;
+                        bool cur = (bool)keySetting.Key.GetValue(null);
+                        if (DubGUI.Checkbox(row, keySetting.Value.name, ref cur))
+                        {
+                            keySetting.Key.SetValue(null, cur);
+                            Analyzer.Reset();
+                        }
+                    }
+
+                    if (keySetting.Value.tip != null)
+                    {
+                        TooltipHandler.TipRegion(row, keySetting.Value.tip);
+                    }
+
+                    //if (keySetting.Key.FieldType == typeof(float) || keySetting.Key.FieldType == typeof(int))
+                    //{
+
+                    //}
+
+                    doo++;
+                }
+            }
+        }
+
+        float goat = 0f;
         public override void DoWindowContents(Rect canvas)
         {
             if (Event.current.type == EventType.Layout)
@@ -202,7 +294,7 @@ namespace DubsAnalyzer
             var innyrek = ListerBox.AtZero();
             innyrek.width -= 16f;
             innyrek.height = moaner;
-            var goat = 0f;
+            goat = 0f;
             Text.Anchor = TextAnchor.MiddleLeft;
             Text.Font = GameFont.Tiny;
             Widgets.BeginScrollView(ListerBox, ref scrolpostabs, innyrek);
@@ -228,78 +320,7 @@ namespace DubsAnalyzer
 
                 foreach (var mode in maintab.Modes)
                 {
-                    if (!mode.Key.Basics && !Analyzer.Settings.AdvancedMode)
-                    {
-                        continue;
-                    }
-                    row = listing.GetRect(30f);
-                    Widgets.DrawHighlightIfMouseover(row);
-                    if (Analyzer.SelectedMode == mode.Key) Widgets.DrawOptionSelected(row);
-                    row.x += 20f;
-                    goat += 30f;
-                    Widgets.Label(row, mode.Key.name);
-                    if (Widgets.ButtonInvisible(row))
-                    {
-                        if (ShowSettings)
-                        {
-                            ShowSettings = false;
-                            Analyzer.Settings.Write();
-                        }
-                        if (Analyzer.SelectedMode != null)
-                        {
-                            AccessTools.Field(Analyzer.SelectedMode.typeRef, "Active").SetValue(null, false);
-                        }
-                        AccessTools.Field(mode.Value, "Active").SetValue(null, true);
-                        Analyzer.SelectedMode = mode.Key;
-                        Analyzer.Reset();
-
-                        if (!mode.Key.IsPatched)
-                        {
-                            mode.Key.ProfilePatch();
-                        }
-                    }
-                    TooltipHandler.TipRegion(row, mode.Key.tip);
-
-                    if (Analyzer.SelectedMode == mode.Key)
-                    {
-                        var doo = 0;
-                        foreach (var keySetting in mode.Key.Settings)
-                        {
-                            if (keySetting.Key.FieldType == typeof(bool))
-                            {
-                                row = listing.GetRect(30f);
-                                row.x += 20f;
-                                GUI.color = Widgets.OptionSelectedBGBorderColor;
-                                Widgets.DrawLineVertical(row.x, row.y, 15f);
-                                if (doo != 0)
-                                {
-                                    Widgets.DrawLineVertical(row.x, row.y - 15f, 15f);
-                                }
-                                row.x += 10f;
-                                Widgets.DrawLineHorizontal(row.x - 10f, row.y + 15f, 10f);
-                                GUI.color = Color.white;
-                                goat += 30f;
-                                bool cur = (bool)keySetting.Key.GetValue(null);
-                                if (DubGUI.Checkbox(row, keySetting.Value.name, ref cur))
-                                {
-                                    keySetting.Key.SetValue(null, cur);
-                                    Analyzer.Reset();
-                                }
-                            }
-
-                            if (keySetting.Value.tip != null)
-                            {
-                                TooltipHandler.TipRegion(row, keySetting.Value.tip);
-                            }
-
-                            //if (keySetting.Key.FieldType == typeof(float) || keySetting.Key.FieldType == typeof(int))
-                            //{
-
-                            //}
-
-                            doo++;
-                        }
-                    }
+                    DoMode(mode, row);
                 }
             }
 
