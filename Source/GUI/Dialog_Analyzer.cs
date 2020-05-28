@@ -25,27 +25,20 @@ namespace DubsAnalyzer
     public class Dialog_Analyzer : Window
     {
         public override Vector2 InitialSize => new Vector2(850, 650);
-        public Vector2 GraphSize = new Vector2(1300, 650);
 
         private SideTab sideTab;
-
-        private const float boxHeight = 40f;
-        public static float yOffset = 0f;
-        private float ListHeight = 0;
-        public static Listing_Standard listing = new Listing_Standard();
-
-        private static Vector2 ScrollPosition = Vector2.zero;
+        private Logs logs;
 
         public static string GarbageCollectionInfo = string.Empty;
 
         public static string TimesFilter = string.Empty;
         public static StringBuilder csv = new StringBuilder();
-        public Rect GizmoListRect;
 
         public static long totalBytesOfMemoryUsed;
 
         private static Thread CleanupPatches = null;
         public static List<Action> QueuedMessages = new List<Action>();
+
 
         public override void PreOpen()
         {
@@ -156,6 +149,7 @@ namespace DubsAnalyzer
             resizeable = true;
 
             sideTab = new SideTab(this);
+            logs = new Logs(this);
         }
 
         public override void SetInitialSizeAndPosition()
@@ -207,6 +201,31 @@ namespace DubsAnalyzer
                     Dialog_ModdingTools.DoWindowContents(inner);
                     break;
                 default: // We are in one of our categories, which means we want to display our logs
+                    /*
+                     * Draw our top row, we will always show this, unconditionally
+                     */
+                    bool save = false;
+                    DrawTopRow(inner.TopPartPixels(20f), ref save);
+                    inner.y += 25;
+                    inner.height -= 25;
+
+                    if (!(AnalyzerState.State == CurrentState.Open)) // if we aren't currently 'open' draw a loading sign, and leave
+                    {
+                        DrawLoading(inner);
+                        return;
+                    }
+
+                    Widgets.DrawMenuSection(inner);
+                    logs.Draw(inner.ContractedBy(6f), save);
+
+                    //if (AnalyzerState.CurrentProfileKey == "Overview")
+                    //{
+                    //    Dialog_StackedGraph.Display(inner);
+                    //}
+                    //else
+                    //{
+                    //    Dialog_LogAdditional.DoWindowContents(inner);
+                    //}
 
                     break;
             }
@@ -218,263 +237,14 @@ namespace DubsAnalyzer
             QueuedMessages.Clear();
         }
 
-        //try
-        //            {
-        //                if (AnalyzerState.State == CurrentState.Open)
-        //                {
-        //                    if (Dialog_Graph.key != string.Empty || AnalyzerState.CurrentProfileKey == "Overview")
-        //                    {
-        //                        windowRect.width = GraphSize.x;
 
-        //                        Rect innerLogRect = inner;
-        //innerLogRect.width -= 450;
-        //                        Widgets.DrawMenuSection(innerLogRect);
-        //                        innerLogRect = innerLogRect.ContractedBy(6f);
-        //                        DrawLogs(innerLogRect);
-
-        //var size = inner.x + inner.width;
-        //Rect r = new Rect(size, canvas.y, windowRect.width - size, canvas.height);
-        //                        if (AnalyzerState.CurrentProfileKey == "Overview")
-        //                        {
-        //                            Dialog_StackedGraph.Display(r);
-        //                        }
-        //                        else
-        //                        {
-        //                            Dialog_LogAdditional.DoWindowContents(r);
-        //                            GUI.EndGroup();
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        Widgets.DrawMenuSection(inner);
-        //                        DrawLogs(inner.ContractedBy(6f));
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    Widgets.DrawMenuSection(inner);
-        //                    Text.Font = GameFont.Medium;
-        //                    Text.Anchor = TextAnchor.MiddleCenter;
-        //                    Widgets.Label(inner, $"Loading{GenText.MarchingEllipsis(0f)}");
-        //                    DubGUI.ResetFont();
-        //                }
-        //            }
-        //            catch (Exception) { }
-
-
-        private void DrawLogs(Rect rect)
+        private void DrawLoading(Rect rect)
         {
-            if (!AnalyzerState.CurrentTab.IsPatched)
-            {
-                DubGUI.Heading(rect, $"Loading{GenText.MarchingEllipsis(0f)}");
-                return;
-            }
-
-            Rect topslot = rect.TopPartPixels(20f);
-
-            bool save = false;
-
-            DrawTopRow(topslot, ref save);
-            rect.y += 25f;
-            rect.height -= 25f;
-
-            var innerRect = rect.AtZero();
-            innerRect.width -= 16f;
-            innerRect.height = yOffset;
-
-            GizmoListRect = rect.AtZero();
-            GizmoListRect.y += ScrollPosition.y;
-
-            GUI.BeginGroup(innerRect);
-            Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect);
-            listing.Begin(innerRect);
-
-            float currentListHeight = 0;
-
-            // Lets have a 'tab' summary 
-            // We will get stats like a; total time on tab
-            Rect visible = listing.GetRect(20);
-
+            Widgets.DrawMenuSection(rect);
+            Text.Font = GameFont.Medium;
             Text.Anchor = TextAnchor.MiddleCenter;
-            DrawTabOverview(visible);
-            currentListHeight += 24;
-            listing.GapLine(0f);
-
-            Text.Anchor = TextAnchor.MiddleLeft;
-            Text.Font = GameFont.Tiny;
-
-            lock (Analyzer.sync)
-            {
-                foreach (var log in AnalyzerState.Logs)
-                {
-                    DrawLog(log, save, ref currentListHeight);
-                }
-            }
-
-            if (save)
-            {
-                var path = GenFilePaths.FolderUnderSaveData("Profiling") + $"/{AnalyzerState.CurrentTab.name}_{DateTime.Now.ToFileTime()}.csv";
-                File.WriteAllText(path, csv.ToString());
-                csv.Clear();
-                Messages.Message($"Saved to {path}", MessageTypeDefOf.TaskCompletion, false);
-            }
-
-            listing.End();
-            Widgets.EndScrollView();
-            GUI.EndGroup();
-
+            Widgets.Label(rect, $"Loading{GenText.MarchingEllipsis(0f)}");
             DubGUI.ResetFont();
-        }
-
-        private void DrawTabOverview(Rect rect)
-        {
-
-            Widgets.Label(rect, AnalyzerState.CurrentTab.name);
-
-            Widgets.DrawHighlightIfMouseover(rect);
-
-            if (Widgets.ButtonInvisible(rect))
-                AnalyzerState.CurrentProfileKey = "Overview";
-
-            if (AnalyzerState.CurrentProfileKey == "Overview")
-                Widgets.DrawHighlightSelected(rect);
-        }
-
-        private void DrawLog(ProfileLog log, bool save, ref float currentListHeight)
-        {
-            if (!log.Label.Has(TimesFilter)) return;
-
-            Rect visible = listing.GetRect(boxHeight);
-
-            if (visible.Overlaps(GizmoListRect))
-            {
-                var profile = AnalyzerState.GetProfile(log.Key);
-
-                if (Input.GetKey(KeyCode.LeftControl))
-                {
-                    if (Widgets.ButtonInvisible(visible))
-                    {
-                        AnalyzerState.CurrentTab.Clicked?.Invoke(null, new object[] { profile, log });
-                        Analyzer.Settings.Write();
-                    }
-                }
-
-                bool on = true;
-
-                if (AnalyzerState.CurrentTab.Selected != null)
-                    on = (bool)AnalyzerState.CurrentTab.Selected.Invoke(null, new object[] { profile, log });
-
-                if (AnalyzerState.CurrentTab.Checkbox != null)
-                {
-                    var checkboxRect = new Rect(visible.x, visible.y, 25f, visible.height);
-                    visible.x += 25f;
-                    if (DubGUI.Checkbox(checkboxRect, "", ref on))
-                    {
-                        AnalyzerState.CurrentTab.Checkbox?.Invoke(null, new object[] { profile, log });
-                        Analyzer.Settings.Write();
-                    }
-                }
-
-                Widgets.DrawHighlightIfMouseover(visible);
-
-                if (Widgets.ButtonInvisible(visible))
-                {
-                    Dialog_Graph.RunKey(log.Key);
-                    AnalyzerState.CurrentProfileKey = log.Key;
-                }
-
-                if (AnalyzerState.CurrentProfileKey == log.Key)
-                    Widgets.DrawHighlightSelected(visible);
-
-                if (Mouse.IsOver(visible))
-                    AnalyzerState.CurrentTab.MouseOver?.Invoke(null, new object[] { visible, profile, log });
-
-                if (Input.GetMouseButtonDown(1)) // mouse button right
-                {
-                    if (visible.Contains(Event.current.mousePosition))
-                    {
-                        if (log.Meth != null)
-                        {
-                            List<FloatMenuOption> options = RightClickDropDown(log.Meth).ToList();
-                            Find.WindowStack.Add(new FloatMenu(options));
-                        }
-                        else
-                        {
-                            try
-                            {
-                                var methnames = PatchUtils.GetSplitString(log.Key);
-                                foreach (var n in methnames)
-                                {
-                                    var meth = AccessTools.Method(n);
-                                    List<FloatMenuOption> options = RightClickDropDown(meth).ToList();
-                                    Find.WindowStack.Add(new FloatMenu(options));
-                                }
-                            }
-                            catch (Exception) { }
-                        }
-                    }
-                }
-
-
-                var color = DubResources.grey;
-                if (log.Percent > 0.25f)
-                    color = DubResources.blue;
-                else if (log.Percent > 0.75f)
-                    color = DubResources.red;
-
-                Widgets.FillableBar(visible.BottomPartPixels(8f), log.Percent, color, DubResources.clear, false);
-
-                visible = visible.LeftPartPixels(60);
-
-                if (!on)
-                    GUI.color = Color.grey;
-
-                Widgets.Label(visible, $"{log.Max:0.000}ms");
-
-                visible.x = visible.xMax + 15;
-
-                visible.width = 2000;
-                Widgets.Label(visible, log.Label);
-
-                GUI.color = Color.white;
-
-                if (save)
-                {
-                    foreach (var historyTime in profile.History.times)
-                    {
-                        csv.Append($",{historyTime}");
-                    }
-                    csv.AppendLine();
-                }
-            }
-
-            listing.GapLine(0f);
-            currentListHeight += 4f;
-            currentListHeight += visible.height;
-        }
-
-        private static IEnumerable<FloatMenuOption> RightClickDropDown(MethodInfo meth)
-        {
-            if (Analyzer.Settings.AdvancedMode)
-            {
-                if (AnalyzerState.CurrentProfileKey.Contains("Harmony")) // we can return an 'unpatch'
-                {
-                    yield return new FloatMenuOption("Unpatch Method", delegate
-                        {
-                            PatchUtils.UnpatchMethod(meth);
-                        });
-                }
-
-                yield return new FloatMenuOption("Unpatch methods that patch", delegate
-                    {
-                        PatchUtils.UnpatchMethodsOnMethod(meth);
-                    });
-
-                yield return new FloatMenuOption("Profile the internal methods of", delegate
-                    {
-                        PatchUtils.PatchInternalMethod(meth);
-                    });
-            }
         }
 
         private void DrawTopRow(Rect topRow, ref bool save)
@@ -523,6 +293,10 @@ namespace DubsAnalyzer
             private Dialog_Analyzer super = null;
             public static float width = 220f;
             private static Vector2 ScrollPosition = Vector2.zero;
+            public static Listing_Standard listing = new Listing_Standard();
+            public static float yOffset = 0f;
+            private float ListHeight = 0;
+
             public SideTab(Dialog_Analyzer super)
             {
                 this.super = super;
@@ -537,7 +311,7 @@ namespace DubsAnalyzer
 
                 var baseRect = ListerBox.AtZero();
                 baseRect.width -= 16f;
-                baseRect.height = super.ListHeight;
+                baseRect.height = ListHeight;
 
                 Text.Anchor = TextAnchor.MiddleLeft;
                 Text.Font = GameFont.Tiny;
@@ -559,7 +333,7 @@ namespace DubsAnalyzer
 
 
                 DubGUI.ResetFont();
-                super.ListHeight = yOffset;
+                ListHeight = yOffset;
             }
 
             private void DrawSideTabList(ProfileTab tab)
@@ -666,10 +440,229 @@ namespace DubsAnalyzer
         {
             private Dialog_Analyzer super = null;
             private static Vector2 ScrollPosition = Vector2.zero;
+            public Rect GizmoListRect;
+            private const float boxHeight = 40f;
+            public static Listing_Standard listing = new Listing_Standard();
+            public static float ListHeight = 999999999;
+
             public Logs(Dialog_Analyzer super)
             {
                 this.super = super;
             }
+
+            public void Draw(Rect rect, bool save)
+            {
+                DrawLogs(rect, save);
+            }
+
+            private void DrawLogs(Rect rect, bool save)
+            {
+                if (!AnalyzerState.CurrentTab.IsPatched)
+                {
+                    DubGUI.Heading(rect, $"Loading{GenText.MarchingEllipsis(0f)}");
+                    return;
+                }
+
+                var innerRect = rect.AtZero();
+                innerRect.width -= 16f;
+                innerRect.height = ListHeight;
+
+                GizmoListRect = rect.AtZero();
+                GizmoListRect.y += ScrollPosition.y;
+
+                Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect);
+                GUI.BeginGroup(innerRect);
+                listing.Begin(innerRect);
+
+                float currentListHeight = 0;
+
+                // Lets have a 'tab' summary 
+                // We will get stats like a; total time on tab
+                Rect visible = listing.GetRect(20);
+
+                Text.Anchor = TextAnchor.MiddleCenter;
+                DrawTabOverview(visible);
+                currentListHeight += 24;
+                listing.GapLine(0f);
+
+                Text.Anchor = TextAnchor.MiddleLeft;
+                Text.Font = GameFont.Tiny;
+
+                lock (Analyzer.sync)
+                {
+                    foreach (var log in AnalyzerState.Logs)
+                    {
+                        DrawLog(log, save, ref currentListHeight);
+                    }
+                }
+
+                if (save)
+                {
+                    var path = GenFilePaths.FolderUnderSaveData("Profiling") + $"/{AnalyzerState.CurrentTab.name}_{DateTime.Now.ToFileTime()}.csv";
+                    File.WriteAllText(path, csv.ToString());
+                    csv.Clear();
+                    Messages.Message($"Saved to {path}", MessageTypeDefOf.TaskCompletion, false);
+                }
+
+                ListHeight = currentListHeight;
+
+                listing.End();
+                GUI.EndGroup();
+                Widgets.EndScrollView();
+
+                DubGUI.ResetFont();
+            }
+
+            private void DrawTabOverview(Rect rect)
+            {
+                Widgets.Label(rect, AnalyzerState.CurrentTab.name);
+
+                Widgets.DrawHighlightIfMouseover(rect);
+
+                if (Widgets.ButtonInvisible(rect))
+                    AnalyzerState.CurrentProfileKey = "Overview";
+
+                if (AnalyzerState.CurrentProfileKey == "Overview")
+                    Widgets.DrawHighlightSelected(rect);
+            }
+
+            private void DrawLog(ProfileLog log, bool save, ref float currentListHeight)
+            {
+                if (!log.Label.Has(TimesFilter)) return;
+
+                Rect visible = listing.GetRect(boxHeight);
+
+                if (visible.Overlaps(GizmoListRect))
+                {
+                    var profile = AnalyzerState.GetProfile(log.Key);
+
+                    if (Input.GetKey(KeyCode.LeftControl))
+                    {
+                        if (Widgets.ButtonInvisible(visible))
+                        {
+                            AnalyzerState.CurrentTab.Clicked?.Invoke(null, new object[] { profile, log });
+                            Analyzer.Settings.Write();
+                        }
+                    }
+
+                    bool on = true;
+
+                    if (AnalyzerState.CurrentTab.Selected != null)
+                        on = (bool)AnalyzerState.CurrentTab.Selected.Invoke(null, new object[] { profile, log });
+
+                    if (AnalyzerState.CurrentTab.Checkbox != null)
+                    {
+                        var checkboxRect = new Rect(visible.x, visible.y, 25f, visible.height);
+                        visible.x += 25f;
+                        if (DubGUI.Checkbox(checkboxRect, "", ref on))
+                        {
+                            AnalyzerState.CurrentTab.Checkbox?.Invoke(null, new object[] { profile, log });
+                            Analyzer.Settings.Write();
+                        }
+                    }
+
+                    Widgets.DrawHighlightIfMouseover(visible);
+
+                    if (Widgets.ButtonInvisible(visible))
+                    {
+                        Dialog_Graph.RunKey(log.Key);
+                        AnalyzerState.CurrentProfileKey = log.Key;
+                    }
+
+                    if (AnalyzerState.CurrentProfileKey == log.Key)
+                        Widgets.DrawHighlightSelected(visible);
+
+                    if (Mouse.IsOver(visible))
+                        AnalyzerState.CurrentTab.MouseOver?.Invoke(null, new object[] { visible, profile, log });
+
+                    if (Input.GetMouseButtonDown(1)) // mouse button right
+                    {
+                        if (visible.Contains(Event.current.mousePosition))
+                        {
+                            if (log.Meth != null)
+                            {
+                                List<FloatMenuOption> options = RightClickDropDown(log.Meth).ToList();
+                                Find.WindowStack.Add(new FloatMenu(options));
+                            }
+                            else
+                            {
+                                try
+                                {
+                                    var methnames = PatchUtils.GetSplitString(log.Key);
+                                    foreach (var n in methnames)
+                                    {
+                                        var meth = AccessTools.Method(n);
+                                        List<FloatMenuOption> options = RightClickDropDown(meth).ToList();
+                                        Find.WindowStack.Add(new FloatMenu(options));
+                                    }
+                                }
+                                catch (Exception) { }
+                            }
+                        }
+                    }
+
+
+                    var color = DubResources.grey;
+                    if (log.Percent > 0.25f)
+                        color = DubResources.blue;
+                    else if (log.Percent > 0.75f)
+                        color = DubResources.red;
+
+                    Widgets.FillableBar(visible.BottomPartPixels(8f), log.Percent, color, DubResources.clear, false);
+
+                    visible = visible.LeftPartPixels(60);
+
+                    if (!on)
+                        GUI.color = Color.grey;
+
+                    Widgets.Label(visible, $"{log.Max:0.000}ms");
+
+                    visible.x = visible.xMax + 15;
+
+                    visible.width = 2000;
+                    Widgets.Label(visible, log.Label);
+
+                    GUI.color = Color.white;
+
+                    if (save)
+                    {
+                        foreach (var historyTime in profile.History.times)
+                        {
+                            csv.Append($",{historyTime}");
+                        }
+                        csv.AppendLine();
+                    }
+                }
+
+                listing.GapLine(0f);
+                currentListHeight += 4f;
+                currentListHeight += visible.height;
+            }
+
+            private static IEnumerable<FloatMenuOption> RightClickDropDown(MethodInfo meth)
+            {
+                if (Analyzer.Settings.AdvancedMode)
+                {
+                    if (AnalyzerState.CurrentProfileKey.Contains("Harmony")) // we can return an 'unpatch'
+                    {
+                        yield return new FloatMenuOption("Unpatch Method", delegate
+                        {
+                            PatchUtils.UnpatchMethod(meth);
+                        });
+                    }
+
+                    yield return new FloatMenuOption("Unpatch methods that patch", delegate
+                    {
+                        PatchUtils.UnpatchMethodsOnMethod(meth);
+                    });
+
+                    yield return new FloatMenuOption("Profile the internal methods of", delegate
+                    {
+                        PatchUtils.PatchInternalMethod(meth);
+                    });
+                }
+            }
+
         }
     }
 }

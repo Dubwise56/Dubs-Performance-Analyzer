@@ -225,6 +225,7 @@ namespace DubsAnalyzer
             Rect inputBox = listing.GetRect(25f);
             DubGUI.InputField(inputBox, FieldDescription, ref currentWIP, ShowName: true);
         }
+        
         public static void ExecutePatch()
         {
             switch (input)
