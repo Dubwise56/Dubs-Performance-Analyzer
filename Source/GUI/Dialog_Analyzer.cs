@@ -190,71 +190,77 @@ namespace DubsAnalyzer
              * - Categories (Home, Modding Tools, Tick, Update, GUI)
              * - Content (Patches inside each of the above categories)
              */
-
             sideTab.Draw(canvas);
+
+            /*
+             * Draw the actual screen we want, either:
+             * - Home Screen, Modders Tools, or one of the categories
+             */
+            Rect inner = canvas.RightPartPixels(canvas.width - SideTab.width).Rounded();
+
+            switch (AnalyzerState.CurrentSideTabCategory)
+            {
+                case SideTabCategory.Home:
+                    Analyzer.Settings.DoSettings(inner);
+                    break;
+                case SideTabCategory.ModderTools:
+                    Dialog_ModdingTools.DoWindowContents(inner);
+                    break;
+                default: // We are in one of our categories, which means we want to display our logs
+
+                    break;
+            }
+
+            // Now we are outside the scope of all of our gui, lets print the messages we had queued during this time
+            foreach (var action in QueuedMessages)
+                action();
+
+            QueuedMessages.Clear();
         }
-        //    var inner = canvas.RightPartPixels(canvas.width - SideTab.width).Rounded();
 
-        //    if (AnalyzerState.CurrentSideTabCategory == SideTabCategory.Home)
-        //    {
-        //        Analyzer.Settings.DoSettings(inner);
-        //    }
-        //    else if (AnalyzerState.CurrentSideTabCategory == SideTabCategory.ModderTools)
-        //    {
-        //        Dialog_ModdingTools.DoWindowContents(inner);
-        //    }
-        //    else
-        //    {
-        //        try
-        //        {
-        //            if (AnalyzerState.State == CurrentState.Open)
+        //try
         //            {
-        //                if (Dialog_Graph.key != string.Empty || AnalyzerState.CurrentProfileKey == "Overview")
+        //                if (AnalyzerState.State == CurrentState.Open)
         //                {
-        //                    windowRect.width = GraphSize.x;
-
-        //                    Rect innerLogRect = inner;
-        //                    innerLogRect.width -= 450;
-        //                    Widgets.DrawMenuSection(innerLogRect);
-        //                    innerLogRect = innerLogRect.ContractedBy(6f);
-        //                    DrawLogs(innerLogRect);
-
-        //                    var size = inner.x + inner.width;
-        //                    Rect r = new Rect(size, canvas.y, windowRect.width-size, canvas.height);
-        //                    if (AnalyzerState.CurrentProfileKey == "Overview")
+        //                    if (Dialog_Graph.key != string.Empty || AnalyzerState.CurrentProfileKey == "Overview")
         //                    {
-        //                        Dialog_StackedGraph.Display(r);
+        //                        windowRect.width = GraphSize.x;
+
+        //                        Rect innerLogRect = inner;
+        //innerLogRect.width -= 450;
+        //                        Widgets.DrawMenuSection(innerLogRect);
+        //                        innerLogRect = innerLogRect.ContractedBy(6f);
+        //                        DrawLogs(innerLogRect);
+
+        //var size = inner.x + inner.width;
+        //Rect r = new Rect(size, canvas.y, windowRect.width - size, canvas.height);
+        //                        if (AnalyzerState.CurrentProfileKey == "Overview")
+        //                        {
+        //                            Dialog_StackedGraph.Display(r);
+        //                        }
+        //                        else
+        //                        {
+        //                            Dialog_LogAdditional.DoWindowContents(r);
+        //                            GUI.EndGroup();
+        //                        }
         //                    }
         //                    else
         //                    {
-        //                        Dialog_LogAdditional.DoWindowContents(r);
-        //                        GUI.EndGroup();
+        //                        Widgets.DrawMenuSection(inner);
+        //                        DrawLogs(inner.ContractedBy(6f));
         //                    }
         //                }
         //                else
         //                {
         //                    Widgets.DrawMenuSection(inner);
-        //                    DrawLogs(inner.ContractedBy(6f));
+        //                    Text.Font = GameFont.Medium;
+        //                    Text.Anchor = TextAnchor.MiddleCenter;
+        //                    Widgets.Label(inner, $"Loading{GenText.MarchingEllipsis(0f)}");
+        //                    DubGUI.ResetFont();
         //                }
         //            }
-        //            else
-        //            {
-        //                Widgets.DrawMenuSection(inner);
-        //                Text.Font = GameFont.Medium;
-        //                Text.Anchor = TextAnchor.MiddleCenter;
-        //                Widgets.Label(inner, $"Loading{GenText.MarchingEllipsis(0f)}");
-        //                DubGUI.ResetFont();
-        //            }
-        //        }
-        //        catch (Exception) { }
-        //    }
+        //            catch (Exception) { }
 
-
-        //    foreach(var action in QueuedMessages)
-        //        action();
-
-        //    QueuedMessages.Clear();
-        //}
 
         private void DrawLogs(Rect rect)
         {
@@ -566,14 +572,14 @@ namespace DubsAnalyzer
                 if (tab.Selected) Widgets.DrawOptionSelected(row);
                 if (tab.label == "Home" || tab.label == "Modder Tools")
                 {
-                    if (Widgets.ButtonInvisible(row)) 
-                        tab.clickedAction(); 
+                    if (Widgets.ButtonInvisible(row))
+                        tab.clickedAction();
                 }
                 else
-                { 
-                    if (Widgets.ButtonInvisible(row.LeftPart(0.9f))) 
-                        tab.clickedAction(); 
-                    if (Widgets.ButtonImage(row.RightPart(0.1f).ContractedBy(1f), tab.Collapsed ? TexButton.Reveal : TexButton.Collapse)) 
+                {
+                    if (Widgets.ButtonInvisible(row.LeftPart(0.9f)))
+                        tab.clickedAction();
+                    if (Widgets.ButtonImage(row.RightPart(0.1f).ContractedBy(1f), tab.Collapsed ? TexButton.Reveal : TexButton.Collapse))
                         tab.Collapsed = !tab.Collapsed;
                 }
                 row.x += 5f;
@@ -585,7 +591,7 @@ namespace DubsAnalyzer
                 Text.Font = GameFont.Tiny;
 
                 if (tab.Collapsed) return;
-                
+
                 foreach (var mode in tab.Modes)
                 {
                     DrawSideTab(ref row, mode, tab.UpdateMode);
@@ -655,6 +661,15 @@ namespace DubsAnalyzer
                 }
             }
 
-        } 
+        }
+        internal class Logs
+        {
+            private Dialog_Analyzer super = null;
+            private static Vector2 ScrollPosition = Vector2.zero;
+            public Logs(Dialog_Analyzer super)
+            {
+                this.super = super;
+            }
+        }
     }
 }

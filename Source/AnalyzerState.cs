@@ -29,7 +29,7 @@ namespace DubsAnalyzer
         public static SideTabCategory CurrentSideTabCategory = SideTabCategory.Home;
         public static ProfileMode CurrentTab;
 
-        // 'Profiles' the content inside a Tab
+        // 'Profiles' - the content inside a Tab
         public static Dictionary<string, Profiler> CurrentProfiles = new Dictionary<string, Profiler>();
         public static string CurrentProfileKey = string.Empty;
         public static List<ProfileLog> Logs = new List<ProfileLog>();
@@ -57,7 +57,6 @@ namespace DubsAnalyzer
             CurrentProfiles.Clear();
             Logs.Clear();
         }
-
         public static Profiler CurrentProfiler()
         {
             if (CurrentProfiles.ContainsKey(CurrentProfileKey))

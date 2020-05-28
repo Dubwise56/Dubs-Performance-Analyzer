@@ -99,10 +99,7 @@ namespace DubsAnalyzer
 
         public void DoSettings(Rect canvas)
         {
-            if (Event.current.type == EventType.Layout)
-            {
-                return;
-            }
+            if (Event.current.type == EventType.Layout) return;
 
             var view = canvas.AtZero();
             view.height = settingsHeight;
@@ -213,13 +210,10 @@ namespace DubsAnalyzer
 
             listing.GapLine();
 
-
             settingsHeight = listing.GetRect(25).yMax;
+
             listing.End();
-
             GUI.EndGroup();
-
-
             Widgets.EndScrollView();
         }
 
