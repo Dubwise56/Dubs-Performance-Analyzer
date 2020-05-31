@@ -26,7 +26,7 @@ namespace DubsAnalyzer
             {
                 __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-            Analyzer.Start(__state);
+            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
         }
 
         public static void Stop(string __state)
@@ -66,7 +66,7 @@ namespace DubsAnalyzer
             slop(typeof(FireWatcher), nameof(FireWatcher.FireWatcherTick));
         }
 
-        private static bool Prefix(Map map)
+        private static bool Prefix(MethodBase __originalMethod, Map map)
         {
             if (!Active)
             {
@@ -81,7 +81,7 @@ namespace DubsAnalyzer
                 {
                     var comp = components[i];
 
-                    Analyzer.Start(comp.GetType().FullName, () => $"{comp.GetType()}");
+                    Analyzer.Start(comp.GetType().FullName, () => $"{comp.GetType()}", null, null, null, __originalMethod as MethodInfo);
                     comp.MapComponentTick();
                     Analyzer.Stop(comp.GetType().FullName);
                 }

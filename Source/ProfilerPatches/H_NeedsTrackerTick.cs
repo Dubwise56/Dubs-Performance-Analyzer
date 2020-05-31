@@ -41,7 +41,7 @@ namespace DubsAnalyzer
             if (Active)
             {
                 __state = __originalMethod.Name;
-                Analyzer.Start(__state);
+                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
             }
         }
 
@@ -50,7 +50,7 @@ namespace DubsAnalyzer
             if (Active) Analyzer.Stop(__state);
         }
 
-        public static bool Detour(Pawn_NeedsTracker __instance, ref string __state)
+        public static bool Detour(MethodInfo __originalMethod, Pawn_NeedsTracker __instance, ref string __state)
         {
             if (Active)
             {
@@ -67,7 +67,7 @@ namespace DubsAnalyzer
                             __state = $"{__instance.needs[i].GetType().Name}";
                         }
 
-                        Analyzer.Start(__state);
+                        Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
                         __instance.needs[i].NeedInterval();
                         Analyzer.Stop(__state);
                     }

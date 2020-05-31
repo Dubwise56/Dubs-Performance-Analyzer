@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using RimWorld;
+using System.Reflection;
 
 namespace DubsAnalyzer
 {
@@ -8,12 +9,12 @@ namespace DubsAnalyzer
     internal class H_DoTabs
     {
         public static bool Active=false;
-        public static void Prefix(ref string __state)
+        public static void Prefix(MethodBase __originalMethod, ref string __state)
         {
             if (Active)
             {
                 __state = "InspectPaneUtility.DoTabs";
-                Analyzer.Start(__state);
+                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
             }
         }
 

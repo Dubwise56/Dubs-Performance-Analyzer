@@ -80,6 +80,10 @@ namespace DubsAnalyzer
         {
             if (Active) Analyzer.Start(key);
         }
+        public void Start(string key, MethodInfo info)
+        {
+            if (Active) Analyzer.Start(key, null, null, null, null, info);
+        }
 
         public void Stop(string key)
         {

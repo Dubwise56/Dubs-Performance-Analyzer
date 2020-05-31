@@ -12,7 +12,7 @@ namespace DubsAnalyzer
     {
         public static bool Active = false;
 
-        public static bool Prefix(WindowStack __instance)
+        public static bool Prefix(MethodBase __originalMethod, WindowStack __instance)
         {
             if (!Active) return true;
 
@@ -31,7 +31,7 @@ namespace DubsAnalyzer
                     name = string.Intern($"{__instance.windowStackOnGUITmpList[i].GetType()} ExtraOnGUI");
                 }
 
-                Analyzer.Start(name);
+                Analyzer.Start(name, null, null, null, null, __originalMethod as MethodInfo);
                 __instance.windowStackOnGUITmpList[i].ExtraOnGUI();
                 Analyzer.Stop(name);
             }
@@ -59,7 +59,7 @@ namespace DubsAnalyzer
                     name = string.Intern($"{__instance.windowStackOnGUITmpList[j].GetType()} WindowOnGUI");
                 }
 
-                Analyzer.Start(name);
+                Analyzer.Start(name, null, null, null, null, __originalMethod as MethodInfo);
                 __instance.windowStackOnGUITmpList[j].WindowOnGUI();
                 Analyzer.Stop(name);
             }

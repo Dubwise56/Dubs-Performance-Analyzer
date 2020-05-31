@@ -48,7 +48,7 @@ namespace DubsAnalyzer
             {
                 {
                     __state = __originalMethod.Name;
-                    p.Start(__state);
+                    p.Start(__state, __originalMethod as MethodInfo);
                 }
             }
         }
@@ -61,12 +61,12 @@ namespace DubsAnalyzer
             }
         }
 
-        public static void Prefix(ref string __state)
+        public static void Prefix(MethodBase __originalMethod, ref string __state)
         {
             if (p.Active)
             {
                 __state = "PathFinder.FindPath";
-                p.Start(__state);
+                p.Start(__state, __originalMethod as MethodInfo);
                 pathing = true;
             }
         }

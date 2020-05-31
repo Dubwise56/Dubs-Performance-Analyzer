@@ -51,7 +51,7 @@ namespace DubsAnalyzer
                     __state = __originalMethod.GetType().Name;
                 }
 
-                Analyzer.Start(__state);
+                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
             }
         }
 

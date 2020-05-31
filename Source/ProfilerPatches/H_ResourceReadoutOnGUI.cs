@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using RimWorld;
+using System.Reflection;
 
 namespace DubsAnalyzer
 {
@@ -8,11 +9,11 @@ namespace DubsAnalyzer
     internal class H_ResourceReadoutOnGUI
     {
         public static bool Active=false;
-        public static bool Prefix()
+        public static bool Prefix(MethodBase __originalMethod)
         {
             if (Active)
             {
-                Analyzer.Start("ResourceReadoutOnGUI");//, () => "ResourceReadout.ResourceReadoutOnGUI");
+                Analyzer.Start("ResourceReadoutOnGUI", null, null, null, null, __originalMethod as MethodInfo);//, () => "ResourceReadout.ResourceReadoutOnGUI");
             }
             return true;
         }

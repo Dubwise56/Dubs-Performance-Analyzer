@@ -26,7 +26,7 @@ namespace DubsAnalyzer
             {
                 __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-            Analyzer.Start(__state);
+            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
         }
 
         public static void Stop(string __state)
@@ -37,7 +37,7 @@ namespace DubsAnalyzer
             }
         }
 
-        public static bool Fringe(ThinkNode_Priority __instance, Pawn pawn, JobIssueParams jobParams, ref string __state, ref ThinkResult __result)
+        public static bool Fringe(MethodBase __originalMethod, ThinkNode_Priority __instance, Pawn pawn, JobIssueParams jobParams, ref string __state, ref ThinkResult __result)
         {
             if (Active)
             {
@@ -48,7 +48,7 @@ namespace DubsAnalyzer
                     try
                     {
                         __state = $"ThinkNode_Priority SubNode [{__instance.subNodes[i].GetType()}]";
-                        Analyzer.Start(__state);
+                        Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
                         result = __instance.subNodes[i].TryIssueJobPackage(pawn, jobParams);
                         Analyzer.Stop(__state);
                     }

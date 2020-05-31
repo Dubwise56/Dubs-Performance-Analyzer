@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using RimWorld;
+using System.Reflection;
 using UnityEngine;
 using Verse;
 
@@ -18,14 +19,14 @@ namespace DubsAnalyzer
         //    Analyzer.harmony.Patch(skiff, biff);
         //}
 
-        public static void Prefix(PawnRenderer __instance, ref string __state)
+        public static void Prefix(MethodBase __originalMethod, PawnRenderer __instance, ref string __state)
         {
             if (!Active)
             {
                 return;
             }
             __state = __instance.pawn.GetHashCode().ToString();
-            Analyzer.Start(__state, () => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}");
+            Analyzer.Start(__state, () => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}", null, null, null, __originalMethod as MethodInfo);
         }
 
         public static void Postfix(string __state)

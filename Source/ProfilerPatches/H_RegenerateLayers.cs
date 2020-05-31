@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using HarmonyLib;
 using Verse;
 
@@ -11,7 +12,7 @@ namespace DubsAnalyzer
         public static ProfileMode p = ProfileMode.Create("Sections", UpdateMode.Update);
 
         public static bool Active = false;
-        public static bool Prefix(Section __instance, MapMeshFlag changeType, ref string __state)
+        public static bool Prefix(MethodBase __originalMethod, Section __instance, MapMeshFlag changeType, ref string __state)
         {
             if (p.Active)
             {
@@ -23,7 +24,7 @@ namespace DubsAnalyzer
                         try
                         {
                             __state = __instance.layers[i].GetType().FullName;
-                            p.Start(__state);
+                            p.Start(__state, __originalMethod as MethodInfo);
                             sectionLayer.Regenerate();
                             p.Stop(__state);
                         }

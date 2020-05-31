@@ -134,7 +134,7 @@ namespace DubsAnalyzer
                     slag = $"{__instance.stat.defName} GetValueUnfinalized";
                 }
 
-                Analyzer.Start(slag);
+                Analyzer.Start(slag, null, null, null, null, __originalMethod as MethodInfo);
                 float valueUnfinalized = sw.GetValueUnfinalized(req, applyPostProcess);
                 Analyzer.Stop(slag);
 

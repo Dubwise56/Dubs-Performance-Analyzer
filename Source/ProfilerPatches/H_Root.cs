@@ -46,7 +46,7 @@ namespace DubsAnalyzer
             if (Active)
             {
                 __state = $"{__originalMethod.DeclaringType} - {__originalMethod.Name}" ;
-                Analyzer.Start(__state);
+                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
             }
         }
 

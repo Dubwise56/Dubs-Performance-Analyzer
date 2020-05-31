@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Security.Policy;
 using HarmonyLib;
 using Verse;
@@ -10,7 +11,7 @@ namespace DubsAnalyzer
     internal class H_SectionLayer_Things
     {
         public static bool Active = false;
-        public static bool Prefix(SectionLayer_Things __instance, ref string __state)
+        public static bool Prefix(MethodBase __originalMethod, SectionLayer_Things __instance, ref string __state)
         {
             if (Active)
             {
@@ -25,7 +26,7 @@ namespace DubsAnalyzer
                         Thing thing = list[i];
 
                         __state = "Flag check";
-                        Analyzer.Start(__state);
+                        Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
                         var flag =
                             ((thing.def.seeThroughFog ||
                               !__instance.Map.fogGrid.fogGrid[
@@ -40,7 +41,7 @@ namespace DubsAnalyzer
                         if (flag)
                         {
                             __state = thing.def.defName;
-                            Analyzer.Start(__state);
+                            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
                             __instance.TakePrintFrom(thing);
                             Analyzer.Stop(__state);
                         }
@@ -49,7 +50,7 @@ namespace DubsAnalyzer
                 }
 
                 __state = "Finalize mesh";
-                Analyzer.Start(__state);
+                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
                 __instance.FinalizeMesh(MeshParts.All);
                 Analyzer.Stop(__state);
                 return false;

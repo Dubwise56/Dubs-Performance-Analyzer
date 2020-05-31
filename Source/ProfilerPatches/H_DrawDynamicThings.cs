@@ -2,6 +2,7 @@
 using HarmonyLib;
 using DubsAnalyzer;
 using Verse;
+using System.Reflection;
 
 namespace DubsAnalyzer
 {
@@ -16,7 +17,7 @@ namespace DubsAnalyzer
         public static bool ByDef=false;
 
         public static bool Active=false;
-        public static bool Prefix(DynamicDrawManager __instance)
+        public static bool Prefix(MethodBase __originalMethod, DynamicDrawManager __instance)
         {
             if (!Active)
             {
@@ -68,7 +69,7 @@ namespace DubsAnalyzer
                                         name = thing.GetType().Name;
                                     }
 
-                                    Analyzer.Start(name, Namer, thing.GetType(), thing.def);
+                                    Analyzer.Start(name, Namer, thing.GetType(), thing.def, null, __originalMethod as MethodInfo);
                                     thing.Draw();
                                     Analyzer.Stop(name);
                                 }

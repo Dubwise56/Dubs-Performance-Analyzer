@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using RimWorld;
 using Verse;
@@ -11,7 +12,7 @@ namespace DubsAnalyzer
     {
         public static bool Active = false;
 
-        private static bool Prefix(Room __instance)
+        private static bool Prefix(MethodBase __originalMethod, Room __instance)
         {
             if (!Active)
             {
@@ -28,7 +29,7 @@ namespace DubsAnalyzer
                 foreach (RoomStatDef roomStatDef in DefDatabase<RoomStatDef>.AllDefs.OrderByDescending((RoomStatDef x) => x.updatePriority))
                 {
                     var str = roomStatDef.defName;
-                    Analyzer.Start(str, () => $"{str} - {roomStatDef.workerClass}");
+                    Analyzer.Start(str, () => $"{str} - {roomStatDef.workerClass}", null, null, null, __originalMethod as MethodInfo);
                     __instance.stats[roomStatDef] = roomStatDef.Worker.GetScore(__instance);
                     Analyzer.Stop(str);
                 }
