@@ -82,6 +82,7 @@ namespace DubsAnalyzer
                     }
 
 
+
                     foreach (var profileMode in ProfileMode.instances)
                     {
                         foreach (var profileTab in AnalyzerState.SideTabCategories)

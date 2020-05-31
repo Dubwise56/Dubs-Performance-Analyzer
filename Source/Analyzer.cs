@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Xml;
 using UnityEngine;
 using Verse;
 
@@ -64,6 +65,8 @@ namespace DubsAnalyzer
         public static Thread LogicThread = null;
         public static object sync = new object();
 
+        public static Dictionary<string, List<MethodInfo>> methods = new Dictionary<string, List<MethodInfo>>();
+
         public Analyzer(ModContentPack content) : base(content)
         {
             Settings = GetSettings<PerfAnalSettings>();
@@ -72,6 +75,28 @@ namespace DubsAnalyzer
             {
                 QualitySettings.vSyncCount = 0;
                 Application.targetFrameRate = 999;
+            }
+
+            // Waiting on ProfilerPatches/ModderDefined
+
+            foreach(var dir in ModLister.AllActiveModDirs)
+            {
+                var count = dir.GetFiles("Analyzer.xml")?.Count();
+                if (count != 0)
+                {
+                    var thing = dir.GetFiles("Analyzer.xml").First();
+                    XmlDocument doc = new XmlDocument();
+                    doc.Load(thing.OpenRead());
+                    XmlParser.Parse(doc, ref methods);
+                }
+            }
+
+            foreach(var m in methods) // m is tab names
+            {
+                foreach (var me in m.Value) // me is methodinfo inside the tabs
+                {
+
+                }
             }
         }
 

@@ -385,14 +385,14 @@ namespace DubsAnalyzer
                 }
             }
 
-            Assembly assembly = mod?
+            var assembly = mod?
                 .assemblies?
                 .loadedAssemblies?
-                .First(w => !w.FullName.Contains("Harmony") && !w.FullName.Contains("0MultiplayerAPI"));
+                .Where(w => !w.FullName.Contains("Harmony") && !w.FullName.Contains("0MultiplayerAPI"));
 
-            if (assembly != null)
+            if (assembly != null || assembly.Count() != 0)
             {
-                patchAssemblyThread = new Thread(() => PatchAssemblyFull(assembly, pre, post));
+                patchAssemblyThread = new Thread(() => PatchAssemblyFull(assembly.ToList(), pre, post));
                 patchAssemblyThread.Start();
             }
             else
@@ -400,28 +400,31 @@ namespace DubsAnalyzer
                 Messages.Message($"Failed to patch {name}", MessageTypeDefOf.NegativeEvent, false);
             }
         }
-        private static void PatchAssemblyFull(Assembly assembly, HarmonyMethod pre, HarmonyMethod post)
+        private static void PatchAssemblyFull(List<Assembly> assemblies, HarmonyMethod pre, HarmonyMethod post)
         {
-            try
+            foreach (var assembly in assemblies)
             {
-                if (PatchedAssemblies.Contains(assembly.FullName))
+                try
                 {
-                    Messages.Message($"patching {assembly.FullName} failed, already patched", MessageTypeDefOf.NegativeEvent, false);
-                    return;
-                }
-                PatchedAssemblies.Add(assembly.FullName);
+                    if (PatchedAssemblies.Contains(assembly.FullName))
+                    {
+                        Messages.Message($"patching {assembly.FullName} failed, already patched", MessageTypeDefOf.NegativeEvent, false);
+                        return;
+                    }
+                    PatchedAssemblies.Add(assembly.FullName);
 
-                foreach (var type in assembly.GetTypes())
+                    foreach (var type in assembly.GetTypes())
+                    {
+                        if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null)
+                            PatchTypeFull(type, pre, post);
+                    }
+
+                    Messages.Message($"Patched {assembly.FullName}", MessageTypeDefOf.TaskCompletion, false);
+                }
+                catch (Exception e)
                 {
-                    if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null)
-                        PatchTypeFull(type, pre, post);
+                    Messages.Message($"catch. patching {assembly.FullName} failed, {e.Message}", MessageTypeDefOf.NegativeEvent, false);
                 }
-
-                Messages.Message($"Patched {assembly.FullName}", MessageTypeDefOf.TaskCompletion, false);
-            }
-            catch (Exception e)
-            {
-                Messages.Message($"catch. patching {assembly.FullName} failed, {e.Message}", MessageTypeDefOf.NegativeEvent, false);
             }
         }
 
