@@ -77,7 +77,13 @@ namespace DubsAnalyzer
                 Application.targetFrameRate = 999;
             }
 
-            // Waiting on ProfilerPatches/ModderDefined
+            foreach(var mod in LoadedModManager.RunningMods)
+            {
+                foreach (var ass in mod.assemblies.loadedAssemblies)
+                    AnalyzerCache.AssemblyToModname.Add(new Tuple<string, string>(ass.FullName, mod.Name));
+            }
+
+            // Waiting on ProfilerPatches/ModderDefined.cs
 
             foreach(var dir in ModLister.AllActiveModDirs)
             {
@@ -112,8 +118,6 @@ namespace DubsAnalyzer
 
         private static void ThreadStart(Dictionary<string, Profiler> Profiles)
         {
-            Thread.CurrentThread.IsBackground = true;
-
             var newLogs = new List<ProfileLog>();
             foreach (var key in Profiles.Keys)
             {
@@ -183,6 +187,7 @@ namespace DubsAnalyzer
             {
                 ShouldUpdate = false;
                 LogicThread = new Thread(() => ThreadStart(AnalyzerState.CurrentProfiles));
+                LogicThread.IsBackground = true;
                 LogicThread.Start();
             }
 
@@ -232,7 +237,7 @@ namespace DubsAnalyzer
 
             try
             {
-                if (LogOpen && Dialog_Graph.key == key)
+                if (LogOpen && Dialog_Analyzer.AdditionalInfo.Graph.key == key)
                     AnalyzerState.CurrentProfiles[key].Stop(true);
                 else
                     AnalyzerState.CurrentProfiles[key].Stop(false);

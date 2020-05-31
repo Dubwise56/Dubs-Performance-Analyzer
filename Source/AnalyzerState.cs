@@ -50,7 +50,7 @@ namespace DubsAnalyzer
 
         public static void ResetState()
         {
-            Dialog_Graph.reset();
+            Dialog_Analyzer.AdditionalInfo.Graph.reset();
             foreach (var profiler in CurrentProfiles)
                 profiler.Value.Stop(false);
 

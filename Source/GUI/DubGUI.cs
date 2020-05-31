@@ -11,6 +11,9 @@ namespace DubsAnalyzer
     public static class DubGUI
     {
         public static Texture2D MintSearch = ContentFinder<Texture2D>.Get("DPA/UI/MintSearch", false);
+        public static Texture2D DropDown = ContentFinder<Texture2D>.Get("DPA/UI/dropdown", false);
+        public static Texture2D FoldUp = ContentFinder<Texture2D>.Get("DPA/UI/foldup", false);
+
 
         public static float ToMb(this long l)
         {
@@ -29,6 +32,67 @@ namespace DubsAnalyzer
             value.Capacity = 0;
         }
 
+        public static void InlineTripleMessage(string left, string middle, string right, Listing_Standard listing, bool capOff)
+        {
+            left.Insert(0, " "); right.Insert(0, " ");
+
+            var grongo = Text.CalcHeight(left, listing.ColumnWidth / 3f);
+            var gronk = Text.CalcHeight(middle, (listing.ColumnWidth / 3f - 5f));
+            var shiela = Text.CalcHeight(right, (listing.ColumnWidth / 2f - 5f));
+
+
+            var rect = listing.GetRect(Mathf.Max(Mathf.Max(grongo, gronk), shiela));
+
+            var leftRect = rect.LeftPart(.3f);
+            var rightRect = rect.RightPart(.3f);
+            var middleRect = rect.LeftPart(.3f);
+            middleRect.x += (rect.width / 3f) + 5;
+            rightRect.x += 5;
+
+            var anchor = Text.Anchor;
+            Text.Anchor = TextAnchor.MiddleCenter;
+
+            Widgets.Label(leftRect, left);
+            Widgets.Label(rightRect, right);
+            Widgets.Label(middleRect, middle);
+            Text.Anchor = anchor;
+
+            Color color = GUI.color;
+            GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
+            Widgets.DrawLineVertical(rect.width/3, rect.y, rect.height);
+            Widgets.DrawLineVertical(2*(rect.width/3), rect.y, rect.height);
+            if (capOff)
+                Widgets.DrawLineHorizontal(rect.x, rect.y + rect.height, rect.width);
+            GUI.color = color;
+        }
+
+        public static void InlineDoubleMessage(string left, string right, Listing_Standard listing, bool capOff)
+        {
+            left.Insert(0,  " "); right.Insert(0, " ");
+
+            var grongo = Text.CalcHeight(left, listing.ColumnWidth/2);
+            var gronk = Text.CalcHeight(right, (listing.ColumnWidth/2 - 5f));
+
+            var rect = listing.GetRect(Mathf.Max(grongo, gronk));
+
+            var anchor = Text.Anchor;
+            Text.Anchor = TextAnchor.MiddleCenter;
+
+            var leftRect = rect.LeftPart(.5f);
+            Widgets.Label(leftRect, left);
+            var rightRect = rect.RightPart(.5f);
+            rightRect.x += 5;
+            Widgets.Label(rightRect, right);
+
+            Text.Anchor = anchor;
+
+            Color color = GUI.color;
+            GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
+            Widgets.DrawLineVertical(rect.center.x, rect.y, rect.height);
+            if (capOff)
+                Widgets.DrawLineHorizontal(rect.x, rect.y + rect.height, rect.width);
+            GUI.color = color;
+        }
 
         public static Rect Scale(this Rect rect, float w, float h)
         {
@@ -163,6 +227,20 @@ namespace DubsAnalyzer
         {
             Heading(listing.GetRect(30), label);
         }
+
+        public static void CollapsableHeading(Listing_Standard listing, string label, ref bool Collapsed)
+        {
+            var Rect = listing.GetRect(30);
+            Heading(Rect, label);
+
+            Vector2 loc = new Vector2(Rect.x + Rect.width - Rect.height, Rect.y);
+            Vector2 len = new Vector2(Rect.height, Rect.height);
+            Rect rect = new Rect(loc, len);
+
+            if (Widgets.ButtonImage(rect, Collapsed ? DropDown : FoldUp))
+                Collapsed = !Collapsed;
+        }
+
         public static void Heading(Rect rect, string label)
         {
             Text.Font = GameFont.Medium;

@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using ColourPicker;
+using HarmonyLib;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -24,10 +25,11 @@ namespace DubsAnalyzer
     [StaticConstructorOnStartup]
     public class Dialog_Analyzer : Window
     {
-        public override Vector2 InitialSize => new Vector2(850, 650);
+        public override Vector2 InitialSize => new Vector2(890, 650);
 
         private SideTab sideTab;
         private Logs logs;
+        private AdditionalInfo additionalInfo;
 
         public static string GarbageCollectionInfo = string.Empty;
 
@@ -151,6 +153,7 @@ namespace DubsAnalyzer
 
             sideTab = new SideTab(this);
             logs = new Logs(this);
+            additionalInfo = new AdditionalInfo(this);
         }
 
         public override void SetInitialSizeAndPosition()
@@ -191,7 +194,9 @@ namespace DubsAnalyzer
              * Draw the actual screen we want, either:
              * - Home Screen, Modders Tools, or one of the categories
              */
-            Rect inner = canvas.RightPartPixels(canvas.width - SideTab.width).Rounded();
+            Rect inner = canvas;
+            inner.x += SideTab.width;
+            inner.width -= SideTab.width;
 
             switch (AnalyzerState.CurrentSideTabCategory)
             {
@@ -206,9 +211,7 @@ namespace DubsAnalyzer
                      * Draw our top row, we will always show this, unconditionally
                      */
                     bool save = false;
-                    DrawTopRow(inner.TopPartPixels(20f), ref save);
-                    inner.y += 25;
-                    inner.height -= 25;
+
 
                     if (!(AnalyzerState.State == CurrentState.Open)) // if we aren't currently 'open' draw a loading sign, and leave
                     {
@@ -216,17 +219,47 @@ namespace DubsAnalyzer
                         return;
                     }
 
-                    Widgets.DrawMenuSection(inner);
-                    logs.Draw(inner.ContractedBy(6f), save);
+                    if (Analyzer.Settings.SidePanel)
+                    {
+                        inner = canvas.LeftPartPixels(Logs.width);
+                        inner.x += SideTab.width;
 
-                    //if (AnalyzerState.CurrentProfileKey == "Overview")
-                    //{
-                    //    Dialog_StackedGraph.Display(inner);
-                    //}
-                    //else
-                    //{
-                    //    Dialog_LogAdditional.DoWindowContents(inner);
-                    //}
+                        DrawTopRow(inner.TopPartPixels(20f), ref save);
+                        inner.y += 25;
+                        inner.height -= 25;
+                        Widgets.DrawMenuSection(inner);
+                        logs.Draw(inner, save);
+
+                        var AdditionalInfoBox = canvas.RightPartPixels(canvas.width - (Logs.width + SideTab.width - 1f)).Rounded();
+                        if (AnalyzerState.CurrentProfileKey == "Overview")
+                        {
+                            Dialog_StackedGraph.Display(AdditionalInfoBox);
+                        }
+                        else
+                        {
+                            additionalInfo.DrawPanel(AdditionalInfoBox);
+                        }
+                    } else
+                    {
+                        DrawTopRow(inner.TopPartPixels(20f), ref save);
+                        inner.y += 25;
+                        inner.height -= 25;
+
+                        var AdditionalInfoBox = canvas.BottomPart(.5f);
+                        if (AnalyzerState.CurrentProfileKey == "Overview")
+                        {
+                            Widgets.DrawMenuSection(inner);
+                            logs.Draw(inner, save);
+                            Dialog_StackedGraph.Display(AdditionalInfoBox);
+                        }
+                        else
+                        {
+                            inner = inner.TopPart(0.5f);
+                            Widgets.DrawMenuSection(inner);
+                            logs.Draw(inner, save);
+                            additionalInfo.Draw(AdditionalInfoBox);
+                        }
+                    }
 
                     break;
             }
@@ -352,9 +385,11 @@ namespace DubsAnalyzer
                 }
                 else
                 {
-                    if (Widgets.ButtonInvisible(row.LeftPart(0.9f)))
+                    if (Widgets.ButtonInvisible(row.LeftPartPixels(row.width - row.height)))
                         tab.clickedAction();
-                    if (Widgets.ButtonImage(row.RightPart(0.1f).ContractedBy(1f), tab.Collapsed ? TexButton.Reveal : TexButton.Collapse))
+
+
+                    if (Widgets.ButtonImage(row.RightPartPixels(row.height), tab.Collapsed ? DubGUI.DropDown : DubGUI.FoldUp))
                         tab.Collapsed = !tab.Collapsed;
                 }
                 row.x += 5f;
@@ -445,6 +480,7 @@ namespace DubsAnalyzer
             private const float boxHeight = 40f;
             public static Listing_Standard listing = new Listing_Standard();
             public static float ListHeight = 999999999;
+            public static float width = 630f;
 
             public Logs(Dialog_Analyzer super)
             {
@@ -465,13 +501,13 @@ namespace DubsAnalyzer
                 }
 
                 var innerRect = rect.AtZero();
-                innerRect.width -= 16f;
+                //innerRect.width -= 16f;
                 innerRect.height = ListHeight;
 
                 GizmoListRect = rect.AtZero();
                 GizmoListRect.y += ScrollPosition.y;
 
-                Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect);
+                Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect, false);
                 GUI.BeginGroup(innerRect);
                 listing.Begin(innerRect);
 
@@ -566,7 +602,7 @@ namespace DubsAnalyzer
 
                     if (Widgets.ButtonInvisible(visible))
                     {
-                        Dialog_Graph.RunKey(log.Key);
+                        Dialog_Analyzer.AdditionalInfo.Graph.RunKey(log.Key);
                         AnalyzerState.CurrentProfileKey = log.Key;
                     }
 
@@ -616,7 +652,7 @@ namespace DubsAnalyzer
                     if (!on)
                         GUI.color = Color.grey;
 
-                    Widgets.Label(visible, $"{log.Max:0.000}ms");
+                    Widgets.Label(visible, $" {log.Max:0.000}ms");
 
                     visible.x = visible.xMax + 15;
 
@@ -664,6 +700,443 @@ namespace DubsAnalyzer
                 }
             }
 
+        }
+        internal class AdditionalInfo
+        {
+            public Dialog_Analyzer super = null;
+            public Graph graph = null;
+            public Listing_Standard listing = null;
+            public static Vector2 ScrollPosition = Vector2.zero;
+            public bool StatsClosed = false;
+            public GameFont font = GameFont.Tiny;
+            
+
+            public AdditionalInfo(Dialog_Analyzer super)
+            {
+                this.super = super;
+                this.graph = new Graph(this);
+            }
+
+            public void Draw(Rect rect)
+            {
+                var oldFont = Text.Font;
+                listing = new Listing_Standard();
+
+                var ListerBox = rect.TopPart(.5f);
+                //ListerBox.width -= 10f;
+                Widgets.DrawMenuSection(rect);
+                ListerBox = ListerBox.AtZero();
+
+                { // Begin Scope for Scroll & GUI Group/View
+                    Widgets.BeginScrollView(rect, ref ScrollPosition, ListerBox);
+                    GUI.BeginGroup(ListerBox);
+                    listing.Begin(ListerBox);
+                    Text.Font = font;
+
+                    DrawGeneral();
+                    DrawStatistics();
+                    if (Analyzer.Settings.AdvancedMode)
+                    {
+                        DrawStackTrace();
+                        DrawHarmonyOptions();
+                    }
+
+                    listing.End();
+                    GUI.EndGroup();
+                    Widgets.EndScrollView();
+                }
+                var GraphBox = rect.BottomPart(.5f);
+                //GraphBox.width -= 10f;
+                graph.Draw(GraphBox);
+
+                Text.Font = oldFont;
+            }
+            public void DrawPanel(Rect rect)
+            {
+                listing = new Listing_Standard();
+
+                var ListerBox = rect.TopPart(.75f);
+                ListerBox.width -= 10f;
+                Widgets.DrawMenuSection(ListerBox);
+                ListerBox = ListerBox.AtZero();
+
+                { // Begin Scope for Scroll & GUI Group/View
+                    Widgets.BeginScrollView(rect, ref ScrollPosition, ListerBox);
+                    GUI.BeginGroup(ListerBox);
+                    listing.Begin(ListerBox);
+
+                    DrawGeneral();
+                    DrawStatistics();
+                    if (Analyzer.Settings.AdvancedMode)
+                    {
+                        DrawStackTrace();
+                        DrawHarmonyOptions();
+                    }
+
+                    listing.End();
+                    GUI.EndGroup();
+                    Widgets.EndScrollView();
+                }
+                var GraphBox = rect.BottomPart(.25f);
+                GraphBox.width -= 10f;
+                graph.Draw(GraphBox);
+            }
+
+            private void DrawGeneral()
+            {
+                DubGUI.Heading(listing, "General");
+                Text.Font = font;
+
+                if (AnalyzerState.CurrentProfiler().meth != null)
+                {
+                    var ass = AnalyzerState.CurrentProfiler().meth.DeclaringType.Assembly.FullName;
+                    var assname = "";
+                    if (ass.Contains("Assembly-CSharp"))
+                        assname = "Rimworld - Core";
+                    else if (ass.Contains("UnityEngine"))
+                        assname = "Rimworld - Unity";
+                    else if (ass.Contains("System"))
+                        assname = "Rimworld - System";
+                    else
+                    {
+                        try
+                        {
+                            assname = AnalyzerCache.AssemblyToModname.Where((val) => val.Item1 == ass).First().Item2;
+                        }
+                        catch (Exception) { assname = "Failed to locate assembly information"; }
+                    }
+
+                    DubGUI.InlineDoubleMessage($" Method Name: {AnalyzerState.CurrentProfiler().meth.Name}", $" From the mod: {assname}", listing, true);
+
+                    Color color = GUI.color;
+                    if (Analyzer.Settings.AdvancedMode)
+                    {
+                        //GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
+                        //Widgets.DrawLineHorizontal(listing.curX, listing.curY, listing.ColumnWidth);
+                        //GUI.color = color;
+                        DubGUI.InlineDoubleMessage($" Declaring Type: {AnalyzerState.CurrentProfiler().meth.DeclaringType.Name}", $" From the assembly: {ass.Split(',').First()}.dll", listing, false);
+                    }
+
+                    GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
+                    Widgets.DrawLineVertical(listing.ColumnWidth/2, listing.curY, 6f);
+                    GUI.color = color;
+
+                } else
+                {
+                    listing.Label("Failed to grab the method associated with this entry - please report this");
+                }
+                listing.GapLine();
+            }
+
+            private void DrawStatistics()
+            {
+                if (Analyzer.Settings.AdvancedMode)
+                {
+                    DubGUI.CollapsableHeading(listing, "Statistics", ref StatsClosed);
+                    Text.Font = font;
+                }
+                else
+                {
+                    DubGUI.Heading(listing, "Statistics");
+                    Text.Font = font;
+                }
+
+                if (!LogStats.IsActiveThread)
+                {
+                    var s = new LogStats();
+                    s.GenerateStats();
+                }
+
+                if (CurrentLogStats.stats == null)
+                {
+                    Text.Font = GameFont.Small;
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    listing.Label($"Loading{GenText.MarchingEllipsis(0f)}");
+                    DubGUI.ResetFont();
+                }
+                else
+                {
+                    if (!StatsClosed)
+                    {
+                        lock (CurrentLogStats.sync)
+                        {
+                            DrawStatsPage();
+                        }
+                    }
+                }
+            }
+
+            private void DrawStatsPage()
+            {
+                DubGUI.InlineTripleMessage($" Entries: {CurrentLogStats.stats.Entries}", $" Σ Calls: {CurrentLogStats.stats.TotalCalls}", $" Σ Time: {CurrentLogStats.stats.TotalTime:0.000}ms", listing, true);
+                DubGUI.InlineTripleMessage($" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms", $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}", listing, true);
+                DubGUI.InlineDoubleMessage($" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms", listing, false);
+                DubGUI.InlineDoubleMessage($" σ {CurrentLogStats.stats.StandardDeviation:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}", listing, true);
+            }
+
+            private void DrawStackTrace()
+            {
+                DubGUI.Heading(listing, "Stack Trace");
+            }
+
+            private void DrawHarmonyOptions()
+            {
+                DubGUI.Heading(listing, "Harmony");
+            }
+
+            internal class Graph
+            {
+                public AdditionalInfo super = null;
+
+                private static int entryCount = 300;
+                public static string key = string.Empty;
+
+                private static Vector2 last = Vector2.zero;
+                private static Vector2 lastMEM = Vector2.zero;
+                private static int hoverVal;
+                private static string hoverValStr = string.Empty;
+                private static int ResetRange;
+
+                private static float WindowMax;
+
+                private static double max;
+                private static string MaxStr;
+                private static string totalBytesStr;
+
+                public Graph(AdditionalInfo super)
+                {
+                    this.super = super;
+                }
+
+                public static void RunKey(string s)
+                {
+                    reset();
+                    key = s;
+                }
+
+                public static void reset()
+                {
+                    WindowMax = 0;
+                    max = 0;
+                    totalBytesStr = string.Empty;
+                    key = string.Empty;
+                    hoverValStr = string.Empty;
+                    MaxStr = string.Empty;
+                    lastMEM = Vector2.zero;
+                    last = Vector2.zero;
+                }
+
+                public void Draw(Rect position)
+                {
+                    ResetRange++;
+                    if (ResetRange >= 500)
+                    {
+                        ResetRange = 0;
+                        WindowMax = 0;
+                    }
+
+                    Text.Font = GameFont.Small;
+
+                    var settings = position.TopPartPixels(30f);
+                    position = position.BottomPartPixels(position.height - 30f);
+
+                    Widgets.DrawBoxSolid(position, Analyzer.Settings.GraphCol);
+
+                    GUI.color = Color.grey;
+                    Widgets.DrawBox(position, 2);
+                    GUI.color = Color.white;
+
+                    var prof = AnalyzerState.CurrentProfiler();
+
+                    if (prof == null) return;
+
+                    if (prof.History.times.Length <= 0) return;
+
+                    var mescou = prof.History.times.Length;
+
+                    if (mescou > entryCount)
+                        mescou = entryCount;
+
+                    var gap = position.width / mescou;
+
+                    var car = settings.RightPartPixels(200f);
+                    car.x -= 15;
+                    entryCount = (int)Widgets.HorizontalSlider(car, entryCount, 10, 2000, true, string.Intern($"{entryCount} Entries"));
+
+                    car = new Rect(car.xMax + 5, car.y + 2, 10, 10);
+                    Widgets.DrawBoxSolid(car, Analyzer.Settings.LineCol);
+                    if (Widgets.ButtonInvisible(car, true))
+                    {
+                        if (Find.WindowStack.WindowOfType<colourPicker>() != null)
+                        {
+                            Find.WindowStack.RemoveWindowsOfType(typeof(colourPicker));
+                        }
+                        else
+                        {
+                            var cp = new colourPicker
+                            {
+                                Setcol = () => Analyzer.Settings.LineCol = colourPicker.CurrentCol
+                            };
+                            cp.SetColor(Analyzer.Settings.LineCol);
+                            Find.WindowStack.Add(cp);
+                        }
+                    }
+                    car.y += 12;
+                    Widgets.DrawBoxSolid(car, Analyzer.Settings.GraphCol);
+                    if (Widgets.ButtonInvisible(car, true))
+                    {
+                        if (Find.WindowStack.WindowOfType<colourPicker>() != null)
+                        {
+                            Find.WindowStack.RemoveWindowsOfType(typeof(colourPicker));
+                        }
+                        else
+                        {
+                            var cp = new colourPicker
+                            {
+                                Setcol = () => Analyzer.Settings.GraphCol = colourPicker.CurrentCol
+                            };
+                            cp.SetColor(Analyzer.Settings.GraphCol);
+                            Find.WindowStack.Add(cp);
+                        }
+                    }
+
+                    if (Analyzer.Settings.AdvancedMode)
+                    {
+                        var memr = settings.LeftPartPixels(20f);
+                        //    if (Widgets.ButtonImageFitted(memr, mem, ShowMem ? Color.white : Color.grey))
+                        //    {
+                        //        ShowMem = !ShowMem;
+                        //    }
+                        GUI.color = Color.white;
+                        TooltipHandler.TipRegion(memr, "Toggle garbage tracking, approximation of total garbage produced by the selected log");
+
+                        memr.x = memr.xMax;
+                        memr.width = 300f;
+                        //   if (ShowMem)
+                        //    {
+                        //        Text.Anchor = TextAnchor.MiddleLeft;
+                        ////         Widgets.Label(memr, totalBytesStr);
+                        ///     }
+                    }
+
+
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    Widgets.Label(settings, hoverValStr);
+                    Text.Anchor = TextAnchor.UpperLeft;
+
+                    //   maxBytes = 0;
+                    //  minBytes = 0;
+
+                    var LastMax = max;
+                    max = 0;
+
+                    GUI.BeginGroup(position);
+                    position = position.AtZero();
+
+                    for (var i = 0; i < mescou; i++)
+                    {
+                        //  var bytes = prof.History.mem[i];
+                        var TM = prof.History.times[i];
+
+                        if (i == 0)
+                        {
+                            //      minBytes = bytes;
+                            //      maxBytes = bytes;
+                            max = TM;
+                        }
+
+                        //   if (bytes < minBytes)
+                        //   {
+                        //       minBytes = bytes;
+                        //  }
+
+                        //    if (bytes > maxBytes)
+                        //     {
+                        //         maxBytes = bytes;
+                        //     }
+
+                        if (TM > max)
+                        {
+                            max = TM;
+                        }
+                    }
+
+                    if (max > WindowMax)
+                    {
+
+                        WindowMax = (float)max;
+                    }
+
+#pragma warning disable CS0219
+                    var DoHover = false;
+#pragma warning restore CS0219
+
+                    for (var i = 0; i < mescou; i++)
+                    {
+                        //    var bytes = prof.History.mem[i];
+                        float TM = (float)prof.History.times[i];
+
+                        var y = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)TM);
+                        //  var MEMy = GenMath.LerpDoubleClamped(minBytes, maxBytes, position.height, position.y, bytes);
+
+                        var screenPoint = new Vector2(position.xMax - gap * i, y);
+                        //    var MEMscreenPoint = new Vector2(position.xMax - gap * i, MEMy);
+
+                        if (i != 0)
+                        {
+                            Widgets.DrawLine(last, screenPoint, Analyzer.Settings.LineCol, 1f);
+                            //   if (ShowMem)
+                            //   {
+                            //       Widgets.DrawLine(lastMEM, MEMscreenPoint, Color.grey, 2f);
+                            //   }
+
+                            var vag = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
+
+                            //if (Widgets.ButtonInvisible(vag))
+                            //{
+                            //    Log.Warning(prof.History.stack[i]);
+                            //    Find.WindowStack.Windows.Add(new StackWindow { stkRef = prof.History.stack[i] });
+                            //}
+
+                            if (Mouse.IsOver(vag))
+                            {
+                                DoHover = true;
+                                if (i != hoverVal)
+                                {
+                                    hoverVal = i;
+                                    hoverValStr = $"{TM} {prof.History.hits[i]} calls";
+                                }
+                                SimpleCurveDrawer.DrawPoint(screenPoint);
+                            }
+                        }
+
+                        last = screenPoint;
+                        //    lastMEM = MEMscreenPoint;
+                    }
+
+                    if (LastMax != max)
+                    {
+                        MaxStr = $" Max {max}ms";
+                    }
+
+                    //   if (LASTtotalBytesStr < prof.BytesUsed)
+                    ///   {
+                    //       LASTtotalBytesStr = prof.BytesUsed;
+                    //       totalBytesStr = $"Mem {(long)(prof.BytesUsed / (long)1024)} Kb";
+                    //   }
+
+
+                    var LogMaxY = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)max);
+                    var crunt = position;
+                    crunt.y = LogMaxY;
+                    Widgets.Label(crunt, MaxStr);
+                    Widgets.DrawLine(new Vector2(position.x, LogMaxY), new Vector2(position.xMax, LogMaxY), Color.red, 1f);
+
+                    last = Vector2.zero;
+
+                    GUI.EndGroup();
+                }
+            }
         }
     }
 }

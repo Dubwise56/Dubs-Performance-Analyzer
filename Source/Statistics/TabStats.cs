@@ -34,7 +34,6 @@ namespace DubsAnalyzer
         public int Entries = 300; // How many, ticks worth of entries to we display at once
         public bool clearOld = true;
 
-        //
         public int Granularity => Entries/10; // we get a 'moving' average of the last Granularity values from our input.
 
         public void GenerateStats()
@@ -49,6 +48,7 @@ namespace DubsAnalyzer
         private static void ExecuteWorker(TabStats logic, List<Profiler> profiles)
         {
             IsActiveThread = true;
+            Thread.CurrentThread.IsBackground = true;
 
             var oldHighest = CurrentTabStats.stats?.Highest ?? 0;
 
@@ -82,11 +82,6 @@ namespace DubsAnalyzer
 
             // get our top LogsPerGraph
             sums.SortStable(null);
-            Log.Message(sums.Count().ToString());
-            foreach(var thing in sums)
-            {
-                Log.Message(thing.ToString());
-            }
 
             IsActiveThread = false;
         }

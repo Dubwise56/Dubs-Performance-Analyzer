@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,109 +21,122 @@ namespace DubsAnalyzer
 
     public class LogStats
     {
-        // Per Tick
-        public float MeanCallsPerTick;
-        public float MeanTimePerTick;
-
         // Per Call
-        public float MeanTicksPerCall;
-        public float MeanTimePerCall;
-        public float StandardDeviation;
-        public List<float> Spikes = new List<float>(); // above 3 standard deviations of the mean
+        public double MeanTimePerCall = 0;
 
         // Per Frame
-        public float MeanTimeElapsedPerFrame;
-        public float MeanCallsPerFrame;
+        public double MeanCallsPerFrame = 0;
+        public double MeanTimePerFrame = 0;
 
-        // Per Category 
-        public float TimeInCategory; // as a percent (0.00%)
+        // General
+        public double StandardDeviation;
+        public List<double> Spikes = new List<double>(); // above 3 standard deviations of the mean
+        public int Entries = -1;
 
+        // Total
+        public double TotalTime = 0;
+        public double TotalCalls = 0;
+        
         // Highests
-        public float MostCallsPerFrame = 0f;
-        public float HighestTime = 0f;
-
-        public float[] LocalTimes;
-        public float[] LocalCalls;
+        public double HighestCalls = 0f;
+        public double HighestTime = 0f;
 
         public static Thread thread = null;
         public static bool IsActiveThread = false;
 
-        public void GenerateStats(double[] times, int[] calls)
+        public static int[] lCalls = new int[2000];
+        public static double[] lTimes = new double[2000];
+
+        public void GenerateStats()
         {
-            thread = new Thread(() => ExecuteWorker(this, times, calls));
+            //AnalyzerState.CurrentProfiler().History.times.CopyTo(lTimes, 0);
+            if (AnalyzerState.CurrentProfiler() == null)
+                return;
+
+            for (int i = 0; i < 2000; i++)
+                lTimes[i] = AnalyzerState.CurrentProfiler().History.times[i];
+                
+            //AnalyzerState.CurrentProfiler().History.hits.CopyTo(lCalls, 0);
+            for (int i = 0; i < 2000; i++)
+                lCalls[i] = AnalyzerState.CurrentProfiler().History.hits[i];
+
+            thread = new Thread(() => ExecuteWorker(this, lCalls, lTimes));
+            thread.IsBackground = true;
             thread.Start();
         }
 
-        private static void ExecuteWorker(LogStats logic, double[] times, int[] calls)
+        private static void ExecuteWorker(LogStats logic, int[] LocalCalls, double[] LocalTimes)
         {
-            IsActiveThread = true;
-            Thread.CurrentThread.IsBackground = true;
-
-            logic.LocalTimes = new float[times.Length];
-            for(int i = 0; i < times.Length; i++)
-                logic.LocalTimes[i] = (float)times[i];
-
-            logic.LocalCalls = new float[calls.Length];
-            for (int i = 0; i < calls.Length; i++)
-                logic.LocalCalls[i] = (float)calls[i];
-
-            float countTimes = logic.LocalTimes.Count();
-            float countCalls = logic.LocalCalls.Count();
-
-            float sumCalls = 0;
-            float sumNotNull = 0;
-            Sum(ref sumCalls, ref sumNotNull, logic.LocalCalls);
-
-            float mean = GetMean(logic.LocalTimes, countTimes);
-
-            float standardDeviation = GetStandardDeviation(mean, logic.LocalTimes, sumCalls);
-            logic.StandardDeviation = standardDeviation;
-
-            // calculate our 'spikes'
-            float cutoff = mean + (3 * standardDeviation);
-            GetSpikes(ref logic.Spikes, logic.LocalTimes, cutoff);
-
-            //logic.CallsPerPeriod = sumCalls / sumNotNull;
-
-            float callsMean = GetMean(logic.LocalCalls, sumNotNull);
-            //logic.CallsPerTick = callsMean;
-
-            lock (CurrentLogStats.sync) // Dump our current statistics into our static class which our drawing class uses
+            try
             {
-                CurrentLogStats.stats = logic;
-            }
+                IsActiveThread = true;
 
-            IsActiveThread = false;
+                // We need to find our 'current' location within the array. I.e. if we only have 300 entries, we shouldn't be averaging things assuming we have 2000 entries
+                // We go backwards from the end of the array, until we find the very first value with an entry (not perfect, but until this is tracked inside the profiler thing we can't do better) TODO
+                int currentMaxIndex = -1;
+                for (int i = 1999; i >= 0; i--)
+                {
+                    if (LocalTimes[i] != 0 || LocalCalls[i] != 0)
+                    {
+                        currentMaxIndex = i;
+                        break;
+                    }
+                }
+
+                if (currentMaxIndex == -1)
+                {
+                    IsActiveThread = false;
+                    return;
+                }
+
+                for (int i = 0; i < currentMaxIndex; i++)
+                {
+                    logic.TotalTime += LocalTimes[i];
+                    if (logic.HighestTime < LocalTimes[i])
+                        logic.HighestTime = LocalTimes[i];
+
+                    logic.TotalCalls += LocalCalls[i];
+                    if (logic.HighestCalls < LocalCalls[i])
+                        logic.HighestCalls = LocalCalls[i];
+                }
+                // p/t
+                logic.MeanTimePerCall = logic.TotalTime / logic.TotalCalls;
+
+                // p/f
+                logic.MeanTimePerFrame = logic.TotalTime / currentMaxIndex;
+                logic.MeanCallsPerFrame = logic.TotalCalls / currentMaxIndex;
+
+                // general
+                logic.Entries = currentMaxIndex;
+                logic.StandardDeviation = GetStandardDeviation(logic.MeanCallsPerFrame, LocalTimes, currentMaxIndex);
+                GetSpikes(ref logic.Spikes, LocalTimes, logic.MeanTimePerCall + (3 * logic.StandardDeviation));
+
+
+                lock (CurrentLogStats.sync) // Dump our current statistics into our static class which our drawing class uses
+                {
+                    CurrentLogStats.stats = logic;
+                }
+
+
+                IsActiveThread = false;
+
+            } catch(Exception) { IsActiveThread = false; }
         }
 
-        public static void Sum(ref float sum, ref float sumNotNull, float[] numbers)
+        public static double GetStandardDeviation(double mean, double[] numbers, double count)
         {
-            foreach(float num in numbers)
-            {
-                if (num > 0)
-                    sumNotNull++;
-                sum += num;
-            }
+            double deviation = 0f;
+            for(int i = 0; i < count; i++)
+                deviation += ((numbers[i] - mean) * (numbers[i] - mean));
+
+            return (double) Mathf.Sqrt((float)deviation / (float)count);
         }
-        public static float GetMean(float[] numbers, float count)
+        public static void GetSpikes(ref List<double> spikes, double[] numbers, double cutoff)
         {
-            float mean = 0f;
-            foreach (float num in numbers)
-                mean += num;
-            return mean / count;
-        }
-        public static float GetStandardDeviation(float mean, float[] numbers, float count)
-        {
-            float deviation = 0f;
-            foreach(float num in numbers)
-                deviation += ((num - mean) * (num - mean));
-            return deviation / count;
-        }
-        public static void GetSpikes(ref List<float> spikes, float[] numbers, float cutoff)
-        {
-            foreach (float num in numbers)
+            foreach (double num in numbers)
                 if (num > cutoff)
                     spikes.Add(num);
         }
+
     }
 }

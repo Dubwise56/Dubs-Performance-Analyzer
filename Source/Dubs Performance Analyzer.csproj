@@ -39,6 +39,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Analyzer.cs" />
+    <Compile Include="AnalyzerCache.cs" />
     <Compile Include="AnalyzerState.cs" />
     <Compile Include="GUI\Dialog_Analyzer.cs" />
     <Compile Include="GUI\Dialog_Graph.cs" />
@@ -116,7 +117,6 @@
     <Compile Include="ProfilerPatches\H_UIRootUpdate.cs" />
     <Compile Include="ProfilerPatches\H_WindowStackOnGUI.cs" />
     <Compile Include="ProfilerPatches\H_WorldPawns.cs" />
-    <Compile Include="Statistics\Wave.cs" />
     <Compile Include="UpdateMode.cs" />
     <Compile Include="GUI\colourPicker.cs" />
     <Compile Include="XmlParser.cs" />

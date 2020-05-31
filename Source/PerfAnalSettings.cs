@@ -52,6 +52,7 @@ namespace DubsAnalyzer
         public bool ShowOnMainTab = true;
         public bool AdvancedMode = false;
         public bool SnowOptimize = false;
+        public bool SidePanel = false;
 
         //  public bool MuteGC = false;
         public override void ExposeData()
@@ -78,7 +79,9 @@ namespace DubsAnalyzer
             Scribe_Values.Look(ref DisableAlerts, "DisableAlerts");
             Scribe_Values.Look(ref KillMusicMan, "KillMusicMan");
             Scribe_Values.Look(ref OptimiseJobGiverOptimise, "OptimiseJobGiverOptimise");
-            
+
+            Scribe_Values.Look(ref SidePanel, "SidePanel");
+
             //  Scribe_Values.Look(ref MuteGC, "MuteGC");
             //    Scribe_Collections.Look(ref Loggers, "Loggers");
 
@@ -191,6 +194,7 @@ namespace DubsAnalyzer
             DubGUI.Checkbox("ShowAnalBut".Translate(), listing, ref ShowOnMainTab);
             //   DubGUI.Checkbox("Mute GC messages", listing, ref Analyzer.Settings.MuteGC);
             DubGUI.Checkbox("AdvProfMode".Translate(), listing, ref AdvancedMode);
+            DubGUI.Checkbox("Side Panel for Information", listing, ref SidePanel);
 
             if (DubGUI.Checkbox("Unlock framerate", listing, ref UnlockFramerate))
             {

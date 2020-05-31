@@ -71,7 +71,6 @@ namespace DubsAnalyzer
 	}
 
 	[HarmonyPatch(typeof(JobGiver_OptimizeApparel), nameof(JobGiver_OptimizeApparel.ApparelScoreRaw))]
-	[HarmonyDebug]
 	public static class H_Jobgiver_OptimizeApparel_ScoreRaw
 	{
 

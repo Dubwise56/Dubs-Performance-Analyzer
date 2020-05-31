@@ -12,7 +12,7 @@ namespace DubsAnalyzer
     {
         public static void Display(Rect rect)
         {
-            Widgets.DrawBoxSolid(rect, Color.blue);
+            //Widgets.DrawBoxSolid(rect, Color.blue);
 
             TabStats stats = new TabStats();
             stats.GenerateStats();
