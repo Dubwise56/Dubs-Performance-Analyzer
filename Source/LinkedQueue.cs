@@ -13,7 +13,7 @@ namespace DubsAnalyzer
 
     public class LinkedQueue<T>
     {
-        private class Node
+        internal class Node
         {
             public T data;
             internal Node next = null;
@@ -28,8 +28,8 @@ namespace DubsAnalyzer
 
         }
 
-        private Node head; // the head of the queue is actually the 'oldest' member
-        private Node tail; // the tail of the queue is the 'newest' member
+        internal Node head; // the head of the queue is actually the 'oldest' member
+        internal Node tail; // the tail of the queue is the 'newest' member
         public int MaxValues { get; set; } = int.MaxValue;
         private int count = 0;
         public int Count => count;
@@ -73,13 +73,15 @@ namespace DubsAnalyzer
                 head = toAddNode;
 
             tail = toAddNode;
-            count++;
 
-            if (count > MaxValues) // pop excessive values
+            if (count == MaxValues) // pop excessive values
             {
                 head = head.previous;
                 head.next = null;
+                return this;
             }
+
+            count++;
 
             return this;
         }
@@ -251,6 +253,67 @@ namespace DubsAnalyzer
         {
             tail = null;
             head = tail;
+        }
+    }
+
+    public static class LinkedQueueExtensions
+    {
+        public static double Average(this LinkedQueue<double> queue, int count)
+        {
+            double sum = 0, i = 0;
+            LinkedQueue<double>.Node node = queue.tail;
+
+            while (node != null && i < count)
+            {
+                sum = sum + node.data;
+                node = queue.tail.next;
+                i++;
+            }
+
+            return sum;
+        }
+
+        public static int Average(this LinkedQueue<int> queue, int count)
+        {
+            int sum = 0, i = 0;
+            LinkedQueue<int>.Node node = queue.tail;
+
+            while (node != null && i < count)
+            {
+                sum = sum + node.data;
+                node = queue.tail.next;
+                i++;
+            }
+
+            return sum;
+        }
+
+        public static int Max(this LinkedQueue<int> queue)
+        {
+            int Highest = queue.tail.data;
+            LinkedQueue<int>.Node node = queue.tail;
+            while (node != null)
+            {
+                node = queue.tail.next;
+                if (Highest < node.data)
+                    Highest = node.data;
+            }
+
+            return Highest;
+        }
+
+        public static double Max(this LinkedQueue<double> queue)
+        {
+            double Highest = queue.tail.data;
+            LinkedQueue<double>.Node node = queue.tail;
+            while (node != null)
+            {
+                node = queue.tail.next;
+                if (Highest < node.data)
+                    Highest = node.data;
+            }
+
+            return Highest;
         }
     }
 }

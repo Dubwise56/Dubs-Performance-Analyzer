@@ -41,7 +41,7 @@ namespace DubsAnalyzer
         private static Thread CleanupPatches = null;
         public static List<Action> QueuedMessages = new List<Action>();
 
-
+        public static float cache = -1;
         public override void PreOpen()
         {
             base.PreOpen();
@@ -134,7 +134,6 @@ namespace DubsAnalyzer
             }
         }
 
-
         public Dialog_Analyzer()
         {
             layer = WindowLayer.Super;
@@ -201,9 +200,19 @@ namespace DubsAnalyzer
             switch (AnalyzerState.CurrentSideTabCategory)
             {
                 case SideTabCategory.Home:
+                    if (cache != -1)
+                    {
+                        windowRect.width -= 450;
+                        cache = -1;
+                    }
                     Analyzer.Settings.DoSettings(inner);
                     break;
                 case SideTabCategory.ModderTools:
+                    if (cache != -1)
+                    {
+                        windowRect.width -= 450;
+                        cache = -1;
+                    }
                     Dialog_ModdingTools.DoWindowContents(inner);
                     break;
                 default: // We are in one of our categories, which means we want to display our logs
@@ -211,7 +220,6 @@ namespace DubsAnalyzer
                      * Draw our top row, we will always show this, unconditionally
                      */
                     bool save = false;
-
 
                     if (!(AnalyzerState.State == CurrentState.Open)) // if we aren't currently 'open' draw a loading sign, and leave
                     {
@@ -221,6 +229,12 @@ namespace DubsAnalyzer
 
                     if (Analyzer.Settings.SidePanel)
                     {
+                        if (cache == -1)
+                        {
+                            windowRect.width += 450;
+                            cache = windowRect.width;
+                        }
+
                         inner = canvas.LeftPartPixels(Logs.width);
                         inner.x += SideTab.width;
 
@@ -239,8 +253,15 @@ namespace DubsAnalyzer
                         {
                             additionalInfo.DrawPanel(AdditionalInfoBox);
                         }
-                    } else
+                    }
+                    else
                     {
+                        if (cache != -1)
+                        {
+                            windowRect.width -= 450;
+                            cache = -1;
+                        }
+
                         DrawTopRow(inner.TopPartPixels(20f), ref save);
                         inner.y += 25;
                         inner.height -= 25;
@@ -709,7 +730,7 @@ namespace DubsAnalyzer
             public static Vector2 ScrollPosition = Vector2.zero;
             public bool StatsClosed = false;
             public GameFont font = GameFont.Tiny;
-            
+            public float CurX = 0;
 
             public AdditionalInfo(Dialog_Analyzer super)
             {
@@ -722,8 +743,7 @@ namespace DubsAnalyzer
                 var oldFont = Text.Font;
                 listing = new Listing_Standard();
 
-                var ListerBox = rect.TopPart(.5f);
-                //ListerBox.width -= 10f;
+                var ListerBox = rect.TopPart(.4f);
                 Widgets.DrawMenuSection(rect);
                 ListerBox = ListerBox.AtZero();
 
@@ -733,23 +753,18 @@ namespace DubsAnalyzer
                     listing.Begin(ListerBox);
                     Text.Font = font;
 
-                    DrawGeneral();
-                    DrawStatistics();
-                    if (Analyzer.Settings.AdvancedMode)
-                    {
-                        DrawStackTrace();
-                        DrawHarmonyOptions();
-                    }
+                    DrawGeneral(ListerBox);
+                    graph.DrawSettings(ListerBox.BottomPartPixels(30f).RightPartPixels(350).ContractedBy(2f), Graph.Entries);
 
                     listing.End();
                     GUI.EndGroup();
                     Widgets.EndScrollView();
                 }
-                var GraphBox = rect.BottomPart(.5f);
-                //GraphBox.width -= 10f;
+                var GraphBox = rect.BottomPart(.6f);
                 graph.Draw(GraphBox);
 
                 Text.Font = oldFont;
+                CurX = 0;
             }
             public void DrawPanel(Rect rect)
             {
@@ -765,12 +780,12 @@ namespace DubsAnalyzer
                     GUI.BeginGroup(ListerBox);
                     listing.Begin(ListerBox);
 
-                    DrawGeneral();
+                    DrawGeneralSidePanel();
                     DrawStatistics();
                     if (Analyzer.Settings.AdvancedMode)
                     {
-                        DrawStackTrace();
-                        DrawHarmonyOptions();
+                        DrawStackTraceSidePanel();
+                        DrawHarmonyOptionsSidePanel();
                     }
 
                     listing.End();
@@ -782,7 +797,8 @@ namespace DubsAnalyzer
                 graph.Draw(GraphBox);
             }
 
-            private void DrawGeneral()
+
+            private void DrawGeneralSidePanel()
             {
                 DubGUI.Heading(listing, "General");
                 Text.Font = font;
@@ -811,21 +827,68 @@ namespace DubsAnalyzer
                     Color color = GUI.color;
                     if (Analyzer.Settings.AdvancedMode)
                     {
-                        //GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
-                        //Widgets.DrawLineHorizontal(listing.curX, listing.curY, listing.ColumnWidth);
-                        //GUI.color = color;
                         DubGUI.InlineDoubleMessage($" Declaring Type: {AnalyzerState.CurrentProfiler().meth.DeclaringType.Name}", $" From the assembly: {ass.Split(',').First()}.dll", listing, false);
                     }
 
                     GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
-                    Widgets.DrawLineVertical(listing.ColumnWidth/2, listing.curY, 6f);
+                    Widgets.DrawLineVertical(listing.ColumnWidth / 2, listing.curY, 6f);
                     GUI.color = color;
 
-                } else
+                }
+                else
                 {
                     listing.Label("Failed to grab the method associated with this entry - please report this");
                 }
                 listing.GapLine();
+            }
+            private void DrawGeneral(Rect rect)
+            {
+                if (!LogStats.IsActiveThread)
+                {
+                    var s = new LogStats();
+                    s.GenerateStats();
+                }
+
+                if (CurrentLogStats.stats == null)
+                {
+                    Text.Font = GameFont.Small;
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    listing.Label($"Loading{GenText.MarchingEllipsis(0f)}");
+                    DubGUI.ResetFont();
+                }
+                else
+                {
+                    lock (CurrentLogStats.sync)
+                    {
+                        //DrawStatsPageSidePanel();
+                        float longestStat = GetLongestStat();
+                        var statRect = rect.LeftPartPixels(longestStat);
+                        Widgets.Label(statRect,
+                        $" Entries: {CurrentLogStats.stats.Entries}\n Highest Time: {CurrentLogStats.stats.HighestTime:0.000}\n" +
+                        $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}\n μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}\n" +
+                        $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms\n μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms\n" +
+                        $" σ {CurrentLogStats.stats.StandardDeviation:0.000}ms\n Number of Spikes: {CurrentLogStats.stats.Spikes.Count}");
+                        CurX = longestStat;
+                    }
+                }
+            }
+
+            private float GetLongestStat()
+            {
+                string[] s1 = new string[]{
+                $" Entries: {CurrentLogStats.stats.Entries}", $" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms",
+                $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}",
+                $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms",
+                $" σ {CurrentLogStats.stats.StandardDeviation:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}" };
+
+                Vector2 vec = Vector2.zero;
+                foreach (var str in s1)
+                {
+                    if (Text.CalcSize(str).x > vec.x)
+                        vec = Text.CalcSize(str);
+                }
+
+                return vec.x;
             }
 
             private void DrawStatistics()
@@ -860,13 +923,13 @@ namespace DubsAnalyzer
                     {
                         lock (CurrentLogStats.sync)
                         {
-                            DrawStatsPage();
+                            DrawStatsPageSidePanel();
                         }
                     }
                 }
             }
 
-            private void DrawStatsPage()
+            private void DrawStatsPageSidePanel()
             {
                 DubGUI.InlineTripleMessage($" Entries: {CurrentLogStats.stats.Entries}", $" Σ Calls: {CurrentLogStats.stats.TotalCalls}", $" Σ Time: {CurrentLogStats.stats.TotalTime:0.000}ms", listing, true);
                 DubGUI.InlineTripleMessage($" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms", $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}", listing, true);
@@ -874,12 +937,12 @@ namespace DubsAnalyzer
                 DubGUI.InlineDoubleMessage($" σ {CurrentLogStats.stats.StandardDeviation:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}", listing, true);
             }
 
-            private void DrawStackTrace()
+            private void DrawStackTraceSidePanel()
             {
                 DubGUI.Heading(listing, "Stack Trace");
             }
 
-            private void DrawHarmonyOptions()
+            private void DrawHarmonyOptionsSidePanel()
             {
                 DubGUI.Heading(listing, "Harmony");
             }
@@ -902,6 +965,9 @@ namespace DubsAnalyzer
                 private static double max;
                 private static string MaxStr;
                 private static string totalBytesStr;
+                public static int Entries = 0;
+
+                private static bool ShowMemory = false;
 
                 public Graph(AdditionalInfo super)
                 {
@@ -926,6 +992,47 @@ namespace DubsAnalyzer
                     last = Vector2.zero;
                 }
 
+                public void DisplayColorPicker(Rect rect, bool LineCol)
+                {
+                    Widgets.DrawBoxSolid(rect, (LineCol) ? Analyzer.Settings.LineCol : Analyzer.Settings.GraphCol);
+
+                    if (Widgets.ButtonInvisible(rect, true))
+                    {
+                        if (Find.WindowStack.WindowOfType<colourPicker>() != null) // if we already have a colour window open, close it
+                            Find.WindowStack.RemoveWindowsOfType(typeof(colourPicker));
+
+                        else
+                        {
+                            var cp = new colourPicker();
+                            if (LineCol)
+                                cp.Setcol = () => Analyzer.Settings.LineCol = colourPicker.CurrentCol;
+                            else
+                                cp.Setcol = () => Analyzer.Settings.GraphCol = colourPicker.CurrentCol;
+
+                            cp.SetColor((LineCol) ? Analyzer.Settings.LineCol : Analyzer.Settings.GraphCol);
+
+                            Find.WindowStack.Add(cp);
+                        }
+                    }
+                }
+
+                public void DrawSettings(Rect rect, int entries)
+                {
+                    var sliderRect = rect.RightPartPixels(200f);
+                    sliderRect.x -= 15;
+                    entryCount = (int)Widgets.HorizontalSlider(sliderRect, entryCount, 10, 2000, true, string.Intern($"{entryCount} Entries"));
+                    sliderRect = new Rect(sliderRect.xMax + 5, sliderRect.y + 2, 10, 10);
+
+                    DisplayColorPicker(sliderRect, true);
+                    sliderRect.y += 12;
+                    DisplayColorPicker(sliderRect, false);
+
+                    rect.width -= 220;
+                    Text.Anchor = TextAnchor.MiddleRight;
+                    Widgets.Label(rect, hoverValStr);
+                    Text.Anchor = TextAnchor.UpperLeft;
+                }
+
                 public void Draw(Rect position)
                 {
                     ResetRange++;
@@ -937,8 +1044,16 @@ namespace DubsAnalyzer
 
                     Text.Font = GameFont.Small;
 
-                    var settings = position.TopPartPixels(30f);
-                    position = position.BottomPartPixels(position.height - 30f);
+                    var prof = AnalyzerState.CurrentProfiler();
+                    if (prof == null || prof.History.times.Length <= 0) return;
+
+                    var entries = (prof.History.times.Length > entryCount) ? entryCount : prof.History.times.Length;
+
+                    if (Analyzer.Settings.SidePanel)
+                    {
+                        DrawSettings(position.TopPartPixels(30f).ContractedBy(2f), entries);
+                        position = position.BottomPartPixels(position.height - 30f);
+                    }
 
                     Widgets.DrawBoxSolid(position, Analyzer.Settings.GraphCol);
 
@@ -946,185 +1061,56 @@ namespace DubsAnalyzer
                     Widgets.DrawBox(position, 2);
                     GUI.color = Color.white;
 
-                    var prof = AnalyzerState.CurrentProfiler();
-
-                    if (prof == null) return;
-
-                    if (prof.History.times.Length <= 0) return;
-
-                    var mescou = prof.History.times.Length;
-
-                    if (mescou > entryCount)
-                        mescou = entryCount;
-
-                    var gap = position.width / mescou;
-
-                    var car = settings.RightPartPixels(200f);
-                    car.x -= 15;
-                    entryCount = (int)Widgets.HorizontalSlider(car, entryCount, 10, 2000, true, string.Intern($"{entryCount} Entries"));
-
-                    car = new Rect(car.xMax + 5, car.y + 2, 10, 10);
-                    Widgets.DrawBoxSolid(car, Analyzer.Settings.LineCol);
-                    if (Widgets.ButtonInvisible(car, true))
-                    {
-                        if (Find.WindowStack.WindowOfType<colourPicker>() != null)
-                        {
-                            Find.WindowStack.RemoveWindowsOfType(typeof(colourPicker));
-                        }
-                        else
-                        {
-                            var cp = new colourPicker
-                            {
-                                Setcol = () => Analyzer.Settings.LineCol = colourPicker.CurrentCol
-                            };
-                            cp.SetColor(Analyzer.Settings.LineCol);
-                            Find.WindowStack.Add(cp);
-                        }
-                    }
-                    car.y += 12;
-                    Widgets.DrawBoxSolid(car, Analyzer.Settings.GraphCol);
-                    if (Widgets.ButtonInvisible(car, true))
-                    {
-                        if (Find.WindowStack.WindowOfType<colourPicker>() != null)
-                        {
-                            Find.WindowStack.RemoveWindowsOfType(typeof(colourPicker));
-                        }
-                        else
-                        {
-                            var cp = new colourPicker
-                            {
-                                Setcol = () => Analyzer.Settings.GraphCol = colourPicker.CurrentCol
-                            };
-                            cp.SetColor(Analyzer.Settings.GraphCol);
-                            Find.WindowStack.Add(cp);
-                        }
-                    }
-
-                    if (Analyzer.Settings.AdvancedMode)
-                    {
-                        var memr = settings.LeftPartPixels(20f);
-                        //    if (Widgets.ButtonImageFitted(memr, mem, ShowMem ? Color.white : Color.grey))
-                        //    {
-                        //        ShowMem = !ShowMem;
-                        //    }
-                        GUI.color = Color.white;
-                        TooltipHandler.TipRegion(memr, "Toggle garbage tracking, approximation of total garbage produced by the selected log");
-
-                        memr.x = memr.xMax;
-                        memr.width = 300f;
-                        //   if (ShowMem)
-                        //    {
-                        //        Text.Anchor = TextAnchor.MiddleLeft;
-                        ////         Widgets.Label(memr, totalBytesStr);
-                        ///     }
-                    }
-
-
-                    Text.Anchor = TextAnchor.MiddleCenter;
-                    Widgets.Label(settings, hoverValStr);
-                    Text.Anchor = TextAnchor.UpperLeft;
-
-                    //   maxBytes = 0;
-                    //  minBytes = 0;
-
-                    var LastMax = max;
-                    max = 0;
+                    var gap = position.width / entries;
 
                     GUI.BeginGroup(position);
                     position = position.AtZero();
 
-                    for (var i = 0; i < mescou; i++)
+                    var LastMax = max;
+                    max = prof.History.times[0];
+
+                    for (var i = 1; i < entries; i++)
                     {
-                        //  var bytes = prof.History.mem[i];
-                        var TM = prof.History.times[i];
+                        var entry = prof.History.times[i];
 
-                        if (i == 0)
-                        {
-                            //      minBytes = bytes;
-                            //      maxBytes = bytes;
-                            max = TM;
-                        }
-
-                        //   if (bytes < minBytes)
-                        //   {
-                        //       minBytes = bytes;
-                        //  }
-
-                        //    if (bytes > maxBytes)
-                        //     {
-                        //         maxBytes = bytes;
-                        //     }
-
-                        if (TM > max)
-                        {
-                            max = TM;
-                        }
+                        if (entry > max)
+                            max = entry;
                     }
 
                     if (max > WindowMax)
-                    {
-
                         WindowMax = (float)max;
-                    }
 
-#pragma warning disable CS0219
-                    var DoHover = false;
-#pragma warning restore CS0219
+                    bool DoHover = false;
 
-                    for (var i = 0; i < mescou; i++)
+                    for (var i = 0; i < entries; i++)
                     {
-                        //    var bytes = prof.History.mem[i];
-                        float TM = (float)prof.History.times[i];
+                        float entry = (float)prof.History.times[i];
+                        float y = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, entry);
 
-                        var y = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)TM);
-                        //  var MEMy = GenMath.LerpDoubleClamped(minBytes, maxBytes, position.height, position.y, bytes);
-
-                        var screenPoint = new Vector2(position.xMax - gap * i, y);
-                        //    var MEMscreenPoint = new Vector2(position.xMax - gap * i, MEMy);
+                        var screenPoint = new Vector2(position.xMax - (gap * i), y);
 
                         if (i != 0)
                         {
                             Widgets.DrawLine(last, screenPoint, Analyzer.Settings.LineCol, 1f);
-                            //   if (ShowMem)
-                            //   {
-                            //       Widgets.DrawLine(lastMEM, MEMscreenPoint, Color.grey, 2f);
-                            //   }
 
-                            var vag = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
-
-                            //if (Widgets.ButtonInvisible(vag))
-                            //{
-                            //    Log.Warning(prof.History.stack[i]);
-                            //    Find.WindowStack.Windows.Add(new StackWindow { stkRef = prof.History.stack[i] });
-                            //}
-
-                            if (Mouse.IsOver(vag))
+                            var relevantArea = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
+                            if (Mouse.IsOver(relevantArea))
                             {
                                 DoHover = true;
                                 if (i != hoverVal)
                                 {
                                     hoverVal = i;
-                                    hoverValStr = $"{TM} {prof.History.hits[i]} calls";
+                                    hoverValStr = $"{entry:0.00000}ms {prof.History.hits[i]} calls";
                                 }
                                 SimpleCurveDrawer.DrawPoint(screenPoint);
                             }
                         }
 
                         last = screenPoint;
-                        //    lastMEM = MEMscreenPoint;
                     }
 
                     if (LastMax != max)
-                    {
                         MaxStr = $" Max {max}ms";
-                    }
-
-                    //   if (LASTtotalBytesStr < prof.BytesUsed)
-                    ///   {
-                    //       LASTtotalBytesStr = prof.BytesUsed;
-                    //       totalBytesStr = $"Mem {(long)(prof.BytesUsed / (long)1024)} Kb";
-                    //   }
-
 
                     var LogMaxY = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)max);
                     var crunt = position;
@@ -1135,8 +1121,69 @@ namespace DubsAnalyzer
                     last = Vector2.zero;
 
                     GUI.EndGroup();
+
+                    Entries = entries;
                 }
             }
         }
     }
 }
+
+
+
+//if (ShowMemory)
+//{
+//    var memr = settings.LeftPartPixels(20f);
+
+//    if (Widgets.ButtonImageFitted(memr, mem, ShowMemory ? Color.white : Color.grey))
+//    {
+//        ShowMemory = !ShowMemory;
+//    }
+
+//    GUI.color = Color.white;
+//    TooltipHandler.TipRegion(memr, "Toggle garbage tracking, approximation of total garbage produced by the selected log");
+
+//    memr.x = memr.xMax;
+//    memr.width = 300f;
+
+//    if (ShowMemory)
+//    {
+//        Text.Anchor = TextAnchor.MiddleLeft;
+//        Widgets.Label(memr, totalBytesStr);
+//    }
+//}
+//
+//   maxBytes = 0;
+//   minBytes = 0;
+//
+//  var bytes = prof.History.mem[i];
+//      minBytes = bytes;
+//      maxBytes = bytes;
+//   if (bytes < minBytes)
+//   {
+//       minBytes = bytes;
+//  }
+//
+//    if (bytes > maxBytes)
+//     {
+//         maxBytes = bytes;
+//     }
+//   if (LASTtotalBytesStr < prof.BytesUsed)
+//   {
+//       LASTtotalBytesStr = prof.BytesUsed;
+//       totalBytesStr = $"Mem {(long)(prof.BytesUsed / (long)1024)} Kb";
+//   }
+//    var bytes = prof.History.mem[i];
+//  var MEMy = GenMath.LerpDoubleClamped(minBytes, maxBytes, position.height, position.y, bytes);
+//    var MEMscreenPoint = new Vector2(position.xMax - gap * i, MEMy);
+//   if (ShowMem)
+//   {
+//       Widgets.DrawLine(lastMEM, MEMscreenPoint, Color.grey, 2f);
+//   }
+
+//if (Widgets.ButtonInvisible(vag))
+//{
+//    Log.Warning(prof.History.stack[i]);
+//    Find.WindowStack.Windows.Add(new StackWindow { stkRef = prof.History.stack[i] });
+//}
+//    lastMEM = MEMscreenPoint;

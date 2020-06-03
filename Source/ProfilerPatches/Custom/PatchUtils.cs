@@ -390,7 +390,7 @@ namespace DubsAnalyzer
                 .loadedAssemblies?
                 .Where(w => !w.FullName.Contains("Harmony") && !w.FullName.Contains("0MultiplayerAPI"));
 
-            if (assembly != null || assembly.Count() != 0)
+            if (assembly != null && assembly.Count() != 0)
             {
                 patchAssemblyThread = new Thread(() => PatchAssemblyFull(assembly.ToList(), pre, post));
                 patchAssemblyThread.Start();
