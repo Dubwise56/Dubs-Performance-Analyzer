@@ -50,7 +50,7 @@ namespace DubsAnalyzer
             {
                 try
                 {
-                    var mef = AccessTools.Method(allLeafSubclass, nameof(StatPart.TransformValue));
+                    var mef = AccessTools.Method(allLeafSubclass, nameof(StatPart.TransformValue), new Type[] { typeof(StatRequest), typeof(float).MakeByRefType() });
                     if (mef.DeclaringType == allLeafSubclass)
                     {
                         var info = Harmony.GetPatchInfo(mef);
