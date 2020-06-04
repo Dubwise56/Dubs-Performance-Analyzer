@@ -754,7 +754,11 @@ namespace DubsAnalyzer
                     Text.Font = font;
 
                     DrawGeneral(ListerBox);
-                    graph.DrawSettings(ListerBox.BottomPartPixels(30f).RightPartPixels(350).ContractedBy(2f), Graph.Entries);
+
+                    { // graph settings
+                        Rect graphRect = ListerBox.BottomPartPixels(30f).RightPartPixels(325);
+                        graph.DrawSettings(graphRect.ContractedBy(2f), Graph.Entries);
+                    }
 
                     listing.End();
                     GUI.EndGroup();

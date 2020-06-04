@@ -99,10 +99,7 @@ namespace DubsAnalyzer
 
             foreach(var m in methods) // m is tab names
             {
-                foreach (var me in m.Value) // me is methodinfo inside the tabs
-                {
-
-                }
+                Type myType = DynamicTypeBuilder.CreateType(m.Key, m.Value);
             }
         }
 
