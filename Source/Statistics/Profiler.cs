@@ -25,8 +25,6 @@ namespace DubsAnalyzer
         public double startTime = 0;
         public int HitCounter = 0;
 
-        public string[] fullstack = new string[20000];
-
         public Profiler(string kley, string lab, Type ty, Def indef, Thing inthing, MethodInfo inmeth)
         {
             key = kley;

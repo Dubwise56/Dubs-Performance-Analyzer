@@ -5,16 +5,6 @@ using Verse;
 
 namespace DubsAnalyzer
 {
-    //public readonly struct Stack
-    //{
-    //    public readonly string[] stacks;
-
-    //    public Stack(string[] stacks)
-    //    {
-    //        this.stacks = stacks;
-    //    }
-    //}
-
     public readonly struct ProfilerHistory
     {
         public readonly double[] times;
@@ -43,9 +33,14 @@ namespace DubsAnalyzer
             }
         }
 
-        public double GetAverageTime(int count)
+        public double GetAverageTime(double count)
         {
-            return times.Take(count).Average(timeSpan => timeSpan);
+            double sum = 0;
+            for(int i = 0; i < count; i++)
+            {
+                sum += times[i];
+            }
+            return sum / count;
         }
     }
 }

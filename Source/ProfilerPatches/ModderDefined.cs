@@ -2,12 +2,14 @@
 using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine.Experimental.PlayerLoop;
 using Verse;
 
 namespace DubsAnalyzer
@@ -40,7 +42,7 @@ namespace DubsAnalyzer
             {
                 if (moduleBuilder == null)
                 {
-                    moduleBuilder = Assembly.GetDynamicModule("Main Module");
+                    moduleBuilder = Assembly.DefineDynamicModule("MainModule");
                 }
                 return moduleBuilder;
             }
@@ -48,17 +50,14 @@ namespace DubsAnalyzer
 
         public static Dictionary<string, List<MethodInfo>> methods = new Dictionary<string, List<MethodInfo>>();
 
-        public static Type CreateType(string name, List<MethodInfo> methods)
+        public static Type CreateType(string name, UpdateMode updateMode, List<MethodInfo> methods)
         {
-            TypeBuilder tb = ModuleBuilder.DefineType(name, staticAtt, null);
+            name = "rt_dubs_" + name;
 
-            FieldBuilder activeField = tb.DefineField("Active", typeof(bool), FieldAttributes.Static | FieldAttributes.Public);
-            activeField.SetValue(tb, false);
-            FieldBuilder isPatchedField = tb.DefineField("IsPatched", typeof(bool), FieldAttributes.Static | FieldAttributes.Public);
-            isPatchedField.SetValue(tb, false);
-            FieldBuilder nameField = tb.DefineField("name", typeof(string), FieldAttributes.Static | FieldAttributes.Public);
-            nameField.SetValue(tb, name);
 
+            TypeBuilder tb = ModuleBuilder.DefineType(name, staticAtt, typeof(ProfileMode));
+
+            tb.DefineField("Active", typeof(bool), FieldAttributes.Public | FieldAttributes.Static);
 
             DynamicTypeBuilder.methods.Add(name, methods);
 
@@ -77,7 +76,6 @@ namespace DubsAnalyzer
 
             MethodBuilder ProfilePatch = tb.DefineMethod("ProfilePatch", MethodAttributes.Public | MethodAttributes.Static);
 
-
             var generator = ProfilePatch.GetILGenerator();
 
             generator.Emit(OpCodes.Ldstr, name);
@@ -87,11 +85,29 @@ namespace DubsAnalyzer
 
         public static void PatchAll(string name)
         {
-            var pre = new HarmonyMethod(AccessTools.Method(name + ":" + "Prefix"));
-            var post = new HarmonyMethod(AccessTools.Method(name + ":" + "Postfix"));
+            StackTrace st = new StackTrace();
+            Type type = st.GetFrame(1).GetMethod().DeclaringType;
+
+            HarmonyMethod pre = null;
+            HarmonyMethod post = null;
+            foreach (var meth in type.GetMethods())
+            {
+                if(meth.Name == "Postfix")
+                {
+                    Log.Message("hi postfix");
+                    post = new HarmonyMethod(meth);
+                } else if(meth.Name == "Prefix")
+                {
+                    Log.Message("hi prefix");
+                    pre = new HarmonyMethod(meth);
+                }
+            }
+
+            Log.Message(pre.ToString());
 
             foreach (var meth in methods[name])
             {
+                Log.Message($"Trying to patch {meth.Name} using {pre.methodName} and {post.methodName} from the type {pre.declaringType.Name}");
                 Analyzer.harmony.Patch(meth, pre, post);
             }
         }
@@ -110,7 +126,7 @@ namespace DubsAnalyzer
                 new Type[] { typeof(MethodBase), typeof(object), typeof(string).MakeByRefType() });
 
 
-            // name our params as such as per Harmony's constants: https://github.com/pardeike/Harmony/blob/master/Harmony/Internal/MethodPatcher.cs#L13-L21
+            // name our params as such as per Harmonys constants: https://github.com/pardeike/Harmony/blob/master/Harmony/Internal/MethodPatcher.cs#L13-L21
             prefix.DefineParameter(0, ParameterAttributes.In, "__originalMethod");
             prefix.DefineParameter(1, ParameterAttributes.In, "__instance");
             prefix.DefineParameter(2, ParameterAttributes.In, "__state");

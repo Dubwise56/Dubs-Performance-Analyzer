@@ -50,7 +50,7 @@ namespace DubsAnalyzer
         private const int NumSecondsForPatchClear = 30;
 
         public static readonly int MaxHistoryEntries = 3000;
-        public static readonly int AveragingTime = 3000;
+        public static readonly int AveragingTime = 2000;
         public static readonly int UpdateInterval = 60;
 
         public static double AverageSum;
@@ -97,10 +97,6 @@ namespace DubsAnalyzer
                 }
             }
 
-            foreach(var m in methods) // m is tab names
-            {
-                Type myType = DynamicTypeBuilder.CreateType(m.Key, m.Value);
-            }
         }
 
         public override void DoSettingsWindowContents(Rect inRect)
@@ -227,7 +223,14 @@ namespace DubsAnalyzer
                 AnalyzerState.CurrentProfiles[key].Start();
             }
         }
+        private static void StartCurrent(string key)
+        {
 
+        }
+        private static void StopCurrent(string key)
+        {
+
+        }
         public static void Stop(string key)
         {
             if (!AnalyzerState.CurrentlyRunning) return;

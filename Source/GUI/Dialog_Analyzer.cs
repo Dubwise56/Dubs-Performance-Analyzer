@@ -99,6 +99,25 @@ namespace DubsAnalyzer
                         }
                     }
 
+                    foreach (var profileMode in ProfileMode.instances)
+                    {
+
+                    }
+
+                    foreach (var m in Analyzer.methods) // m is tab names
+                    {
+                        Type myType = DynamicTypeBuilder.CreateType(m.Key, UpdateMode.Update, m.Value);
+                        foreach (var profileTab in AnalyzerState.SideTabCategories)
+                        {
+                            if (profileTab.UpdateMode == UpdateMode.Update)
+                            {
+                                ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType);
+                                profileTab.Modes.Add(mode, null);
+                                break;
+                            }
+                        }
+                    }
+
                     try
                     {
                         Analyzer.harmony.PatchAll(Assembly.GetExecutingAssembly());
