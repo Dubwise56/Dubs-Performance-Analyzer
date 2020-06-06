@@ -25,6 +25,9 @@ namespace DubsAnalyzer
         public double startTime = 0;
         public int HitCounter = 0;
 
+        // static Dict<StackTrace, int>
+        // static int[] mem
+
         public Profiler(string kley, string lab, Type ty, Def indef, Thing inthing, MethodInfo inmeth)
         {
             key = kley;

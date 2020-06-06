@@ -9,20 +9,19 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
-using UnityEngine.Experimental.PlayerLoop;
 using Verse;
 
 namespace DubsAnalyzer
 {
     /*
-     * Todo
+     * Requires Revision. Todo
      */
     public static class DynamicTypeBuilder
     {
 
         static AssemblyBuilder assembly = null;
         static TypeAttributes staticAtt = TypeAttributes.AutoLayout | TypeAttributes.AnsiClass | TypeAttributes.Class | TypeAttributes.Public | TypeAttributes.Abstract | TypeAttributes.Sealed | TypeAttributes.BeforeFieldInit;
-        // this is what a static class looks like in memory
+        // this is what a static class looks like in attributes
 
         static AssemblyBuilder Assembly
         {
@@ -52,9 +51,6 @@ namespace DubsAnalyzer
 
         public static Type CreateType(string name, UpdateMode updateMode, List<MethodInfo> methods)
         {
-            name = "rt_dubs_" + name;
-
-
             TypeBuilder tb = ModuleBuilder.DefineType(name, staticAtt, typeof(ProfileMode));
 
             tb.DefineField("Active", typeof(bool), FieldAttributes.Public | FieldAttributes.Static);
@@ -92,18 +88,19 @@ namespace DubsAnalyzer
             HarmonyMethod post = null;
             foreach (var meth in type.GetMethods())
             {
-                if(meth.Name == "Postfix")
+                if (meth.Name == "Postfix")
                 {
                     Log.Message("hi postfix");
                     post = new HarmonyMethod(meth);
-                } else if(meth.Name == "Prefix")
+                }
+                else if (meth.Name == "Prefix")
                 {
                     Log.Message("hi prefix");
                     pre = new HarmonyMethod(meth);
                 }
             }
 
-            Log.Message(pre.ToString());
+            Log.Message(name + " " + pre.ToString());
 
             foreach (var meth in methods[name])
             {

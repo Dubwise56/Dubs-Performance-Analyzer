@@ -223,14 +223,7 @@ namespace DubsAnalyzer
                 AnalyzerState.CurrentProfiles[key].Start();
             }
         }
-        private static void StartCurrent(string key)
-        {
 
-        }
-        private static void StopCurrent(string key)
-        {
-
-        }
         public static void Stop(string key)
         {
             if (!AnalyzerState.CurrentlyRunning) return;

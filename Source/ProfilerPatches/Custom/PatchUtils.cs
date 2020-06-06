@@ -366,29 +366,21 @@ namespace DubsAnalyzer
             InternalMethodUtility.curMeth = null;
         }
 
-
-        /*
-         * WIP
-         */
         public static void PatchAssembly(string name, HarmonyMethod pre, HarmonyMethod post)
         {
-            //Mod mod = LoadedModManager.ModHandles.FirstOrDefault(m => m.Content.Name == name || m.Content.PackageId == name);
-            var mod = LoadedModManager.RunningMods.FirstOrDefault(m => m.Name == name || m.PackageId == name);
+            var mod = LoadedModManager.RunningMods.FirstOrDefault(m => m.Name == name || m.PackageId == name.ToLower());
 
             Log.Message($"Mod is null? {mod == null}");
             if(mod != null)
             {
-                Log.Message($"Assembly count: { mod.assemblies?.loadedAssemblies?.Count}");
+                Log.Message($"Assembly count: { mod.assemblies?.loadedAssemblies?.Count ?? 0}");
                 foreach(var ass in mod.assemblies?.loadedAssemblies)
                 {
                     Log.Message($"Assembly named: {ass.FullName}, located at {ass.Location}");
                 }
             }
 
-            var assembly = mod?
-                .assemblies?
-                .loadedAssemblies?
-                .Where(w => !w.FullName.Contains("Harmony") && !w.FullName.Contains("0MultiplayerAPI"));
+            var assembly = mod?.assemblies?.loadedAssemblies?.Where(w => !w.FullName.Contains("Harmony") && !w.FullName.Contains("0MultiplayerAPI"));
 
             if (assembly != null && assembly.Count() != 0)
             {
@@ -397,7 +389,7 @@ namespace DubsAnalyzer
             }
             else
             {
-                Messages.Message($"Failed to patch {name}", MessageTypeDefOf.NegativeEvent, false);
+                Error($"Failed to patch {name}");
             }
         }
         private static void PatchAssemblyFull(List<Assembly> assemblies, HarmonyMethod pre, HarmonyMethod post)
@@ -408,7 +400,7 @@ namespace DubsAnalyzer
                 {
                     if (PatchedAssemblies.Contains(assembly.FullName))
                     {
-                        Messages.Message($"patching {assembly.FullName} failed, already patched", MessageTypeDefOf.NegativeEvent, false);
+                        Warn($"patching {assembly.FullName} failed, already patched");
                         return;
                     }
                     PatchedAssemblies.Add(assembly.FullName);
@@ -419,11 +411,11 @@ namespace DubsAnalyzer
                             PatchTypeFull(type, pre, post);
                     }
 
-                    Messages.Message($"Patched {assembly.FullName}", MessageTypeDefOf.TaskCompletion, false);
+                    Notify($"Patched {assembly.FullName}");
                 }
                 catch (Exception e)
                 {
-                    Messages.Message($"catch. patching {assembly.FullName} failed, {e.Message}", MessageTypeDefOf.NegativeEvent, false);
+                    Error($"catch. patching {assembly.FullName} failed, {e.Message}");
                 }
             }
         }
