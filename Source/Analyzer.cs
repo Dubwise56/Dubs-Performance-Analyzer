@@ -3,6 +3,7 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -65,7 +66,7 @@ namespace DubsAnalyzer
         public static Thread LogicThread = null;
         public static object sync = new object();
 
-        public static Dictionary<string, List<MethodInfo>> methods = new Dictionary<string, List<MethodInfo>>();
+        public static Dictionary<string, HashSet<MethodInfo>> methods = new Dictionary<string, HashSet<MethodInfo>>();
 
         public Analyzer(ModContentPack content) : base(content)
         {

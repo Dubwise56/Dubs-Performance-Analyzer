@@ -14,22 +14,23 @@ namespace DubsAnalyzer
     {
         public static List<string> meths = new List<string>();
         public static List<string> types = new List<string>();
-        public static void Parse(XmlDocument doc, ref Dictionary<string, List<MethodInfo>> methodsToPatch)
-        { 
+        public static void Parse(XmlDocument doc, ref Dictionary<string, HashSet<MethodInfo>> methodsToPatch)
+        {
             foreach (XmlNode node in doc.DocumentElement.ChildNodes)
             {
                 meths = new List<string>();
                 types = new List<string>();
                 WriteToLists(node);
-                methodsToPatch.Add(node.Name, new List<MethodInfo>());
-                foreach(var meth in meths)
+                methodsToPatch.Add(node.Name, new HashSet<MethodInfo>());
+                foreach (var meth in meths)
                 {
                     MethodInfo method = null;
                     try
                     {
                         method = AccessTools.Method(meth);
                         methodsToPatch[node.Name].Add(method);
-                    } catch (Exception) { }
+                    }
+                    catch (Exception) { }
                 }
                 foreach (var type in types)
                 {

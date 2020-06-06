@@ -3,6 +3,7 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -29,7 +30,7 @@ namespace DubsAnalyzer
             {
                 if (assembly == null)
                 {
-                    assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("DubsDynamicTypes"), AssemblyBuilderAccess.Run);
+                    assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("DubsDynamicTypes"), AssemblyBuilderAccess.RunAndSave, Directory.GetCurrentDirectory() + "/Modded");
                 }
                 return assembly;
             }
@@ -41,23 +42,30 @@ namespace DubsAnalyzer
             {
                 if (moduleBuilder == null)
                 {
-                    moduleBuilder = Assembly.DefineDynamicModule("MainModule");
+                    moduleBuilder = Assembly.DefineDynamicModule("DubsDynamicTypes", "DubsDynamicTypes.dll");
                 }
                 return moduleBuilder;
             }
         }
 
-        public static Dictionary<string, List<MethodInfo>> methods = new Dictionary<string, List<MethodInfo>>();
+        public static Dictionary<string, HashSet<MethodInfo>> methods = new Dictionary<string, HashSet<MethodInfo>>();
 
-        public static Type CreateType(string name, UpdateMode updateMode, List<MethodInfo> methods)
+        public static Type CreateType(string name, UpdateMode updateMode, HashSet<MethodInfo> methods)
         {
             TypeBuilder tb = ModuleBuilder.DefineType(name, staticAtt, typeof(ProfileMode));
 
-            tb.DefineField("Active", typeof(bool), FieldAttributes.Public | FieldAttributes.Static);
+            var active = tb.DefineField("Active", typeof(bool), FieldAttributes.Public | FieldAttributes.Static);
 
             DynamicTypeBuilder.methods.Add(name, methods);
 
-            CreatePrefix(tb);
+            ConstructorBuilder ivCtor = tb.DefineConstructor(MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, new Type[0]);
+            ILGenerator ctorIL = ivCtor.GetILGenerator();
+            ctorIL.Emit(OpCodes.Ldc_I4_0);
+            ctorIL.Emit(OpCodes.Stsfld, active);
+            ctorIL.Emit(OpCodes.Ret);
+
+
+            CreatePrefix(tb, active);
             CreatePostfix(tb);
 
             CreateProfilePatch(name, tb);
@@ -81,40 +89,36 @@ namespace DubsAnalyzer
 
         public static void PatchAll(string name)
         {
-            StackTrace st = new StackTrace();
-            Type type = st.GetFrame(1).GetMethod().DeclaringType;
+            var premeth = AccessTools.Method(name + ":Prefix");
+            var postmeth = AccessTools.Method(name + ":Postfix");
 
-            HarmonyMethod pre = null;
-            HarmonyMethod post = null;
-            foreach (var meth in type.GetMethods())
-            {
-                if (meth.Name == "Postfix")
-                {
-                    Log.Message("hi postfix");
-                    post = new HarmonyMethod(meth);
-                }
-                else if (meth.Name == "Prefix")
-                {
-                    Log.Message("hi prefix");
-                    pre = new HarmonyMethod(meth);
-                }
-            }
-
-            Log.Message(name + " " + pre.ToString());
+            HarmonyMethod pre = new HarmonyMethod(premeth);
+            HarmonyMethod post = new HarmonyMethod(postmeth);
 
             foreach (var meth in methods[name])
             {
-                Log.Message($"Trying to patch {meth.Name} using {pre.methodName} and {post.methodName} from the type {pre.declaringType.Name}");
                 Analyzer.harmony.Patch(meth, pre, post);
             }
         }
 
-        private static void CreatePrefix(TypeBuilder tb)
+        private static void LogMethod(MethodInfo info)
+        {
+            Log.Message($"{info.Name} with the return type {info.ReturnType.Name}");
+
+            Log.Message("Params");
+            foreach(var param in info.GetParameters())
+            {
+                Log.Message($"Parameter: {param.Position} of the type: {param.ParameterType.Name} named: {param.Name}");
+            }
+        }
+
+
+        private static void CreatePrefix(TypeBuilder tb, FieldBuilder active)
         {
             var getDeclType = AccessTools.Method(typeof(MethodInfo), "get_DeclaringType");
             var getName = AccessTools.Method(typeof(MethodInfo), "get_Name");
             var format = AccessTools.Method(typeof(String), "Format", new Type[] { typeof(string), typeof(object), typeof(object) });
-            var start = AccessTools.Method(typeof(Analyzer), "Start");
+            var start = AccessTools.Method(typeof(Analyzer), nameof(Analyzer.Start));
 
             MethodBuilder prefix = tb.DefineMethod(
                 "Prefix",
@@ -124,9 +128,9 @@ namespace DubsAnalyzer
 
 
             // name our params as such as per Harmonys constants: https://github.com/pardeike/Harmony/blob/master/Harmony/Internal/MethodPatcher.cs#L13-L21
-            prefix.DefineParameter(0, ParameterAttributes.In, "__originalMethod");
-            prefix.DefineParameter(1, ParameterAttributes.In, "__instance");
-            prefix.DefineParameter(2, ParameterAttributes.In, "__state");
+            prefix.DefineParameter(1, ParameterAttributes.None, "__originalMethod");
+            prefix.DefineParameter(2, ParameterAttributes.None, "__instance");
+            prefix.DefineParameter(3, ParameterAttributes.In, "__state");
 
 
             var generator = prefix.GetILGenerator();
@@ -134,8 +138,8 @@ namespace DubsAnalyzer
 
             // if(Active && AnalyzerState.CurrentlyRunning)
             // { 
-            // ...
-            generator.Emit(OpCodes.Ldsfld, AccessTools.Field(prefix.DeclaringType, "Active"));
+            //...
+            generator.Emit(OpCodes.Ldsfld, active);
             generator.Emit(OpCodes.Brfalse_S, skipLabel);
 
             generator.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(AnalyzerState), "CurrentlyRunning"));
@@ -151,10 +155,10 @@ namespace DubsAnalyzer
             generator.Emit(OpCodes.Callvirt, getName);
             generator.Emit(OpCodes.Call, format); // String.Format(str, obj, obj)
             generator.Emit(OpCodes.Stind_Ref); // store in the memory loc of our address (__state)
-
+            
             // call Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
             generator.Emit(OpCodes.Ldarg_2);
-            generator.Emit(OpCodes.Ldind_Ref); // label (__state)
+            generator.Emit(OpCodes.Ldind_Ref); // key (__state)
             generator.Emit(OpCodes.Ldnull); // label func
             generator.Emit(OpCodes.Ldnull); // type?
             generator.Emit(OpCodes.Ldnull); // def?
@@ -180,15 +184,32 @@ namespace DubsAnalyzer
             "Postfix",
             MethodAttributes.Public | MethodAttributes.Static,
             null,
-            new Type[] { typeof(string).MakeByRefType() });
+            new Type[] { typeof(string) });
 
-            postfix.DefineParameter(0, ParameterAttributes.In, "__state");
+            postfix.DefineParameter(1, ParameterAttributes.None, "__state");
 
             var generator = postfix.GetILGenerator();
 
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Call, end);
             generator.Emit(OpCodes.Ret);
+        }
+
+        public static void ScribeAndLoad()
+        {
+            var modMetaData = ModLister.AllInstalledMods.First(mod => mod.Active && mod.Name == "Dubs Performance Analyzer");
+
+            var path = modMetaData.RootDir.FullName + @"/1.1/Assemblies/Modded/DubsDynamicTypes.dll";
+            if (File.Exists(path))
+            {
+                System.IO.File.Delete(path);
+                System.GC.Collect();
+                System.GC.WaitForPendingFinalizers();
+                Log.Message("Old Custom Modder Tab Deleted.");
+            }
+
+           assembly.Save("DubsDynamicTypes.dll");
+           System.Reflection.Assembly.LoadFrom(path);
         }
 
     }

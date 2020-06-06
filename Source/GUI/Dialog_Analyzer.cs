@@ -83,8 +83,6 @@ namespace DubsAnalyzer
                         }
                     }
 
-
-
                     foreach (var profileMode in ProfileMode.instances)
                     {
                         foreach (var profileTab in AnalyzerState.SideTabCategories)
@@ -99,24 +97,25 @@ namespace DubsAnalyzer
                         }
                     }
 
-                    foreach (var profileMode in ProfileMode.instances)
+                    if (Analyzer.methods.Count != 0)
                     {
-
-                    }
-
-                    foreach (var m in Analyzer.methods) // m is tab names
-                    {
-                        Type myType = DynamicTypeBuilder.CreateType(m.Key, UpdateMode.Update, m.Value);
-                        foreach (var profileTab in AnalyzerState.SideTabCategories)
+                        foreach (var m in Analyzer.methods) // m is tab names
                         {
-                            if (profileTab.UpdateMode == UpdateMode.Update)
+                            Type myType = DynamicTypeBuilder.CreateType(m.Key, UpdateMode.Update, m.Value);
+
+                            foreach (var profileTab in AnalyzerState.SideTabCategories)
                             {
-                                ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType);
-                                profileTab.Modes.Add(mode, null);
-                                break;
+                                if (profileTab.UpdateMode == UpdateMode.Update)
+                                {
+                                    ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType);
+                                    profileTab.Modes.Add(mode, null);
+                                    break;
+                                }
                             }
                         }
+                        DynamicTypeBuilder.ScribeAndLoad();
                     }
+
 
                     try
                     {
@@ -134,6 +133,7 @@ namespace DubsAnalyzer
                     Log.Error(e.ToString());
                 }
             }
+
             AnalyzerState.State = CurrentState.Open;
             Analyzer.StartProfiling();
         }
@@ -204,7 +204,7 @@ namespace DubsAnalyzer
             /*
              * Draw our side tab, including our:
              * - Categories (Home, Modding Tools, Tick, Update, GUI)
-             * - Content (Patches inside each of the above categories)
+             * - Content (Modes inside each of the above categories)
              */
             sideTab.Draw(canvas);
 
@@ -644,6 +644,7 @@ namespace DubsAnalyzer
                     {
                         Dialog_Analyzer.AdditionalInfo.Graph.RunKey(log.Key);
                         AnalyzerState.CurrentProfileKey = log.Key;
+                        Profiler.Reset();
                     }
 
                     if (AnalyzerState.CurrentProfileKey == log.Key)
@@ -750,6 +751,8 @@ namespace DubsAnalyzer
             public bool StatsClosed = false;
             public GameFont font = GameFont.Tiny;
             public float CurX = 0;
+
+            private List<string[]> stacktraces = new List<string[]>();
 
             public AdditionalInfo(Dialog_Analyzer super)
             {
@@ -963,6 +966,15 @@ namespace DubsAnalyzer
             private void DrawStackTraceSidePanel()
             {
                 DubGUI.Heading(listing, "Stack Trace");
+
+                if (Profiler.stacktraces.Count != 0)
+                {
+                    listing.Label($"Stacktraces: {Profiler.stacktraces.Count}");
+                    foreach (var thing in Profiler.stacktraces.First().Key)
+                    {
+                        listing.Label(thing.GetMethod().Name);
+                    }
+                }
             }
 
             private void DrawHarmonyOptionsSidePanel()

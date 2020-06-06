@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -25,8 +26,18 @@ namespace DubsAnalyzer
         public double startTime = 0;
         public int HitCounter = 0;
 
-        // static Dict<StackTrace, int>
-        // static int[] mem
+        public static Dictionary<StackFrame[], int> stacktraces = new Dictionary<StackFrame[], int>();
+        public static double[] memDiffs = new double[2000];
+        static double memChangeTot = 0;
+        static double membefore = 0;
+
+        public static void Reset()
+        {
+            stacktraces = new Dictionary<StackFrame[], int>();
+            memDiffs = new double[2000];
+            membefore = 0;
+            memChangeTot = 0;
+        }
 
         public Profiler(string kley, string lab, Type ty, Def indef, Thing inthing, MethodInfo inmeth)
         {
@@ -42,12 +53,31 @@ namespace DubsAnalyzer
 
         public void Start()
         {
+            if(key == AnalyzerState.CurrentProfileKey)
+            {
+                membefore = GC.GetTotalMemory(false);
+            }
+
             stopwatch.Start();
         }
 
         public void Stop(bool writestack)
         {
             stopwatch.Stop();
+
+            if(key == AnalyzerState.CurrentProfileKey)
+            {
+                //var st = new StackTrace(2, false).GetFrames();
+                //foreach(var m in st)
+
+
+                //if (stacktraces.ContainsKey(st))
+                //    stacktraces[st]++;
+                //else
+                //    stacktraces.Add(st, 1);
+
+                memChangeTot += GC.GetTotalMemory(false) - membefore;
+            }
 
             if (writestack)
                 Log.Warning(label);
@@ -61,6 +91,17 @@ namespace DubsAnalyzer
             double timeElapsed = stopwatch.Elapsed.TotalMilliseconds;
             History.AddMeasurement(timeElapsed, HitCounter);
 
+            if(key == AnalyzerState.CurrentProfileKey)
+            {
+                for (var i = 1999; i >= 0; i--)
+                {
+                    if (i == 0)
+                        memDiffs[0] = memChangeTot/ (float)HitCounter;
+                    else
+                        memDiffs[i] = memDiffs[i - 1];
+                }
+            }
+
             if (stopwatch.IsRunning)
             {
                 Log.Error($"{key} was still running when recorded");
@@ -69,6 +110,7 @@ namespace DubsAnalyzer
             stopwatch.Stop();
             stopwatch.Reset();
             HitCounter = 0;
+            memChangeTot = 0;
             lastTime = timeElapsed;
         }
     }

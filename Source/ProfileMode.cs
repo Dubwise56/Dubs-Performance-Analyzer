@@ -100,7 +100,6 @@ namespace DubsAnalyzer
                 {                     
                     try
                     {
-                        Log.Message(typeRef.FullName);
                         AccessTools.Method(typeRef, "ProfilePatch")?.Invoke(null, null);
                         IsPatched = true;
                     }
