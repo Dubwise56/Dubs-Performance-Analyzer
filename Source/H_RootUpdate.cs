@@ -99,7 +99,7 @@ namespace DubsAnalyzer
                 Analyzer.Stop("Game Update");
             }
 
-            if (AnalyzerState.CurrentTab?.mode == UpdateMode.Update || AnalyzerState.CurrentTab?.mode == UpdateMode.GUI)
+            if (AnalyzerState.CurrentTab?.mode == UpdateMode.Update || AnalyzerState.CurrentTab?.mode == UpdateMode.GUI || AnalyzerState.CurrentTab?.mode == UpdateMode.ModderAdded)
                 Analyzer.UpdateEnd();
 
             if (Active)

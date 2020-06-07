@@ -36,7 +36,7 @@ namespace DubsAnalyzer
 
         // 'Logs'
         public static bool HideStatistics = false;
-        public static bool HideStacktrace = false;
+        public static bool HideStacktrace = true;
         public static bool HideHarmony = false;
 
         public static List<ProfileTab> SideTabCategories = new List<ProfileTab>

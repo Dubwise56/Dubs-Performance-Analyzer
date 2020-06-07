@@ -102,7 +102,7 @@ namespace DubsAnalyzer
             {
                 foreach (var m in Analyzer.methods) 
                 {
-                    Type myType = DynamicTypeBuilder.CreateType(m.Key, UpdateMode.ModderAdded, m.Value);
+                    Type myType = DynamicTypeBuilder.CreateType(m.Key, m.Value);
 
                     foreach (var profileTab in AnalyzerState.SideTabCategories)
                     {
@@ -181,7 +181,7 @@ namespace DubsAnalyzer
                 profiler.RecordMeasurement();
 
             var ShouldUpdate = false;
-            if (AnalyzerState.CurrentTab.mode == UpdateMode.Update || AnalyzerState.CurrentTab.mode == UpdateMode.GUI)
+            if (AnalyzerState.CurrentTab.mode == UpdateMode.Update || AnalyzerState.CurrentTab.mode == UpdateMode.GUI || AnalyzerState.CurrentTab.mode == UpdateMode.ModderAdded)
             {
                 delta += Time.deltaTime;
                 if (delta >= 1f)

@@ -11,6 +11,8 @@ namespace DubsAnalyzer
 {
     public class Profiler
     {
+        public static int MAX_TRACES_PER_FRAME = 250;
+
         private Stopwatch stopwatch;
         public ProfilerHistory History;
         public Type type;
@@ -62,12 +64,14 @@ namespace DubsAnalyzer
         public void Stop(bool writestack)
         {
             stopwatch.Stop();
+            HitCounter++;
 
             if (key == AnalyzerState.CurrentProfileKey)
             {
                 if (!AnalyzerState.HideStatistics)
                 {
-                    StackTraceRegex.Add(new System.Diagnostics.StackTrace(3, false));
+                    if(HitCounter < MAX_TRACES_PER_FRAME)
+                        StackTraceRegex.Add(new System.Diagnostics.StackTrace(3, false));
                 }
 
                 memChangeTot += GC.GetTotalMemory(false) - membefore;
@@ -76,7 +80,6 @@ namespace DubsAnalyzer
             if (writestack)
                 Log.Warning(label);
 
-            HitCounter++;
         }
 
         public void RecordMeasurement()

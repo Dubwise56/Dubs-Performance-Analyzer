@@ -47,7 +47,7 @@ namespace DubsAnalyzer
 
         public static Dictionary<string, HashSet<MethodInfo>> methods = new Dictionary<string, HashSet<MethodInfo>>();
 
-        public static Type CreateType(string name, UpdateMode updateMode, HashSet<MethodInfo> methods)
+        public static Type CreateType(string name, HashSet<MethodInfo> methods)
         {
             TypeBuilder tb = ModuleBuilder.DefineType(name, staticAtt, typeof(ProfileMode));
 

@@ -30,6 +30,31 @@ namespace DubsAnalyzer
             } else
             {
                 traces.Add(key, new StackTraceInformation(trace));
+                IdentifyFirstUnique();
+            }
+        }
+
+        public static void IdentifyFirstUnique()
+        {
+            List<StackTraceInformation> things = traces.Values.ToList();
+
+            for(int i = 0; i < things.Max(w => w.methods.Count); i++)
+            {
+                for(int j = 0; j < things.Count; j++)
+                {
+                    for(int h = 0; h < things.Count; h++)
+                    {
+                        if(things[j].methods.ElementAt(i).Key != things[h].methods.ElementAt(i).Key)
+                        {
+                            foreach(var e in things)
+                            {
+                                e.firstUnique = e.methods.ElementAt(i).Key.Name;
+                                e.idx = i;
+                            }
+                            return;
+                        }
+                    }
+                }
             }
         }
 
@@ -59,7 +84,7 @@ namespace DubsAnalyzer
 
                 if (method == null) continue;
                 Type declaringType = method.DeclaringType;
-                if (declaringType == null) continue;
+                if (declaringType == null) continue; 
 
                 string @namespace = declaringType.Namespace;
 
@@ -87,10 +112,47 @@ namespace DubsAnalyzer
                     stringBuilder.Append(parameters[j].ParameterType.Name);
                 }
                 stringBuilder.Append(")#");
+
             }
             return stringBuilder.ToString();
         }
         
+        public static string MethToString(MethodBase method)
+        {
+            StringBuilder stringBuilder = new StringBuilder(255);
+            if (method == null) return "";
+            Type declaringType = method.DeclaringType;
+            if (declaringType == null) return "";
+
+            string @namespace = declaringType.Namespace;
+
+            if (@namespace != null && @namespace.Length != 0)
+            {
+                stringBuilder.Append(@namespace);
+                stringBuilder.Append(".");
+            }
+            stringBuilder.Append(declaringType.Name);
+            stringBuilder.Append(":");
+            stringBuilder.Append(method.Name);
+            stringBuilder.Append("(");
+            ParameterInfo[] parameters = method.GetParameters();
+            bool flag = true;
+            for (int j = 0; j < parameters.Length; j++)
+            {
+                if (!flag)
+                {
+                    stringBuilder.Append(", ");
+                }
+                else
+                {
+                    flag = false;
+                }
+                stringBuilder.Append(parameters[j].ParameterType.Name);
+            }
+            stringBuilder.Append(")");
+            
+            return ProcessString(stringBuilder.ToString());
+        }
         public static string ProcessString(string str)
         {
             var retStr = Regex.Replace(str, "#", "\n");
@@ -154,10 +216,17 @@ namespace DubsAnalyzer
         public Dictionary<MethodInfo, List<HarmonyPatch>> methods = new Dictionary<MethodInfo, List<HarmonyPatch>>();
         public string translatedString = null;
         public string[] translatedStringArr = null;
+        public string firstUnique = null;
+        public int idx = 0;
 
         public string TranslatedForm()
         {
             return translatedString;
+        }
+
+        public string FirstUnqiue()
+        {
+            return firstUnique;
         }
 
         public string[] TranslatedArr()

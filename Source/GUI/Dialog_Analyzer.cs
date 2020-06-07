@@ -968,10 +968,12 @@ namespace DubsAnalyzer
                 {
                     listing.Label($"Stacktraces: {StackTraceRegex.traces.Count}");
 
-                    foreach (var st in StackTraceRegex.traces)
+                    foreach (var st in StackTraceRegex.traces.OrderBy(w => w.Value.Count).Reverse())
                     {
-                        listing.Label(st.Value.translatedString);
-                        listing.Label(st.Value.Count.ToString());
+                        var idx = st.Value.idx;
+                        DubGUI.InlineDoubleMessage(StackTraceRegex.MethToString(st.Value.methods.ElementAt(idx).Key), st.Value.Count.ToString(), listing, false);
+                        DubGUI.InlineDoubleMessage(StackTraceRegex.MethToString(st.Value.methods.ElementAt(idx+1).Key), st.Value.Count.ToString(), listing, false);
+                        DubGUI.InlineDoubleMessage(StackTraceRegex.MethToString(st.Value.methods.ElementAt(idx+2).Key), st.Value.Count.ToString(), listing, true);
                     }
                 }
             }
