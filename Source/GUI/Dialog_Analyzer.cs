@@ -587,7 +587,7 @@ namespace DubsAnalyzer
 
             private void DrawTabOverview(Rect rect)
             {
-                Widgets.Label(rect, AnalyzerState.CurrentTab.name);
+                Widgets.Label(rect, AnalyzerState.CurrentTab?.name);
 
                 Widgets.DrawHighlightIfMouseover(rect);
 

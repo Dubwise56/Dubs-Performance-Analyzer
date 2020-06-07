@@ -129,7 +129,7 @@ namespace DubsAnalyzer
             for(int i = 0; i < count; i++)
                 deviation += ((numbers[i] - mean) * (numbers[i] - mean));
 
-            return (double) Mathf.Sqrt((float)deviation / (float)count);
+            return (double) Mathf.Sqrt(( (float)deviation / (float)count));
         }
         public static void GetSpikes(ref List<double> spikes, double[] numbers, double cutoff)
         {
