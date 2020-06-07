@@ -9,6 +9,8 @@ namespace DubsAnalyzer
     internal class H_DoTabs
     {
         public static bool Active=false;
+
+        [HarmonyPriority(Priority.Last)]
         public static void Prefix(MethodBase __originalMethod, ref string __state)
         {
             if (Active)
@@ -18,6 +20,7 @@ namespace DubsAnalyzer
             }
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(string __state)
         {
             if (Active)

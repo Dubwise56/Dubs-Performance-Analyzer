@@ -34,6 +34,11 @@ namespace DubsAnalyzer
         public static string CurrentProfileKey = string.Empty;
         public static List<ProfileLog> Logs = new List<ProfileLog>();
 
+        // 'Logs'
+        public static bool HideStatistics = false;
+        public static bool HideStacktrace = false;
+        public static bool HideHarmony = false;
+
         public static List<ProfileTab> SideTabCategories = new List<ProfileTab>
         {
             new ProfileTab("Home", // category name
@@ -41,11 +46,11 @@ namespace DubsAnalyzer
                 () => CurrentSideTabCategory == SideTabCategory.Home, // how do we determine that this is selected
                 UpdateMode.Dead, // update mode
                 "Settings and utils"), // tooltip
-            new ProfileTab("Modder Tools",  () => { CurrentSideTabCategory = SideTabCategory.ModderTools; },  () => CurrentSideTabCategory == SideTabCategory.ModderTools,     UpdateMode.Dead,     "Utilities for modders and advanced users to profile mods!"),
-            new ProfileTab("Tick",          () => { CurrentSideTabCategory = SideTabCategory.Tick; },         () => CurrentSideTabCategory == SideTabCategory.Tick,            UpdateMode.Tick,     "Things that run on tick"),
-            new ProfileTab("Update",        () => { CurrentSideTabCategory = SideTabCategory.Update; },       () => CurrentSideTabCategory == SideTabCategory.Update,          UpdateMode.Update,   "Things that run per frame"),
-            new ProfileTab("GUI",           () => { CurrentSideTabCategory = SideTabCategory.GUI; },          () => CurrentSideTabCategory == SideTabCategory.GUI,             UpdateMode.GUI,      "Things that run on GUI")
-            //new ProfileTab("Modder Added",  () => { CurrentSideTabCategory = SideTabCategory.ModderAdded; },  () => CurrentSideTabCategory == SideTabCategory.ModderAdded,     UpdateMode.GUI,      "Categories that modders have added")
+            new ProfileTab("Modder Tools",  () => { CurrentSideTabCategory = SideTabCategory.ModderTools; },  () => CurrentSideTabCategory == SideTabCategory.ModderTools,     UpdateMode.Dead,         "Utilities for modders and advanced users to profile mods!"),
+            new ProfileTab("Tick",          () => { CurrentSideTabCategory = SideTabCategory.Tick; },         () => CurrentSideTabCategory == SideTabCategory.Tick,            UpdateMode.Tick,         "Things that run on tick"),
+            new ProfileTab("Update",        () => { CurrentSideTabCategory = SideTabCategory.Update; },       () => CurrentSideTabCategory == SideTabCategory.Update,          UpdateMode.Update,       "Things that run per frame"),
+            new ProfileTab("GUI",           () => { CurrentSideTabCategory = SideTabCategory.GUI; },          () => CurrentSideTabCategory == SideTabCategory.GUI,             UpdateMode.GUI,          "Things that run on GUI"),
+            new ProfileTab("Modder Added",  () => { CurrentSideTabCategory = SideTabCategory.ModderAdded; },  () => CurrentSideTabCategory == SideTabCategory.ModderAdded,     UpdateMode.ModderAdded,  "Categories that modders have added")
         };
 
         public static void ResetState()
@@ -99,9 +104,19 @@ namespace DubsAnalyzer
             return (State == CurrentState.Uninitialised || State == CurrentState.Open || State == CurrentState.Patching);
         }
 
+        public static void SwapTab(string name, UpdateMode updateMode)
+        {
+            var cat = AnalyzerState.SideTabCategories.First(c => c.UpdateMode == updateMode);
+            if (cat == null) return;
+
+            var tab = cat.Modes.First(m => m.Key.name == name);
+            if (tab.Key == null) return;
+
+            SwapTab(tab, updateMode);
+        }
+
         public static void SwapTab(KeyValuePair<ProfileMode, Type> mode, UpdateMode updateMode)
         {
-            Log.Message("hi");
             if (AnalyzerState.State == CurrentState.Uninitialised)
                 Dialog_Analyzer.Reboot();
             
@@ -131,11 +146,12 @@ namespace DubsAnalyzer
         {
             switch (updateMode)
             {
-                case UpdateMode.Dead: return SideTabCategory.Home;
-                case UpdateMode.Tick: return SideTabCategory.Tick;
+                case UpdateMode.Dead:   return SideTabCategory.Home;
+                case UpdateMode.Tick:   return SideTabCategory.Tick;
                 case UpdateMode.Update: return SideTabCategory.Update;
+                case UpdateMode.GUI:    return SideTabCategory.GUI;
             }
-            return SideTabCategory.GUI;
+            return SideTabCategory.ModderAdded;
         }
 
     }

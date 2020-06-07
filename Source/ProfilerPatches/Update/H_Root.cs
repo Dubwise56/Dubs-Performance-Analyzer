@@ -41,6 +41,7 @@ namespace DubsAnalyzer
             slop(typeof(SoundRoot), nameof(SoundRoot.Update));
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static void Start(MethodInfo __originalMethod, ref string __state)
         {
             if (Active)
@@ -50,6 +51,7 @@ namespace DubsAnalyzer
             }
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Stop(string __state)
         {
             if (Active) Analyzer.Stop(__state);

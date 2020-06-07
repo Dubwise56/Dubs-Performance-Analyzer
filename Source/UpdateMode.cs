@@ -7,6 +7,7 @@ namespace DubsAnalyzer
         Dead,
         Tick,
         Update,
-        GUI
+        GUI,
+        ModderAdded
     }
 }

@@ -14,9 +14,6 @@ using Verse;
 
 namespace DubsAnalyzer
 {
-    /*
-     * Requires Revision. Todo
-     */
     public static class DynamicTypeBuilder
     {
 
@@ -92,8 +89,8 @@ namespace DubsAnalyzer
             var premeth = AccessTools.Method(name + ":Prefix");
             var postmeth = AccessTools.Method(name + ":Postfix");
 
-            HarmonyMethod pre = new HarmonyMethod(premeth);
-            HarmonyMethod post = new HarmonyMethod(postmeth);
+            HarmonyMethod pre = new HarmonyMethod(premeth, Priority.Last);
+            HarmonyMethod post = new HarmonyMethod(postmeth, Priority.First);
 
             foreach (var meth in methods[name])
             {

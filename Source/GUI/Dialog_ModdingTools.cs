@@ -232,19 +232,28 @@ namespace DubsAnalyzer
             {
                 case CurrentInput.Method:
                     if (patchType == UpdateMode.Tick)
+                    {
                         CustomProfilersTick.PatchMeth(currentInput);
+                        AnalyzerState.SwapTab("Custom Tick", UpdateMode.Tick);
+                    }
                     else
+                    {
                         CustomProfilersUpdate.PatchMeth(currentInput);
-                    
+                        AnalyzerState.SwapTab("Custom Update", UpdateMode.Update);
+                    }
+
                     break;
                 case CurrentInput.Type:
                     CustomProfilersUpdate.PatchType(currentInput);
+                    AnalyzerState.SwapTab("Custom Update", UpdateMode.Update);
                     break;
                 case CurrentInput.MethodHarmony:
                     CustomProfilersHarmony.PatchMeth(currentInput);
+                    AnalyzerState.SwapTab("Custom Harmony", UpdateMode.Update);
                     break;
                 case CurrentInput.TypeHarmony:
                     CustomProfilersHarmony.PatchType(currentInput);
+                    AnalyzerState.SwapTab("Custom Harmony", UpdateMode.Update);
                     break;
                 //case CurrentInput.Assembly:
                 //    CustomProfilersUpdate.PatchAssembly(currentInput);
@@ -264,8 +273,8 @@ namespace DubsAnalyzer
         {
             switch (wipType)
             {
-                case WIPType.Assembly:              CustomProfilersUpdate.PatchAssembly(currentWIP); break;
-                case WIPType.InternalMethod:        PatchUtils.PatchInternalMethod(currentWIP); break;
+                case WIPType.Assembly:              CustomProfilersUpdate.PatchAssembly(currentWIP);    break;
+                case WIPType.InternalMethod:        PatchUtils.PatchInternalMethod(currentWIP);         break;
             }
         }
     }

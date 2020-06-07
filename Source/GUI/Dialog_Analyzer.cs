@@ -391,7 +391,8 @@ namespace DubsAnalyzer
                     listing.Begin(baseRect);
 
                     foreach (var maintab in AnalyzerState.SideTabCategories)
-                        DrawSideTabList(maintab);
+                        if(!(maintab.label == "Modder Added" && maintab.Modes.Count == 0))
+                            DrawSideTabList(maintab);
 
                     listing.End();
                     GUI.EndGroup();
@@ -743,7 +744,6 @@ namespace DubsAnalyzer
             public Graph graph = null;
             public Listing_Standard listing = null;
             public static Vector2 ScrollPosition = Vector2.zero;
-            public bool StatsClosed = false;
             public GameFont font = GameFont.Tiny;
             public float CurX = 0;
 
@@ -914,7 +914,7 @@ namespace DubsAnalyzer
             {
                 if (Analyzer.Settings.AdvancedMode)
                 {
-                    DubGUI.CollapsableHeading(listing, "Statistics", ref StatsClosed);
+                    DubGUI.CollapsableHeading(listing, "Statistics", ref AnalyzerState.HideStatistics);
                     Text.Font = font;
                 }
                 else
@@ -938,7 +938,7 @@ namespace DubsAnalyzer
                 }
                 else
                 {
-                    if (!StatsClosed)
+                    if (!AnalyzerState.HideStatistics)
                     {
                         lock (CurrentLogStats.sync)
                         {
@@ -958,14 +958,21 @@ namespace DubsAnalyzer
 
             private void DrawStackTraceSidePanel()
             {
-                DubGUI.Heading(listing, "Stack Trace");
-
-                listing.Label($"Stacktraces: {StackTraceRegex.traces.Count}");
-
-                foreach (var st in StackTraceRegex.traces)
+                if (Analyzer.Settings.AdvancedMode)
                 {
-                    listing.Label(st.Value.translatedString);
-                    listing.Label(st.Value.Count.ToString());
+                    DubGUI.CollapsableHeading(listing, "Stack Trace", ref AnalyzerState.HideStacktrace);
+                    Text.Font = font;
+                }
+
+                if (!AnalyzerState.HideStacktrace)
+                {
+                    listing.Label($"Stacktraces: {StackTraceRegex.traces.Count}");
+
+                    foreach (var st in StackTraceRegex.traces)
+                    {
+                        listing.Label(st.Value.translatedString);
+                        listing.Label(st.Value.Count.ToString());
+                    }
                 }
             }
 

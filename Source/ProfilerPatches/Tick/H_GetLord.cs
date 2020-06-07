@@ -13,6 +13,7 @@ namespace DubsAnalyzer
     {
         public static bool Active = false;
 
+        [HarmonyPriority(Priority.Last)]
         public static void Start(object __instance, MethodBase __originalMethod, ref string __state)
         {
             if (!Active || !AnalyzerState.CurrentlyRunning) return;
@@ -29,6 +30,7 @@ namespace DubsAnalyzer
             Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Stop(string __state)
         {
             if (Active && !string.IsNullOrEmpty(__state))

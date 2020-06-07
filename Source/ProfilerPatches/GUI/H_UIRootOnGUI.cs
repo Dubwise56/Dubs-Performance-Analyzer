@@ -33,6 +33,8 @@ namespace DubsAnalyzer
             DoMe(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI)); 
             DoMe(typeof(AlertsReadout), nameof(AlertsReadout.AlertsReadoutOnGUI));
         }
+
+        [HarmonyPriority(Priority.Last)]
         public static void Prefix(object __instance, MethodBase __originalMethod, ref string __state)
         {
             if (Active || H_RootUpdate.Active)
@@ -55,6 +57,7 @@ namespace DubsAnalyzer
             }
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(string __state)
         {
             if (Active || H_RootUpdate.Active)

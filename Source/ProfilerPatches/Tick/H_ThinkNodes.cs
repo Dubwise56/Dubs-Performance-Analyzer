@@ -60,6 +60,8 @@ namespace DubsAnalyzer
                 }
             }
         }
+
+        [HarmonyPriority(Priority.Last)]
         public static void Prefix(object __instance, MethodBase __originalMethod, ref string __state)
         {
             if (Active)
@@ -82,6 +84,7 @@ namespace DubsAnalyzer
             }
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(string __state)
         {
             if (Active)

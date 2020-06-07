@@ -11,6 +11,7 @@ namespace DubsAnalyzer
     internal class H_SectionLayer_Things
     {
         public static bool Active = false;
+        
         public static bool Prefix(MethodBase __originalMethod, SectionLayer_Things __instance, ref string __state)
         {
             if (Active)

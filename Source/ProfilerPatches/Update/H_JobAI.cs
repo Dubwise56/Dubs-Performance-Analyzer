@@ -22,6 +22,7 @@ namespace DubsAnalyzer
             PatchUtils.PatchType("Pawn_JobTracker", go, biff);
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static void Prefix(MethodBase __originalMethod, ref string __state)
         {
             if (!Active || !AnalyzerState.CurrentlyRunning) return;
@@ -30,7 +31,8 @@ namespace DubsAnalyzer
 
             Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
         }
-       
+
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(string __state)
         {
             Analyzer.Stop(__state);

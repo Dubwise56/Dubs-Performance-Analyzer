@@ -14,6 +14,8 @@ namespace DubsAnalyzer
     internal class H_ColonistBarOnGUI
     {
         public static bool Active = false;
+
+        [HarmonyPriority(Priority.Last)]
         public static bool Prefix(MethodBase __originalMethod, ref string __state)
         {
             if (Active)
@@ -24,6 +26,7 @@ namespace DubsAnalyzer
             return true;
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(string __state)
         {
             if (Active)

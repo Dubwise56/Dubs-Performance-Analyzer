@@ -19,6 +19,7 @@ namespace DubsAnalyzer
         //    Analyzer.harmony.Patch(skiff, biff);
         //}
 
+        [HarmonyPriority(Priority.Last)]
         public static void Prefix(MethodBase __originalMethod, PawnRenderer __instance, ref string __state)
         {
             if (!Active)
@@ -29,6 +30,7 @@ namespace DubsAnalyzer
             Analyzer.Start(__state, () => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}", null, null, null, __originalMethod as MethodInfo);
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(string __state)
         {
             if (Active)

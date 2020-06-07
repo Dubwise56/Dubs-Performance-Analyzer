@@ -9,6 +9,8 @@ namespace DubsAnalyzer
     internal class H_ResourceReadoutOnGUI
     {
         public static bool Active=false;
+
+        [HarmonyPriority(Priority.Last)]
         public static bool Prefix(MethodBase __originalMethod)
         {
             if (Active)
@@ -18,6 +20,7 @@ namespace DubsAnalyzer
             return true;
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix()
         {
             if (Active)

@@ -100,21 +100,20 @@ namespace DubsAnalyzer
 
             if (Analyzer.methods.Count != 0)
             {
-                foreach (var m in Analyzer.methods) // m is tab names
+                foreach (var m in Analyzer.methods) 
                 {
-                    Type myType = DynamicTypeBuilder.CreateType(m.Key, UpdateMode.Update, m.Value);
+                    Type myType = DynamicTypeBuilder.CreateType(m.Key, UpdateMode.ModderAdded, m.Value);
 
                     foreach (var profileTab in AnalyzerState.SideTabCategories)
                     {
-                        if (profileTab.UpdateMode == UpdateMode.Update)
+                        if (profileTab.UpdateMode == UpdateMode.ModderAdded)
                         {
-                            ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType);
+                            ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.ModderAdded, null, false, myType);
                             profileTab.Modes.Add(mode, null);
                             break;
                         }
                     }
                 }
-                //DynamicTypeBuilder.ScribeAndLoad();
             }
 
         }

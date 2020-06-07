@@ -54,12 +54,14 @@
     <Compile Include="PerformancePatches\H_Notify_PawnDamaged.cs" />
     <Compile Include="PerformancePatches\H_SectionLayer_Snow.cs" />
     <Compile Include="ProfilerPatches\Custom\InternalMethodUtility.cs" />
-    <Compile Include="ProfilerPatches\H_GameComponent.cs" />
-    <Compile Include="ProfilerPatches\H_GetLord.cs" />
-    <Compile Include="ProfilerPatches\H_InfoCard.cs" />
-    <Compile Include="ProfilerPatches\H_JobAI.cs" />
-    <Compile Include="ProfilerPatches\H_RegenerateLayers.cs" />
-    <Compile Include="ProfilerPatches\H_SectionLayer_Things.cs" />
+    <Compile Include="ProfilerPatches\GUI\H_GameComponentOnGUI.cs" />
+    <Compile Include="ProfilerPatches\Update\H_GameComponentUpdate.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_GameComponentTick.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_GetLord.cs" />
+    <Compile Include="ProfilerPatches\Update\H_InfoCard.cs" />
+    <Compile Include="ProfilerPatches\Update\H_JobAI.cs" />
+    <Compile Include="ProfilerPatches\Update\H_RegenerateLayers.cs" />
+    <Compile Include="ProfilerPatches\Update\H_SectionLayer_Things.cs" />
     <Compile Include="ProfilerPatches\ModderDefined.cs" />
     <Compile Include="StackTrace.cs" />
     <Compile Include="Statistics\LogStats.cs" />
@@ -91,33 +93,33 @@
     <Compile Include="Statistics\Profiler.cs" />
     <Compile Include="Statistics\ProfilerHistory.cs" />
     <Compile Include="ProfilerPatches\Custom\CustomProfilers.cs" />
-    <Compile Include="ProfilerPatches\H_ColonistBarOnGUI.cs" />
-    <Compile Include="ProfilerPatches\H_DoButtons.cs" />
-    <Compile Include="ProfilerPatches\H_DoSingleTick.cs" />
-    <Compile Include="ProfilerPatches\H_DoSingleTickUpdate.cs" />
-    <Compile Include="ProfilerPatches\H_DoTabs.cs" />
-    <Compile Include="ProfilerPatches\H_DrawDynamicThings.cs" />
-    <Compile Include="ProfilerPatches\H_FindPath.cs" />
-    <Compile Include="ProfilerPatches\H_GetStatValue.cs" />
-    <Compile Include="ProfilerPatches\H_HarmonyPatches.cs" />
+    <Compile Include="ProfilerPatches\GUI\H_ColonistBarOnGUI.cs" />
+    <Compile Include="ProfilerPatches\GUI\H_DoButtons.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_DoSingleTick.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_DoSingleTickUpdate.cs" />
+    <Compile Include="ProfilerPatches\GUI\H_DoTabs.cs" />
+    <Compile Include="ProfilerPatches\Update\H_DrawDynamicThings.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_FindPath.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_GetStatValue.cs" />
+    <Compile Include="ProfilerPatches\Update\H_HarmonyPatches.cs" />
     <Compile Include="ProfilerPatches\H_JobGiver_AITrashBuildingsDistant.cs" />
-    <Compile Include="ProfilerPatches\H_MapComponentTick.cs" />
-    <Compile Include="ProfilerPatches\H_MapComponentUpdate.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_MapComponentTick.cs" />
+    <Compile Include="ProfilerPatches\Update\H_MapComponentUpdate.cs" />
     <Compile Include="ProfilerPatches\H_MouseoverReadoutOnGUI.cs" />
-    <Compile Include="ProfilerPatches\H_NeedsTrackerTick.cs" />
-    <Compile Include="ProfilerPatches\H_PawnTickProfile.cs" />
-    <Compile Include="ProfilerPatches\H_RenderPawnAt.cs" />
-    <Compile Include="ProfilerPatches\H_ResourceReadoutOnGUI.cs" />
-    <Compile Include="ProfilerPatches\H_Room.cs" />
-    <Compile Include="ProfilerPatches\H_Root.cs" />
-    <Compile Include="ProfilerPatches\H_ThinkNodes.cs" />
-    <Compile Include="ProfilerPatches\H_TickListTick.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_NeedsTrackerTick.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_PawnTickProfile.cs" />
+    <Compile Include="ProfilerPatches\Update\H_RenderPawnAt.cs" />
+    <Compile Include="ProfilerPatches\GUI\H_ResourceReadoutOnGUI.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_Room.cs" />
+    <Compile Include="ProfilerPatches\Update\H_Root.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_ThinkNodes.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_TickListTick.cs" />
     <Compile Include="ProfilerPatches\H_TryFindBestBillIngredients.cs" />
-    <Compile Include="ProfilerPatches\H_TryIssueJobPackageTrans.cs" />
-    <Compile Include="ProfilerPatches\H_UIRootOnGUI.cs" />
-    <Compile Include="ProfilerPatches\H_UIRootUpdate.cs" />
-    <Compile Include="ProfilerPatches\H_WindowStackOnGUI.cs" />
-    <Compile Include="ProfilerPatches\H_WorldPawns.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_TryIssueJobPackageTrans.cs" />
+    <Compile Include="ProfilerPatches\GUI\H_UIRootOnGUI.cs" />
+    <Compile Include="ProfilerPatches\Update\H_UIRootUpdate.cs" />
+    <Compile Include="ProfilerPatches\GUI\H_WindowStackOnGUI.cs" />
+    <Compile Include="ProfilerPatches\Tick\H_WorldPawns.cs" />
     <Compile Include="UpdateMode.cs" />
     <Compile Include="GUI\colourPicker.cs" />
     <Compile Include="XmlParser.cs" />
@@ -168,6 +170,7 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

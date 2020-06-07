@@ -42,6 +42,7 @@ namespace DubsAnalyzer
             slop(typeof(PathFinder), nameof(PathFinder.InitStatusesAndPushStartNode));
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static void Start(MethodBase __originalMethod, ref string __state)
         {
             if (p.Active && pathing)
@@ -53,6 +54,7 @@ namespace DubsAnalyzer
             }
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Stop(string __state)
         {
             if (p.Active && pathing)
@@ -61,6 +63,7 @@ namespace DubsAnalyzer
             }
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Prefix(MethodBase __originalMethod, ref string __state)
         {
             if (p.Active)
@@ -71,6 +74,7 @@ namespace DubsAnalyzer
             }
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static void Postfix(string __state)
         {
             if (p.Active)

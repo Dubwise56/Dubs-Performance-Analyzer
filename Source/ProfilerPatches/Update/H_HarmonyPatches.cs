@@ -112,6 +112,7 @@ namespace DubsAnalyzer
             //  Log.Warning($"{p} with transpilers");
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static void Prefix(MethodBase __originalMethod, ref string __state)
         {
             if (!Active)
@@ -131,6 +132,7 @@ namespace DubsAnalyzer
             }, __originalMethod.GetType(), null, null, __originalMethod as MethodInfo);
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(string __state)
         {
             if (Active)
@@ -225,6 +227,7 @@ namespace DubsAnalyzer
             }
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static void Prefix(MethodBase __originalMethod, ref string __state)
         {
             if (!Active) return;
@@ -241,6 +244,7 @@ namespace DubsAnalyzer
             }, __originalMethod.GetType(), null, null, __originalMethod as MethodInfo);
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(string __state)
         {
             if (Active)

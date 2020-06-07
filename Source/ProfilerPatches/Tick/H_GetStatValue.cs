@@ -82,6 +82,7 @@ namespace DubsAnalyzer
             Log.Message("stats patched");
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static void PartPrefix(object __instance, MethodBase __originalMethod, ref string __state)
         {
             if (Active)
@@ -99,6 +100,7 @@ namespace DubsAnalyzer
             }
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void PartPostfix(string __state)
         {
             if (Active)
@@ -157,6 +159,7 @@ namespace DubsAnalyzer
             return true;
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static bool Prefix(MethodBase __originalMethod, Thing thing, StatDef stat, ref string __state)
         {
             if (Active && !GetValDetour)
@@ -176,6 +179,7 @@ namespace DubsAnalyzer
             return true;
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(string __state)
         {
             if (Active && !GetValDetour)
@@ -184,6 +188,7 @@ namespace DubsAnalyzer
             }
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static bool PrefixAb(MethodBase __originalMethod, BuildableDef def, StatDef stat, ref string __state)
         {
 
@@ -203,6 +208,7 @@ namespace DubsAnalyzer
             return true;
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static bool PrefixAbility(MethodBase __originalMethod, AbilityDef def, StatDef stat, ref string __state)
         {
 
