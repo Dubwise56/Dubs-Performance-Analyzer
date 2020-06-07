@@ -73,7 +73,7 @@ namespace DubsAnalyzer
         {
             this.name = name;
             this.mode = mode;
-            this.tip = tip.Translate();
+            this.tip = tip?.Translate();
             this.Basics = Basics;
         }
         public void Start(string key)

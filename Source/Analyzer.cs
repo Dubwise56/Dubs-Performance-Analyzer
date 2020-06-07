@@ -78,7 +78,7 @@ namespace DubsAnalyzer
                 Application.targetFrameRate = 999;
             }
 
-            foreach(var mod in LoadedModManager.RunningMods)
+            foreach (var mod in LoadedModManager.RunningMods)
             {
                 foreach (var ass in mod.assemblies.loadedAssemblies)
                     AnalyzerCache.AssemblyToModname.Add(new Tuple<string, string>(ass.FullName, mod.Name));
@@ -86,7 +86,7 @@ namespace DubsAnalyzer
 
             // Waiting on ProfilerPatches/ModderDefined.cs
 
-            foreach(var dir in ModLister.AllActiveModDirs)
+            foreach (var dir in ModLister.AllActiveModDirs)
             {
                 var count = dir.GetFiles("Analyzer.xml")?.Count();
                 if (count != 0)
@@ -96,6 +96,25 @@ namespace DubsAnalyzer
                     doc.Load(thing.OpenRead());
                     XmlParser.Parse(doc, ref methods);
                 }
+            }
+
+            if (Analyzer.methods.Count != 0)
+            {
+                foreach (var m in Analyzer.methods) // m is tab names
+                {
+                    Type myType = DynamicTypeBuilder.CreateType(m.Key, UpdateMode.Update, m.Value);
+
+                    foreach (var profileTab in AnalyzerState.SideTabCategories)
+                    {
+                        if (profileTab.UpdateMode == UpdateMode.Update)
+                        {
+                            ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType);
+                            profileTab.Modes.Add(mode, null);
+                            break;
+                        }
+                    }
+                }
+                //DynamicTypeBuilder.ScribeAndLoad();
             }
 
         }
@@ -242,10 +261,15 @@ namespace DubsAnalyzer
         public static void unPatchMethods(bool forceThrough = false)
         {
             Thread.CurrentThread.IsBackground = true;
-            AnalyzerState.State = CurrentState.UnpatchingQueued;
 
             if (!forceThrough)
-            {
+            { 
+                // this can occur if we 'force' unpatch
+                if (AnalyzerState.State == CurrentState.Uninitialised)
+                    return;
+
+                AnalyzerState.State = CurrentState.UnpatchingQueued;
+
                 for (int i = 0; i < NumSecondsForPatchClear; i++)
                 {
                     // This should result in no overlap
@@ -267,15 +291,32 @@ namespace DubsAnalyzer
 
             PatchUtils.UnpatchAllInternalMethods();
 
-            Messages.Message("Dubs Performance Analyzer: Successfully finished unpatching methods", MessageTypeDefOf.NeutralEvent);
+            AnalyzerState.State = CurrentState.Uninitialised;
 
-            AnalyzerState.State = CurrentState.Unitialised;
+            if(forceThrough) // if not, this has already been done for us by the PostClose();
+            {
+                Analyzer.StopProfiling();
+                Analyzer.Reset();
+                Analyzer.Settings.Write();
+            }
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            Messages.Message("Dubs Performance Analyzer: Successfully finished unpatching methods", MessageTypeDefOf.NeutralEvent);
         }
 
         public static void ClearState()
         {
             foreach (var maintab in AnalyzerState.SideTabCategories)
-                maintab.Modes.Clear();
+            {
+                maintab.Modes.Do(w =>
+                {
+                    w.Key.IsPatched = false;
+                    w.Key.SetActive(false);
+                    w.Key.Patchinator = null;
+                });
+            }
 
             H_HarmonyPatches.PatchedPres = new List<Patch>();
             H_HarmonyPatches.PatchedPosts = new List<Patch>();
@@ -283,7 +324,6 @@ namespace DubsAnalyzer
 
             PatchUtils.PatchedTypes = new List<string>();
             PatchUtils.PatchedAssemblies = new List<string>();
-            
 
             Reset();
         }

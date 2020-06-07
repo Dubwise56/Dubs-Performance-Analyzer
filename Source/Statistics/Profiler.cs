@@ -65,7 +65,7 @@ namespace DubsAnalyzer
 
             if (key == AnalyzerState.CurrentProfileKey)
             {
-                StackTraceRegex.Add(new StackTrace(3, false));
+                StackTraceRegex.Add(new System.Diagnostics.StackTrace(3, false));
 
                 memChangeTot += GC.GetTotalMemory(false) - membefore;
             }
@@ -75,9 +75,6 @@ namespace DubsAnalyzer
 
             HitCounter++;
         }
-
-
-
 
         public void RecordMeasurement()
         {

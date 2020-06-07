@@ -13,9 +13,8 @@ namespace DubsAnalyzer
     public static class InternalMethodUtility
     {
         public static HarmonyMethod InternalProfiler = new HarmonyMethod(typeof(InternalMethodUtility), nameof(InternalMethodUtility.Transpiler));
-        public static HarmonyMethod UnProfiler = new HarmonyMethod(typeof(InternalMethodUtility), nameof(InternalMethodUtility.UnTranspiler));
         public static MethodInfo curMeth = null;
-        public static Dictionary<MethodInfo, List<CodeInstruction>> PatchedInternals = new Dictionary<MethodInfo, List<CodeInstruction>>();
+        public static HashSet<MethodInfo> PatchedInternals = new HashSet<MethodInfo>();
 
 
         private static Harmony inst = null;
@@ -77,19 +76,9 @@ namespace DubsAnalyzer
             Log.Message(builder.ToString());
         }
 
-        /*
-         * Internal transpiling a method
-         */
-        private static IEnumerable<CodeInstruction> UnTranspiler(IEnumerable<CodeInstruction> codeInstructions)
-        {
-            var oldInstructions = PatchedInternals[curMeth];
-
-            return oldInstructions;
-        }
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> codeInstructions)
         {
             var instructions = new List<CodeInstruction>(codeInstructions);
-            var oldInstructions = new List<CodeInstruction>(codeInstructions);
 
             for (int i = 0; i < instructions.Count(); i++)
             {
@@ -105,7 +94,6 @@ namespace DubsAnalyzer
                     }
                 }
             }
-            PatchedInternals[curMeth] = oldInstructions;
 
             return instructions;
         }

@@ -183,14 +183,13 @@ namespace DubsAnalyzer
         public static List<Patch> PatchedPres = new List<Patch>();
         public static List<Patch> PatchedPosts = new List<Patch>();
         public static void ProfilePatch()
-        {
+        {            
             var go = new HarmonyMethod(typeof(H_HarmonyPatches), nameof(Prefix));
             var biff = new HarmonyMethod(typeof(H_HarmonyPatches), nameof(Postfix));
             var patches = Harmony.GetAllPatchedMethods().ToList();
 
             foreach (var mode in patches)
             {
-                //  Log.Warning($"Found patch {mode as MethodInfo}");
                 Patches patchInfo = Harmony.GetPatchInfo(mode);
                 foreach (var fix in patchInfo.Prefixes)
                 {
@@ -199,16 +198,10 @@ namespace DubsAnalyzer
                         if (Analyzer.harmony.Id != fix.owner && Analyzer.perfharmony.Id != fix.owner && !PatchedPres.Contains(fix))
                         {
                             PatchedPres.Add(fix);
-                            //  Log.Warning($"Logging prefix on {mode.Name} by {fix.owner}");
                             Analyzer.harmony.Patch(fix.PatchMethod, go, biff);
-                            //   Log.Message($"Patched prefix {fix.PatchMethod}");
-                        }
-                        else
-                        {
-                            // Log.Error($"skipping our own patch on {fix.PatchMethod}");
                         }
                     }
-                    catch (Exception)
+                    catch (Exception )
                     {
 
                     }
@@ -221,13 +214,7 @@ namespace DubsAnalyzer
                         if (Analyzer.harmony.Id != fix.owner && Analyzer.perfharmony.Id != fix.owner && !PatchedPosts.Contains(fix))
                         {
                             PatchedPosts.Add(fix);
-                            //   Log.Warning($"Logging postfix on {mode.Name} by {fix.owner}");
                             Analyzer.harmony.Patch(fix.PatchMethod, go, biff);
-                            //  Log.Message($"Patched postfix {fix.PatchMethod}");
-                        }
-                        else
-                        {
-                            //   Log.Warning($"skipping our own patch on {fix.PatchMethod}");
                         }
                     }
                     catch (Exception)
@@ -240,10 +227,7 @@ namespace DubsAnalyzer
 
         public static void Prefix(MethodBase __originalMethod, ref string __state)
         {
-            if (!Active)
-            {
-                return;
-            }
+            if (!Active) return;
 
             __state = __originalMethod.GetHashCode().ToString();
 

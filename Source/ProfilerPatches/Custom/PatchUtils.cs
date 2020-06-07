@@ -298,7 +298,7 @@ namespace DubsAnalyzer
         }
         public static void PatchInternalMethod(MethodInfo method)
         {
-            if (InternalMethodUtility.PatchedInternals.ContainsKey(method))
+            if (InternalMethodUtility.PatchedInternals.Contains(method))
             {
                 Warn("Trying to re-transpile an already profiled internal method");
                 return;
@@ -310,7 +310,7 @@ namespace DubsAnalyzer
             try
             {
                 InternalMethodUtility.curMeth = method;
-                InternalMethodUtility.PatchedInternals.Add(method, null);
+                InternalMethodUtility.PatchedInternals.Add(method);
                 InternalMethodUtility.Harmony.Patch(method, null, null, InternalMethodUtility.InternalProfiler);
             }
             catch (Exception e)
@@ -336,7 +336,7 @@ namespace DubsAnalyzer
         }
         public static void UnpatchInternalMethod(MethodInfo method)
         {
-            if(!InternalMethodUtility.PatchedInternals.ContainsKey(method))
+            if(!InternalMethodUtility.PatchedInternals.Contains(method))
             {
                 Warn($"There is no method with the name {method.Name} that has been noted as profiled");
                 return;
@@ -346,7 +346,7 @@ namespace DubsAnalyzer
         private static void UnpatchInternalMethodFull(MethodInfo method)
         {
             InternalMethodUtility.curMeth = method;
-            InternalMethodUtility.Harmony.Patch(method, null, null, InternalMethodUtility.UnProfiler);
+            InternalMethodUtility.Harmony.Unpatch(method, HarmonyPatchType.Transpiler, InternalMethodUtility.Harmony.Id);
             InternalMethodUtility.PatchedInternals.Remove(method);
         }
 
@@ -356,12 +356,7 @@ namespace DubsAnalyzer
         }
         private static void UnpatchAllInternalMethodsFull()
         {
-            foreach(var meth in InternalMethodUtility.PatchedInternals.Keys.ToList())
-            {
-                InternalMethodUtility.curMeth = meth;
-                InternalMethodUtility.Harmony.Patch(meth, null, null, InternalMethodUtility.UnProfiler);
-            }
-
+            InternalMethodUtility.Harmony.UnpatchAll();
             InternalMethodUtility.PatchedInternals.Clear();
             InternalMethodUtility.curMeth = null;
         }

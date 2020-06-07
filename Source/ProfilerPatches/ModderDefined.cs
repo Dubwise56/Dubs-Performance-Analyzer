@@ -195,23 +195,6 @@ namespace DubsAnalyzer
             generator.Emit(OpCodes.Ret);
         }
 
-        public static void ScribeAndLoad()
-        {
-            var modMetaData = ModLister.AllInstalledMods.First(mod => mod.Active && mod.Name == "Dubs Performance Analyzer");
-
-            var path = modMetaData.RootDir.FullName + @"/1.1/Assemblies/Modded/DubsDynamicTypes.dll";
-            if (File.Exists(path))
-            {
-                System.IO.File.Delete(path);
-                System.GC.Collect();
-                System.GC.WaitForPendingFinalizers();
-                Log.Message("Old Custom Modder Tab Deleted.");
-            }
-
-           assembly.Save("DubsDynamicTypes.dll");
-           System.Reflection.Assembly.LoadFrom(path);
-        }
-
     }
 
 }

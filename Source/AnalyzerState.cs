@@ -11,7 +11,7 @@ namespace DubsAnalyzer
 {
     public enum CurrentState
     {
-        Unitialised, Patching, Open, UnpatchingQueued, Unpatching
+        Uninitialised, Patching, Open, UnpatchingQueued, Unpatching
     }
 
     public enum SideTabCategory
@@ -23,7 +23,7 @@ namespace DubsAnalyzer
     {
         // Current State for the analyzer
         public static bool CurrentlyRunning; // is the GUI open
-        public static CurrentState State = CurrentState.Unitialised; // current status regarding patching profiles
+        public static CurrentState State = CurrentState.Uninitialised; // current status regarding patching profiles
 
         // 'Side Tabs'
         public static SideTabCategory CurrentSideTabCategory = SideTabCategory.Home;
@@ -92,15 +92,19 @@ namespace DubsAnalyzer
         
         public static bool CanPatch()
         {
-            return (State == CurrentState.Open || State == CurrentState.Unitialised || State == CurrentState.UnpatchingQueued);
+            return (State == CurrentState.Open || State == CurrentState.Uninitialised || State == CurrentState.UnpatchingQueued);
         }
         public static bool CanCleanup()
         {
-            return (State == CurrentState.Unitialised || State == CurrentState.Open || State == CurrentState.Patching);
+            return (State == CurrentState.Uninitialised || State == CurrentState.Open || State == CurrentState.Patching);
         }
 
         public static void SwapTab(KeyValuePair<ProfileMode, Type> mode, UpdateMode updateMode)
         {
+            Log.Message("hi");
+            if (AnalyzerState.State == CurrentState.Uninitialised)
+                Dialog_Analyzer.Reboot();
+            
             if (!(CurrentSideTabCategory == UpdateToSideTab(updateMode)))
             {
                 CurrentSideTabCategory = UpdateToSideTab(updateMode);

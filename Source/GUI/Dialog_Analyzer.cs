@@ -43,89 +43,32 @@ namespace DubsAnalyzer
         public static List<Action> QueuedMessages = new List<Action>();
 
         public static float cache = -1;
+        public static bool OnFirstLoad = true;
         public override void PreOpen()
         {
             base.PreOpen();
-            if (AnalyzerState.State == CurrentState.Unitialised)
+            Reboot();
+        }
+
+
+        public static void Reboot()
+        {
+            Log.Message(AnalyzerState.State.ToString());
+
+            if (AnalyzerState.CanPatch())
             {
                 AnalyzerState.State = CurrentState.Patching;
                 Log.Message("Applying profiling patches...");
                 try
                 {
-                    var modes = GenTypes.AllTypes.Where(m => m.TryGetAttribute<ProfileMode>(out _)).OrderBy(m => m.TryGetAttribute<ProfileMode>().name).ToList();
-
-                    foreach (var mode in modes)
+                    if (OnFirstLoad)
                     {
-                        try
-                        {
-                            var att = mode.TryGetAttribute<ProfileMode>();
-                            att.Settings = new Dictionary<FieldInfo, Setting>();
-
-                            foreach (var fieldInfo in mode.GetFields().Where(m => m.TryGetAttribute<Setting>(out _)))
-                            {
-                                var sett = fieldInfo.TryGetAttribute<Setting>();
-                                att.Settings.SetOrAdd(fieldInfo, sett);
-                            }
-                            att.MouseOver = AccessTools.Method(mode, "MouseOver");
-                            att.Clicked = AccessTools.Method(mode, "Clicked");
-                            att.Selected = AccessTools.Method(mode, "Selected");
-                            att.Checkbox = AccessTools.Method(mode, "Checkbox");
-                            att.typeRef = mode;
-
-                            foreach (var profileTab in AnalyzerState.SideTabCategories)
-                            {
-                                if (att.mode == profileTab.UpdateMode)
-                                    profileTab.Modes.SetOrAdd(att, mode);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Error(e.ToString());
-                        }
-                    }
-
-                    foreach (var profileMode in ProfileMode.instances)
-                    {
-                        foreach (var profileTab in AnalyzerState.SideTabCategories)
-                        {
-                            if (profileMode.mode == profileTab.UpdateMode)
-                            {
-                                if (profileTab.Modes.Keys.All(x => x.name != profileMode.name))
-                                {
-                                    profileTab.Modes.Add(profileMode, null);
-                                }
-                            }
-                        }
-                    }
-
-                    if (Analyzer.methods.Count != 0)
-                    {
-                        foreach (var m in Analyzer.methods) // m is tab names
-                        {
-                            Type myType = DynamicTypeBuilder.CreateType(m.Key, UpdateMode.Update, m.Value);
-
-                            foreach (var profileTab in AnalyzerState.SideTabCategories)
-                            {
-                                if (profileTab.UpdateMode == UpdateMode.Update)
-                                {
-                                    ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType);
-                                    profileTab.Modes.Add(mode, null);
-                                    break;
-                                }
-                            }
-                        }
-                        DynamicTypeBuilder.ScribeAndLoad();
+                        LoadModes();
+                        OnFirstLoad = false;
                     }
 
 
-                    try
-                    {
-                        Analyzer.harmony.PatchAll(Assembly.GetExecutingAssembly());
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error(e.ToString());
-                    }
+                    Analyzer.harmony.PatchAll(Assembly.GetExecutingAssembly());
 
                     Log.Message("Done");
                 }
@@ -137,6 +80,55 @@ namespace DubsAnalyzer
 
             AnalyzerState.State = CurrentState.Open;
             Analyzer.StartProfiling();
+        }
+
+        public static void LoadModes()
+        {
+            var modes = GenTypes.AllTypes.Where(m => m.TryGetAttribute<ProfileMode>(out _)).OrderBy(m => m.TryGetAttribute<ProfileMode>().name).ToList();
+
+            foreach (var mode in modes)
+            {
+                try
+                {
+                    var att = mode.TryGetAttribute<ProfileMode>();
+                    att.Settings = new Dictionary<FieldInfo, Setting>();
+
+                    foreach (var fieldInfo in mode.GetFields().Where(m => m.TryGetAttribute<Setting>(out _)))
+                    {
+                        var sett = fieldInfo.TryGetAttribute<Setting>();
+                        att.Settings.SetOrAdd(fieldInfo, sett);
+                    }
+                    att.MouseOver = AccessTools.Method(mode, "MouseOver");
+                    att.Clicked = AccessTools.Method(mode, "Clicked");
+                    att.Selected = AccessTools.Method(mode, "Selected");
+                    att.Checkbox = AccessTools.Method(mode, "Checkbox");
+                    att.typeRef = mode;
+
+                    foreach (var profileTab in AnalyzerState.SideTabCategories)
+                    {
+                        if (att.mode == profileTab.UpdateMode)
+                            profileTab.Modes.SetOrAdd(att, mode);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e.ToString());
+                }
+            }
+
+            foreach (var profileMode in ProfileMode.instances)
+            {
+                foreach (var profileTab in AnalyzerState.SideTabCategories)
+                {
+                    if (profileMode.mode == profileTab.UpdateMode)
+                    {
+                        if (profileTab.Modes.Keys.All(x => x.name != profileMode.name))
+                        {
+                            profileTab.Modes.Add(profileMode, null);
+                        }
+                    }
+                }
+            }
         }
 
         public override void PostClose()
@@ -537,6 +529,7 @@ namespace DubsAnalyzer
             {
                 if (!AnalyzerState.CurrentTab.IsPatched)
                 {
+
                     DubGUI.Heading(rect, $"Loading{GenText.MarchingEllipsis(0f)}");
                     return;
                 }
@@ -829,7 +822,7 @@ namespace DubsAnalyzer
                 DubGUI.Heading(listing, "General");
                 Text.Font = font;
 
-                if (AnalyzerState.CurrentProfiler().meth != null)
+                if (AnalyzerState.CurrentProfiler()?.meth != null)
                 {
                     var ass = AnalyzerState.CurrentProfiler().meth.DeclaringType.Assembly.FullName;
                     var assname = "";
