@@ -26,14 +26,12 @@ namespace DubsAnalyzer
         public double startTime = 0;
         public int HitCounter = 0;
 
-        public static Dictionary<StackFrame[], int> stacktraces = new Dictionary<StackFrame[], int>();
         public static double[] memDiffs = new double[2000];
         static double memChangeTot = 0;
         static double membefore = 0;
 
         public static void Reset()
         {
-            stacktraces = new Dictionary<StackFrame[], int>();
             memDiffs = new double[2000];
             membefore = 0;
             memChangeTot = 0;
@@ -53,7 +51,7 @@ namespace DubsAnalyzer
 
         public void Start()
         {
-            if(key == AnalyzerState.CurrentProfileKey)
+            if (key == AnalyzerState.CurrentProfileKey)
             {
                 membefore = GC.GetTotalMemory(false);
             }
@@ -65,16 +63,9 @@ namespace DubsAnalyzer
         {
             stopwatch.Stop();
 
-            if(key == AnalyzerState.CurrentProfileKey)
+            if (key == AnalyzerState.CurrentProfileKey)
             {
-                //var st = new StackTrace(2, false).GetFrames();
-                //foreach(var m in st)
-
-
-                //if (stacktraces.ContainsKey(st))
-                //    stacktraces[st]++;
-                //else
-                //    stacktraces.Add(st, 1);
+                StackTraceRegex.Add(new StackTrace(3, false));
 
                 memChangeTot += GC.GetTotalMemory(false) - membefore;
             }
@@ -86,17 +77,19 @@ namespace DubsAnalyzer
         }
 
 
+
+
         public void RecordMeasurement()
         {
             double timeElapsed = stopwatch.Elapsed.TotalMilliseconds;
             History.AddMeasurement(timeElapsed, HitCounter);
 
-            if(key == AnalyzerState.CurrentProfileKey)
+            if (key == AnalyzerState.CurrentProfileKey)
             {
                 for (var i = 1999; i >= 0; i--)
                 {
                     if (i == 0)
-                        memDiffs[0] = memChangeTot/ (float)HitCounter;
+                        memDiffs[0] = memChangeTot / (float)HitCounter;
                     else
                         memDiffs[i] = memDiffs[i - 1];
                 }

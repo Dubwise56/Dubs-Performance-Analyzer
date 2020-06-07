@@ -61,6 +61,7 @@
     <Compile Include="ProfilerPatches\H_RegenerateLayers.cs" />
     <Compile Include="ProfilerPatches\H_SectionLayer_Things.cs" />
     <Compile Include="ProfilerPatches\ModderDefined.cs" />
+    <Compile Include="StackTraceRegex.cs" />
     <Compile Include="Statistics\LogStats.cs" />
     <Compile Include="H_KeyPresses.cs" />
     <Compile Include="H_RootUpdate.cs" />

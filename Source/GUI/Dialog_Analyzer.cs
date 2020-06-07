@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Experimental.PlayerLoop;
@@ -645,6 +646,7 @@ namespace DubsAnalyzer
                         Dialog_Analyzer.AdditionalInfo.Graph.RunKey(log.Key);
                         AnalyzerState.CurrentProfileKey = log.Key;
                         Profiler.Reset();
+                        StackTraceRegex.Reset();
                     }
 
                     if (AnalyzerState.CurrentProfileKey == log.Key)
@@ -751,8 +753,6 @@ namespace DubsAnalyzer
             public bool StatsClosed = false;
             public GameFont font = GameFont.Tiny;
             public float CurX = 0;
-
-            private List<string[]> stacktraces = new List<string[]>();
 
             public AdditionalInfo(Dialog_Analyzer super)
             {
@@ -967,13 +967,12 @@ namespace DubsAnalyzer
             {
                 DubGUI.Heading(listing, "Stack Trace");
 
-                if (Profiler.stacktraces.Count != 0)
+                listing.Label($"Stacktraces: {StackTraceRegex.traces.Count}");
+
+                foreach (var st in StackTraceRegex.traces)
                 {
-                    listing.Label($"Stacktraces: {Profiler.stacktraces.Count}");
-                    foreach (var thing in Profiler.stacktraces.First().Key)
-                    {
-                        listing.Label(thing.GetMethod().Name);
-                    }
+                    listing.Label(st.Value.translatedString);
+                    listing.Label(st.Value.Count.ToString());
                 }
             }
 
