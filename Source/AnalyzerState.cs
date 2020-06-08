@@ -81,20 +81,39 @@ namespace DubsAnalyzer
             return CurrentProfiles.ContainsKey(key);
         }
 
-        public static void MakeAndSwitchTab(string tabName, UpdateMode mode)
+        public static void MakeAndSwitchTab(string tabName)
         {
-            ProfileMode newMode = new ProfileMode(tabName, mode);
-            newMode.typeRef = null;
+            Type myType = DynamicTypeBuilder.CreateType(tabName, null);
 
-            foreach (var profileTab in SideTabCategories)
+            foreach (var profileTab in AnalyzerState.SideTabCategories)
             {
-                if (mode == profileTab.UpdateMode)
-                    profileTab.Modes.SetOrAdd(newMode, null);
+                if (profileTab.UpdateMode == AnalyzerState.CurrentTab.mode)
+                {
+                    ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType, true);
+                    mode.IsPatched = true;
+                    profileTab.Modes.Add(mode, null);
+                    break;
+                }
             }
 
-            SwapTab(new KeyValuePair<ProfileMode, Type>(newMode, null), mode);
+            SwapTab(tabName, AnalyzerState.CurrentTab.mode);
         }
         
+        public static void RemoveTab(KeyValuePair<ProfileMode, Type> tab)
+        {
+            foreach(var profileTab in AnalyzerState.SideTabCategories)
+            {
+                var deletedTab = profileTab.Modes.Where(t => t.Key == tab.Key);
+                if (deletedTab == null || deletedTab.Count() == 0 || deletedTab.First().Key == null) continue;
+
+                profileTab.Modes.Remove(deletedTab.First().Key);
+
+                if (deletedTab == CurrentTab)
+                    CurrentTab = profileTab.Modes.First().Key;
+
+                return;
+            }
+        }
         public static bool CanPatch()
         {
             return (State == CurrentState.Open || State == CurrentState.Uninitialised || State == CurrentState.UnpatchingQueued);
@@ -109,10 +128,10 @@ namespace DubsAnalyzer
             var cat = AnalyzerState.SideTabCategories.First(c => c.UpdateMode == updateMode);
             if (cat == null) return;
 
-            var tab = cat.Modes.First(m => m.Key.name == name);
-            if (tab.Key == null) return;
+            var tab = cat.Modes.Where(m => m.Key.name == name);
+            if (tab == null || tab.Count() == 0 || tab.First().Key == null) return;
 
-            SwapTab(tab, updateMode);
+            SwapTab(tab.First(), updateMode);
         }
 
         public static void SwapTab(KeyValuePair<ProfileMode, Type> mode, UpdateMode updateMode)

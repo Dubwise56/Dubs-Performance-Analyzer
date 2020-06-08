@@ -46,6 +46,7 @@ namespace DubsAnalyzer
         public MethodInfo DoRow;
         public bool Basics = false;
         public Thread Patchinator = null;
+        public bool Closable = false;
 
         public void SetActive(bool b)
         {
@@ -57,7 +58,7 @@ namespace DubsAnalyzer
             Active = b;
         }
 
-        public static ProfileMode Create(string name, UpdateMode mode, string tip = null, bool basics = false, Type profilerClass = null)
+        public static ProfileMode Create(string name, UpdateMode mode, string tip = null, bool basics = false, Type profilerClass = null, bool closable = false)
         {
             var getit = instances.FirstOrDefault(x => x.name == name && x.mode == mode);
             if (getit != null)
@@ -66,6 +67,7 @@ namespace DubsAnalyzer
             }
             getit = new ProfileMode(name, mode, tip, basics);
             getit.typeRef = profilerClass;
+            getit.Closable = closable;
             instances.Add(getit);
             return getit;
         }

@@ -391,7 +391,7 @@ namespace DubsAnalyzer
                     listing.Begin(baseRect);
 
                     foreach (var maintab in AnalyzerState.SideTabCategories)
-                        if(!(maintab.label == "Modder Added" && maintab.Modes.Count == 0))
+                        if (!(maintab.label == "Modder Added" && maintab.Modes.Count == 0))
                             DrawSideTabList(maintab);
 
                     listing.End();
@@ -460,6 +460,20 @@ namespace DubsAnalyzer
                 if (Widgets.ButtonInvisible(row))
                 {
                     AnalyzerState.SwapTab(mode, updateMode);
+                }
+                if (mode.Key.Closable)
+                {
+                    if (Input.GetMouseButtonDown(1)) // mouse button right
+                    {
+                        if (row.Contains(Event.current.mousePosition))
+                        {
+                            List<FloatMenuOption> options = new List<FloatMenuOption>()
+                            {
+                                new FloatMenuOption("Close", () => AnalyzerState.RemoveTab(mode))
+                            };
+                            Find.WindowStack.Add(new FloatMenu(options));
+                        }
+                    }
                 }
 
                 TooltipHandler.TipRegion(row, mode.Key.tip);
@@ -972,8 +986,8 @@ namespace DubsAnalyzer
                     {
                         var idx = st.Value.idx;
                         DubGUI.InlineDoubleMessage(StackTraceRegex.MethToString(st.Value.methods.ElementAt(idx).Key), st.Value.Count.ToString(), listing, false);
-                        DubGUI.InlineDoubleMessage(StackTraceRegex.MethToString(st.Value.methods.ElementAt(idx+1).Key), st.Value.Count.ToString(), listing, false);
-                        DubGUI.InlineDoubleMessage(StackTraceRegex.MethToString(st.Value.methods.ElementAt(idx+2).Key), st.Value.Count.ToString(), listing, true);
+                        DubGUI.InlineDoubleMessage(StackTraceRegex.MethToString(st.Value.methods.ElementAt(idx + 1).Key), st.Value.Count.ToString(), listing, false);
+                        DubGUI.InlineDoubleMessage(StackTraceRegex.MethToString(st.Value.methods.ElementAt(idx + 2).Key), st.Value.Count.ToString(), listing, true);
                     }
                 }
             }

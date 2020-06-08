@@ -373,6 +373,8 @@ namespace DubsAnalyzer
         {
             try
             {
+                AnalyzerState.MakeAndSwitchTab(method.Name + "-int");
+                
                 InternalMethodUtility.curMeth = method;
                 InternalMethodUtility.PatchedInternals.Add(method);
                 InternalMethodUtility.Harmony.Patch(method, null, null, InternalMethodUtility.InternalProfiler);

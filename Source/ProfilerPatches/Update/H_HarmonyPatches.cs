@@ -78,6 +78,8 @@ namespace DubsAnalyzer
         {
             var go = new HarmonyMethod(typeof(H_HarmonyTranspilers), nameof(Prefix));
             var biff = new HarmonyMethod(typeof(H_HarmonyTranspilers), nameof(Postfix));
+            var trans = new HarmonyMethod(typeof(H_HarmonyTranspilers), nameof(Transpiler));
+
             int c = 0;
             int p = 0;
             var patches = Harmony.GetAllPatchedMethods().ToList();
@@ -97,7 +99,6 @@ namespace DubsAnalyzer
                         {
                             PatchedMeths.Add(mode);
                             Analyzer.harmony.Patch(mode, go, biff);
-                            // Log.Warning($"Patched transpiler {mode}");
                         }
                     }
                 }
@@ -107,9 +108,24 @@ namespace DubsAnalyzer
                 }
 
             }
+        }
 
-            //  Log.Warning($"{c} patched methods");
-            //  Log.Warning($"{p} with transpilers");
+        /* The idea here is a little convoluted, but in short
+         * 1. Grab the 'original' instructions of the method, and grab all the 'Call'/'CallVirt' instructions
+         * 2. Grab all the 'Call'/'CallVirt' instructions in the modified version
+         * 3. Do a comparison of these, any added (existing only in the modified version) instructions -> move to list of 'to profile' calls
+         * 4. For all of these 'to profile' calls, supplant the method with a profiling method, akin to what is done for Internal Profiling
+         */
+
+        public static IEnumerable<CodeInstruction> Transpiler(MethodBase __originalMethod, IEnumerable<CodeInstruction> instructions, ILGenerator ilGen)
+        {
+            var inst = PatchProcessor.GetOriginalInstructions(__originalMethod);
+            var modInstList = instructions.ToList();
+
+            var origCalls = inst.Where(i => InternalMethodUtility.IsFunctionCall(i.opcode));
+            var modCalls = modInstList.Where(i => InternalMethodUtility.IsFunctionCall(i.opcode));
+
+            return instructions;
         }
 
         [HarmonyPriority(Priority.Last)]
@@ -185,7 +201,7 @@ namespace DubsAnalyzer
         public static List<Patch> PatchedPres = new List<Patch>();
         public static List<Patch> PatchedPosts = new List<Patch>();
         public static void ProfilePatch()
-        {            
+        {
             var go = new HarmonyMethod(typeof(H_HarmonyPatches), nameof(Prefix));
             var biff = new HarmonyMethod(typeof(H_HarmonyPatches), nameof(Postfix));
             var patches = Harmony.GetAllPatchedMethods().ToList();
@@ -203,7 +219,7 @@ namespace DubsAnalyzer
                             Analyzer.harmony.Patch(fix.PatchMethod, go, biff);
                         }
                     }
-                    catch (Exception )
+                    catch (Exception)
                     {
 
                     }

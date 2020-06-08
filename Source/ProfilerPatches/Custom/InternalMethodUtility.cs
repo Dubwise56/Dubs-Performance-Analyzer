@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using JetBrains.Annotations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,11 +51,11 @@ namespace DubsAnalyzer
             if (IsFunctionCall(instruction.opcode))
             {
                 MethodInfo m = instruction.operand as MethodInfo;
-                builder.Append($" function: {m.Name}, with the return type of: {m.ReturnType.Name}");
-                if (m.GetParameters().Count() != 0)
+                builder.Append($" function: {m?.Name}, with the return type of: {m?.ReturnType?.Name}");
+                if (m?.GetParameters()?.Count() != 0)
                 {
                     builder.Append(" With the parameters;");
-                    foreach (var p in m.GetParameters())
+                    foreach (var p in m?.GetParameters())
                     {
                         builder.Append($" Type: {p.ParameterType.ToString()}, ");
                     }
@@ -65,7 +66,7 @@ namespace DubsAnalyzer
                 }
             } else
             {
-                builder.Append($" with the operand: {instruction.operand.ToString()}");
+                builder.Append($" with the operand: {instruction?.operand?.ToString()}");
             }
 
             if (instruction.labels?.Count != 0)
@@ -137,7 +138,7 @@ namespace DubsAnalyzer
 
             string key = currentMethod.DeclaringType.FullName + "." + currentMethod.Name;
 
-            InsertStartIL(gen, key);
+            InsertStartIL(curMeth.Name, gen, key);
             KeyMethods.SetOrAdd(key, currentMethod);
 
             // dynamically add our parameters, as many as they are, into our method
@@ -146,7 +147,7 @@ namespace DubsAnalyzer
 
             gen.EmitCall(instruction.opcode, currentMethod, parameters); // call our original method, as per our arguments, etc.
 
-            InsertEndIL(gen, key); // wrap our function up, return a value if required
+            InsertEndIL(curMeth.Name, gen, key); // wrap our function up, return a value if required
 
             var inst = new CodeInstruction(instruction);
             inst.opcode = OpCodes.Call;
@@ -155,8 +156,17 @@ namespace DubsAnalyzer
             return inst;
         }
 
-        public static void InsertStartIL(ILGenerator ilGen, string key)
+        public static void InsertStartIL(string originalMethodName, ILGenerator ilGen, string key)
         {
+            // if(Active && AnalyzerState.CurrentlyRunning)
+            // { 
+            var skipLabel = ilGen.DefineLabel();
+            ilGen.Emit(OpCodes.Ldsfld, AccessTools.TypeByName(originalMethodName + "-int").GetField("Active", BindingFlags.Public | BindingFlags.Static));
+            ilGen.Emit(OpCodes.Brfalse_S, skipLabel);
+
+            ilGen.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(AnalyzerState), "CurrentlyRunning"));
+            ilGen.Emit(OpCodes.Brfalse_S, skipLabel);
+
             ilGen.Emit(OpCodes.Ldstr, key);
             // load our string to stack
 
@@ -164,19 +174,28 @@ namespace DubsAnalyzer
             ilGen.Emit(OpCodes.Ldstr, key);
             ilGen.Emit(OpCodes.Call, AnalyzerGetValue); // KeyMethods.get_Item(key) or KeyMethods[key]
                                                         // KeyMethods[key]
-
             ilGen.Emit(OpCodes.Call, AnalyzerStartMeth);
             // AnalyzerStart(key, KeyMethods[key]);
+            ilGen.MarkLabel(skipLabel);
         }
         public static void AnalyzerStart(string key, MethodInfo meth)
         {
             Analyzer.Start(key, null, null, null, null, meth);
         }
 
-        public static void InsertEndIL(ILGenerator ilGen, string key)
+        public static void InsertEndIL(string originalMethodName, ILGenerator ilGen, string key)
         {
+            var skipLabel = ilGen.DefineLabel();
+            ilGen.Emit(OpCodes.Ldsfld, AccessTools.TypeByName(originalMethodName + "-int").GetField("Active", BindingFlags.Public | BindingFlags.Static));
+            ilGen.Emit(OpCodes.Brfalse_S, skipLabel);
+
+            ilGen.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(AnalyzerState), "CurrentlyRunning"));
+            ilGen.Emit(OpCodes.Brfalse_S, skipLabel);
+
             ilGen.Emit(OpCodes.Ldstr, key);
             ilGen.Emit(OpCodes.Call, AnalyzerEndMeth);
+
+            ilGen.MarkLabel(skipLabel);
 
             ilGen.Emit(OpCodes.Ret);
         }

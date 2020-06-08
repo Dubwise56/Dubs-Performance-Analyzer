@@ -93,9 +93,7 @@ namespace DubsAnalyzer
             HarmonyMethod post = new HarmonyMethod(postmeth, Priority.First);
 
             foreach (var meth in methods[name])
-            {
                 Analyzer.harmony.Patch(meth, pre, post);
-            }
         }
 
         private static void LogMethod(MethodInfo info)
