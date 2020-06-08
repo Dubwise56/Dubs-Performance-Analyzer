@@ -198,7 +198,7 @@ namespace DubsAnalyzer
             if (ShouldUpdate)
             {
                 ShouldUpdate = false;
-                LogicThread = new Thread(() => ThreadStart(AnalyzerState.CurrentProfiles));
+                LogicThread = new Thread(() => ThreadStart(new Dictionary<string, Profiler>(AnalyzerState.CurrentProfiles)));
                 LogicThread.IsBackground = true;
                 LogicThread.Start();
             }

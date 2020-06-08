@@ -425,7 +425,7 @@ namespace DubsAnalyzer
         }
         private static void UnpatchAllInternalMethodsFull()
         {
-            InternalMethodUtility.Harmony.UnpatchAll();
+            InternalMethodUtility.Harmony.UnpatchAll(InternalMethodUtility.Harmony.Id);
             InternalMethodUtility.PatchedInternals.Clear();
             InternalMethodUtility.curMeth = null;
         }

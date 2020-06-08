@@ -60,7 +60,11 @@ namespace DubsAnalyzer
                 profiler.Value.Stop(false);
 
             CurrentProfiles.Clear();
-            Logs.Clear();
+
+            lock (Analyzer.sync)
+            {
+                Logs.Clear();
+            }
         }
         public static Profiler CurrentProfiler()
         {
