@@ -39,6 +39,9 @@ namespace DubsAnalyzer
         public static bool HideStacktrace = true;
         public static bool HideHarmony = false;
 
+        // Type Cache
+        public static HashSet<string> types = new HashSet<string>();
+
         public static List<ProfileTab> SideTabCategories = new List<ProfileTab>
         {
             new ProfileTab("Home", // category name
@@ -87,11 +90,20 @@ namespace DubsAnalyzer
 
         public static void MakeAndSwitchTab(string tabName)
         {
-            Type myType = DynamicTypeBuilder.CreateType(tabName, null);
+            Type myType = null;
+            if (types.Contains(tabName))
+            {
+                myType = AccessTools.TypeByName(tabName);
+            }
+            else
+            {
+                myType = DynamicTypeBuilder.CreateType(tabName, null);
+                types.Add(tabName);
+            }
 
             foreach (var profileTab in AnalyzerState.SideTabCategories)
             {
-                if (profileTab.UpdateMode == AnalyzerState.CurrentTab.mode)
+                if (profileTab.UpdateMode == AnalyzerState.CurrentTab?.mode)
                 {
                     ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType, true);
                     mode.IsPatched = true;
@@ -125,6 +137,17 @@ namespace DubsAnalyzer
         public static bool CanCleanup()
         {
             return (State == CurrentState.Uninitialised || State == CurrentState.Open || State == CurrentState.Patching);
+        }
+
+        public static void SwapTab(string name)
+        {
+            foreach (var cat in SideTabCategories)
+            {
+                var tab = cat.Modes.Where(m => m.Key.name == name);
+                if (tab == null || tab.Count() == 0 || tab.First().Key == null) return;
+
+                SwapTab(tab.First(), cat.UpdateMode);
+            }
         }
 
         public static void SwapTab(string name, UpdateMode updateMode)

@@ -653,7 +653,6 @@ namespace DubsAnalyzer
                     {
                         Dialog_Analyzer.AdditionalInfo.Graph.RunKey(log.Key);
                         AnalyzerState.CurrentProfileKey = log.Key;
-                        Profiler.Reset();
                         StackTraceRegex.Reset();
                     }
 
@@ -900,7 +899,7 @@ namespace DubsAnalyzer
                         $" Entries: {CurrentLogStats.stats.Entries}\n Highest Time: {CurrentLogStats.stats.HighestTime:0.000}\n" +
                         $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}\n μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}\n" +
                         $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms\n μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms\n" +
-                        $" σ {CurrentLogStats.stats.StandardDeviation:0.000}ms\n Number of Spikes: {CurrentLogStats.stats.Spikes.Count}");
+                        $" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms\n Number of Spikes: {CurrentLogStats.stats.Spikes.Count}");
                         CurX = longestStat;
                     }
                 }
@@ -912,7 +911,7 @@ namespace DubsAnalyzer
                 $" Entries: {CurrentLogStats.stats.Entries}", $" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms",
                 $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}",
                 $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms",
-                $" σ {CurrentLogStats.stats.StandardDeviation:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}" };
+                $" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}" };
 
                 Vector2 vec = Vector2.zero;
                 foreach (var str in s1)
@@ -967,7 +966,7 @@ namespace DubsAnalyzer
                 DubGUI.InlineTripleMessage($" Entries: {CurrentLogStats.stats.Entries}", $" Σ Calls: {CurrentLogStats.stats.TotalCalls}", $" Σ Time: {CurrentLogStats.stats.TotalTime:0.000}ms", listing, true);
                 DubGUI.InlineTripleMessage($" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms", $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}", listing, true);
                 DubGUI.InlineDoubleMessage($" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms", listing, false);
-                DubGUI.InlineDoubleMessage($" σ {CurrentLogStats.stats.StandardDeviation:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}", listing, true);
+                DubGUI.InlineDoubleMessage($" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}", listing, true);
             }
 
             private void DrawStackTraceSidePanel()

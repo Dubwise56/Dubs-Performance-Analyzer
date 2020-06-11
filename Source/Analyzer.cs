@@ -5,7 +5,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
+using System.Runtime.Remoting;
 using System.Threading;
 using System.Xml;
 using UnityEngine;
@@ -100,7 +102,7 @@ namespace DubsAnalyzer
 
             if (Analyzer.methods.Count != 0)
             {
-                foreach (var m in Analyzer.methods) 
+                foreach (var m in Analyzer.methods)
                 {
                     Type myType = DynamicTypeBuilder.CreateType(m.Key, m.Value);
 
@@ -262,7 +264,7 @@ namespace DubsAnalyzer
             Thread.CurrentThread.IsBackground = true;
 
             if (!forceThrough)
-            { 
+            {
                 // this can occur if we 'force' unpatch
                 if (AnalyzerState.State == CurrentState.Uninitialised)
                     return;
@@ -292,7 +294,7 @@ namespace DubsAnalyzer
 
             AnalyzerState.State = CurrentState.Uninitialised;
 
-            if(forceThrough) // if not, this has already been done for us by the PostClose();
+            if (forceThrough) // if not, this has already been done for us by the PostClose();
             {
                 Analyzer.StopProfiling();
                 Analyzer.Reset();
@@ -309,13 +311,26 @@ namespace DubsAnalyzer
         {
             foreach (var maintab in AnalyzerState.SideTabCategories)
             {
+                List<KeyValuePair<ProfileMode, Type>> removes = new List<KeyValuePair<ProfileMode, Type>>();
                 maintab.Modes.Do(w =>
                 {
-                    w.Key.IsPatched = false;
-                    w.Key.SetActive(false);
-                    w.Key.Patchinator = null;
+                    if (w.Key.Closable)
+                    {
+                        removes.Add(w);
+                    }
+                    else
+                    {
+                        w.Key.IsPatched = false;
+                        w.Key.SetActive(false);
+                        w.Key.Patchinator = null;
+                    }
                 });
+
+                foreach(var val in removes)
+                    AnalyzerState.RemoveTab(val);
             }
+
+
 
             H_HarmonyPatches.PatchedPres = new List<Patch>();
             H_HarmonyPatches.PatchedPosts = new List<Patch>();
@@ -323,6 +338,9 @@ namespace DubsAnalyzer
 
             PatchUtils.PatchedTypes = new List<string>();
             PatchUtils.PatchedAssemblies = new List<string>();
+
+            AnalyzerState.CurrentTab = null;
+            AnalyzerState.CurrentSideTabCategory = SideTabCategory.Home;
 
             Reset();
         }

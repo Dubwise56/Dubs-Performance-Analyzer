@@ -107,7 +107,6 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                //  Log.Warning("stop");
                 Analyzer.Stop(CurrentKey);
             }
         }

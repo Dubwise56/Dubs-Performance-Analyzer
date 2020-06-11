@@ -29,14 +29,14 @@ namespace DubsAnalyzer
         public double MeanTimePerFrame = 0;
 
         // General
-        public double StandardDeviation;
+        public double OutlierCutoff;
         public List<double> Spikes = new List<double>(); // above 3 standard deviations of the mean
         public int Entries = -1;
 
         // Total
         public double TotalTime = 0;
         public double TotalCalls = 0;
-        
+
         // Highests
         public double HighestCalls = 0f;
         public double HighestTime = 0f;
@@ -55,7 +55,7 @@ namespace DubsAnalyzer
 
             for (int i = 0; i < 2000; i++)
                 lTimes[i] = AnalyzerState.CurrentProfiler().History.times[i];
-                
+
             //AnalyzerState.CurrentProfiler().History.hits.CopyTo(lCalls, 0);
             for (int i = 0; i < 2000; i++)
                 lCalls[i] = AnalyzerState.CurrentProfiler().History.hits[i];
@@ -108,8 +108,8 @@ namespace DubsAnalyzer
 
                 // general
                 logic.Entries = currentMaxIndex;
-                logic.StandardDeviation = GetStandardDeviation(logic.MeanCallsPerFrame, LocalTimes, currentMaxIndex);
-                GetSpikes(ref logic.Spikes, LocalTimes, logic.MeanTimePerCall + (3 * logic.StandardDeviation));
+                logic.OutlierCutoff = MovingWindowFiltered.OutlierThresholdFromData(LocalTimes.ToList(), 3, 3, 2);
+                GetSpikes(ref logic.Spikes, LocalTimes, logic.MeanTimePerCall + logic.OutlierCutoff);
 
 
                 lock (CurrentLogStats.sync) // Dump our current statistics into our static class which our drawing class uses
@@ -120,17 +120,10 @@ namespace DubsAnalyzer
 
                 IsActiveThread = false;
 
-            } catch(Exception) { IsActiveThread = false; }
+            }
+            catch (Exception) { IsActiveThread = false; }
         }
 
-        public static double GetStandardDeviation(double mean, double[] numbers, double count)
-        {
-            double deviation = 0f;
-            for(int i = 0; i < count; i++)
-                deviation += ((numbers[i] - mean) * (numbers[i] - mean));
-
-            return (double) Mathf.Sqrt(( (float)deviation / (float)count));
-        }
         public static void GetSpikes(ref List<double> spikes, double[] numbers, double cutoff)
         {
             foreach (double num in numbers)
@@ -138,5 +131,41 @@ namespace DubsAnalyzer
                     spikes.Add(num);
         }
 
+    }
+
+
+    public static class MovingWindowFiltered
+    {
+        public static double OutlierThresholdFromData(List<double> data, double reportStd, double outlierStd,
+            double outlierMaxIterations)
+        {
+            var filtered = data;
+
+            // Perform outlier analysis
+            for (var k = 0; k < outlierMaxIterations; k++)
+            {
+                var boundary = outlierStd * data.StandardDeviation();
+
+                var average = data.Sum() / data.Count;
+                var max = filtered.MaxBy(datum => Math.Abs(datum - average));
+                if (Math.Abs(max - average) > boundary)
+                {
+                    filtered.Remove(max);
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return filtered.Sum() / filtered.Count + reportStd * filtered.StandardDeviation();
+        }
+
+        public static double StandardDeviation(this List<double> data)
+        {
+            var average = data.Sum() / data.Count;
+            var deviations = data.Sum(datum => (datum - average) * (datum - average));
+            return Math.Sqrt(deviations / data.Count);
+        }
     }
 }

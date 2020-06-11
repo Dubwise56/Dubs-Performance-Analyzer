@@ -11,7 +11,7 @@ namespace DubsAnalyzer
 {
     public class Profiler
     {
-        public static int MAX_TRACES_PER_FRAME = 250;
+        public const int MAX_ADD_INFO_PER_FRAME = 250;
 
         private Stopwatch stopwatch;
         public ProfilerHistory History;
@@ -28,16 +28,6 @@ namespace DubsAnalyzer
         public double startTime = 0;
         public int HitCounter = 0;
 
-        public static double[] memDiffs = new double[2000];
-        static double memChangeTot = 0;
-        static double membefore = 0;
-
-        public static void Reset()
-        {
-            memDiffs = new double[2000];
-            membefore = 0;
-            memChangeTot = 0;
-        }
 
         public Profiler(string kley, string lab, Type ty, Def indef, Thing inthing, MethodInfo inmeth)
         {
@@ -53,11 +43,6 @@ namespace DubsAnalyzer
 
         public void Start()
         {
-            if (key == AnalyzerState.CurrentProfileKey)
-            {
-                membefore = GC.GetTotalMemory(false);
-            }
-
             stopwatch.Start();
         }
 
@@ -67,36 +52,17 @@ namespace DubsAnalyzer
             HitCounter++;
 
             if (key == AnalyzerState.CurrentProfileKey)
-            {
-                if (!AnalyzerState.HideStatistics)
-                {
-                    if(HitCounter < MAX_TRACES_PER_FRAME)
+                if (HitCounter < MAX_ADD_INFO_PER_FRAME && !AnalyzerState.HideStatistics)
                         StackTraceRegex.Add(new System.Diagnostics.StackTrace(3, false));
-                }
 
-                memChangeTot += GC.GetTotalMemory(false) - membefore;
-            }
-
-            if (writestack)
-                Log.Warning(label);
-
+            //if (writestack)
+            //    Log.Warning(label);
         }
 
         public void RecordMeasurement()
         {
             double timeElapsed = stopwatch.Elapsed.TotalMilliseconds;
             History.AddMeasurement(timeElapsed, HitCounter);
-
-            if (key == AnalyzerState.CurrentProfileKey)
-            {
-                for (var i = 1999; i >= 0; i--)
-                {
-                    if (i == 0)
-                        memDiffs[0] = memChangeTot / (float)HitCounter;
-                    else
-                        memDiffs[i] = memDiffs[i - 1];
-                }
-            }
 
             if (stopwatch.IsRunning)
             {
@@ -106,7 +72,6 @@ namespace DubsAnalyzer
             stopwatch.Stop();
             stopwatch.Reset();
             HitCounter = 0;
-            memChangeTot = 0;
             lastTime = timeElapsed;
         }
     }
