@@ -130,31 +130,26 @@ namespace DubsAnalyzer
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static void Prefix(MethodBase __originalMethod, ref string __state)
+        public static void Prefix(MethodBase __originalMethod, ref Profiler __state)
         {
-            if (!Active)
+            if (!Active) return;
+
+            __state = Analyzer.Start(__originalMethod.Name, () =>
             {
-                return;
-            }
-
-            __state = __originalMethod.Name;
-
-            //Analyzer.Start(__state, () =>
-            //{
-            //    if (__originalMethod.ReflectedType != null)
-            //    {
-            //        return $"{__originalMethod.Name} - {__originalMethod.ReflectedType.FullName}";
-            //    }
-            //    return $"{__originalMethod.Name} - {__originalMethod.GetType().FullName}";
-            //}, null, null, null, __originalMethod);
+                if (__originalMethod.ReflectedType != null)
+                {
+                    return $"{__originalMethod.Name} - {__originalMethod.ReflectedType.FullName}";
+                }
+                return $"{__originalMethod.Name} - {__originalMethod.GetType().FullName}";
+            }, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Postfix(string __state)
+        public static void Postfix(Profiler __state)
         {
             if (Active)
             {
-                //Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
     }
@@ -262,10 +257,11 @@ namespace DubsAnalyzer
         [HarmonyPriority(Priority.First)]
         public static void Postfix(Profiler __state)
         {
+
             if (Active)
             {
-                __state.Stop();
-            }
+                __state?.Stop();
+            } 
         }
     }
 }

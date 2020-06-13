@@ -247,7 +247,7 @@ namespace DubsAnalyzer
                 return;
             }
 
-            PatchType(type, pre, post);
+            PatchType(type, pre, post, display);
         }
         public static void PatchType(Type type, HarmonyMethod pre, HarmonyMethod post, bool display = true)
         {

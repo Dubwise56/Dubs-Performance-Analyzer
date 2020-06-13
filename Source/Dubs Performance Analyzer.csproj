@@ -55,6 +55,7 @@
     <Compile Include="PerformancePatches\H_Notify_PawnDamaged.cs" />
     <Compile Include="PerformancePatches\H_SectionLayer_Snow.cs" />
     <Compile Include="ProfilerPatches\Custom\InternalMethodUtility.cs" />
+    <Compile Include="ProfilerPatches\Custom\TranspilerUtility.cs" />
     <Compile Include="ProfilerPatches\GUI\H_GameComponentOnGUI.cs" />
     <Compile Include="ProfilerPatches\Update\H_GameComponentUpdate.cs" />
     <Compile Include="ProfilerPatches\Tick\H_GameComponentTick.cs" />

@@ -53,7 +53,7 @@ namespace DubsAnalyzer
                     state = __originalMethod.GetType().Name;
                 }
 
-                __state =Analyzer.Start(state, null, null, null, null, __originalMethod);
+                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
         }
 
@@ -62,7 +62,7 @@ namespace DubsAnalyzer
         {
             if (Active || H_RootUpdate.Active)
             {
-                __state.Stop();
+                __state?.Stop();
             }
         }
     }

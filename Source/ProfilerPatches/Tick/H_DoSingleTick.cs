@@ -33,7 +33,7 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                __state.Stop();
+                __state?.Stop();
             }
         }
 

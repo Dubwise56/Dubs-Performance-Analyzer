@@ -49,7 +49,7 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                __state.Stop();
+                __state?.Stop();
             }
         }
     }
@@ -106,7 +106,7 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                __state.Stop();
+                __state?.Stop();
             }
         }
     }
@@ -157,7 +157,7 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                __state.Stop();
+                __state?.Stop();
             }
         }
     }
