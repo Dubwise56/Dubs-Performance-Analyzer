@@ -43,11 +43,15 @@ namespace DubsAnalyzer
         public static List<Action> QueuedMessages = new List<Action>();
 
         public static float cache = -1;
+        public static float cachedWidth = -1;
         public static bool OnFirstLoad = true;
         public override void PreOpen()
         {
             base.PreOpen();
             Reboot();
+
+            if(cachedWidth != -1)
+                windowRect.width = cachedWidth;
         }
 
 
@@ -144,6 +148,14 @@ namespace DubsAnalyzer
                 CleanupPatches = new Thread(() => Analyzer.unPatchMethods());
                 CleanupPatches.Start();
             }
+
+            foreach(var tab in AnalyzerState.SideTabCategories)
+            {
+                foreach(var mode in tab.Modes)
+                {
+                    mode.Key.Active = false;
+                }
+            }
         }
 
         public Dialog_Analyzer()
@@ -194,6 +206,8 @@ namespace DubsAnalyzer
         {
             if (Event.current.type == EventType.Layout) return;
 
+            cachedWidth = windowRect.width;
+
             /*
              * Draw our side tab, including our:
              * - Categories (Home, Modding Tools, Tick, Update, GUI)
@@ -233,7 +247,7 @@ namespace DubsAnalyzer
                      */
                     bool save = false;
 
-                    if (!(AnalyzerState.State == CurrentState.Open)) // if we aren't currently 'open' draw a loading sign, and leave
+                    if (!(AnalyzerState.State == CurrentState.Open) || AnalyzerState.CurrentProfileKey == "") // if we aren't currently 'open' draw a loading sign, and leave
                     {
                         DrawLoading(inner);
                         return;
@@ -412,6 +426,7 @@ namespace DubsAnalyzer
                 var row = listing.GetRect(30f);
 
                 if (tab.Selected) Widgets.DrawOptionSelected(row);
+
                 if (tab.label == "Home" || tab.label == "Modder Tools")
                 {
                     if (Widgets.ButtonInvisible(row))
@@ -542,7 +557,7 @@ namespace DubsAnalyzer
 
             private void DrawLogs(Rect rect, bool save)
             {
-                if (!AnalyzerState.CurrentTab.IsPatched)
+                if (!AnalyzerState.CurrentTab?.IsPatched ?? true)
                 {
 
                     DubGUI.Heading(rect, $"Loading{GenText.MarchingEllipsis(0f)}");
@@ -651,13 +666,17 @@ namespace DubsAnalyzer
 
                     if (Widgets.ButtonInvisible(visible))
                     {
-                        Dialog_Analyzer.AdditionalInfo.Graph.RunKey(log.Key);
+                        AdditionalInfo.Graph.RunKey(log.Key);
                         AnalyzerState.CurrentProfileKey = log.Key;
+                        AnalyzerState.CurrentLog = log;
                         StackTraceRegex.Reset();
                     }
 
                     if (AnalyzerState.CurrentProfileKey == log.Key)
+                    {
                         Widgets.DrawHighlightSelected(visible);
+                        AnalyzerState.CurrentLog = log; // because we create new ones, instead of recycle the same log, we need to update the ref.
+                    }
 
                     if (Mouse.IsOver(visible))
                         AnalyzerState.CurrentTab.MouseOver?.Invoke(null, new object[] { visible, profile, log });
@@ -898,8 +917,8 @@ namespace DubsAnalyzer
                         Widgets.Label(statRect,
                         $" Entries: {CurrentLogStats.stats.Entries}\n Highest Time: {CurrentLogStats.stats.HighestTime:0.000}\n" +
                         $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}\n μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}\n" +
-                        $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms\n μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms\n" +
-                        $" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms\n Number of Spikes: {CurrentLogStats.stats.Spikes.Count}");
+                        $" % in category {AnalyzerState.CurrentLog.Average_s}\n" + $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms\n" +
+                        $"μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms\n σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms\n Number of Spikes: {CurrentLogStats.stats.Spikes.Count}");
                         CurX = longestStat;
                     }
                 }
@@ -911,7 +930,7 @@ namespace DubsAnalyzer
                 $" Entries: {CurrentLogStats.stats.Entries}", $" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms",
                 $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}",
                 $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms",
-                $" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}" };
+                $" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}", $" % in category {AnalyzerState.CurrentLog.Average_s}"};
 
                 Vector2 vec = Vector2.zero;
                 foreach (var str in s1)
@@ -963,9 +982,10 @@ namespace DubsAnalyzer
 
             private void DrawStatsPageSidePanel()
             {
+
                 DubGUI.InlineTripleMessage($" Entries: {CurrentLogStats.stats.Entries}", $" Σ Calls: {CurrentLogStats.stats.TotalCalls}", $" Σ Time: {CurrentLogStats.stats.TotalTime:0.000}ms", listing, true);
                 DubGUI.InlineTripleMessage($" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms", $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}", listing, true);
-                DubGUI.InlineDoubleMessage($" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms", listing, false);
+                DubGUI.InlineTripleMessage($" % in category {AnalyzerState.CurrentLog.Average_s}", $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms", listing, true);
                 DubGUI.InlineDoubleMessage($" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}", listing, true);
             }
 

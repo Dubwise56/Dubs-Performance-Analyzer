@@ -49,16 +49,12 @@ namespace DubsAnalyzer
 
         public void GenerateStats()
         {
-            //AnalyzerState.CurrentProfiler().History.times.CopyTo(lTimes, 0);
             if (AnalyzerState.CurrentProfiler() == null)
                 return;
 
-            for (int i = 0; i < 2000; i++)
-                lTimes[i] = AnalyzerState.CurrentProfiler().History.times[i];
 
-            //AnalyzerState.CurrentProfiler().History.hits.CopyTo(lCalls, 0);
-            for (int i = 0; i < 2000; i++)
-                lCalls[i] = AnalyzerState.CurrentProfiler().History.hits[i];
+            AnalyzerState.CurrentProfiler().History.times.CopyTo(lTimes, 0);
+            AnalyzerState.CurrentProfiler().History.hits.CopyTo(lCalls, 0);
 
             thread = new Thread(() => ExecuteWorker(this, lCalls, lTimes));
             thread.IsBackground = true;
@@ -99,6 +95,7 @@ namespace DubsAnalyzer
                     if (logic.HighestCalls < LocalCalls[i])
                         logic.HighestCalls = LocalCalls[i];
                 }
+
                 // p/t
                 logic.MeanTimePerCall = logic.TotalTime / logic.TotalCalls;
 

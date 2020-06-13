@@ -8,7 +8,6 @@ using Verse;
 namespace DubsAnalyzer
 {
 
-
     [ProfileMode("ColonistBarOnGUI", UpdateMode.GUI)]
     [HarmonyPatch(typeof(ColonistBar), nameof(ColonistBar.ColonistBarOnGUI))]
     internal class H_ColonistBarOnGUI
@@ -16,13 +15,12 @@ namespace DubsAnalyzer
         public static bool Active = false;
 
         [HarmonyPriority(Priority.Last)]
-        public static bool Prefix(MethodBase __originalMethod, ref Profiler __state)
+        public static void Prefix(MethodBase __originalMethod, ref Profiler __state)
         {
             if (Active)
             {
                 __state = Analyzer.Start("ColonistBarOnGUI", null, null, null, null, __originalMethod);
             }
-            return true;
         }
 
         [HarmonyPriority(Priority.First)]

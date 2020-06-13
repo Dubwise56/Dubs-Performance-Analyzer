@@ -14,7 +14,8 @@ namespace DubsAnalyzer
 
         public static void Start(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
-            if (!Active || !AnalyzerState.CurrentlyRunning) return;
+            if (!Active) return;
+
             var state = string.Empty;
             if (__instance != null)
             {

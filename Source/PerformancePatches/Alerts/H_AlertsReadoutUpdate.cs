@@ -92,7 +92,7 @@ namespace DubsAnalyzer
                 //  }
 
                 Profiler prof = null;
-                if (Active)
+                if (Active && AnalyzerState.CurrentlyRunning)
                 {
                     prof = Analyzer.Start(typeis.Name, () => typeis.FullName, typeis);
                 }
@@ -113,7 +113,7 @@ namespace DubsAnalyzer
                     ac = alert.Active;
                 }
 
-                if (Active)
+                if (Active && AnalyzerState.CurrentlyRunning)
                 {
                     prof.Stop();
                 }

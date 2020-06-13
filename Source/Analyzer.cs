@@ -141,12 +141,12 @@ namespace DubsAnalyzer
                 newLogs.Add(new ProfileLog(value.label, string.Empty, av, (float)value.History.times.Max(), null, key, string.Empty, 0, value.type, value.meth));
             }
 
-            var dd = newLogs.Sum(x => x.Average);
+            var total = newLogs.Sum(x => x.Average);
 
             for (var index = 0; index < newLogs.Count; index++)
             {
                 var k = newLogs[index];
-                var pc = (float)(k.Average / dd);
+                var pc = (float)(k.Average / total);
                 var Log = new ProfileLog(k.Label, pc.ToStringPercent(), pc, k.Max, k.Def, k.Key, k.Mod, pc, k.Type, k.Meth);
                 newLogs[index] = Log;
             }
@@ -212,18 +212,6 @@ namespace DubsAnalyzer
                 RequestStop = false;
             }
         }
-
-        //public static void HotStart(string key, UpdateMode mode)
-        //{
-        //    if (AnalyzerState.CurrentTab?.mode == mode)
-        //        Start(key);
-        //}
-
-        //public static void HotStop(string key, UpdateMode mode)
-        //{
-        //    if (AnalyzerState.CurrentTab?.mode == mode)
-        //        Stop(key);
-        //}
 
         public static Profiler Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodBase meth = null)
         {
@@ -345,22 +333,5 @@ namespace DubsAnalyzer
             Reset();
         }
 
-        //public static void DisplayTimerProperties()
-        //{
-        //    // Display the timer frequency and resolution.
-        //    if (Stopwatch.IsHighResolution)
-        //    {
-        //        Log.Warning("Operations timed using the system's high-resolution performance counter.");
-        //    }
-        //    else
-        //    {
-        //        Log.Warning("Operations timed using the DateTime class.");
-        //    }
-
-        //    long frequency = Stopwatch.Frequency;
-        //    Log.Warning($"  Timer frequency in ticks per second = {frequency}");
-        //    long nanosecPerTick = (1000L * 1000L * 1000L) / frequency;
-        //    Log.Warning($"  Timer is accurate within {nanosecPerTick} nanoseconds");
-        //}
     }
 }

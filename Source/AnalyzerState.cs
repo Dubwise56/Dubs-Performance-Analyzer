@@ -29,12 +29,13 @@ namespace DubsAnalyzer
         public static SideTabCategory CurrentSideTabCategory = SideTabCategory.Home;
         public static ProfileMode CurrentTab;
 
-        // 'Profiles' - the content inside a Tab
+        // 'Profiles' 
         public static Dictionary<string, Profiler> CurrentProfiles = new Dictionary<string, Profiler>();
         public static string CurrentProfileKey = string.Empty;
+        public static ProfileLog CurrentLog = new ProfileLog();
         public static List<ProfileLog> Logs = new List<ProfileLog>();
 
-        // 'Logs'
+        // GUI
         public static bool HideStatistics = false;
         public static bool HideStacktrace = true;
         public static bool HideHarmony = false;
@@ -112,7 +113,7 @@ namespace DubsAnalyzer
                 }
             }
 
-            SwapTab(tabName, AnalyzerState.CurrentTab.mode);
+            SwapTab(tabName, CurrentTab.mode);
         }
         
         public static void RemoveTab(KeyValuePair<ProfileMode, Type> tab)

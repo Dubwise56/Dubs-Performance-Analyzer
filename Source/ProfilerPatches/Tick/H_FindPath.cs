@@ -45,7 +45,7 @@ namespace DubsAnalyzer
         [HarmonyPriority(Priority.Last)]
         public static void Start(MethodBase __originalMethod, ref Profiler __state)
         {
-            if (p.Active && pathing)
+            if (p.Active)
             {
                 __state = p.Start(__originalMethod.Name, __originalMethod);
             }
@@ -54,7 +54,7 @@ namespace DubsAnalyzer
         [HarmonyPriority(Priority.First)]
         public static void Stop(Profiler __state)
         {
-            if (p.Active && pathing)
+            if (p.Active)
             {
                 __state?.Stop();
             }

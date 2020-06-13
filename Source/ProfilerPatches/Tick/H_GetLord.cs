@@ -16,7 +16,8 @@ namespace DubsAnalyzer
         [HarmonyPriority(Priority.Last)]
         public static void Start(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
-            if (!Active || !AnalyzerState.CurrentlyRunning) return;
+            if (!Active) return;
+
             string state = string.Empty;
             if (__instance != null)
             {
