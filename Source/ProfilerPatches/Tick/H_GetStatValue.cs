@@ -23,7 +23,6 @@ namespace DubsAnalyzer
 
         public static void ProfilePatch()
         {
-            Log.Message("Patching stats");
             var jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValue));
             var pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(Prefix));
             var post = new HarmonyMethod(typeof(H_GetStatValue), nameof(Postfix));
@@ -74,38 +73,37 @@ namespace DubsAnalyzer
                 }
                 catch (Exception)
                 {
-                    Log.Error($"Failed to patch {allLeafSubclass} from {allLeafSubclass.Assembly.FullName} for profiling");
+                    Log.Error($"Analyzer: Failed to patch {allLeafSubclass} from {allLeafSubclass.Assembly.FullName} for profiling");
                 }
 
             }
-
-            Log.Message("stats patched");
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static void PartPrefix(object __instance, MethodBase __originalMethod, ref string __state)
+        public static void PartPrefix(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
             if (Active)
             {
+                var state = string.Empty;
                 if (__originalMethod.ReflectedType != null)
                 {
-                    __state = __originalMethod.ReflectedType.ToString();
+                    state = __originalMethod.ReflectedType.ToString();
                 }
                 else
                 {
-                    __state = __originalMethod.GetType().ToString();
+                    state = __originalMethod.GetType().ToString();
                 }
 
-                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void PartPostfix(string __state)
+        public static void PartPostfix(Profiler __state)
         {
             if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
 
@@ -136,9 +134,9 @@ namespace DubsAnalyzer
                     slag = $"{__instance.stat.defName} GetValueUnfinalized";
                 }
 
-                Analyzer.Start(slag, null, null, null, null, __originalMethod as MethodInfo);
+                var prof = Analyzer.Start(slag, null, null, null, null, __originalMethod);
                 float valueUnfinalized = sw.GetValueUnfinalized(req, applyPostProcess);
-                Analyzer.Stop(slag);
+                prof.Stop();
 
                 if (ByDef)
                 {
@@ -149,9 +147,9 @@ namespace DubsAnalyzer
                     slag = $"{__instance.stat.defName} FinalizeValue";
                 }
 
-                Analyzer.Start(slag, null, null, null, null, __originalMethod as MethodInfo);
+                prof = Analyzer.Start(slag, null, null, null, null, __originalMethod);
                 sw.FinalizeValue(req, ref valueUnfinalized, applyPostProcess);
-                Analyzer.Stop(slag);
+                prof.Stop();
 
                 __result = valueUnfinalized;
                 return false;
@@ -160,72 +158,71 @@ namespace DubsAnalyzer
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static bool Prefix(MethodBase __originalMethod, Thing thing, StatDef stat, ref string __state)
+        public static void Prefix(MethodBase __originalMethod, Thing thing, StatDef stat, ref Profiler __state)
         {
             if (Active && !GetValDetour)
             {
+                var state = string.Empty;
                 if (ByDef)
                 {
-                    __state = $"{stat.defName} for {thing.def.defName}";
+                    state = $"{stat.defName} for {thing.def.defName}";
                 }
                 else
                 {
-                    __state = stat.defName;
+                    state = stat.defName;
                 }
 
-                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
-
-            return true;
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Postfix(string __state)
+        public static void Postfix(Profiler __state)
         {
             if (Active && !GetValDetour)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static bool PrefixAb(MethodBase __originalMethod, BuildableDef def, StatDef stat, ref string __state)
+        public static void PrefixAb(MethodBase __originalMethod, BuildableDef def, StatDef stat, ref Profiler __state)
         {
 
             if (Active && !GetValDetour)
             {
+                var state = string.Empty;
                 if (ByDef)
                 {
-                    __state = $"{stat.defName} abstract for {def.defName}";
+                    state = $"{stat.defName} abstract for {def.defName}";
                 }
                 else
                 {
-                    __state = $"{stat.defName} abstract";
+                    state = $"{stat.defName} abstract";
                 }
 
-                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
-            return true;
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static bool PrefixAbility(MethodBase __originalMethod, AbilityDef def, StatDef stat, ref string __state)
+        public static void PrefixAbility(MethodBase __originalMethod, AbilityDef def, StatDef stat, ref Profiler __state)
         {
 
             if (Active && !GetValDetour)
             {
+                var state = string.Empty;
                 if (ByDef)
                 {
-                    __state = $"{stat.defName} abstract for {def.defName}";
+                    state = $"{stat.defName} abstract for {def.defName}";
                 }
                 else
                 {
-                    __state = $"{stat.defName} abstract";
+                    state = $"{stat.defName} abstract";
                 }
 
-                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
-            return true;
         }
 
     }

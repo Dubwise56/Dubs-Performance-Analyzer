@@ -43,7 +43,7 @@ namespace DubsAnalyzer
         }
 
         public static readonly string str = "InspectGizmoGrid.DrawInspectGizmoGridFor";
-        public static bool Prefix(IEnumerable<object> selectedObjects, ref Gizmo mouseoverGizmo)
+        public static bool Prefix(IEnumerable<object> selectedObjects, ref Gizmo mouseoverGizmo, ref Profiler __state)
         {
             if (Active && DetourMode)
             {
@@ -57,7 +57,10 @@ namespace DubsAnalyzer
                 return true;
             }
 
-            if (Active) Analyzer.Start(str);
+            if (Active)
+            {
+                __state = Analyzer.Start(str);
+            }
 
             if (Analyzer.Settings.OptimizeDrawInspectGizmoGrid)
             {
@@ -76,14 +79,19 @@ namespace DubsAnalyzer
             return true;
         }
 
-        public static void Postfix()
+        public static void Postfix(Profiler __state)
         {
-            if (Active) Analyzer.Stop(str);
+            if (Active)
+            {
+                __state.Stop();
+            }
         }
 
         public static void Detour(IEnumerable<object> selectedObjects, ref Gizmo mouseoverGizmo)
         {
             var DoRebuild = !(Analyzer.Settings.OptimizeDrawInspectGizmoGrid && Event.current.type != EventType.Repaint);
+
+            Profiler prof = null;
 
             if (DoRebuild)
             {
@@ -101,9 +109,9 @@ namespace DubsAnalyzer
                             if (Active)
                             {
                                 var me = string.Intern($"{selectable.GetType()} Gizmos");
-                                Analyzer.Start(me);
+                                prof = Analyzer.Start(me);
                                 InspectGizmoGrid.gizmoList.AddRange(selectable.GetGizmos());
-                                Analyzer.Stop(me);
+                                prof.Stop();
                             }
                             else
                             {
@@ -157,24 +165,15 @@ namespace DubsAnalyzer
                 }
             }
 
-            if (Active) Analyzer.Start(str);
+            if (Active)
+            {
+                prof =Analyzer.Start(str);
+            }
             GizmoGridDrawer.DrawGizmoGrid(InspectGizmoGrid.gizmoList, InspectPaneUtility.PaneWidthFor(Find.WindowStack.WindowOfType<IInspectPane>()) + 20f, out mouseoverGizmo);
-            if (Active) Analyzer.Stop(str);
+            if (Active)
+            {
+                prof.Stop();
+            }
         }
-
-        //public static void Postfix()
-        //{
-        //    if (!Analyzer.running || Analyzer.UpdateMode != UpdateMode.GUI)
-        //    {
-        //        return;
-        //    }
-
-        //    if (Analyzer.loggingMode != LoggingMode.Windows)
-        //    {
-        //        return;
-        //    }
-
-        //    Analyzer.Stop("InspectGizmoGrid.DrawInspectGizmoGridFor");
-        //}
     }
 }

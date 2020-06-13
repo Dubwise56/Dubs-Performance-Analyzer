@@ -17,9 +17,9 @@ namespace DubsAnalyzer
         public readonly float Percent;
         public readonly Type Type;
         public readonly Def Def;
-        public readonly MethodInfo Meth;
+        public readonly MethodBase Meth;
 
-        public ProfileLog(string label, string averageS, double average, float max, Def def, string key, string mod, float percent, Type type, MethodInfo meth = null)
+        public ProfileLog(string label, string averageS, double average, float max, Def def, string key, string mod, float percent, Type type, MethodBase meth = null)
         {
             Label = label;
             Average_s = averageS;

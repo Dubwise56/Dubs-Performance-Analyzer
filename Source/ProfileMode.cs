@@ -82,7 +82,7 @@ namespace DubsAnalyzer
         {
             if (Active) Analyzer.Start(key);
         }
-        public void Start(string key, MethodInfo info)
+        public void Start(string key, MethodBase info)
         {
             if (Active) Analyzer.Start(key, null, null, null, null, info);
         }

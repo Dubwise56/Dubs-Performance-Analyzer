@@ -24,7 +24,7 @@ namespace DubsAnalyzer
                         try
                         {
                             __state = __instance.layers[i].GetType().FullName;
-                            p.Start(__state, __originalMethod as MethodInfo);
+                            p.Start(__state, __originalMethod);
                             sectionLayer.Regenerate();
                             p.Stop(__state);
                         }

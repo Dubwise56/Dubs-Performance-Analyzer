@@ -16,28 +16,28 @@ namespace DubsAnalyzer
         public static bool Active = false;
 
         [HarmonyPriority(Priority.Last)]
-        public static void Start(object __instance, MethodBase __originalMethod, ref string __state)
+        public static void Start(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
             if (!Active || !AnalyzerState.CurrentlyRunning) return;
-            __state = string.Empty;
+            var state = string.Empty;
             if (__instance != null)
             {
-                __state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
+                state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
             }
             else
             if (__originalMethod.ReflectedType != null)
             {
-                __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
+                state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Stop(string __state)
+        public static void Stop(Profiler __state)
         {
-            if (Active && !string.IsNullOrEmpty(__state))
+            if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
 
@@ -45,29 +45,28 @@ namespace DubsAnalyzer
         {
             if (!Active || !AnalyzerState.CurrentlyRunning) return true;
 
+            Profiler prof = null;
             if (StatsReportUtility.cachedDrawEntries.NullOrEmpty<StatDrawEntry>())
             {
-                Analyzer.Start("SpecialDisplayStats");
+                prof = Analyzer.Start("SpecialDisplayStats");
                 StatsReportUtility.cachedDrawEntries.AddRange(thing.def.SpecialDisplayStats(StatRequest.For(thing)));
-                Analyzer.Stop("SpecialDisplayStats");
+                prof.Stop();
 
-                Analyzer.Start("StatsToDraw");
-                StatsReportUtility.cachedDrawEntries.AddRange(from r in StatsReportUtility.StatsToDraw(thing)
-                                                              where r.ShouldDisplay
-                                                              select r);
-                Analyzer.Stop("StatsToDraw");
+                prof = Analyzer.Start("StatsToDraw");
+                StatsReportUtility.cachedDrawEntries.AddRange(StatsReportUtility.StatsToDraw(thing).Where(s => s.ShouldDisplay));
+                prof.Stop();
 
-                Analyzer.Start("RemoveAll");
+                prof = Analyzer.Start("RemoveAll");
                 StatsReportUtility.cachedDrawEntries.RemoveAll((StatDrawEntry de) => de.stat != null && !de.stat.showNonAbstract);
-                Analyzer.Stop("RemoveAll");
+                prof.Stop();
 
-                Analyzer.Start("FinalizeCachedDrawEntries");
+                prof = Analyzer.Start("FinalizeCachedDrawEntries");
                 StatsReportUtility.FinalizeCachedDrawEntries(StatsReportUtility.cachedDrawEntries);
-                Analyzer.Stop("FinalizeCachedDrawEntries");
+                prof.Stop();
             }
-            Analyzer.Start("DrawStatsWorker");
+            prof = Analyzer.Start("DrawStatsWorker");
             StatsReportUtility.DrawStatsWorker(rect, thing, null);
-            Analyzer.Stop("DrawStatsWorker");
+            prof.Stop();
 
             return false;
         }

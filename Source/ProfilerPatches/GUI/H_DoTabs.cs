@@ -11,21 +11,20 @@ namespace DubsAnalyzer
         public static bool Active=false;
 
         [HarmonyPriority(Priority.Last)]
-        public static void Prefix(MethodBase __originalMethod, ref string __state)
+        public static void Prefix(MethodBase __originalMethod, ref Profiler __state)
         {
             if (Active)
             {
-                __state = "InspectPaneUtility.DoTabs";
-                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                __state = Analyzer.Start("InspectPaneUtility.DoTabs", null, null, null, null, __originalMethod);
             }
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Postfix(string __state)
+        public static void Postfix(Profiler __state)
         {
             if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
     }

@@ -62,34 +62,35 @@ namespace DubsAnalyzer
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static void Prefix(object __instance, MethodBase __originalMethod, ref string __state)
+        public static void Prefix(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
             if (Active)
             {
+                string state = string.Empty;
                 if (__instance != null)
                 {
-                    __state = __instance.GetType().Name;
+                    state = __instance.GetType().Name;
                 }
                 else
                 if (__originalMethod.ReflectedType != null)
                 {
-                    __state = __originalMethod.ReflectedType.Name;
+                    state = __originalMethod.ReflectedType.Name;
                 }
                 else
                 {
-                    __state = __originalMethod.GetType().Name;
+                    state = __originalMethod.GetType().Name;
                 }
 
-                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+               __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Postfix(string __state)
+        public static void Postfix(Profiler __state)
         {
             if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
     }

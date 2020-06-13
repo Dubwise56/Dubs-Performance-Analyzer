@@ -60,7 +60,7 @@ namespace DubsAnalyzer
         {
             Dialog_Analyzer.AdditionalInfo.Graph.reset();
             foreach (var profiler in CurrentProfiles)
-                profiler.Value.Stop(false);
+                profiler.Value.Stop();
 
             CurrentProfiles.Clear();
 

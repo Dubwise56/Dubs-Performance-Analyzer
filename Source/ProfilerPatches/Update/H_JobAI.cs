@@ -10,7 +10,7 @@ using Verse.AI;
 namespace DubsAnalyzer
 {
     [ProfileMode("Job AI", UpdateMode.Update)]
-    class H_JobAI
+    public class H_JobAI
     {
         public static bool Active = false;
 
@@ -19,23 +19,25 @@ namespace DubsAnalyzer
             var go = new HarmonyMethod(typeof(H_JobAI), nameof(Prefix));
             var biff = new HarmonyMethod(typeof(H_JobAI), nameof(Postfix));
 
-            PatchUtils.PatchType("Pawn_JobTracker", go, biff);
+            PatchUtils.PatchType("Pawn_JobTracker", go, biff, false);
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static void Prefix(MethodBase __originalMethod, ref string __state)
+        public static void Prefix(MethodBase __originalMethod, ref Profiler __state)
         {
-            if (!Active || !AnalyzerState.CurrentlyRunning) return;
-
-            __state = __originalMethod.Name;
-
-            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+            if (Active)
+            {
+                __state = Analyzer.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
+            }
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Postfix(string __state)
+        public static void Postfix(Profiler __state)
         {
-            Analyzer.Stop(__state);
+            if (Active)
+            {
+                __state.Stop();
+            }
         }
     }
 }

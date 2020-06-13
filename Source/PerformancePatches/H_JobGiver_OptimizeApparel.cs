@@ -3,6 +3,7 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace DubsAnalyzer
 					yield return inst; // pawn
 					yield return new CodeInstruction(OpCodes.Call, mylogicmeth);
 				}
-				else if ((i < 0) && instruction.opcode == OpCodes.Callvirt && instruction.operand == myType)
+				else if ((i < 0) && instruction.opcode == OpCodes.Callvirt && (MethodInfo) instruction.operand == myType)
 				{
 					i = 0;
 				}
@@ -94,7 +95,7 @@ namespace DubsAnalyzer
 					continue;
 				}
 
-				if(!HasSeenFirst && instList[i].opcode == OpCodes.Callvirt && instList[i].operand == targetFunc)
+				if(!HasSeenFirst && instList[i].opcode == OpCodes.Callvirt && (MethodInfo) instList[i].operand == targetFunc)
 				{
 					yield return instList[i++];
 					yield return instList[i++];

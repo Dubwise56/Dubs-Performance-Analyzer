@@ -248,9 +248,9 @@ namespace DubsAnalyzer
                     return $"{sam.GetType()} {fix}";
                 }
 
-                Analyzer.Start(key, Namer, sam.GetType(), sam.def);
+                var prof = Analyzer.Start(key, Namer, sam.GetType(), sam.def);
                 ac();
-                Analyzer.Stop(key);
+                prof.Stop();
             }
             else
             {

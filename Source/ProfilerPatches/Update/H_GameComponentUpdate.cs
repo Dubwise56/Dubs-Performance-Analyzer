@@ -28,9 +28,9 @@ namespace DubsAnalyzer
                 try
                 {
                     var trash = components[i].GetType().Name;
-                    Analyzer.Start(trash, null, components[i].GetType(), null, null, __originalMethod as MethodInfo);
+                    var prof = Analyzer.Start(trash, null, components[i].GetType(), null, null, __originalMethod);
                     components[i].GameComponentUpdate();
-                    Analyzer.Stop(trash);
+                    prof.Stop();
                 }
                 catch (Exception ex)
                 {

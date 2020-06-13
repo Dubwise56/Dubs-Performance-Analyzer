@@ -18,6 +18,7 @@ namespace DubsAnalyzer
             {
 
                 __instance.ClearSubMeshes(MeshParts.All);
+                Profiler prof = null;
                 foreach (IntVec3 intVec in __instance.section.CellRect)
                 {
                     List<Thing> list = __instance.Map.thingGrid.ThingsListAt(intVec);
@@ -27,7 +28,7 @@ namespace DubsAnalyzer
                         Thing thing = list[i];
 
                         __state = "Flag check";
-                        Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                        prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
                         var flag =
                             ((thing.def.seeThroughFog ||
                               !__instance.Map.fogGrid.fogGrid[
@@ -37,23 +38,23 @@ namespace DubsAnalyzer
                              (thing.def.hideAtSnowDepth >= 1f || __instance.Map.snowGrid.GetDepth(thing.Position) <=
                                  thing.def.hideAtSnowDepth) && thing.Position.x == intVec.x &&
                              thing.Position.z == intVec.z);
-                        Analyzer.Stop(__state);
+                        prof.Stop();
 
                         if (flag)
                         {
                             __state = thing.def.defName;
-                            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                            prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
                             __instance.TakePrintFrom(thing);
-                            Analyzer.Stop(__state);
+                            prof.Stop();
                         }
 
                     }
                 }
 
                 __state = "Finalize mesh";
-                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
                 __instance.FinalizeMesh(MeshParts.All);
-                Analyzer.Stop(__state);
+                prof.Stop();
                 return false;
             }
 

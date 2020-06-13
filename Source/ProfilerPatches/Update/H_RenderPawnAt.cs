@@ -20,22 +20,20 @@ namespace DubsAnalyzer
         //}
 
         [HarmonyPriority(Priority.Last)]
-        public static void Prefix(MethodBase __originalMethod, PawnRenderer __instance, ref string __state)
-        {
-            if (!Active)
-            {
-                return;
-            }
-            __state = __instance.pawn.GetHashCode().ToString();
-            Analyzer.Start(__state, () => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}", null, null, null, __originalMethod as MethodInfo);
-        }
-
-        [HarmonyPriority(Priority.First)]
-        public static void Postfix(string __state)
+        public static void Prefix(MethodBase __originalMethod, PawnRenderer __instance, ref Profiler __state)
         {
             if (Active)
             {
-                Analyzer.Stop(__state);
+                Analyzer.Start(__instance.pawn.GetHashCode().ToString(), () => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}", null, null, null, __originalMethod);
+            }
+        }
+
+        [HarmonyPriority(Priority.First)]
+        public static void Postfix(Profiler __state)
+        {
+            if (Active)
+            {
+                __state.Stop();
             }
         }
     }

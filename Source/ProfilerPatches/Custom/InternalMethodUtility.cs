@@ -31,8 +31,8 @@ namespace DubsAnalyzer
 
         public static Dictionary<string, MethodInfo> KeyMethods = new Dictionary<string, MethodInfo>();
 
-        private static MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(InternalMethodUtility), nameof(AnalyzerStart));
-        private static MethodInfo AnalyzerEndMeth = AccessTools.Method(typeof(InternalMethodUtility), nameof(AnalyzerEnd));
+        private static MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(Analyzer), nameof(Analyzer.Start));
+        private static MethodInfo AnalyzerEndMeth = AccessTools.Method(typeof(Profiler), nameof(Profiler.Stop));
 
         private static FieldInfo AnalyzerKeyDict = AccessTools.Field(typeof(InternalMethodUtility), "KeyMethods");
         private static MethodInfo AnalyzerGetValue = AccessTools.Method(typeof(Dictionary<string, MethodInfo>), "get_Item");
@@ -137,8 +137,10 @@ namespace DubsAnalyzer
             ILGenerator gen = meth.GetILGenerator(512);
 
             string key = currentMethod.DeclaringType.FullName + "." + currentMethod.Name;
+            // local variable for profiler
+            var localProfiler = gen.DeclareLocal(typeof(Profiler));
 
-            InsertStartIL(curMeth.Name, gen, key);
+            InsertStartIL(curMeth.Name, gen, key, localProfiler);
             KeyMethods.SetOrAdd(key, currentMethod);
 
             // dynamically add our parameters, as many as they are, into our method
@@ -147,7 +149,7 @@ namespace DubsAnalyzer
 
             gen.EmitCall(instruction.opcode, currentMethod, parameters); // call our original method, as per our arguments, etc.
 
-            InsertEndIL(curMeth.Name, gen, key); // wrap our function up, return a value if required
+            InsertEndIL(curMeth.Name, gen, localProfiler); // wrap our function up, return a value if required
 
             var inst = new CodeInstruction(instruction);
             inst.opcode = OpCodes.Call;
@@ -156,52 +158,54 @@ namespace DubsAnalyzer
             return inst;
         }
 
-        public static void InsertStartIL(string originalMethodName, ILGenerator ilGen, string key)
+        public static void InsertStartIL(string originalMethodName, ILGenerator ilGen, string key, LocalBuilder profiler)
         {
             // if(Active && AnalyzerState.CurrentlyRunning)
             // { 
             var skipLabel = ilGen.DefineLabel();
-            ilGen.Emit(OpCodes.Ldsfld, AccessTools.TypeByName(originalMethodName + "-int").GetField("Active", BindingFlags.Public | BindingFlags.Static));
-            ilGen.Emit(OpCodes.Brfalse_S, skipLabel);
-
-            ilGen.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(AnalyzerState), "CurrentlyRunning"));
-            ilGen.Emit(OpCodes.Brfalse_S, skipLabel);
+            InsertActiveCheck(originalMethodName, ilGen, ref skipLabel);
 
             ilGen.Emit(OpCodes.Ldstr, key);
             // load our string to stack
+
+            ilGen.Emit(OpCodes.Ldnull);
+            ilGen.Emit(OpCodes.Ldnull);
+            ilGen.Emit(OpCodes.Ldnull);
+            ilGen.Emit(OpCodes.Ldnull);
+            // load our null variables
 
             ilGen.Emit(OpCodes.Ldsfld, AnalyzerKeyDict); // KeyMethods
             ilGen.Emit(OpCodes.Ldstr, key);
             ilGen.Emit(OpCodes.Call, AnalyzerGetValue); // KeyMethods.get_Item(key) or KeyMethods[key]
                                                         // KeyMethods[key]
+
             ilGen.Emit(OpCodes.Call, AnalyzerStartMeth);
-            // AnalyzerStart(key, KeyMethods[key]);
+            ilGen.Emit(OpCodes.Stloc, profiler.LocalIndex);
+            // localProfiler = Analyzer.Start(key, null, null, null, null, KeyMethods[key]);
+
             ilGen.MarkLabel(skipLabel);
         }
-        public static void AnalyzerStart(string key, MethodInfo meth)
-        {
-            Analyzer.Start(key, null, null, null, null, meth);
-        }
 
-        public static void InsertEndIL(string originalMethodName, ILGenerator ilGen, string key)
+        public static void InsertEndIL(string originalMethodName, ILGenerator ilGen, LocalBuilder profiler)
         {
             var skipLabel = ilGen.DefineLabel();
-            ilGen.Emit(OpCodes.Ldsfld, AccessTools.TypeByName(originalMethodName + "-int").GetField("Active", BindingFlags.Public | BindingFlags.Static));
-            ilGen.Emit(OpCodes.Brfalse_S, skipLabel);
+            InsertActiveCheck(originalMethodName, ilGen, ref skipLabel);
 
-            ilGen.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(AnalyzerState), "CurrentlyRunning"));
-            ilGen.Emit(OpCodes.Brfalse_S, skipLabel);
-
-            ilGen.Emit(OpCodes.Ldstr, key);
+            ilGen.Emit(OpCodes.Ldloc, profiler.LocalIndex);
             ilGen.Emit(OpCodes.Call, AnalyzerEndMeth);
 
             ilGen.MarkLabel(skipLabel);
 
             ilGen.Emit(OpCodes.Ret);
         }
-        private static void AnalyzerEnd(string key)
+
+        public static void InsertActiveCheck(string originalMethodName, ILGenerator ilGen, ref Label label)
         {
-            Analyzer.Stop(key);
+            ilGen.Emit(OpCodes.Ldsfld, AccessTools.TypeByName(originalMethodName + "-int").GetField("Active", BindingFlags.Public | BindingFlags.Static));
+            ilGen.Emit(OpCodes.Brfalse_S, label);
+
+            ilGen.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(AnalyzerState), "CurrentlyRunning"));
+            ilGen.Emit(OpCodes.Brfalse_S, label);
         }
     }
 }

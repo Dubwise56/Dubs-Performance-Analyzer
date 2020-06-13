@@ -31,9 +31,9 @@ namespace DubsAnalyzer
                     name = string.Intern($"{__instance.windowStackOnGUITmpList[i].GetType()} ExtraOnGUI");
                 }
 
-                Analyzer.Start(name, null, null, null, null, __originalMethod as MethodInfo);
+                var prof = Analyzer.Start(name, null, null, null, null, __originalMethod);
                 __instance.windowStackOnGUITmpList[i].ExtraOnGUI();
-                Analyzer.Stop(name);
+                prof.Stop();
             }
 
             __instance.UpdateImmediateWindowsList();
@@ -59,9 +59,9 @@ namespace DubsAnalyzer
                     name = string.Intern($"{__instance.windowStackOnGUITmpList[j].GetType()} WindowOnGUI");
                 }
 
-                Analyzer.Start(name, null, null, null, null, __originalMethod as MethodInfo);
+                var prof = Analyzer.Start(name, null, null, null, null, __originalMethod);
                 __instance.windowStackOnGUITmpList[j].WindowOnGUI();
-                Analyzer.Stop(name);
+                prof.Stop();
             }
 
             if (__instance.updateInternalWindowsOrderLater)

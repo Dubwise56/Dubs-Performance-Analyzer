@@ -49,7 +49,7 @@ namespace DubsAnalyzer
             {
                 {
                     __state = __originalMethod.Name;
-                    p.Start(__state, __originalMethod as MethodInfo);
+                    p.Start(__state, __originalMethod);
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace DubsAnalyzer
             if (p.Active)
             {
                 __state = "PathFinder.FindPath";
-                p.Start(__state, __originalMethod as MethodInfo);
+                p.Start(__state, __originalMethod);
                 pathing = true;
             }
         }

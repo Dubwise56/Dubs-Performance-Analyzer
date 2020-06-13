@@ -29,9 +29,9 @@ namespace DubsAnalyzer
                 foreach (RoomStatDef roomStatDef in DefDatabase<RoomStatDef>.AllDefs.OrderByDescending((RoomStatDef x) => x.updatePriority))
                 {
                     var str = roomStatDef.defName;
-                    Analyzer.Start(str, () => $"{str} - {roomStatDef.workerClass}", null, null, null, __originalMethod as MethodInfo);
+                    var prof = Analyzer.Start(str, () => $"{str} - {roomStatDef.workerClass}", null, null, null, __originalMethod);
                     __instance.stats[roomStatDef] = roomStatDef.Worker.GetScore(__instance);
-                    Analyzer.Stop(str);
+                    prof.Stop();
                 }
                 __instance.role = DefDatabase<RoomRoleDef>.AllDefs.MaxBy((RoomRoleDef x) => x.Worker.GetScore(__instance));
             }

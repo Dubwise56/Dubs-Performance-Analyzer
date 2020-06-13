@@ -14,28 +14,28 @@ namespace DubsAnalyzer
         public static bool Active = false;
 
         [HarmonyPriority(Priority.Last)]
-        public static void Start(object __instance, MethodBase __originalMethod, ref string __state)
+        public static void Start(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
             if (!Active || !AnalyzerState.CurrentlyRunning) return;
-            __state = string.Empty;
+            string state = string.Empty;
             if (__instance != null)
             {
-                __state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
+                state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
             }
             else
             if (__originalMethod.ReflectedType != null)
             {
-                __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
+                state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Stop(string __state)
+        public static void Stop(Profiler __state)
         {
-            if (Active && !string.IsNullOrEmpty(__state))
+            if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
 
@@ -47,16 +47,17 @@ namespace DubsAnalyzer
                 for (int i = 0; i < count; i++)
                 {
                     ThinkResult result = ThinkResult.NoJob;
+                    Profiler prof = null;
                     try
                     {
                         __state = $"ThinkNode_Priority SubNode [{__instance.subNodes[i].GetType()}]";
-                        Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                        prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
                         result = __instance.subNodes[i].TryIssueJobPackage(pawn, jobParams);
-                        Analyzer.Stop(__state);
+                        prof.Stop();
                     }
                     catch (Exception)
                     {
-                        Analyzer.Stop(__state);
+                        prof.Stop();
                     }
                     if (result.IsValid)
                     {
@@ -71,13 +72,13 @@ namespace DubsAnalyzer
             return true;
         }
 
-        public static void Frangle(ref CastPositionRequest newReq)
-        {
-            if (newReq.maxRangeFromCaster <= 0.01f)
-            {
-                // Log.Error($"INFINITE RANGE ON THIS {newReq.caster} {newReq.verb} {newReq.target}");
-            }
-        }
+        //public static void Frangle(ref CastPositionRequest newReq)
+        //{
+        //    if (newReq.maxRangeFromCaster <= 0.01f)
+        //    {
+        //        // Log.Error($"INFINITE RANGE ON THIS {newReq.caster} {newReq.verb} {newReq.target}");
+        //    }
+        //}
 
         public static void ProfilePatch()
         {
@@ -90,7 +91,7 @@ namespace DubsAnalyzer
             //}
             //   slop(typeof(LordUtility), nameof(LordUtility.GetLord), new Type[] { typeof(Pawn) });
             //  slop(typeof(LordUtility), nameof(LordUtility.GetLord), new Type[] { typeof(Building) });
-            Analyzer.harmony.Patch(AccessTools.Method(typeof(CastPositionFinder), nameof(CastPositionFinder.TryFindCastPosition)), null, new HarmonyMethod(typeof(H_GetLord), nameof(Frangle)));
+            //Analyzer.harmony.Patch(AccessTools.Method(typeof(CastPositionFinder), nameof(CastPositionFinder.TryFindCastPosition)), null, new HarmonyMethod(typeof(H_GetLord), nameof(Frangle)));
             Analyzer.harmony.Patch(AccessTools.Method(typeof(ThinkNode_Priority), nameof(ThinkNode_Priority.TryIssueJobPackage)), new HarmonyMethod(typeof(H_GetLord), nameof(Fringe)));
         }
     }

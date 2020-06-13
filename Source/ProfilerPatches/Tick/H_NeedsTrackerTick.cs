@@ -37,19 +37,21 @@ namespace DubsAnalyzer
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static void Start(MethodInfo __originalMethod, ref string __state)
+        public static void Start(MethodInfo __originalMethod, ref Profiler __state)
         {
             if (Active)
             {
-                __state = __originalMethod.Name;
-                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                __state = Analyzer.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
             }
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Stop(string __state)
+        public static void Stop(Profiler __state)
         {
-            if (Active) Analyzer.Stop(__state);
+            if (Active)
+            {
+                __state.Stop();
+            }
         }
 
         public static bool Detour(MethodInfo __originalMethod, Pawn_NeedsTracker __instance, ref string __state)
@@ -69,9 +71,9 @@ namespace DubsAnalyzer
                             __state = $"{__instance.needs[i].GetType().Name}";
                         }
 
-                        Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                        var prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
                         __instance.needs[i].NeedInterval();
-                        Analyzer.Stop(__state);
+                        prof.Stop();
                     }
                 }
                 return false;

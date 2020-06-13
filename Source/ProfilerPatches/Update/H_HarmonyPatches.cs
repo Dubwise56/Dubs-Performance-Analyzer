@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -138,14 +139,14 @@ namespace DubsAnalyzer
 
             __state = __originalMethod.Name;
 
-            Analyzer.Start(__state, () =>
-            {
-                if (__originalMethod.ReflectedType != null)
-                {
-                    return $"{__originalMethod.Name} - {__originalMethod.ReflectedType.FullName}";
-                }
-                return $"{__originalMethod.Name} - {__originalMethod.GetType().FullName}";
-            }, __originalMethod.GetType(), null, null, __originalMethod as MethodInfo);
+            //Analyzer.Start(__state, () =>
+            //{
+            //    if (__originalMethod.ReflectedType != null)
+            //    {
+            //        return $"{__originalMethod.Name} - {__originalMethod.ReflectedType.FullName}";
+            //    }
+            //    return $"{__originalMethod.Name} - {__originalMethod.GetType().FullName}";
+            //}, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
@@ -153,7 +154,7 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                Analyzer.Stop(__state);
+                //Analyzer.Stop(__state);
             }
         }
     }
@@ -244,28 +245,26 @@ namespace DubsAnalyzer
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static void Prefix(MethodBase __originalMethod, ref string __state)
+        public static void Prefix(MethodBase __originalMethod, ref Profiler __state)
         {
             if (!Active) return;
 
-            __state = __originalMethod.GetHashCode().ToString();
-
-            Analyzer.Start(__state, () =>
+            __state = Analyzer.Start(__originalMethod.GetHashCode().ToString(), () =>
             {
                 if (__originalMethod.ReflectedType != null)
                 {
                     return $"{__originalMethod.ToString()} - {__originalMethod.ReflectedType.FullName}";
                 }
                 return $"{__originalMethod.ToString()} - {__originalMethod.GetType().FullName}";
-            }, __originalMethod.GetType(), null, null, __originalMethod as MethodInfo);
+            }, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Postfix(string __state)
+        public static void Postfix(Profiler __state)
         {
             if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
     }

@@ -24,10 +24,11 @@ namespace DubsAnalyzer
         public static void Add(StackTrace trace)
         {
             var key = QuickKey(trace);
-            if(traces.ContainsKey(key))
+            if (traces.ContainsKey(key))
             {
                 traces[key].Count++;
-            } else
+            }
+            else
             {
                 traces.Add(key, new StackTraceInformation(trace));
                 IdentifyFirstUnique();

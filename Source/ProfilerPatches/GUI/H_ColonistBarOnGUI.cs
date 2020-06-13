@@ -16,22 +16,21 @@ namespace DubsAnalyzer
         public static bool Active = false;
 
         [HarmonyPriority(Priority.Last)]
-        public static bool Prefix(MethodBase __originalMethod, ref string __state)
+        public static bool Prefix(MethodBase __originalMethod, ref Profiler __state)
         {
             if (Active)
             {
-                __state = "ColonistBarOnGUI";
-                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                __state = Analyzer.Start("ColonistBarOnGUI", null, null, null, null, __originalMethod);
             }
             return true;
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Postfix(string __state)
+        public static void Postfix(Profiler __state)
         {
             if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
     }

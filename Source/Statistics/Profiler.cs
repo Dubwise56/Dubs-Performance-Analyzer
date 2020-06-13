@@ -22,14 +22,14 @@ namespace DubsAnalyzer
         public string label;
         public string key;
 
-        public MethodInfo meth;
+        public MethodBase meth;
 
         public double lastTime = 0;
         public double startTime = 0;
         public int HitCounter = 0;
 
 
-        public Profiler(string kley, string lab, Type ty, Def indef, Thing inthing, MethodInfo inmeth)
+        public Profiler(string kley, string lab, Type ty, Def indef, Thing inthing, MethodBase inmeth)
         {
             key = kley;
             thing = inthing;
@@ -41,22 +41,26 @@ namespace DubsAnalyzer
             History = new ProfilerHistory(Analyzer.MaxHistoryEntries);
         }
 
-        public void Start()
+        public void Start() => stopwatch.Start();
+
+        public void Stop()
         {
-            stopwatch.Start();
-        }
+            if (!AnalyzerState.CurrentlyRunning) return;
 
-        public void Stop(bool writestack)
-        {
-            stopwatch.Stop();
-            HitCounter++;
+            try
+            {
+                stopwatch.Stop();
+                HitCounter++;
 
-            if (key == AnalyzerState.CurrentProfileKey)
-                if (HitCounter < MAX_ADD_INFO_PER_FRAME && !AnalyzerState.HideStatistics)
-                        StackTraceRegex.Add(new System.Diagnostics.StackTrace(3, false));
 
-            //if (writestack)
-            //    Log.Warning(label);
+                //if (key == AnalyzerState.CurrentProfileKey)
+                //    if (HitCounter < MAX_ADD_INFO_PER_FRAME && !AnalyzerState.HideStatistics)
+                //        StackTraceRegex.Add(new System.Diagnostics.StackTrace(3, false));
+
+            } catch(Exception e)
+            {
+                Log.Warning($"Analyzer: Stop() failed with the error {e.Message}");
+            }
         }
 
         public void RecordMeasurement()
@@ -66,7 +70,7 @@ namespace DubsAnalyzer
 
             if (stopwatch.IsRunning)
             {
-                Log.Error($"{key} was still running when recorded");
+                Log.Error($"Analyzer: {key} was still running when recorded");
             }
 
             stopwatch.Stop();

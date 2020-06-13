@@ -91,9 +91,10 @@ namespace DubsAnalyzer
                 //name = $"{alert.GetType()}";
                 //  }
 
+                Profiler prof = null;
                 if (Active)
                 {
-                    Analyzer.Start(typeis.Name, () => typeis.FullName, typeis);
+                    prof = Analyzer.Start(typeis.Name, () => typeis.FullName, typeis);
                 }
 
                 var ac = false;
@@ -114,7 +115,7 @@ namespace DubsAnalyzer
 
                 if (Active)
                 {
-                    Analyzer.Stop(typeis.Name);
+                    prof.Stop();
                 }
 
                 if (!forceRemove && ac)
@@ -201,9 +202,9 @@ namespace DubsAnalyzer
                         }
 
                         var key = alert2.GetType();
-                        Analyzer.Start(key.Name, () => key.FullName, key);
+                        var prof = Analyzer.Start(key.Name, () => key.FullName, key);
                         var rect2 = alert2.DrawAt(num3, alertPriority2 != alertPriority);
-                        Analyzer.Stop(key.Name);
+                        prof.Stop();
 
                         if (Mouse.IsOver(rect2))
                         {
@@ -230,7 +231,6 @@ namespace DubsAnalyzer
 
         public static bool AlertsReadoutUpdate(AlertsReadout __instance)
         {
-         //   return false;
             if (!Analyzer.Settings.OverrideAlerts && !AnalyzerState.CurrentlyRunning)
             {
                 return true;
@@ -289,14 +289,13 @@ namespace DubsAnalyzer
 
                 try
                 {
-                    var hash = __instance.activeAlerts[l].GetHashCode().ToString();
-                    Analyzer.Start(hash, () => __instance.activeAlerts[l] +" Update", __instance.activeAlerts[l].GetType());
+                    var prof = Analyzer.Start(__instance.activeAlerts[l].GetHashCode().ToString(), () => __instance.activeAlerts[l] +" Update", __instance.activeAlerts[l].GetType());
                     __instance.activeAlerts[l].AlertActiveUpdate();
-                    Analyzer.Stop(hash);
+                    prof.Stop();
                 }
                 catch (Exception ex)
                 {
-                    Log.ErrorOnce("Exception updating alert " + alert.ToString() + ": " + ex.ToString(), 743575, false);
+                    Log.ErrorOnce($"Analyzer: Exception updating alert {alert.ToString()}, errored with the message {ex.ToString()}", 743575, false);
                     __instance.activeAlerts.RemoveAt(l);
                 }
 

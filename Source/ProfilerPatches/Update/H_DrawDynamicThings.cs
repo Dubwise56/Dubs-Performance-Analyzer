@@ -69,7 +69,7 @@ namespace DubsAnalyzer
                                         name = thing.GetType().Name;
                                     }
 
-                                    Analyzer.Start(name, Namer, thing.GetType(), thing.def, null, __originalMethod as MethodInfo);
+                                    Analyzer.Start(name, Namer, thing.GetType(), thing.def, null, __originalMethod);
                                     thing.Draw();
                                     Analyzer.Stop(name);
                                 }

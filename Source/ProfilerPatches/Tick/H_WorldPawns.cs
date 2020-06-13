@@ -45,45 +45,46 @@ namespace DubsAnalyzer
                 try
                 {
                     var picard = components[i].GetType().Name;
-                    Analyzer.Start(picard, null, null, null, null, __originalMethod as MethodInfo);
+                    var prof = Analyzer.Start(picard, null, null, null, null, __originalMethod);
                     components[i].WorldComponentTick();
-                    Analyzer.Stop(picard);
+                    prof.Stop();
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex.ToString());
+                    Log.Error($"Analyzer: Errored in world component tick with the exception: {ex.ToString()}");
                 }
             }
             return false;
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static void Start(object __instance, MethodBase __originalMethod, ref string __state)
+        public static void Start(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
             if (!Active) return;
 
+            var state = string.Empty;
             if (__instance != null)
             {
-                __state = __instance.GetType().Name;
+                state = __instance.GetType().Name;
             }
             else if (__originalMethod.ReflectedType != null)
             {
-                __state = __originalMethod.ReflectedType.Name;
+                state = __originalMethod.ReflectedType.Name;
             }
             else
             {
-                __state = __originalMethod.GetType().Name;
+                state = __originalMethod.GetType().Name;
             }
 
-            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Stop(string __state)
+        public static void Stop(Profiler __state)
         {
-            if (Active && !string.IsNullOrEmpty(__state))
+            if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
     }

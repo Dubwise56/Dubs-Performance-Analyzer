@@ -668,7 +668,7 @@ namespace DubsAnalyzer
                         {
                             if (log.Meth != null)
                             {
-                                List<FloatMenuOption> options = RightClickDropDown(log.Meth).ToList();
+                                List<FloatMenuOption> options = RightClickDropDown(log.Meth as MethodInfo).ToList();
                                 Find.WindowStack.Add(new FloatMenu(options));
                             }
                             else
@@ -1016,7 +1016,7 @@ namespace DubsAnalyzer
                 private static string totalBytesStr;
                 public static int Entries = 0;
 
-                private static bool ShowMemory = false;
+                //private static bool ShowMemory = false;
 
                 public Graph(AdditionalInfo super)
                 {
@@ -1129,7 +1129,7 @@ namespace DubsAnalyzer
                     if (max > WindowMax)
                         WindowMax = (float)max;
 
-                    bool DoHover = false;
+                    //bool DoHover = false;
 
                     for (var i = 0; i < entries; i++)
                     {
@@ -1145,7 +1145,7 @@ namespace DubsAnalyzer
                             var relevantArea = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
                             if (Mouse.IsOver(relevantArea))
                             {
-                                DoHover = true;
+                                //DoHover = true;
                                 if (i != hoverVal)
                                 {
                                     hoverVal = i;

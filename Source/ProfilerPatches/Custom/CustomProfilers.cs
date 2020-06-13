@@ -25,31 +25,31 @@ namespace DubsAnalyzer
             }
         }
 
-        public static void Prefix(object __instance, MethodBase __originalMethod, ref string __state)
+        public static void Prefix(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
             if (!Active)
             {
                 return;
             }
-            __state = string.Empty;
+            var state = string.Empty;
             if (__instance != null)
             {
-                __state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
+                state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
             }
             else
             if (__originalMethod.ReflectedType != null)
             {
-                __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
+                state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
 
-            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
-        public static void Postfix(string __state)
+        public static void Postfix(Profiler __state)
         {
             if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
     }
@@ -81,32 +81,32 @@ namespace DubsAnalyzer
             PatchUtils.PatchAssembly(strde, pre, post);
         }
 
-        public static void Prefix(object __instance, MethodBase __originalMethod, ref string __state)
+        public static void Prefix(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
 
             if (!Active)
             {
                 return;
             }
-            __state = string.Empty;
+            var state = string.Empty;
             if (__instance != null)
             {
-                __state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
+                state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
             }
             else
             if (__originalMethod.ReflectedType != null)
             {
-                __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
+                state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
 
-            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
-        public static void Postfix(string __state)
+        public static void Postfix(Profiler __state)
         {
             if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
     }
@@ -132,32 +132,32 @@ namespace DubsAnalyzer
             }
         }
 
-        public static void Prefix(object __instance, MethodBase __originalMethod, ref string __state)
+        public static void Prefix(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
 
             if (!Active)
             {
                 return;
             }
-            __state = string.Empty;
+            var state = string.Empty;
             if (__instance != null)
             {
-                __state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
+                state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
             }
             else
             if (__originalMethod.ReflectedType != null)
             {
-                __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
+                state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
 
-            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
-        public static void Postfix(string __state)
+        public static void Postfix(Profiler __state)
         {
             if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
     }

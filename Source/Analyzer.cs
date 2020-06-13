@@ -3,6 +3,7 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -212,25 +213,27 @@ namespace DubsAnalyzer
             }
         }
 
-        public static void HotStart(string key, UpdateMode mode)
-        {
-            if (AnalyzerState.CurrentTab?.mode == mode)
-                Start(key);
-        }
+        //public static void HotStart(string key, UpdateMode mode)
+        //{
+        //    if (AnalyzerState.CurrentTab?.mode == mode)
+        //        Start(key);
+        //}
 
-        public static void HotStop(string key, UpdateMode mode)
-        {
-            if (AnalyzerState.CurrentTab?.mode == mode)
-                Stop(key);
-        }
+        //public static void HotStop(string key, UpdateMode mode)
+        //{
+        //    if (AnalyzerState.CurrentTab?.mode == mode)
+        //        Stop(key);
+        //}
 
-        public static void Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodInfo meth = null)
+        public static Profiler Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodBase meth = null)
         {
-            if (!AnalyzerState.CurrentlyRunning) return;
+            if (!AnalyzerState.CurrentlyRunning) return null;
 
             try
             {
-                AnalyzerState.CurrentProfiles[key].Start();
+                var prof = AnalyzerState.CurrentProfiles[key];
+                prof.Start();
+                return prof;
             }
             catch (Exception)
             {
@@ -241,20 +244,17 @@ namespace DubsAnalyzer
                     else
                         AnalyzerState.CurrentProfiles[key] = new Profiler(key, key, type, def, thing, meth);
                 }
-                AnalyzerState.CurrentProfiles[key].Start();
+                var prof = AnalyzerState.CurrentProfiles[key];
+                prof.Start();
+                return prof;
             }
         }
 
         public static void Stop(string key)
         {
-            if (!AnalyzerState.CurrentlyRunning) return;
-
             try
             {
-                if (LogOpen && Dialog_Analyzer.AdditionalInfo.Graph.key == key)
-                    AnalyzerState.CurrentProfiles[key].Stop(true);
-                else
-                    AnalyzerState.CurrentProfiles[key].Stop(false);
+                AnalyzerState.CurrentProfiles[key].Stop();
             }
             catch (Exception) { }
         }
@@ -326,7 +326,7 @@ namespace DubsAnalyzer
                     }
                 });
 
-                foreach(var val in removes)
+                foreach (var val in removes)
                     AnalyzerState.RemoveTab(val);
             }
 

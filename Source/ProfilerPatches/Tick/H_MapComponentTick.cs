@@ -8,34 +8,33 @@ using Verse.AI.Group;
 namespace DubsAnalyzer
 {
     [ProfileMode("MapComponentTick", UpdateMode.Tick)]
-   // [HarmonyPatch(typeof(MapComponentUtility), nameof(MapComponentUtility.MapComponentTick))]
     internal class H_MapComponentTick
     {
         public static bool Active = false;
 
         [HarmonyPriority(Priority.Last)]
-        public static void Start(object __instance, MethodBase __originalMethod, ref string __state)
+        public static void Start(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
             if (!Active || !AnalyzerState.CurrentlyRunning) return;
-            __state = string.Empty;
+            var state = string.Empty;
             if (__instance != null)
             {
-                __state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
+                state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
             }
             else
             if (__originalMethod.ReflectedType != null)
             {
-                __state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
+                state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-            Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Stop(string __state)
+        public static void Stop(Profiler __state)
         {
-            if (Active && !string.IsNullOrEmpty(__state))
+            if (Active)
             {
-                Analyzer.Stop(__state);
+                __state.Stop();
             }
         }
 
@@ -83,9 +82,9 @@ namespace DubsAnalyzer
                 {
                     var comp = components[i];
 
-                    Analyzer.Start(comp.GetType().FullName, () => $"{comp.GetType()}", null, null, null, __originalMethod as MethodInfo);
+                    var prof = Analyzer.Start(comp.GetType().FullName, () => $"{comp.GetType()}", null, null, null, __originalMethod);
                     comp.MapComponentTick();
-                    Analyzer.Stop(comp.GetType().FullName);
+                    prof.Stop();
                 }
                 catch (Exception ex)
                 {

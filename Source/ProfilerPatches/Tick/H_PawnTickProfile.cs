@@ -47,19 +47,19 @@ namespace DubsAnalyzer
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static void Start(MethodInfo __originalMethod, ref string __state)
+        public static void Start(MethodInfo __originalMethod, ref Profiler __state)
         {
             if (Active)
             {
-                __state = __originalMethod.Name;
-                Analyzer.Start(__state, null, null, null, null, __originalMethod as MethodInfo);
+                __state = Analyzer.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
             }
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static void Stop(string __state)
+        public static void Stop(Profiler __state)
         {
-            if (Active) Analyzer.Stop(__state);
+            if (Active) 
+                __state.Stop();
         }
     }
 }
