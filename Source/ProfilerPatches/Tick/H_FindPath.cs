@@ -43,44 +43,40 @@ namespace DubsAnalyzer
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static void Start(MethodBase __originalMethod, ref string __state)
+        public static void Start(MethodBase __originalMethod, ref Profiler __state)
         {
             if (p.Active && pathing)
             {
-                {
-                    __state = __originalMethod.Name;
-                    p.Start(__state, __originalMethod);
-                }
+                __state = p.Start(__originalMethod.Name, __originalMethod);
             }
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Stop(string __state)
+        public static void Stop(Profiler __state)
         {
             if (p.Active && pathing)
             {
-                p.Stop(__state);
+                __state?.Stop();
             }
         }
 
         [HarmonyPriority(Priority.First)]
-        public static void Prefix(MethodBase __originalMethod, ref string __state)
+        public static void Prefix(MethodBase __originalMethod, ref Profiler __state)
         {
             if (p.Active)
             {
-                __state = "PathFinder.FindPath";
-                p.Start(__state, __originalMethod);
+                __state = p.Start("PathFinder.FindPath", __originalMethod);
                 pathing = true;
             }
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static void Postfix(string __state)
+        public static void Postfix(Profiler __state)
         {
             if (p.Active)
             {
                 pathing = false;
-                p.Stop(__state);
+                __state?.Stop();
             }
         }
     }

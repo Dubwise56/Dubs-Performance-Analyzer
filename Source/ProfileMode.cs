@@ -82,15 +82,19 @@ namespace DubsAnalyzer
         {
             if (Active) Analyzer.Start(key);
         }
-        public void Start(string key, MethodBase info)
+        public Profiler Start(string key, MethodBase info)
         {
-            if (Active) Analyzer.Start(key, null, null, null, null, info);
+            if (Active)
+            {
+                return Analyzer.Start(key, null, null, null, null, info);
+            }
+            return null;
         }
 
-        public void Stop(string key)
-        {
-            if (Active) Analyzer.Stop(key);
-        }
+        //public void Stop(string key)
+        //{
+        //    //if (Active) Analyzer.Stop(key);
+        //}
         public void ProfilePatch()
         {
             if (Patchinator == null)

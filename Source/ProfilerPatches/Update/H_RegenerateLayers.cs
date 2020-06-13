@@ -12,7 +12,7 @@ namespace DubsAnalyzer
         public static ProfileMode p = ProfileMode.Create("Sections", UpdateMode.Update);
 
         public static bool Active = false;
-        public static bool Prefix(MethodBase __originalMethod, Section __instance, MapMeshFlag changeType, ref string __state)
+        public static bool Prefix(MethodBase __originalMethod, Section __instance, MapMeshFlag changeType)
         {
             if (p.Active)
             {
@@ -23,10 +23,9 @@ namespace DubsAnalyzer
                     {
                         try
                         {
-                            __state = __instance.layers[i].GetType().FullName;
-                            p.Start(__state, __originalMethod);
+                            var prof = p.Start(__instance.layers[i].GetType().FullName, __originalMethod);
                             sectionLayer.Regenerate();
-                            p.Stop(__state);
+                            prof.Stop();
                         }
                         catch (Exception ex)
                         {
@@ -46,14 +45,6 @@ namespace DubsAnalyzer
 
             return true;
         }
-
-        //public static void Postfix(string __state)
-        //{
-        //    if (Active)
-        //    {
-        //        Analyzer.Stop(__state);
-        //    }
-        //}
     }
 
     // [ProfileMode("MapDrawer", UpdateMode.Update)]

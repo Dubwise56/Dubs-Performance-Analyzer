@@ -24,7 +24,7 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                Analyzer.Start(__instance.pawn.GetHashCode().ToString(), () => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}", null, null, null, __originalMethod);
+                __state = Analyzer.Start(__instance.pawn.GetHashCode().ToString(), () => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}", null, null, null, __originalMethod);
             }
         }
 
