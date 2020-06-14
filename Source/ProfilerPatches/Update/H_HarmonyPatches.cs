@@ -114,8 +114,6 @@ namespace DubsAnalyzer
         /* The idea here is a little convoluted, but in short
          * 1. Grab the 'original' instructions of the method, and grab all the 'Call'/'CallVirt' instructions
          * 2. Grab all the 'Call'/'CallVirt' instructions in the modified version
-         * 3. Do a comparison of these, any added (existing only in the modified version) instructions -> move to list of 'to profile' calls
-         * 4. For all of these 'to profile' calls, supplant the method with a profiling method, akin to what is done for Internal Profiling
          */
 
         public static IEnumerable<CodeInstruction> Transpiler(MethodBase __originalMethod, IEnumerable<CodeInstruction> instructions, ILGenerator ilGen)
@@ -123,8 +121,7 @@ namespace DubsAnalyzer
             var inst = PatchProcessor.GetOriginalInstructions(__originalMethod);
             var modInstList = instructions.ToList();
 
-            var origCalls = inst.Where(i => InternalMethodUtility.IsFunctionCall(i.opcode));
-            var modCalls = modInstList.Where(i => InternalMethodUtility.IsFunctionCall(i.opcode));
+
 
             return instructions;
         }
@@ -149,7 +146,7 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                __state.Stop();
+                __state?.Stop();
             }
         }
     }
@@ -257,11 +254,10 @@ namespace DubsAnalyzer
         [HarmonyPriority(Priority.First)]
         public static void Postfix(Profiler __state)
         {
-
             if (Active)
             {
                 __state?.Stop();
-            } 
+            }
         }
     }
 }

@@ -63,7 +63,7 @@ namespace DubsAnalyzer
 
 
             CreatePrefix(tb, active);
-            CreatePostfix(tb);
+            CreatePostfix(tb, active);
 
             CreateProfilePatch(name, tb);
 
@@ -167,7 +167,7 @@ namespace DubsAnalyzer
             generator.Emit(OpCodes.Ret);
         }
 
-        private static void CreatePostfix(TypeBuilder tb)
+        private static void CreatePostfix(TypeBuilder tb, FieldBuilder active)
         {
             var end = AccessTools.Method(typeof(Profiler), "Stop");
 
@@ -180,9 +180,18 @@ namespace DubsAnalyzer
             postfix.DefineParameter(1, ParameterAttributes.None, "__state");
 
             var generator = postfix.GetILGenerator();
+            var skipLabel = generator.DefineLabel();
+
+            generator.Emit(OpCodes.Ldsfld, active);
+            generator.Emit(OpCodes.Brfalse_S, skipLabel);
+
+            generator.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(AnalyzerState), "CurrentlyRunning"));
+            generator.Emit(OpCodes.Brfalse_S, skipLabel);
 
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Call, end);
+
+            generator.MarkLabel(skipLabel);
             generator.Emit(OpCodes.Ret);
         }
 

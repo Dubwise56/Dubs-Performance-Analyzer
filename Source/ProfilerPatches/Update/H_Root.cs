@@ -54,7 +54,7 @@ namespace DubsAnalyzer
         public static void Stop(Profiler __state)
         {
             if (Active) 
-                __state.Stop();
+                __state?.Stop();
         }
     }
 }

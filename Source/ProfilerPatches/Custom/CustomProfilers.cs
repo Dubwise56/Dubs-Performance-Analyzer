@@ -25,6 +25,7 @@ namespace DubsAnalyzer
             }
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static void Prefix(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
             if (!Active)
@@ -45,6 +46,7 @@ namespace DubsAnalyzer
             __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(Profiler __state)
         {
             if (Active)
@@ -81,6 +83,7 @@ namespace DubsAnalyzer
             PatchUtils.PatchAssembly(strde, pre, post);
         }
 
+        [HarmonyPriority(Priority.Last)]
         public static void Prefix(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
 
@@ -102,6 +105,7 @@ namespace DubsAnalyzer
             __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(Profiler __state)
         {
             if (Active)
@@ -132,6 +136,8 @@ namespace DubsAnalyzer
             }
         }
 
+
+        [HarmonyPriority(Priority.Last)]
         public static void Prefix(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
 
@@ -153,6 +159,7 @@ namespace DubsAnalyzer
             __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
+        [HarmonyPriority(Priority.First)]
         public static void Postfix(Profiler __state)
         {
             if (Active)

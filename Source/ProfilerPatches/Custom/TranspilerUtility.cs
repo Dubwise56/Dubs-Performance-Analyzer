@@ -10,8 +10,8 @@ namespace DubsAnalyzer
 {
     public struct TargetCode
     {
-        List<CodeInstruction> instructionsToMatch;
-        List<int> occurences;
+        //List<CodeInstruction> instructionsToMatch;
+        //List<int> occurences;
     }
 
     public class TranspilerUtility
