@@ -12,17 +12,24 @@ namespace DubsAnalyzer
     {
         public static void Swapclasses()
         {
-            if (Analyzer.Settings.MeshOnlyBuildings)
+            try
+            { 
+                if (Analyzer.Settings.MeshOnlyBuildings)
+                {
+                    DefDatabase<ThingDef>.GetNamed("PowerConduit").drawerType = DrawerType.MapMeshOnly;
+                    DefDatabase<ThingDef>.GetNamed("WaterproofConduit").drawerType = DrawerType.MapMeshOnly;
+                    DefDatabase<ThingDef>.GetNamed("Wall").drawerType = DrawerType.MapMeshOnly;
+                }
+                else
+                {
+                    DefDatabase<ThingDef>.GetNamed("PowerConduit").drawerType = DrawerType.MapMeshAndRealTime;
+                    DefDatabase<ThingDef>.GetNamed("WaterproofConduit").drawerType = DrawerType.MapMeshAndRealTime;
+                    DefDatabase<ThingDef>.GetNamed("Wall").drawerType = DrawerType.MapMeshAndRealTime;
+                }
+            } catch(Exception)
             {
-                DefDatabase<ThingDef>.GetNamed("PowerConduit").drawerType = DrawerType.MapMeshOnly;
-                DefDatabase<ThingDef>.GetNamed("WaterproofConduit").drawerType = DrawerType.MapMeshOnly;
-                DefDatabase<ThingDef>.GetNamed("Wall").drawerType = DrawerType.MapMeshOnly;
-            }
-            else
-            {
-                DefDatabase<ThingDef>.GetNamed("PowerConduit").drawerType = DrawerType.MapMeshAndRealTime;
-                DefDatabase<ThingDef>.GetNamed("WaterproofConduit").drawerType = DrawerType.MapMeshAndRealTime;
-                DefDatabase<ThingDef>.GetNamed("Wall").drawerType = DrawerType.MapMeshAndRealTime;
+                Log.Warning("Analyzer: Optimise Walls and Conduits active, yet a mod is destructively removing/renaming base game defs, nullifying any impact");
+                return;
             }
 
             if (Find.Maps == null)

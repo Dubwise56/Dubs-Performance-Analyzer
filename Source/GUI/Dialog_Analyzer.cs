@@ -50,7 +50,7 @@ namespace DubsAnalyzer
             base.PreOpen();
             Reboot();
 
-            if(cachedWidth != -1)
+            if (cachedWidth != -1)
                 windowRect.width = cachedWidth;
         }
 
@@ -142,6 +142,14 @@ namespace DubsAnalyzer
             Analyzer.Reset();
             Analyzer.Settings.Write();
 
+            foreach (var tab in AnalyzerState.SideTabCategories)
+            {
+                foreach (var mode in tab.Modes)
+                {
+                    mode.Key.SetActive(false);
+                }
+            }
+
             // we add new functionality
             if (AnalyzerState.CanCleanup())
             {
@@ -149,13 +157,7 @@ namespace DubsAnalyzer
                 CleanupPatches.Start();
             }
 
-            foreach(var tab in AnalyzerState.SideTabCategories)
-            {
-                foreach(var mode in tab.Modes)
-                {
-                    mode.Key.Active = false;
-                }
-            }
+
         }
 
         public Dialog_Analyzer()
@@ -545,6 +547,10 @@ namespace DubsAnalyzer
             public static float ListHeight = 999999999;
             public static float width = 630f;
 
+
+            public static string TipCache = "";
+            public static string TipLabel = "";
+
             public Logs(Dialog_Analyzer super)
             {
                 this.super = super;
@@ -633,118 +639,163 @@ namespace DubsAnalyzer
 
                 Rect visible = listing.GetRect(boxHeight);
 
-                if (visible.Overlaps(GizmoListRect))
+                if (!visible.Overlaps(GizmoListRect)) // if we don't overlap, continue, but continue to adjust for further logs.
                 {
-                    var profile = AnalyzerState.GetProfile(log.Key);
+                    listing.GapLine(0f);
+                    currentListHeight += 4f;
+                    currentListHeight += visible.height;
 
-                    if (Input.GetKey(KeyCode.LeftControl))
+                    return;
+                }
+
+                var profile = AnalyzerState.GetProfile(log.Key);
+
+                bool on = true;
+
+                if (AnalyzerState.CurrentTab.Selected != null)
+                {
+                    on = (bool)AnalyzerState.CurrentTab.Selected.Invoke(null, new object[] { profile, log });
+                }
+
+                if (AnalyzerState.CurrentTab.Checkbox != null)
+                {
+                    var checkboxRect = new Rect(visible.x, visible.y, 25f, visible.height);
+                    visible.x += 25f;
+                    if (DubGUI.Checkbox(checkboxRect, "", ref on))
                     {
-                        if (Widgets.ButtonInvisible(visible))
-                        {
-                            AnalyzerState.CurrentTab.Clicked?.Invoke(null, new object[] { profile, log });
-                            Analyzer.Settings.Write();
-                        }
-                    }
-
-                    bool on = true;
-
-                    if (AnalyzerState.CurrentTab.Selected != null)
-                        on = (bool)AnalyzerState.CurrentTab.Selected.Invoke(null, new object[] { profile, log });
-
-                    if (AnalyzerState.CurrentTab.Checkbox != null)
-                    {
-                        var checkboxRect = new Rect(visible.x, visible.y, 25f, visible.height);
-                        visible.x += 25f;
-                        if (DubGUI.Checkbox(checkboxRect, "", ref on))
-                        {
-                            AnalyzerState.CurrentTab.Checkbox?.Invoke(null, new object[] { profile, log });
-                            Analyzer.Settings.Write();
-                        }
-                    }
-
-                    Widgets.DrawHighlightIfMouseover(visible);
-
-                    if (Widgets.ButtonInvisible(visible))
-                    {
-                        AdditionalInfo.Graph.RunKey(log.Key);
-                        AnalyzerState.CurrentProfileKey = log.Key;
-                        AnalyzerState.CurrentLog = log;
-                        StackTraceRegex.Reset();
-                    }
-
-                    if (AnalyzerState.CurrentProfileKey == log.Key)
-                    {
-                        Widgets.DrawHighlightSelected(visible);
-                        AnalyzerState.CurrentLog = log; // because we create new ones, instead of recycle the same log, we need to update the ref.
-                    }
-
-                    if (Mouse.IsOver(visible))
-                        AnalyzerState.CurrentTab.MouseOver?.Invoke(null, new object[] { visible, profile, log });
-
-                    if (Input.GetMouseButtonDown(1)) // mouse button right
-                    {
-                        if (visible.Contains(Event.current.mousePosition))
-                        {
-                            if (log.Meth != null)
-                            {
-                                List<FloatMenuOption> options = RightClickDropDown(log.Meth as MethodInfo).ToList();
-                                Find.WindowStack.Add(new FloatMenu(options));
-                            }
-                            else
-                            {
-                                try
-                                {
-                                    var methnames = PatchUtils.GetSplitString(log.Key);
-                                    foreach (var n in methnames)
-                                    {
-                                        var meth = AccessTools.Method(n);
-                                        List<FloatMenuOption> options = RightClickDropDown(meth).ToList();
-                                        Find.WindowStack.Add(new FloatMenu(options));
-                                    }
-                                }
-                                catch (Exception) { }
-                            }
-                        }
-                    }
-
-
-                    var color = DubResources.grey;
-                    if (log.Percent > 0.25f)
-                        color = DubResources.blue;
-                    else if (log.Percent > 0.75f)
-                        color = DubResources.red;
-
-                    Widgets.FillableBar(visible.BottomPartPixels(8f), log.Percent, color, DubResources.clear, false);
-
-                    visible = visible.LeftPartPixels(60);
-
-                    if (!on)
-                        GUI.color = Color.grey;
-
-                    Widgets.Label(visible, $" {log.Max:0.000}ms");
-
-                    visible.x = visible.xMax + 15;
-
-                    visible.width = 2000;
-                    Widgets.Label(visible, log.Label);
-
-                    GUI.color = Color.white;
-
-                    if (save)
-                    {
-                        foreach (var historyTime in profile.History.times)
-                        {
-                            csv.Append($",{historyTime}");
-                        }
-                        csv.AppendLine();
+                        AnalyzerState.CurrentTab.Checkbox?.Invoke(null, new object[] { profile, log });
+                        Analyzer.Settings.Write();
                     }
                 }
+
+                Widgets.DrawHighlightIfMouseover(visible);
+
+
+                if (AnalyzerState.CurrentProfileKey == log.Key)
+                {
+                    Widgets.DrawHighlightSelected(visible);
+                    AnalyzerState.CurrentLog = log; // because we create new ones, instead of recycle the same log, we need to update the ref.
+                }
+
+                // onhover tooltip
+                if (Mouse.IsOver(visible))
+                    DrawHover(log, visible);
+
+                // onclick work, left click view stats, right click internal patch, ctrl + left click unpatch
+                if (Widgets.ButtonInvisible(visible))
+                    ClickWork(log, profile);
+
+                // draw the bar
+                {
+                    var color = DubResources.grey;
+
+                    if (log.Percent > 0.25f) color = DubResources.blue;
+                    else if (log.Percent > 0.75f) color = DubResources.red;
+
+                    Widgets.FillableBar(visible.BottomPartPixels(8f), log.Percent, color, DubResources.clear, false);
+                }
+                visible = visible.LeftPartPixels(60);
+
+
+                if (!on)
+                    GUI.color = Color.grey;
+
+                Widgets.Label(visible, $" {log.Max:0.000}ms");
+
+                visible.x = visible.xMax + 15;
+
+                visible.width = 2000;
+                Widgets.Label(visible, log.Label);
+
+                GUI.color = Color.white;
+
+                if (save)
+                {
+                    foreach (var historyTime in profile.History.times)
+                    {
+                        csv.Append($",{historyTime}");
+                    }
+                    csv.AppendLine();
+                }
+
 
                 listing.GapLine(0f);
                 currentListHeight += 4f;
                 currentListHeight += visible.height;
             }
 
+            public static void DrawHover(ProfileLog log, Rect visible)
+            {
+                if (log.Meth != null)
+                {
+                    if (log.Label != TipLabel)
+                    {
+                        TipLabel = log.Label;
+                        StringBuilder builder = new StringBuilder();
+                        var patches = Harmony.GetPatchInfo(log.Meth);
+                        foreach (var patch in patches.Prefixes) GetString("Prefix", patch);
+                        foreach (var patch in patches.Postfixes) GetString("Postfix", patch);
+                        foreach (var patch in patches.Transpilers) GetString("Transpiler", patch);
+                        foreach (var patch in patches.Finalizers) GetString("Finalizer", patch);
+
+                        void GetString(string type, Patch patch)
+                        {
+                            if (patch.owner != Analyzer.harmony.Id && patch.owner != Analyzer.perfharmony.Id && patch.owner != InternalMethodUtility.Harmony.Id)
+                            {
+                                var ass = patch.PatchMethod.DeclaringType.Assembly.FullName;
+                                var assname = AnalyzerCache.AssemblyToModname[ass];
+
+                                if (Analyzer.Settings.AdvancedMode)
+                                    builder.AppendLine($"{type} from {assname} with the index {patch.index} and the priority {patch.priority}\n");
+                                else
+                                    builder.AppendLine($"{type} from {assname}\n");
+                            }
+                        }
+                        TipCache = builder.ToString();
+                    }
+                    TooltipHandler.TipRegion(visible, TipCache);
+                }
+            }
+            public static void ClickWork(ProfileLog log, Profiler profile)
+            {
+                if (Event.current.button == 0) // left click
+                {
+                    if (Input.GetKey(KeyCode.LeftControl))
+                    {
+                        AnalyzerState.CurrentTab.Clicked?.Invoke(null, new object[] { profile, log });
+                        Analyzer.Settings.Write();
+                    }
+                    else
+                    {
+                        AdditionalInfo.Graph.RunKey(log.Key);
+                        AnalyzerState.CurrentProfileKey = log.Key;
+                        AnalyzerState.CurrentLog = log;
+                        StackTraceRegex.Reset();
+                    }
+                }
+                else if (Event.current.button == 1) // right click
+                {
+                    if (log.Meth != null)
+                    {
+                        List<FloatMenuOption> options = RightClickDropDown(log.Meth as MethodInfo).ToList();
+                        Find.WindowStack.Add(new FloatMenu(options));
+                    }
+                    else
+                    {
+                        try
+                        {
+                            var methnames = PatchUtils.GetSplitString(log.Key);
+                            foreach (var n in methnames)
+                            {
+                                var meth = AccessTools.Method(n);
+                                List<FloatMenuOption> options = RightClickDropDown(meth).ToList();
+                                Find.WindowStack.Add(new FloatMenu(options));
+                            }
+                        }
+                        catch (Exception) { }
+                    }
+                }
+            }
             private static IEnumerable<FloatMenuOption> RightClickDropDown(MethodInfo meth)
             {
                 if (Analyzer.Settings.AdvancedMode)
@@ -848,7 +899,6 @@ namespace DubsAnalyzer
                 graph.Draw(GraphBox);
             }
 
-
             private void DrawGeneralSidePanel()
             {
                 DubGUI.Heading(listing, "General");
@@ -868,7 +918,7 @@ namespace DubsAnalyzer
                     {
                         try
                         {
-                            assname = AnalyzerCache.AssemblyToModname.Where((val) => val.Item1 == ass).First().Item2;
+                            assname = AnalyzerCache.AssemblyToModname[ass];
                         }
                         catch (Exception) { assname = "Failed to locate assembly information"; }
                     }
@@ -885,6 +935,10 @@ namespace DubsAnalyzer
                     Widgets.DrawLineVertical(listing.ColumnWidth / 2, listing.curY, 6f);
                     GUI.color = color;
 
+                    if (Widgets.ButtonText(listing.GetRect(40).RightPartPixels(80), "Github Search", false, true))
+                    {
+                        Application.OpenURL(@"https://github.com/search?l=C%23&q=" + $"{AnalyzerState.CurrentProfiler().meth.DeclaringType}.{AnalyzerState.CurrentProfiler().meth.Name}" + "&type=Code");
+                    }
                 }
                 else
                 {

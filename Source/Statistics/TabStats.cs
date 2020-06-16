@@ -81,7 +81,7 @@ namespace DubsAnalyzer
             }
 
             // get our top LogsPerGraph
-            sums.SortStable(null);
+            Array.Sort(sums);
 
             IsActiveThread = false;
         }

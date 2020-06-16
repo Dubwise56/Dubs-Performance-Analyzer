@@ -8,6 +8,6 @@ namespace DubsAnalyzer
 {
     public static class AnalyzerCache
     {
-        public static List<Tuple<string, string>> AssemblyToModname = new List<Tuple<string, string>>();
+        public static Dictionary<string, string> AssemblyToModname = new Dictionary<string, string>();
     }
 }

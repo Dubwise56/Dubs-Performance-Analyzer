@@ -121,7 +121,8 @@ namespace DubsAnalyzer
             var inst = PatchProcessor.GetOriginalInstructions(__originalMethod);
             var modInstList = instructions.ToList();
 
-
+            var origCalls = inst.Where(i => InternalMethodUtility.IsFunctionCall(i.opcode)).ToList();
+            var modCalls = modInstList.Where(i => InternalMethodUtility.IsFunctionCall(i.opcode)).ToList();
 
             return instructions;
         }

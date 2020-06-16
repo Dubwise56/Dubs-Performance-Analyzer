@@ -175,7 +175,7 @@ namespace DubsAnalyzer
             "Postfix",
             MethodAttributes.Public | MethodAttributes.Static,
             null,
-            new Type[] { typeof(string) });
+            new Type[] { typeof(Profiler) });
 
             postfix.DefineParameter(1, ParameterAttributes.None, "__state");
 

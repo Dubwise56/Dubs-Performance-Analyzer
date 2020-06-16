@@ -84,10 +84,14 @@ namespace DubsAnalyzer
             foreach (var mod in LoadedModManager.RunningMods)
             {
                 foreach (var ass in mod.assemblies.loadedAssemblies)
-                    AnalyzerCache.AssemblyToModname.Add(new Tuple<string, string>(ass.FullName, mod.Name));
+                    try
+                    {
+                        AnalyzerCache.AssemblyToModname.Add(ass.FullName, mod.Name);
+                    }catch(Exception)
+                    {
+                        // we do this so if there are duplicated assemblies, we don't have duplicated keys(unnecessary complexity)
+                    }
             }
-
-            // Waiting on ProfilerPatches/ModderDefined.cs
 
             foreach (var dir in ModLister.AllActiveModDirs)
             {
@@ -101,9 +105,9 @@ namespace DubsAnalyzer
                 }
             }
 
-            if (Analyzer.methods.Count != 0)
+            if (methods.Count != 0)
             {
-                foreach (var m in Analyzer.methods)
+                foreach (var m in methods)
                 {
                     Type myType = DynamicTypeBuilder.CreateType(m.Key, m.Value);
 
