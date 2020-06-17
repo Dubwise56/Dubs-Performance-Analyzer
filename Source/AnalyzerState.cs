@@ -102,9 +102,9 @@ namespace DubsAnalyzer
                 types.Add(tabName);
             }
 
-            foreach (var profileTab in AnalyzerState.SideTabCategories)
+            foreach (var profileTab in SideTabCategories)
             {
-                if (profileTab.UpdateMode == AnalyzerState.CurrentTab?.mode)
+                if (profileTab.UpdateMode == UpdateMode.Update)
                 {
                     ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType, true);
                     mode.IsPatched = true;
@@ -113,12 +113,12 @@ namespace DubsAnalyzer
                 }
             }
 
-            SwapTab(tabName, CurrentTab.mode);
+            SwapTab(tabName, UpdateMode.Update);
         }
         
         public static void RemoveTab(KeyValuePair<ProfileMode, Type> tab)
         {
-            foreach(var profileTab in AnalyzerState.SideTabCategories)
+            foreach(var profileTab in SideTabCategories)
             {
                 var deletedTab = profileTab.Modes.Where(t => t.Key == tab.Key);
                 if (deletedTab == null || deletedTab.Count() == 0 || deletedTab.First().Key == null) continue;

@@ -42,6 +42,7 @@ namespace DubsAnalyzer
 
         private static Thread CleanupPatches = null;
         public static List<Action> QueuedMessages = new List<Action>();
+        public static object messageSync = new object();
 
         public static float cache = -1;
         public static float cachedWidth = -1;
@@ -188,23 +189,6 @@ namespace DubsAnalyzer
             windowRect = windowRect.Rounded();
         }
 
-        public static IEnumerable<MethodInfo> SearchFor()
-        {
-            foreach (var allType in GenTypes.AllTypes)
-            {
-                if (PerfAnalSettings.TypeSearch == string.Empty || allType.Name.Has(PerfAnalSettings.TypeSearch))
-                {
-                    foreach (var v in allType.GetMethods())
-                    {
-                        if (PerfAnalSettings.MethSearch == string.Empty || v.Name.Has(PerfAnalSettings.MethSearch))
-                        {
-                            yield return v;
-                        }
-                    }
-                }
-            }
-        }
-
         public override void DoWindowContents(Rect canvas)
         {
             if (Event.current.type == EventType.Layout) return;
@@ -307,10 +291,13 @@ namespace DubsAnalyzer
             }
 
             // Now we are outside the scope of all of our gui, lets print the messages we had queued during this time
-            foreach (var action in QueuedMessages)
-                action();
+            lock (messageSync)
+            {
+                foreach (var action in QueuedMessages)
+                    action();
 
-            QueuedMessages.Clear();
+                QueuedMessages.Clear();
+            }
         }
 
 
@@ -729,25 +716,29 @@ namespace DubsAnalyzer
                         TipLabel = log.Label;
                         StringBuilder builder = new StringBuilder();
                         var patches = Harmony.GetPatchInfo(log.Meth);
-                        foreach (var patch in patches.Prefixes) GetString("Prefix", patch);
-                        foreach (var patch in patches.Postfixes) GetString("Postfix", patch);
-                        foreach (var patch in patches.Transpilers) GetString("Transpiler", patch);
-                        foreach (var patch in patches.Finalizers) GetString("Finalizer", patch);
-
-                        void GetString(string type, Patch patch)
+                        if (patches != null)
                         {
-                            if (patch.owner != Analyzer.harmony.Id && patch.owner != Analyzer.perfharmony.Id && patch.owner != InternalMethodUtility.Harmony.Id)
-                            {
-                                var ass = patch.PatchMethod.DeclaringType.Assembly.FullName;
-                                var assname = AnalyzerCache.AssemblyToModname[ass];
+                            foreach (var patch in patches.Prefixes) GetString("Prefix", patch);
+                            foreach (var patch in patches.Postfixes) GetString("Postfix", patch);
+                            foreach (var patch in patches.Transpilers) GetString("Transpiler", patch);
+                            foreach (var patch in patches.Finalizers) GetString("Finalizer", patch);
 
-                                if (Analyzer.Settings.AdvancedMode)
-                                    builder.AppendLine($"{type} from {assname} with the index {patch.index} and the priority {patch.priority}\n");
-                                else
-                                    builder.AppendLine($"{type} from {assname}\n");
+                            void GetString(string type, Patch patch)
+                            {
+                                if (patch.owner != Analyzer.harmony.Id && patch.owner != Analyzer.perfharmony.Id && patch.owner != InternalMethodUtility.Harmony.Id)
+                                {
+                                    var ass = patch.PatchMethod.DeclaringType.Assembly.FullName;
+                                    var assname = AnalyzerCache.AssemblyToModname[ass];
+
+                                    if (Analyzer.Settings.AdvancedMode)
+                                        builder.AppendLine($"{type} from {assname} with the index {patch.index} and the priority {patch.priority}\n");
+                                    else
+                                        builder.AppendLine($"{type} from {assname}\n");
+                                }
                             }
+
+                            TipCache = builder.ToString();
                         }
-                        TipCache = builder.ToString();
                     }
                     TooltipHandler.TipRegion(visible, TipCache);
                 }

@@ -4,9 +4,6 @@ using HarmonyLib;
 using RimWorld;
 using Verse;
 
-namespace DubsAnalyzer
-{
-}
 
 namespace DubsAnalyzer
 {
@@ -16,7 +13,7 @@ namespace DubsAnalyzer
         public static bool Active = false;
 
         [Setting("By pawn")]
-        public static bool ByPawn=false;
+        public static bool ByPawn = false;
 
         public static void ProfilePatch()
         {

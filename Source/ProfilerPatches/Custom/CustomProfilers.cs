@@ -78,10 +78,6 @@ namespace DubsAnalyzer
             }
         }
 
-        public static void PatchAssembly(string strde)
-        {
-            PatchUtils.PatchAssembly(strde, pre, post);
-        }
 
         [HarmonyPriority(Priority.Last)]
         public static void Prefix(object __instance, MethodBase __originalMethod, ref Profiler __state)

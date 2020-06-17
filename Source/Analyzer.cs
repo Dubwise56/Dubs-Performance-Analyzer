@@ -83,14 +83,19 @@ namespace DubsAnalyzer
 
             foreach (var mod in LoadedModManager.RunningMods)
             {
+                if (mod.Name == this.Content.Name) continue;
+
                 foreach (var ass in mod.assemblies.loadedAssemblies)
+                {
                     try
                     {
                         AnalyzerCache.AssemblyToModname.Add(ass.FullName, mod.Name);
-                    }catch(Exception)
+                    }
+                    catch (Exception)
                     {
                         // we do this so if there are duplicated assemblies, we don't have duplicated keys(unnecessary complexity)
                     }
+                }
             }
 
             foreach (var dir in ModLister.AllActiveModDirs)

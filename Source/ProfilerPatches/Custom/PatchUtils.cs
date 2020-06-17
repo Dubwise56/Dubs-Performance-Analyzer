@@ -42,15 +42,24 @@ namespace DubsAnalyzer
 
         private static void Notify(string message)
         {
-            Dialog_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.PositiveEvent, false); });
+            lock (Dialog_Analyzer.messageSync)
+            {
+                Dialog_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.PositiveEvent, false); });
+            }
         }
         private static void Warn(string message)
         {
-            Dialog_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.CautionInput, false); });
+            lock (Dialog_Analyzer.messageSync)
+            {
+                Dialog_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.CautionInput, false); });
+            }
         }
         private static void Error(string message)
         {
-            Dialog_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.NegativeEvent, false); });
+            lock (Dialog_Analyzer.messageSync)
+            {
+                Dialog_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.NegativeEvent, false); });
+            }
         }
 
         private static bool GetMethod(string name, bool silence, out MethodInfo methodInfo)
@@ -481,7 +490,7 @@ namespace DubsAnalyzer
             InternalMethodUtility.curMeth = null;
         }
 
-        public static void PatchAssembly(string name, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        public static void PatchAssembly(string name, bool display = true)
         {
             var mod = LoadedModManager.RunningMods.FirstOrDefault(m => m.Name == name || m.PackageId == name.ToLower());
 
@@ -502,6 +511,10 @@ namespace DubsAnalyzer
 
             if (assembly != null && assembly.Count() != 0)
             {
+                AnalyzerState.MakeAndSwitchTab(mod.Name + "-prof");
+                var pre = new HarmonyMethod(AccessTools.TypeByName(mod.Name + "-prof").GetMethod("Prefix", BindingFlags.Public | BindingFlags.Static));
+                var post = new HarmonyMethod(AccessTools.TypeByName(mod.Name + "-prof").GetMethod("Postfix", BindingFlags.Public | BindingFlags.Static));
+
                 patchAssemblyThread = new Thread(() => PatchAssemblyFull(assembly.ToList(), pre, post, display));
                 patchAssemblyThread.Start();
             }

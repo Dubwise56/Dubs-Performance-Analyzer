@@ -48,6 +48,8 @@
   <input.type>Methods in Type</input.type>
   <input.methodharmony>Patches on a Method</input.methodharmony>
   <input.typeharmony>Patches on a Type</input.typeharmony>
+  <input.methodinternal>Method Internals</input.methodinternal>
+  <input.assembly>Assembly</input.assembly>
 
   <patch.type.tick>Tick</patch.type.tick>
   <patch.type.update>Update</patch.type.update>

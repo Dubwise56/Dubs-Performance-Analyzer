@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -22,8 +23,7 @@ namespace DubsAnalyzer
 
         public static string methToPatch = string.Empty;
 
-        private static float groaner = 9999999;
-        private static Vector2 scrolpos = Vector2.zero;
+
 
         public static List<MethodInfo> GotMeth = new List<MethodInfo>();
         public bool UnlockFramerate = false;
@@ -286,18 +286,22 @@ namespace DubsAnalyzer
 
         /* For Dev Tools */
 
-        public enum CurrentInput { Method, Type, MethodHarmony, TypeHarmony }
+        public enum CurrentInput { Method, Type, MethodHarmony, TypeHarmony, InternalMethod, Assembly }
         public enum UnPatchType { Method, MethodsOnMethod, Type, All }
-        public enum WIPType { Assembly, InternalMethod }
 
         public static CurrentInput input = CurrentInput.Method;
         public static UnPatchType unPatchType = UnPatchType.Method;
         public static UpdateMode patchType = UpdateMode.Update;
-        public static WIPType wipType = WIPType.Assembly;
 
         public static string currentInput = null;
         public static string currentUnPatch = null;
         public static string currentWIP = null;
+
+        public static HashSet<string> cachedEntries = new HashSet<string>();
+        public static bool curSearching = false;
+        public static Thread searchThread = null;
+        public static object sync = new object();
+        public static string prevInput = "";
 
         public void DrawDevOptions()
         {
@@ -305,14 +309,14 @@ namespace DubsAnalyzer
             DubGUI.Checkbox("SidePanel".Translate(), listing, ref SidePanel);
             DubGUI.Checkbox("TickPawnTog".Translate(), listing, ref H_PawnTick.TickPawns);
             DubGUI.Checkbox("DevMode".Translate(), listing, ref DevMode);
-            if(DevMode)
+            if (DevMode)
             {
                 DubGUI.InputField(listing.GetRect(Text.LineHeight), "Path to Dnspy.exe (including the exe)", ref PathToDnspy, ShowName: true);
             }
 
             listing.GapLine();
 
-            var left = listing.GetRect(Text.LineHeight * 9); // the average height of this is ~181, which is 8.2 * Text.LineHeight
+            var left = listing.GetRect(Text.LineHeight * 11); // the average height of this is ~226, which is 10.2 * Text.LineHeight
             var right = left.RightPart(0.48f);
             left = left.LeftPart(0.48f);
 
@@ -334,6 +338,8 @@ namespace DubsAnalyzer
             DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.type".Translate(), delegate { input = CurrentInput.Type; }, input == CurrentInput.Type);
             DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.methodharmony".Translate(), delegate { input = CurrentInput.MethodHarmony; }, input == CurrentInput.MethodHarmony);
             DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.typeharmony".Translate(), delegate { input = CurrentInput.TypeHarmony; }, input == CurrentInput.TypeHarmony);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.methodinternal".Translate(), delegate { input = CurrentInput.InternalMethod; }, input == CurrentInput.InternalMethod);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.assembly".Translate(), delegate { input = CurrentInput.Assembly; }, input == CurrentInput.Assembly);
             lListing.curY += 2;
 
             DisplayInputField(lListing);
@@ -344,7 +350,7 @@ namespace DubsAnalyzer
             DubGUI.OptionalBox(box.LeftPart(.3f), "patch.type.tick".Translate(), delegate { patchType = UpdateMode.Tick; }, patchType == UpdateMode.Tick);
             box = box.RightPart(.65f);
             DubGUI.OptionalBox(box.LeftPart(.4f), "patch.type.update".Translate(), delegate { patchType = UpdateMode.Update; }, patchType == UpdateMode.Update);
-            
+
             if (Widgets.ButtonText(box.RightPart(.5f), "patch".Translate()))
                 if (currentInput != null)
                     ExecutePatch();
@@ -361,10 +367,13 @@ namespace DubsAnalyzer
                 case CurrentInput.Type: FieldDescription = "Type"; break;
                 case CurrentInput.MethodHarmony: FieldDescription = "Type:Method"; break;
                 case CurrentInput.TypeHarmony: FieldDescription = "Type"; break;
+                case CurrentInput.InternalMethod: FieldDescription = "Type:Method"; break;
+                case CurrentInput.Assembly: FieldDescription = "Mod or PackageId"; break;
             }
 
             Rect inputBox = listing.GetRect(Text.LineHeight);
             DubGUI.InputField(inputBox, FieldDescription, ref currentInput, ShowName: true);
+            PopulateSearch(inputBox, currentInput, input);
         }
         public void ExecutePatch()
         {
@@ -393,6 +402,12 @@ namespace DubsAnalyzer
                 case CurrentInput.TypeHarmony:
                     CustomProfilersHarmony.PatchType(currentInput);
                     AnalyzerState.SwapTab("Custom Harmony", UpdateMode.Update);
+                    return;
+                case CurrentInput.InternalMethod:
+                    PatchUtils.PatchInternalMethod(currentInput);
+                    return;
+                case CurrentInput.Assembly:
+                    PatchUtils.PatchAssembly(currentInput, false);
                     return;
             }
         }
@@ -447,121 +462,124 @@ namespace DubsAnalyzer
         }
 
 
-
-
-
-
-
-        public static void TypesBox(Rect rect)
+        public static void PopulateSearch(Rect rect, string searchText, CurrentInput inputType)
         {
-            var speng = rect;
-            speng.height = 25f;
-            var glorph = speng.LeftPart(0.9f);
-            speng = speng.RightPart(0.1f);
-
-            var reod = false;
-            var old1 = TypeSearch;
-            TypeSearch = Widgets.TextField(glorph.LeftHalf(), TypeSearch);
-            if (old1 != TypeSearch)
+            bool active = false;
+            lock (sync)
             {
-                reod = true;
+                active = curSearching;
             }
 
-            var old2 = MethSearch;
-            MethSearch = Widgets.TextField(glorph.RightHalf(), MethSearch);
-            if (old2 != MethSearch)
+            if (!active && prevInput != currentInput)
             {
-                reod = true;
-            }
-
-            //if (Widgets.ButtonText(speng, "Search"))
-            //{
-
-            //}
-
-            if (reod && (TypeSearch.Length > 2 || MethSearch.Length > 2))
-            {
-                GotMeth = Dialog_Analyzer.SearchFor().ToList();
-            }
-
-
-            rect.y += 25f;
-            rect.height -= 25f;
-
-            var innyrek = rect.AtZero();
-            innyrek.width -= 32f;
-            innyrek.height = groaner;
-
-            Widgets.BeginScrollView(rect, ref scrolpos, innyrek);
-
-            GUI.BeginGroup(innyrek);
-
-            listing.Begin(innyrek);
-
-            float goat = 0;
-
-            Text.Anchor = TextAnchor.MiddleLeft;
-            Text.Font = GameFont.Tiny;
-
-            var coo = 0;
-            foreach (var meth in GotMeth)
-            {
-                coo++;
-                if (coo == 50)
+                switch (inputType)
                 {
-                    break;
+                    case CurrentInput.Method:
+                    case CurrentInput.InternalMethod:
+                    case CurrentInput.MethodHarmony:
+                        searchThread = new Thread(() => PopulateSearchMethod(searchText));
+                        break;
+                    case CurrentInput.Type:
+                    case CurrentInput.TypeHarmony:
+                        searchThread = new Thread(() => PopulateSearchType(searchText));
+                        break;
+                    default:
+                        searchThread = new Thread(() => PopulateSearchAssembly(searchText));
+                        break;
+
                 }
+                searchThread.IsBackground = true;
+                prevInput = currentInput;
+                searchThread.Start();
+            }
 
-                var tp = meth.Name;
-
-                var r = listing.GetRect(30f);
-
-                if (Analyzer.Settings.Loggers == null)
+            lock (sync)
+            {
+                if (cachedEntries.Count != 0)
                 {
-                    Analyzer.Settings.Loggers = new Dictionary<string, bool>();
+                    DropDownSearchMenu.DoWindowContents(rect);
                 }
+            }
+        }
 
-                if (Widgets.ButtonInvisible(r))
+        private static void PopulateSearchMethod(string searchText)
+        {
+            if (searchText.Length <= 4) return;
+
+            lock (sync)
+            {
+                curSearching = true;
+            }
+
+            var names = new HashSet<string>();
+
+            foreach (var type in GenTypes.AllTypes)
+            {
+                if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null && !type.FullName.Contains("DubsAnalyzer"))
                 {
-                    if (!Analyzer.Settings.Loggers.ContainsKey(tp))
+                    foreach (var meth in type.GetMethods())
                     {
-                        Analyzer.Settings.Loggers.Add(tp, true);
-                    }
-                    else
-                    {
-                        var bam = Analyzer.Settings.Loggers[tp];
-                        Analyzer.Settings.Loggers[tp] = !bam;
+                        if (meth.DeclaringType == type && !meth.IsSpecialName && !meth.IsAssembly && meth.HasMethodBody())
+                        {
+                            var str = string.Concat(meth.DeclaringType, ":", meth.Name);
+                            if (str.Contains(searchText))
+                                names.Add(str);
+                        }
                     }
                 }
-
-                if (Analyzer.Settings.Loggers.ContainsKey(tp))
-                {
-                    var bam = Analyzer.Settings.Loggers[tp];
-
-                    r = r.LeftPartPixels(75);
-                    Widgets.CheckboxDraw(r.x, r.y, bam, true);
-                }
-                else
-                {
-                    r = r.LeftPartPixels(75);
-                    Widgets.CheckboxDraw(r.x, r.y, false, true);
-                }
-
-                r.x = r.xMax;
-                r.width = 2000;
-                Widgets.Label(r, $"{meth.ReflectedType} {meth}");
-
-                listing.GapLine(0f);
-                goat += 4f;
-                goat += r.height;
             }
 
-            listing.End();
-            groaner = goat;
-            GUI.EndGroup();
 
-            DubGUI.ResetFont();
-            Widgets.EndScrollView();
+            lock (sync)
+            {
+                cachedEntries = names;
+                curSearching = false;
+            }
+        }
+
+        private static void PopulateSearchType(string searchText)
+        {
+            if (searchText.Length <= 2) return;
+
+            lock (sync)
+            {
+                curSearching = true;
+            }
+
+            var names = new HashSet<string>();
+            foreach (var type in GenTypes.AllTypes)
+            {
+                if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null)
+                {
+                    if (type.FullName.Contains(searchText) && !type.FullName.Contains("DubsAnalyzer"))
+                        names.Add(type.FullName);
+                }
+            }
+            lock (sync)
+            {
+                cachedEntries = names;
+                curSearching = false;
+            }
+        }
+
+        private static void PopulateSearchAssembly(string searchText)
+        {
+            lock (sync)
+            {
+                curSearching = true;
+            }
+
+            var names = new HashSet<string>();
+            foreach (var mod in AnalyzerCache.AssemblyToModname.Values)
+            {
+                if (mod.ToLower().Contains(searchText.ToLower()))
+                    names.Add(mod);
+            }
+            lock (sync)
+            {
+                cachedEntries = names;
+                curSearching = false;
+            }
         }
     }
 }

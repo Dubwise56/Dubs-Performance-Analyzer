@@ -43,6 +43,7 @@
     <Compile Include="AnalyzerCache.cs" />
     <Compile Include="AnalyzerState.cs" />
     <Compile Include="GUI\Dialog_Analyzer.cs" />
+    <Compile Include="GUI\Dialog_Dropdown.cs" />
     <Compile Include="GUI\Dialog_Graph.cs" />
     <Compile Include="GUI\Dialog_ModdingTools.cs" />
     <Compile Include="GUI\Dialog_LogAdditional.cs" />
