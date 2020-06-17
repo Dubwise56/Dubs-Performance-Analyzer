@@ -334,12 +334,12 @@ namespace DubsAnalyzer
             DubGUI.CenterText(() => lListing.Label("ProfilePatchMethod".Translate()));
 
             lListing.GapLine(6);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.method".Translate(), delegate { input = CurrentInput.Method; }, input == CurrentInput.Method);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.type".Translate(), delegate { input = CurrentInput.Type; }, input == CurrentInput.Type);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.methodharmony".Translate(), delegate { input = CurrentInput.MethodHarmony; }, input == CurrentInput.MethodHarmony);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.typeharmony".Translate(), delegate { input = CurrentInput.TypeHarmony; }, input == CurrentInput.TypeHarmony);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.methodinternal".Translate(), delegate { input = CurrentInput.InternalMethod; }, input == CurrentInput.InternalMethod);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.assembly".Translate(), delegate { input = CurrentInput.Assembly; }, input == CurrentInput.Assembly);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.method".Translate(),           () => input = CurrentInput.Method, input == CurrentInput.Method);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.type".Translate(),             () => input = CurrentInput.Type, input == CurrentInput.Type);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.methodharmony".Translate(),    () => input = CurrentInput.MethodHarmony, input == CurrentInput.MethodHarmony);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.typeharmony".Translate(),      () => input = CurrentInput.TypeHarmony, input == CurrentInput.TypeHarmony);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.methodinternal".Translate(),   () => input = CurrentInput.InternalMethod, input == CurrentInput.InternalMethod);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.assembly".Translate(),         () => input = CurrentInput.Assembly, input == CurrentInput.Assembly);
             lListing.curY += 2;
 
             DisplayInputField(lListing);
@@ -347,9 +347,9 @@ namespace DubsAnalyzer
 
             var box = lListing.GetRect(Text.LineHeight + 3);
 
-            DubGUI.OptionalBox(box.LeftPart(.3f), "patch.type.tick".Translate(), delegate { patchType = UpdateMode.Tick; }, patchType == UpdateMode.Tick);
+            DubGUI.OptionalBox(box.LeftPart(.3f), "patch.type.tick".Translate(), () => patchType = UpdateMode.Tick, patchType == UpdateMode.Tick);
             box = box.RightPart(.65f);
-            DubGUI.OptionalBox(box.LeftPart(.4f), "patch.type.update".Translate(), delegate { patchType = UpdateMode.Update; }, patchType == UpdateMode.Update);
+            DubGUI.OptionalBox(box.LeftPart(.4f), "patch.type.update".Translate(), () => patchType = UpdateMode.Update, patchType == UpdateMode.Update);
 
             if (Widgets.ButtonText(box.RightPart(.5f), "patch".Translate()))
                 if (currentInput != null)
@@ -419,10 +419,10 @@ namespace DubsAnalyzer
             DubGUI.CenterText(() => rListing.Label("UnProfilePatchMethod".Translate()));
 
             rListing.GapLine(6);
-            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchmethod".Translate(), delegate { unPatchType = UnPatchType.Method; }, unPatchType == UnPatchType.Method);
-            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchmethodsonmethod".Translate(), delegate { unPatchType = UnPatchType.MethodsOnMethod; }, unPatchType == UnPatchType.MethodsOnMethod);
-            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchtype".Translate(), delegate { unPatchType = UnPatchType.Type; }, unPatchType == UnPatchType.Type);
-            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchall".Translate(), delegate { unPatchType = UnPatchType.All; }, unPatchType == UnPatchType.All);
+            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchmethod".Translate(),            () => unPatchType = UnPatchType.Method, unPatchType == UnPatchType.Method);
+            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchmethodsonmethod".Translate(),   () => unPatchType = UnPatchType.MethodsOnMethod, unPatchType == UnPatchType.MethodsOnMethod);
+            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchtype".Translate(),              () => unPatchType = UnPatchType.Type, unPatchType == UnPatchType.Type);
+            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchall".Translate(),               () => unPatchType = UnPatchType.All, unPatchType == UnPatchType.All);
             rListing.curY += 2;
 
             DisplayUnPatchInputField(rListing);

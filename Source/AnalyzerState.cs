@@ -50,7 +50,6 @@ namespace DubsAnalyzer
                 () => CurrentSideTabCategory == SideTabCategory.Home, // how do we determine that this is selected
                 UpdateMode.Dead, // update mode
                 "Settings and utils"), // tooltip
-            //new ProfileTab("Modder Tools",  () => { CurrentSideTabCategory = SideTabCategory.ModderTools; },  () => CurrentSideTabCategory == SideTabCategory.ModderTools,     UpdateMode.Dead,         "Utilities for modders and advanced users to profile mods!"),
             new ProfileTab("Tick",          () => { CurrentSideTabCategory = SideTabCategory.Tick; },         () => CurrentSideTabCategory == SideTabCategory.Tick,            UpdateMode.Tick,         "Things that run on tick"),
             new ProfileTab("Update",        () => { CurrentSideTabCategory = SideTabCategory.Update; },       () => CurrentSideTabCategory == SideTabCategory.Update,          UpdateMode.Update,       "Things that run per frame"),
             new ProfileTab("GUI",           () => { CurrentSideTabCategory = SideTabCategory.GUI; },          () => CurrentSideTabCategory == SideTabCategory.GUI,             UpdateMode.GUI,          "Things that run on GUI"),
