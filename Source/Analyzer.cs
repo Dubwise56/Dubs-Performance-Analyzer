@@ -288,15 +288,15 @@ namespace DubsAnalyzer
 
             if (forceThrough) // if not, this has already been done for us by the PostClose();
             {
-                Analyzer.StopProfiling();
-                Analyzer.Reset();
-                Analyzer.Settings.Write();
+                StopProfiling();
+                Reset();
+                Settings.Write();
             }
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
-            Messages.Message("Dubs Performance Analyzer: Successfully finished unpatching methods", MessageTypeDefOf.NeutralEvent);
+            Messages.Message("Analyzer: Successfully finished unpatching methods", MessageTypeDefOf.NeutralEvent);
         }
 
         public static void ClearState()

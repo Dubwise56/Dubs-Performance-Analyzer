@@ -341,6 +341,57 @@ namespace DubsAnalyzer
         }
 
         /*
+         * Type Unpatching
+         */
+
+        public static void UnPatchTypePatches(string name, bool display = true)
+        {
+            Type type = null;
+            try
+            {
+                type = AccessTools.TypeByName(name);
+            }
+            catch (Exception e)
+            {
+                if (display)
+                    Error($"Failed to locate type {name}, errored with the message {e.Message}");
+                return;
+            }
+
+            UnPatchTypePatches(type, display);
+        }
+        public static void UnPatchTypePatches(Type type, bool display = true)
+        {
+            if(type == null)
+            {
+                if (display)
+                    Error("Cannnot unpatch null");
+
+                return;
+            }
+
+            UnPatchTypePatchesFull(type, display);
+        }
+        private static void UnPatchTypePatchesFull(Type type, bool display = true)
+        {
+            try
+            {
+                foreach (var method in AccessTools.GetDeclaredMethods(type))
+                {
+                    UnpatchMethodsOnMethod(method);
+                }
+
+                if (display)
+                    Notify($"Sucessfully unpatched the methods patching {type.FullName}");
+            }
+            catch (Exception e)
+            {
+                if (display)
+                    Error($"unpatching {type.FullName} failed, {e.Message}");
+            }
+        }
+
+        /*
          * Internal Method Patching
          */
 

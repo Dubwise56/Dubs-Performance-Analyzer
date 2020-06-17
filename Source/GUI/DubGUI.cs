@@ -162,13 +162,21 @@ namespace DubsAnalyzer
 
         public static bool Checkbox(string s, Listing_Standard listing, ref bool checkOn)
         {
-            var rect = listing.GetRect(Text.LineHeight);
+            var rect = listing.GetRect( Mathf.CeilToInt(s.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight);
             return Checkbox(rect, s, ref checkOn);
         }
 
         public static bool Contains(this string source, string toCheck, StringComparison comp)
         {
             return source?.IndexOf(toCheck, comp) >= 0;
+        }
+
+        public static void CenterText(Action action)
+        {
+            var anch = Text.Anchor;
+            Text.Anchor = TextAnchor.MiddleCenter;
+            action();
+            Text.Anchor = anch;
         }
 
         public static bool InputField(Rect rect, string name, ref string buff, Texture2D icon = null, int max = 999, bool readOnly = false, bool forceFocus = false, bool ShowName = false)
@@ -192,10 +200,10 @@ namespace DubsAnalyzer
             if (ShowName)
             {
                 Text.Anchor = TextAnchor.MiddleCenter;
-                Widgets.Label(rect.LeftPart(0.2f), name);
+                Widgets.Label(rect.LeftPartPixels(name.GetWidthCached()), name);
                 Text.Anchor = TextAnchor.UpperLeft;
 
-                rect2 = rect.RightPart(0.8f);
+                rect2 = rect.RightPartPixels(rect.width - (name.GetWidthCached()+3));
             }
 
             GUI.SetNextControlName(name);
@@ -226,6 +234,14 @@ namespace DubsAnalyzer
         public static void Heading(Listing_Standard listing, string label)
         {
             Heading(listing.GetRect(30), label);
+        }
+
+        public static void OptionalBox(Rect rect, string value, Action action, bool active)
+        {
+            if(Widgets.RadioButtonLabeled(rect, value, active))
+            {
+                action();
+            }
         }
 
         public static void CollapsableHeading(Listing_Standard listing, string label, ref bool Collapsed)

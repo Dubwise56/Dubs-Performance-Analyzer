@@ -36,7 +36,7 @@ namespace DubsAnalyzer
 
         public static void UpdateFlag()
         {
-            if (!Analyzer.Settings.OptimiseAlerts) return;
+            if (!Analyzer.Settings.OptimizeAlerts) return;
 
             tattered.dirty = true;
             nudist.dirty = true;
@@ -44,7 +44,7 @@ namespace DubsAnalyzer
 
         public static bool AlertCheck(Alert __instance)
         {
-            if (!Analyzer.Settings.OptimiseAlerts) return true;
+            if (!Analyzer.Settings.OptimizeAlerts) return true;
 
             if (__instance is Alert_TatteredApparel)
                 if (tattered.Dirty())
@@ -59,7 +59,7 @@ namespace DubsAnalyzer
 
         public static void PostCheck(Alert __instance, ref AlertReport __result)
         {
-            if (!Analyzer.Settings.OptimiseAlerts) return;
+            if (!Analyzer.Settings.OptimizeAlerts) return;
 
             if (__instance is Alert_TatteredApparel)
             {

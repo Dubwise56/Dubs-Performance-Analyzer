@@ -16,7 +16,7 @@ namespace DubsAnalyzer
 
     public enum SideTabCategory
     {
-        Home, ModderTools, Tick, Update, GUI, ModderAdded
+        Home, Tick, Update, GUI, ModderAdded
     }
 
     public static class AnalyzerState
@@ -50,7 +50,7 @@ namespace DubsAnalyzer
                 () => CurrentSideTabCategory == SideTabCategory.Home, // how do we determine that this is selected
                 UpdateMode.Dead, // update mode
                 "Settings and utils"), // tooltip
-            new ProfileTab("Modder Tools",  () => { CurrentSideTabCategory = SideTabCategory.ModderTools; },  () => CurrentSideTabCategory == SideTabCategory.ModderTools,     UpdateMode.Dead,         "Utilities for modders and advanced users to profile mods!"),
+            //new ProfileTab("Modder Tools",  () => { CurrentSideTabCategory = SideTabCategory.ModderTools; },  () => CurrentSideTabCategory == SideTabCategory.ModderTools,     UpdateMode.Dead,         "Utilities for modders and advanced users to profile mods!"),
             new ProfileTab("Tick",          () => { CurrentSideTabCategory = SideTabCategory.Tick; },         () => CurrentSideTabCategory == SideTabCategory.Tick,            UpdateMode.Tick,         "Things that run on tick"),
             new ProfileTab("Update",        () => { CurrentSideTabCategory = SideTabCategory.Update; },       () => CurrentSideTabCategory == SideTabCategory.Update,          UpdateMode.Update,       "Things that run per frame"),
             new ProfileTab("GUI",           () => { CurrentSideTabCategory = SideTabCategory.GUI; },          () => CurrentSideTabCategory == SideTabCategory.GUI,             UpdateMode.GUI,          "Things that run on GUI"),
@@ -153,7 +153,7 @@ namespace DubsAnalyzer
 
         public static void SwapTab(string name, UpdateMode updateMode)
         {
-            var cat = AnalyzerState.SideTabCategories.First(c => c.UpdateMode == updateMode);
+            var cat = SideTabCategories.First(c => c.UpdateMode == updateMode);
             if (cat == null) return;
 
             var tab = cat.Modes.Where(m => m.Key.name == name);
@@ -164,7 +164,7 @@ namespace DubsAnalyzer
 
         public static void SwapTab(KeyValuePair<ProfileMode, Type> mode, UpdateMode updateMode)
         {
-            if (AnalyzerState.State == CurrentState.Uninitialised)
+            if (State == CurrentState.Uninitialised)
                 Dialog_Analyzer.Reboot();
             
             if (!(CurrentSideTabCategory == UpdateToSideTab(updateMode)))
@@ -174,7 +174,7 @@ namespace DubsAnalyzer
             }
 
             if (CurrentTab != null)
-                AnalyzerState.CurrentTab.SetActive(false);
+                CurrentTab.SetActive(false);
 
             mode.Key.SetActive(true);
             CurrentTab = mode.Key;

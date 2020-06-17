@@ -3,6 +3,7 @@ using HarmonyLib;
 using RimWorld;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -235,14 +236,6 @@ namespace DubsAnalyzer
                     }
                     Analyzer.Settings.DoSettings(inner);
                     break;
-                case SideTabCategory.ModderTools:
-                    if (cache != -1)
-                    {
-                        windowRect.width -= 450;
-                        cache = -1;
-                    }
-                    Dialog_ModdingTools.DoWindowContents(inner);
-                    break;
                 default: // We are in one of our categories, which means we want to display our logs
                     /*
                      * Draw our top row, we will always show this, unconditionally
@@ -335,7 +328,10 @@ namespace DubsAnalyzer
             Rect row = topRow.LeftPartPixels(25f);
 
             if (Widgets.ButtonImage(row, TexButton.SpeedButtonTextures[AnalyzerState.CurrentlyRunning ? 0 : 1]))
+            {
                 AnalyzerState.CurrentlyRunning = !AnalyzerState.CurrentlyRunning;
+                AnalyzerState.CurrentTab.SetActive(AnalyzerState.CurrentlyRunning);
+            }
 
             TooltipHandler.TipRegion(topRow, "startstoplogTip".Translate());
             save = false;
@@ -935,9 +931,37 @@ namespace DubsAnalyzer
                     Widgets.DrawLineVertical(listing.ColumnWidth / 2, listing.curY, 6f);
                     GUI.color = color;
 
-                    if (Widgets.ButtonText(listing.GetRect(40).RightPartPixels(80), "Github Search", false, true))
+                    if (Analyzer.Settings.DevMode)
                     {
-                        Application.OpenURL(@"https://github.com/search?l=C%23&q=" + $"{AnalyzerState.CurrentProfiler().meth.DeclaringType}.{AnalyzerState.CurrentProfiler().meth.Name}" + "&type=Code");
+                        var buttonsRect = listing.GetRect(40);
+                        if (Widgets.ButtonText(buttonsRect.RightPartPixels(80), "Github Search", false, true))
+                        {
+                            Application.OpenURL(@"https://github.com/search?l=C%23&q=" + $"{AnalyzerState.CurrentProfiler().meth.DeclaringType}.{AnalyzerState.CurrentProfiler().meth.Name}" + "&type=Code");
+                        }
+
+                        if (Widgets.ButtonText(buttonsRect.LeftPartPixels(120), "Open in Dnspy", false, true))
+                        {
+                            var meth = AnalyzerState.CurrentProfiler().meth;
+                            var path = meth.DeclaringType.Assembly.Location;
+                            if (path == null || path.Length == 0)
+                            {
+                                var contentPack = LoadedModManager.RunningMods.FirstOrDefault(m => m.assemblies.loadedAssemblies.Contains(meth.DeclaringType.Assembly));
+                                if (contentPack != null)
+                                {
+                                    path = ModContentPack.GetAllFilesForModPreserveOrder(contentPack, "Assemblies/", p => p.ToLower() == ".dll", null)
+                                        .Select(fileInfo => fileInfo.Item2.FullName)
+                                        .First(dll =>
+                                        {
+                                            var assembly = Assembly.ReflectionOnlyLoadFrom(dll);
+                                            return assembly.GetType(meth.DeclaringType.FullName) != null;
+                                        });
+                                }
+                            }
+
+                            var token = meth.MetadataToken;
+                            if (token != 0) 
+                                Process.Start(Analyzer.Settings.PathToDnspy, $"\"{path}\" --select 0x{token:X8}");
+                        }
                     }
                 }
                 else
@@ -998,7 +1022,7 @@ namespace DubsAnalyzer
 
             private void DrawStatistics()
             {
-                if (Analyzer.Settings.AdvancedMode)
+                if (Analyzer.Settings.DevMode)
                 {
                     DubGUI.CollapsableHeading(listing, "Statistics", ref AnalyzerState.HideStatistics);
                     Text.Font = font;
@@ -1036,7 +1060,6 @@ namespace DubsAnalyzer
 
             private void DrawStatsPageSidePanel()
             {
-
                 DubGUI.InlineTripleMessage($" Entries: {CurrentLogStats.stats.Entries}", $" Σ Calls: {CurrentLogStats.stats.TotalCalls}", $" Σ Time: {CurrentLogStats.stats.TotalTime:0.000}ms", listing, true);
                 DubGUI.InlineTripleMessage($" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms", $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}", listing, true);
                 DubGUI.InlineTripleMessage($" % in category {AnalyzerState.CurrentLog.Average_s}", $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms", listing, true);
