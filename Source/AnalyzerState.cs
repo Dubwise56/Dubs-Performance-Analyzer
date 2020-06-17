@@ -175,7 +175,7 @@ namespace DubsAnalyzer
             if (CurrentTab != null)
                 CurrentTab.SetActive(false);
 
-            mode.Key.SetActive(true);
+            mode.Key.SetActive(CurrentlyRunning);
             CurrentTab = mode.Key;
             CurrentProfileKey = "Overview";
             ResetState();

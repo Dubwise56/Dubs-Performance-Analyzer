@@ -541,7 +541,7 @@ namespace DubsAnalyzer
                     foreach (var type in assembly.GetTypes())
                     {
                         if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null)
-                            PatchTypeFull(type, pre, post);
+                            PatchTypeFull(type, pre, post, display);
                     }
 
                     if(display)

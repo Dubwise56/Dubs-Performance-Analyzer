@@ -59,8 +59,6 @@ namespace DubsAnalyzer
 
         public static void Reboot()
         {
-            Log.Message(AnalyzerState.State.ToString());
-
             if (AnalyzerState.CanPatch())
             {
                 AnalyzerState.State = CurrentState.Patching;
@@ -155,7 +153,7 @@ namespace DubsAnalyzer
             // we add new functionality
             if (AnalyzerState.CanCleanup())
             {
-                CleanupPatches = new Thread(() => Analyzer.unPatchMethods());
+                CleanupPatches = new Thread(() => Analyzer.UnPatchMethods());
                 CleanupPatches.Start();
             }
 

@@ -256,7 +256,7 @@ namespace DubsAnalyzer
             catch (Exception) { }
         }
 
-        public static void unPatchMethods(bool forceThrough = false)
+        public static void UnPatchMethods(bool forceThrough = false)
         {
             Thread.CurrentThread.IsBackground = true;
 
@@ -293,8 +293,7 @@ namespace DubsAnalyzer
 
             if (forceThrough) // if not, this has already been done for us by the PostClose();
             {
-                StopProfiling();
-                Reset();
+                AnalyzerState.CurrentlyRunning = false;
                 Settings.Write();
             }
 
@@ -327,8 +326,6 @@ namespace DubsAnalyzer
                     AnalyzerState.RemoveTab(val);
             }
 
-
-
             H_HarmonyPatches.PatchedPres = new List<Patch>();
             H_HarmonyPatches.PatchedPosts = new List<Patch>();
             H_HarmonyTranspilers.PatchedMeths = new List<MethodBase>();
@@ -339,7 +336,11 @@ namespace DubsAnalyzer
             AnalyzerState.CurrentTab = null;
             AnalyzerState.CurrentSideTabCategory = SideTabCategory.Home;
 
+            AnalyzerState.CurrentProfileKey = "";
+            AnalyzerState.CurrentLog = new ProfileLog();
+
             Reset();
+
         }
 
     }

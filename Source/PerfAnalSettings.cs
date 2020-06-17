@@ -287,7 +287,7 @@ namespace DubsAnalyzer
         /* For Dev Tools */
 
         public enum CurrentInput { Method, Type, MethodHarmony, TypeHarmony, InternalMethod, Assembly }
-        public enum UnPatchType { Method, MethodsOnMethod, Type, All }
+        public enum UnPatchType { Method, MethodsOnMethod, Type, InternalMethod, All }
 
         public static CurrentInput input = CurrentInput.Method;
         public static UnPatchType unPatchType = UnPatchType.Method;
@@ -357,6 +357,7 @@ namespace DubsAnalyzer
 
             lListing.End();
         }
+
         public static void DisplayInputField(Listing_Standard listing)
         {
             string FieldDescription = null;
@@ -417,11 +418,11 @@ namespace DubsAnalyzer
             rListing.Begin(right);
 
             DubGUI.CenterText(() => rListing.Label("UnProfilePatchMethod".Translate()));
-
             rListing.GapLine(6);
             DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchmethod".Translate(),            () => unPatchType = UnPatchType.Method, unPatchType == UnPatchType.Method);
             DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchmethodsonmethod".Translate(),   () => unPatchType = UnPatchType.MethodsOnMethod, unPatchType == UnPatchType.MethodsOnMethod);
             DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchtype".Translate(),              () => unPatchType = UnPatchType.Type, unPatchType == UnPatchType.Type);
+            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchinternalmethod".Translate(),    () => unPatchType = UnPatchType.InternalMethod, unPatchType == UnPatchType.InternalMethod);
             DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchall".Translate(),               () => unPatchType = UnPatchType.All, unPatchType == UnPatchType.All);
             rListing.curY += 2;
 
@@ -443,6 +444,7 @@ namespace DubsAnalyzer
                 case UnPatchType.Method: FieldDescription = "Type:Method"; break;
                 case UnPatchType.MethodsOnMethod: FieldDescription = "Type:Method"; break;
                 case UnPatchType.Type: FieldDescription = "Type"; break;
+                case UnPatchType.InternalMethod: FieldDescription = "Type:Method"; break;
                 case UnPatchType.All: FieldDescription = "N/A"; break;
             }
 
@@ -457,7 +459,8 @@ namespace DubsAnalyzer
                 case UnPatchType.Method: PatchUtils.UnpatchMethod(currentUnPatch); break;
                 case UnPatchType.MethodsOnMethod: PatchUtils.UnpatchMethod(currentUnPatch); break;
                 case UnPatchType.Type: PatchUtils.UnPatchTypePatches(currentUnPatch); break;
-                case UnPatchType.All: Analyzer.unPatchMethods(true); break;
+                case UnPatchType.InternalMethod: PatchUtils.UnpatchInternalMethod(currentUnPatch); break;
+                case UnPatchType.All: Analyzer.UnPatchMethods(true); break;
             }
         }
 

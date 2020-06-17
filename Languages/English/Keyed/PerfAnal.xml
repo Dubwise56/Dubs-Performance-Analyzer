@@ -54,11 +54,13 @@
   <patch.type.tick>Tick</patch.type.tick>
   <patch.type.update>Update</patch.type.update>
   <patch>Patch!</patch>
+
   <!-- Unpatching -->
   <UnProfilePatchMethod>Remove Profiling (Unpatching)</UnProfilePatchMethod>
   <input.unpatchmethod>Method</input.unpatchmethod>
   <input.unpatchmethodsonmethod>Patches on a Method</input.unpatchmethodsonmethod>
   <input.unpatchtype>Patches on a Type</input.unpatchtype>
+  <input.unpatchinternalmethod>Patches inside a Method</input.unpatchinternalmethod>
   <input.unpatchall>All</input.unpatchall>
   <unpatch>UnPatch!</unpatch>
 
