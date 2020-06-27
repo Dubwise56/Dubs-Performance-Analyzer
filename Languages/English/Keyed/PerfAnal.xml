@@ -1,98 +1,86 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <LanguageData>
-
-<!-- Settings -->
-
-  <!-- Tabs -->
-  <settings.tabs.performance>Performance Options</settings.tabs.performance>
-  <settings.tabs.developertools>Developer Options</settings.tabs.developertools>
-
-  <!-- Links -->
-  <PerfAnalWiki>Performance Analyzer Wiki</PerfAnalWiki>
-  <DubModDisco>Dubs Mods Discord</DubModDisco>
-
-  <!-- Performance Tab -->
-  <settings.performance.heading>Optimizations And Fixes</settings.performance.heading>
-  
-  <TempSpeedup>Optimize temperature stats (Fixes lots of stutters)</TempSpeedup>
-  <RoofOptimize>Optimize build roof job scanner</RoofOptimize>
-  <RepairOptimize>Optimize repair job</RepairOptimize>
-  <SnowOptimize>Optimize snow</SnowOptimize>
-  <OptimizeDrills>Optimize Deep Drills</OptimizeDrills>
-  <OptimizeAlerts>Optimize alerts (Tattered Clothing and Unhappy Nudity)</OptimizeAlerts>
-  <JobGiverOptimise>Optimise the royalty thing</JobGiverOptimise>
-  <GizmoOpti>Optimize DrawInspectGizmoGrid (Buttons when selecting things)</GizmoOpti>
-  <RealtimeCondu>Disable realtime drawing on walls and conduit</RealtimeCondu>
-  <DamageJobRecheck>Disable job rechecks on hit (fix stutters on raids)</DamageJobRecheck>
-  
-  <settings.performance.destructiveheading>Destructive Changes (remove functionality for perf)</settings.performance.destructiveheading>
-  <OverrideAlerts>Override alerts (Disable them in the Alerts tab)</OverrideAlerts>
-  <KillMusicMan>Disable music manager</KillMusicMan>
-  <DisableAlerts>Disable alerts entirely</DisableAlerts>
-
-  <settings.performance.generalheading>General Changes/Fixes</settings.performance.generalheading>
-  <FactionRemovalMode>Fix missing factions (enable before loading a save)</FactionRemovalMode>
-  <ShowAnalBut>Show analyzer button on main tab row</ShowAnalBut>
-  <UnlockFramerate>Unlock Framerate</UnlockFramerate>
-  <AdvProfMode>Advanced mode (More data)</AdvProfMode>
-
-  <!-- Developer Options Tab -->
-  <settings.developer.heading>General</settings.developer.heading>
-  <DevMode>Developer Mode</DevMode>
-  <SidePanel>Enable side panel for information</SidePanel>
-  <TickPawnTog>Tick Pawns (this will freeze all pawns, allowing for profiling of non-pawn things)</TickPawnTog>
-
-  <!-- Patching -->
-  <ProfilePatchMethod>Profile</ProfilePatchMethod>
-  <input.method>Method</input.method>
-  <input.type>Methods in Type</input.type>
-  <input.methodharmony>Patches on a Method</input.methodharmony>
-  <input.typeharmony>Patches on a Type</input.typeharmony>
-  <input.methodinternal>Method Internals</input.methodinternal>
-  <input.assembly>Assembly</input.assembly>
-
-  <patch.type.tick>Tick</patch.type.tick>
-  <patch.type.update>Update</patch.type.update>
-  <patch>Patch!</patch>
-
-  <!-- Unpatching -->
-  <UnProfilePatchMethod>Remove Profiling (Unpatching)</UnProfilePatchMethod>
-  <input.unpatchmethod>Method</input.unpatchmethod>
-  <input.unpatchmethodsonmethod>Patches on a Method</input.unpatchmethodsonmethod>
-  <input.unpatchtype>Patches on a Type</input.unpatchtype>
-  <input.unpatchinternalmethod>Patches inside a Method</input.unpatchinternalmethod>
-  <input.unpatchall>All</input.unpatchall>
-  <unpatch>UnPatch!</unpatch>
-
-
-  
-  <CustoMethProfPatch>Profile a method e.g. ResourceReadout:ResourceReadoutOnGUI</CustoMethProfPatch>
-  <CustoTickPatch>Custom Tick</CustoTickPatch>
-  <CustoUpdatePatch>Custom Update</CustoUpdatePatch>
-  <inputMethod>Profile a method</inputMethod>
-  <inputType>Profile all the methods in a type</inputType>
-  <inputMethodHarmony>Profile all the harmony patches of a method</inputMethodHarmony>
-  <inputTypeHarmony>Profile all the harmony patches effecting a type</inputTypeHarmony>
-  <TryCustoPatch>Try patch</TryCustoPatch>
-  <TryCustoUnPatch>Try unpatch</TryCustoUnPatch>
-  <CustoUnPatchMeth>Unpatch a Method</CustoUnPatchMeth>
-  <CustoUnPatchAllOnMeth>Unpatch the patches on a method</CustoUnPatchAllOnMeth>
-  <CustoUnPatchAll>Unpatch all profiler patches</CustoUnPatchAll>
-  <AlertsTipKey>Alerts appear on the right of the screen, these run constantly even while paused and can heavily impact performance, click the check boxes to disable them</AlertsTipKey>
-  <DrawDynThinTipKey>Dynamic drawing of things on the map like colonists or animated buildings, things usually only draw when they are in view</DrawDynThinTipKey>
-  <TransPatchTipKey>Profiles any methods that have been modified using harmony transpiler, this is the total time for the whole method, not just the parts that were patched in\n\nCtrl + click to permanently disable</TransPatchTipKey>
-  <JobGiveTipKey>The scanners which issue jobs to pawns</JobGiveTipKey>
-  <WindowPatchTipKey>Windows that open like this one or main tab windows like research</WindowPatchTipKey>
-  <DetourWorkTipKey>This version detours the whole method, just used to confirm the other WorkGiver is accurate or do custom stuff</DetourWorkTipKey>
-  <GizmoInspectTip>Profile drawing and getting gizmos separately</GizmoInspectTip>
-  <HarmPatchesTipKey>Tries to profile how long prefixes and postfixes from harmony patches take to execute, does not include code from transpilers\n\nCtrl + click to permanently disable</HarmPatchesTipKey>
-  <TickThingsSelectTipKey>Log ticking on selected things</TickThingsSelectTipKey>
-  <TickThingByDefTipKey>Log ticking of all things on the map by def</TickThingByDefTipKey>
-  <LogTipThingTickByClass>Log ticking of all things on the map by class</LogTipThingTickByClass>
-  <garbageTip>Approximation of total bytes currently allocated in managed memory + rate of new allocation</garbageTip>
-  <savecsvTip>Save the current list of times to a csv file in {0}</savecsvTip>
-  <startstoplogTip>Start and stop logging</startstoplogTip>
-  <fpsTipperino>FPS - frames per second</fpsTipperino>
-  <tpsTipperino>TPS - ticks per second (target TPS for current game speed)</tpsTipperino>
-  <frameTimeProfilerTip>Frame time is exactly how long it takes to update 1 full frame of the entire game, this is whats used to calculate FPS.\n\nGame Update is how long only code running from the root update method has taken to execute during a frame, the rest of the frame time is all of the rendering, gui, and general game engine work</frameTimeProfilerTip>
+    <!-- Settings -->
+    <!-- Tabs -->
+    <settings.tabs.performance>Performance Options</settings.tabs.performance>
+    <settings.tabs.developertools>Developer Options</settings.tabs.developertools>
+    <!-- Links -->
+    <PerfAnalWiki>Performance Analyzer Wiki</PerfAnalWiki>
+    <DubModDisco>Dubs Mods Discord</DubModDisco>
+    <!-- Performance Tab -->
+    <settings.experimental.header>Experimental</settings.experimental.header>
+    <settings.performance.heading>Optimizations And Fixes</settings.performance.heading>
+    <TempSpeedup>Optimize temperature stats (Fixes lots of stutters)</TempSpeedup>
+    <RoofOptimize>Optimize build roof job scanner</RoofOptimize>
+    <RepairOptimize>Optimize repair job</RepairOptimize>
+    <SnowOptimize>Optimize snow</SnowOptimize>
+    <OptimizeDrills>Optimize Deep Drills</OptimizeDrills>
+    <OptimizeAlerts>Optimize alerts (Tattered Clothing and Unhappy Nudity)</OptimizeAlerts>
+    <JobGiverOptimise>Optimise the royalty thing</JobGiverOptimise>
+    <GizmoOpti>Optimize DrawInspectGizmoGrid (Buttons when selecting things)</GizmoOpti>
+    <RealtimeCondu>Disable realtime drawing on walls and conduit</RealtimeCondu>
+    <DamageJobRecheck>Disable job rechecks on hit (fix stutters on raids)</DamageJobRecheck>
+    <DynamicSpeedControl>Experience smoother 5000</DynamicSpeedControl>
+    <settings.performance.destructiveheading>Destructive Changes (remove functionality for perf)</settings.performance.destructiveheading>
+    <OverrideAlerts>Override alerts (Disable them in the Alerts tab)</OverrideAlerts>
+    <KillMusicMan>Disable music manager</KillMusicMan>
+    <DisableAlerts>Disable alerts entirely</DisableAlerts>
+    <settings.performance.generalheading>General Changes/Fixes</settings.performance.generalheading>
+    <FactionRemovalMode>Fix missing factions (enable before loading a save)</FactionRemovalMode>
+    <ShowAnalBut>Show analyzer button on main tab row</ShowAnalBut>
+    <UnlockFramerate>Unlock Framerate</UnlockFramerate>
+    <AdvProfMode>Advanced mode (More data)</AdvProfMode>
+    <!-- Developer Options Tab -->
+    <settings.developer.heading>General</settings.developer.heading>
+    <DevMode>Developer Mode</DevMode>
+    <SidePanel>Enable side panel for information</SidePanel>
+    <TickPawnTog>Tick Pawns (this will freeze all pawns, allowing for profiling of non-pawn things)</TickPawnTog>
+    <!-- Patching -->
+    <ProfilePatchMethod>Profile</ProfilePatchMethod>
+    <input.method>Method</input.method>
+    <input.type>Methods in Type</input.type>
+    <input.methodharmony>Patches on a Method</input.methodharmony>
+    <input.typeharmony>Patches on a Type</input.typeharmony>
+    <input.methodinternal>Method Internals</input.methodinternal>
+    <input.assembly>Assembly</input.assembly>
+    <patch.type.tick>Tick</patch.type.tick>
+    <patch.type.update>Update</patch.type.update>
+    <patch>Patch!</patch>
+    <!-- Unpatching -->
+    <UnProfilePatchMethod>Remove Profiling (Unpatching)</UnProfilePatchMethod>
+    <input.unpatchmethod>Method</input.unpatchmethod>
+    <input.unpatchmethodsonmethod>Patches on a Method</input.unpatchmethodsonmethod>
+    <input.unpatchtype>Patches on a Type</input.unpatchtype>
+    <input.unpatchinternalmethod>Patches inside a Method</input.unpatchinternalmethod>
+    <input.unpatchall>All</input.unpatchall>
+    <unpatch>UnPatch!</unpatch>
+    <CustoMethProfPatch>Profile a method e.g. ResourceReadout:ResourceReadoutOnGUI</CustoMethProfPatch>
+    <CustoTickPatch>Custom Tick</CustoTickPatch>
+    <CustoUpdatePatch>Custom Update</CustoUpdatePatch>
+    <inputMethod>Profile a method</inputMethod>
+    <inputType>Profile all the methods in a type</inputType>
+    <inputMethodHarmony>Profile all the harmony patches of a method</inputMethodHarmony>
+    <inputTypeHarmony>Profile all the harmony patches effecting a type</inputTypeHarmony>
+    <TryCustoPatch>Try patch</TryCustoPatch>
+    <TryCustoUnPatch>Try unpatch</TryCustoUnPatch>
+    <CustoUnPatchMeth>Unpatch a Method</CustoUnPatchMeth>
+    <CustoUnPatchAllOnMeth>Unpatch the patches on a method</CustoUnPatchAllOnMeth>
+    <CustoUnPatchAll>Unpatch all profiler patches</CustoUnPatchAll>
+    <AlertsTipKey>Alerts appear on the right of the screen, these run constantly even while paused and can heavily impact performance, click the check boxes to disable them</AlertsTipKey>
+    <DrawDynThinTipKey>Dynamic drawing of things on the map like colonists or animated buildings, things usually only draw when they are in view</DrawDynThinTipKey>
+    <TransPatchTipKey>Profiles any methods that have been modified using harmony transpiler, this is the total time for the whole method, not just the parts that were patched in\n\nCtrl + click to permanently disable</TransPatchTipKey>
+    <JobGiveTipKey>The scanners which issue jobs to pawns</JobGiveTipKey>
+    <WindowPatchTipKey>Windows that open like this one or main tab windows like research</WindowPatchTipKey>
+    <DetourWorkTipKey>This version detours the whole method, just used to confirm the other WorkGiver is accurate or do custom stuff</DetourWorkTipKey>
+    <GizmoInspectTip>Profile drawing and getting gizmos separately</GizmoInspectTip>
+    <HarmPatchesTipKey>Tries to profile how long prefixes and postfixes from harmony patches take to execute, does not include code from transpilers\n\nCtrl + click to permanently disable</HarmPatchesTipKey>
+    <TickThingsSelectTipKey>Log ticking on selected things</TickThingsSelectTipKey>
+    <TickThingByDefTipKey>Log ticking of all things on the map by def</TickThingByDefTipKey>
+    <LogTipThingTickByClass>Log ticking of all things on the map by class</LogTipThingTickByClass>
+    <garbageTip>Approximation of total bytes currently allocated in managed memory + rate of new allocation</garbageTip>
+    <savecsvTip>Save the current list of times to a csv file in {0}</savecsvTip>
+    <startstoplogTip>Start and stop logging</startstoplogTip>
+    <fpsTipperino>FPS - frames per second</fpsTipperino>
+    <tpsTipperino>TPS - ticks per second (target TPS for current game speed)</tpsTipperino>
+    <frameTimeProfilerTip>Frame time is exactly how long it takes to update 1 full frame of the entire game, this is whats used to calculate FPS.\n\nGame Update is how long only code running from the root update method has taken to execute during a frame, the rest of the frame time is all of the rendering, gui, and general game engine work</frameTimeProfilerTip>
 </LanguageData>

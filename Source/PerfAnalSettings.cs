@@ -49,6 +49,7 @@ namespace DubsAnalyzer
         public bool FactionRemovalMode;
         public bool ReplaceIngredientFinder;
         public bool OptimiseJobGiverOptimise;
+        public bool DynamicSpeedControl = false;
         public bool ShowOnMainTab = true;
         public bool AdvancedMode = false;
         public bool DevMode = false;
@@ -79,6 +80,7 @@ namespace DubsAnalyzer
             Scribe_Values.Look(ref DisableAlerts, "DisableAlerts");
             Scribe_Values.Look(ref KillMusicMan, "KillMusicMan");
             Scribe_Values.Look(ref OptimiseJobGiverOptimise, "OptimiseJobGiverOptimise");
+            Scribe_Values.Look(ref DynamicSpeedControl, "DynamicSpeedControl");
 
             /* Cosmetic Options */
             Scribe_Values.Look(ref SidePanel, "SidePanel");
@@ -253,6 +255,9 @@ namespace DubsAnalyzer
             DubGUI.Checkbox("KillMusicMan".Translate(), listing, ref KillMusicMan);
             DubGUI.Checkbox("DisableAlerts".Translate(), listing, ref DisableAlerts);
             listing.GapLine();
+            listing.Label("settings.experimental.header".Translate());
+            DubGUI.Checkbox("DynamicSpeedControl".Translate(), listing, ref DynamicSpeedControl);
+            listing.GapLine();
             listing.Label("settings.performance.generalheading".Translate());
             DubGUI.Checkbox("FactionRemovalMode".Translate(), listing, ref FactionRemovalMode);
             DubGUI.Checkbox("ShowAnalBut".Translate(), listing, ref ShowOnMainTab);
@@ -334,12 +339,12 @@ namespace DubsAnalyzer
             DubGUI.CenterText(() => lListing.Label("ProfilePatchMethod".Translate()));
 
             lListing.GapLine(6);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.method".Translate(),           () => input = CurrentInput.Method, input == CurrentInput.Method);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.type".Translate(),             () => input = CurrentInput.Type, input == CurrentInput.Type);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.methodharmony".Translate(),    () => input = CurrentInput.MethodHarmony, input == CurrentInput.MethodHarmony);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.typeharmony".Translate(),      () => input = CurrentInput.TypeHarmony, input == CurrentInput.TypeHarmony);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.methodinternal".Translate(),   () => input = CurrentInput.InternalMethod, input == CurrentInput.InternalMethod);
-            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.assembly".Translate(),         () => input = CurrentInput.Assembly, input == CurrentInput.Assembly);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.method".Translate(), () => input = CurrentInput.Method, input == CurrentInput.Method);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.type".Translate(), () => input = CurrentInput.Type, input == CurrentInput.Type);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.methodharmony".Translate(), () => input = CurrentInput.MethodHarmony, input == CurrentInput.MethodHarmony);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.typeharmony".Translate(), () => input = CurrentInput.TypeHarmony, input == CurrentInput.TypeHarmony);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.methodinternal".Translate(), () => input = CurrentInput.InternalMethod, input == CurrentInput.InternalMethod);
+            DubGUI.OptionalBox(lListing.GetRect(Text.LineHeight + 3), "input.assembly".Translate(), () => input = CurrentInput.Assembly, input == CurrentInput.Assembly);
             lListing.curY += 2;
 
             DisplayInputField(lListing);
@@ -419,11 +424,11 @@ namespace DubsAnalyzer
 
             DubGUI.CenterText(() => rListing.Label("UnProfilePatchMethod".Translate()));
             rListing.GapLine(6);
-            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchmethod".Translate(),            () => unPatchType = UnPatchType.Method, unPatchType == UnPatchType.Method);
-            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchmethodsonmethod".Translate(),   () => unPatchType = UnPatchType.MethodsOnMethod, unPatchType == UnPatchType.MethodsOnMethod);
-            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchtype".Translate(),              () => unPatchType = UnPatchType.Type, unPatchType == UnPatchType.Type);
-            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchinternalmethod".Translate(),    () => unPatchType = UnPatchType.InternalMethod, unPatchType == UnPatchType.InternalMethod);
-            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchall".Translate(),               () => unPatchType = UnPatchType.All, unPatchType == UnPatchType.All);
+            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchmethod".Translate(), () => unPatchType = UnPatchType.Method, unPatchType == UnPatchType.Method);
+            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchmethodsonmethod".Translate(), () => unPatchType = UnPatchType.MethodsOnMethod, unPatchType == UnPatchType.MethodsOnMethod);
+            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchtype".Translate(), () => unPatchType = UnPatchType.Type, unPatchType == UnPatchType.Type);
+            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchinternalmethod".Translate(), () => unPatchType = UnPatchType.InternalMethod, unPatchType == UnPatchType.InternalMethod);
+            DubGUI.OptionalBox(rListing.GetRect(Text.LineHeight + 3), "input.unpatchall".Translate(), () => unPatchType = UnPatchType.All, unPatchType == UnPatchType.All);
             rListing.curY += 2;
 
             DisplayUnPatchInputField(rListing);
