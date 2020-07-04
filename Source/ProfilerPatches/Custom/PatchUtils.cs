@@ -17,7 +17,7 @@ namespace DubsAnalyzer
         public static List<string> PatchedAssemblies = new List<string>();
         public static List<string> PatchedTypes = new List<string>();
         public static List<string> PatchedMethods = new List<string>();
-        
+
         private static Thread patchAssemblyThread = null;
         private static Thread patchTypeThread = null;
 
@@ -28,16 +28,43 @@ namespace DubsAnalyzer
         {
             List<string> listStrLineElements = new List<string>();
 
-            if (name.Contains(','))
-                listStrLineElements.AddRange(name.Split(','));
-            if (name.Contains(';'))
-                listStrLineElements.AddRange(name.Split(';'));
-            else if (name.Contains('.'))
-                listStrLineElements.Add(name.Replace('.', ':'));
-            else
-                listStrLineElements.Add(name);
 
-            return listStrLineElements;
+            if (name.Contains(','))
+            {
+                var range = name.Split(',');
+                range.Do(str => str.Trim());
+                foreach (var str in range)
+                {
+                    foreach (var ret in GetSplitString(str))
+                        yield return ret;
+                }
+            }
+            else if (name.Contains(';'))
+            {
+                var range = name.Split(';');
+                range.Do(str => str.Trim());
+                foreach (var str in range)
+                {
+                    foreach (var ret in GetSplitString(str))
+                        yield return ret;
+                }
+            }
+            else if (name.Contains('.'))
+            {
+                if (name.CharacterCount('.') != 1)
+                {
+                    var ind = name.LastIndexOf('.');
+
+                    yield return name.Remove(ind, 1).Insert(ind, ":").Trim();
+                }
+                else if (name.CharacterCount('.') == 1)
+                {
+                    yield return name.Replace(".", ":").Trim();
+                }
+            }
+            else
+                yield return name.Trim();
+
         }
 
         private static void Notify(string message)
@@ -71,7 +98,7 @@ namespace DubsAnalyzer
             }
             catch (Exception e)
             {
-                if(!silence)
+                if (!silence)
                     Error($"failed to locate method {name}, errored with the message {e.Message}");
                 return true;
             }
@@ -106,10 +133,10 @@ namespace DubsAnalyzer
             {
                 Analyzer.harmony.Patch(method, pre, post);
             }
-            catch (Exception e) 
-            { 
-                if(display)
-                    Error($"Failed to log method {method.Name} errored with the message {e.Message}"); 
+            catch (Exception e)
+            {
+                if (display)
+                    Error($"Failed to log method {method.Name} errored with the message {e.Message}");
             }
 
             if (display)
@@ -127,10 +154,10 @@ namespace DubsAnalyzer
         {
             var patches = Harmony.GetPatchInfo(method);
 
-            foreach (Patch patch in patches.Prefixes)       yield return patch.PatchMethod;
-            foreach (Patch patch in patches.Postfixes)      yield return patch.PatchMethod;
-            foreach (Patch patch in patches.Transpilers)    yield return patch.PatchMethod;
-            foreach (Patch patch in patches.Finalizers)     yield return patch.PatchMethod;
+            foreach (Patch patch in patches.Prefixes) yield return patch.PatchMethod;
+            foreach (Patch patch in patches.Postfixes) yield return patch.PatchMethod;
+            foreach (Patch patch in patches.Transpilers) yield return patch.PatchMethod;
+            foreach (Patch patch in patches.Finalizers) yield return patch.PatchMethod;
         }
         public static void PatchMethodPatches(string name, HarmonyMethod pre, HarmonyMethod post, bool display = true)
         {
@@ -194,7 +221,7 @@ namespace DubsAnalyzer
                     }
                 }
             }
-            if(display)
+            if (display)
                 Warn("Failed to locate method to unpatch");
         }
         public static void UnpatchMethodsOnMethod(string name)
@@ -251,7 +278,7 @@ namespace DubsAnalyzer
             }
             catch (Exception e)
             {
-                if(display)
+                if (display)
                     Error($"Failed to locate type {name}, errored with the message {e.Message}");
                 return;
             }
@@ -269,7 +296,7 @@ namespace DubsAnalyzer
             {
                 if (PatchedTypes.Contains(type.FullName))
                 {
-                    if(display)
+                    if (display)
                         Warn($"patching {type.FullName} failed, already patched");
                     return;
                 }
@@ -283,20 +310,20 @@ namespace DubsAnalyzer
                         {
                             Analyzer.harmony.Patch(method, pre, post);
                         }
-                        catch (Exception e) 
+                        catch (Exception e)
                         {
-                            if(display)
+                            if (display)
                                 Warn($"Failed to log method {method.Name} errored with the message {e.Message}");
                         }
                         PatchedMethods.Add(method.Name);
                     }
                 }
-                if(display)
+                if (display)
                     Notify($"Patched {type.FullName}");
             }
             catch (Exception e)
             {
-                if(display)
+                if (display)
                     Error($"catch. patching {type.FullName} failed, {e.Message}");
             }
         }
@@ -309,7 +336,7 @@ namespace DubsAnalyzer
             }
             catch (Exception e)
             {
-                if(display)
+                if (display)
                     Error($"Failed to locate type {name}, errored with the message {e.Message}");
                 return;
             }
@@ -339,12 +366,12 @@ namespace DubsAnalyzer
                     }
                 }
 
-                if(display)
+                if (display)
                     Notify($"Sucessfully Patched the methods patching {type.FullName}");
             }
             catch (Exception e)
             {
-                if(display)
+                if (display)
                     Error($"patching {type.FullName} failed, {e.Message}");
             }
         }
@@ -371,7 +398,7 @@ namespace DubsAnalyzer
         }
         public static void UnPatchTypePatches(Type type, bool display = true)
         {
-            if(type == null)
+            if (type == null)
             {
                 if (display)
                     Error("Cannnot unpatch null");
@@ -413,7 +440,7 @@ namespace DubsAnalyzer
             }
             catch (Exception e)
             {
-                if(display)
+                if (display)
                     Error($"Failed to locate method {name}, errored with the message {e.Message}");
                 return;
             }
@@ -423,7 +450,7 @@ namespace DubsAnalyzer
         {
             if (InternalMethodUtility.PatchedInternals.Contains(method))
             {
-                if(display)
+                if (display)
                     Warn("Trying to re-transpile an already profiled internal method");
                 return;
             }
@@ -434,14 +461,14 @@ namespace DubsAnalyzer
             try
             {
                 AnalyzerState.MakeAndSwitchTab(method.Name + "-int");
-                
+
                 InternalMethodUtility.curMeth = method;
                 InternalMethodUtility.PatchedInternals.Add(method);
                 InternalMethodUtility.Harmony.Patch(method, null, null, InternalMethodUtility.InternalProfiler);
             }
             catch (Exception e)
             {
-                if(display)
+                if (display)
                     Error("Failed to patch internal methods, failed with the error " + e.Message);
                 InternalMethodUtility.PatchedInternals.Remove(method);
             }
@@ -456,7 +483,7 @@ namespace DubsAnalyzer
             }
             catch (Exception e)
             {
-                if(display)
+                if (display)
                     Error($"Failed to locate method {name}, errored with the message {e.Message}");
                 return;
             }
@@ -464,9 +491,9 @@ namespace DubsAnalyzer
         }
         public static void UnpatchInternalMethod(MethodInfo method, bool display = true)
         {
-            if(!InternalMethodUtility.PatchedInternals.Contains(method))
+            if (!InternalMethodUtility.PatchedInternals.Contains(method))
             {
-                if(display)
+                if (display)
                     Warn($"There is no method with the name {method.Name} that has been noted as profiled");
                 return;
             }
@@ -494,15 +521,15 @@ namespace DubsAnalyzer
         {
             var mod = LoadedModManager.RunningMods.FirstOrDefault(m => m.Name == name || m.PackageId == name.ToLower());
 
-            if(display)
+            if (display)
                 Notify($"Mod is null? {mod == null}");
-            if(mod != null)
+            if (mod != null)
             {
-                if(display)
+                if (display)
                     Notify($"Assembly count: { mod.assemblies?.loadedAssemblies?.Count ?? 0}");
-                foreach(var ass in mod.assemblies?.loadedAssemblies)
+                foreach (var ass in mod.assemblies?.loadedAssemblies)
                 {
-                    if(display)
+                    if (display)
                         Notify($"Assembly named: {ass.FullName}, located at {ass.Location}");
                 }
             }
@@ -520,7 +547,7 @@ namespace DubsAnalyzer
             }
             else
             {
-                if(display)
+                if (display)
                     Error($"Failed to patch {name}");
             }
         }
@@ -532,7 +559,7 @@ namespace DubsAnalyzer
                 {
                     if (PatchedAssemblies.Contains(assembly.FullName))
                     {
-                        if(display)
+                        if (display)
                             Warn($"patching {assembly.FullName} failed, already patched");
                         return;
                     }
@@ -544,12 +571,12 @@ namespace DubsAnalyzer
                             PatchTypeFull(type, pre, post, display);
                     }
 
-                    if(display)
+                    if (display)
                         Notify($"Patched {assembly.FullName}");
                 }
                 catch (Exception e)
                 {
-                    if(display)
+                    if (display)
                         Error($"catch. patching {assembly.FullName} failed, {e.Message}");
                 }
             }

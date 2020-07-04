@@ -52,7 +52,6 @@ namespace DubsAnalyzer
                 stopwatch.Stop();
                 HitCounter++;
 
-
                 //if (key == AnalyzerState.CurrentProfileKey)
                 //    if (HitCounter < MAX_ADD_INFO_PER_FRAME && !AnalyzerState.HideStatistics)
                 //        StackTraceRegex.Add(new System.Diagnostics.StackTrace(3, false));

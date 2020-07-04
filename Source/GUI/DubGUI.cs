@@ -37,8 +37,8 @@ namespace DubsAnalyzer
             left.Insert(0, " "); right.Insert(0, " ");
 
             var grongo = Text.CalcHeight(left, listing.ColumnWidth / 3f);
-            var gronk = Text.CalcHeight(middle, (listing.ColumnWidth / 3f - 5f));
-            var shiela = Text.CalcHeight(right, (listing.ColumnWidth / 2f - 5f));
+            var gronk = Text.CalcHeight(middle, (listing.ColumnWidth / 3f) - 5);
+            var shiela = Text.CalcHeight(right, (listing.ColumnWidth / 3f) - 5);
 
 
             var rect = listing.GetRect(Mathf.Max(Mathf.Max(grongo, gronk), shiela));

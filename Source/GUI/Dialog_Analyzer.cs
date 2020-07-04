@@ -814,13 +814,15 @@ namespace DubsAnalyzer
             public static Vector2 ScrollPosition = Vector2.zero;
             public GameFont font = GameFont.Tiny;
             public float CurX = 0;
-
             public AdditionalInfo(Dialog_Analyzer super)
             {
                 this.super = super;
                 this.graph = new Graph(this);
             }
 
+            /*
+             * Bottom Panel
+             */
             public void Draw(Rect rect)
             {
                 var oldFont = Text.Font;
@@ -853,111 +855,22 @@ namespace DubsAnalyzer
                 Text.Font = oldFont;
                 CurX = 0;
             }
-            public void DrawPanel(Rect rect)
+            private float GetLongestStat()
             {
-                listing = new Listing_Standard();
+                string[] s1 = new string[]{
+                $" Entries: {CurrentLogStats.stats.Entries}", $" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms",
+                $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}",
+                $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms",
+                $" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}", $" % in category {AnalyzerState.CurrentLog.Average_s}"};
 
-                var ListerBox = rect.TopPart(.75f);
-                ListerBox.width -= 10f;
-                Widgets.DrawMenuSection(ListerBox);
-                ListerBox = ListerBox.AtZero();
-
-                { // Begin Scope for Scroll & GUI Group/View
-                    Widgets.BeginScrollView(rect, ref ScrollPosition, ListerBox);
-                    GUI.BeginGroup(ListerBox);
-                    listing.Begin(ListerBox);
-
-                    DrawGeneralSidePanel();
-                    DrawStatistics();
-                    if (Analyzer.Settings.AdvancedMode)
-                    {
-                        DrawStackTraceSidePanel();
-                        DrawHarmonyOptionsSidePanel();
-                    }
-
-                    listing.End();
-                    GUI.EndGroup();
-                    Widgets.EndScrollView();
-                }
-                var GraphBox = rect.BottomPart(.25f);
-                GraphBox.width -= 10f;
-                graph.Draw(GraphBox);
-            }
-
-            private void DrawGeneralSidePanel()
-            {
-                DubGUI.Heading(listing, "General");
-                Text.Font = font;
-
-                if (AnalyzerState.CurrentProfiler()?.meth != null)
+                Vector2 vec = Vector2.zero;
+                foreach (var str in s1)
                 {
-                    var ass = AnalyzerState.CurrentProfiler().meth.DeclaringType.Assembly.FullName;
-                    var assname = "";
-                    if (ass.Contains("Assembly-CSharp"))
-                        assname = "Rimworld - Core";
-                    else if (ass.Contains("UnityEngine"))
-                        assname = "Rimworld - Unity";
-                    else if (ass.Contains("System"))
-                        assname = "Rimworld - System";
-                    else
-                    {
-                        try
-                        {
-                            assname = AnalyzerCache.AssemblyToModname[ass];
-                        }
-                        catch (Exception) { assname = "Failed to locate assembly information"; }
-                    }
-
-                    DubGUI.InlineDoubleMessage($" Method Name: {AnalyzerState.CurrentProfiler().meth.Name}", $" From the mod: {assname}", listing, true);
-
-                    Color color = GUI.color;
-                    if (Analyzer.Settings.AdvancedMode)
-                    {
-                        DubGUI.InlineDoubleMessage($" Declaring Type: {AnalyzerState.CurrentProfiler().meth.DeclaringType.Name}", $" From the assembly: {ass.Split(',').First()}.dll", listing, false);
-                    }
-
-                    GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
-                    Widgets.DrawLineVertical(listing.ColumnWidth / 2, listing.curY, 6f);
-                    GUI.color = color;
-
-                    if (Analyzer.Settings.DevMode)
-                    {
-                        var buttonsRect = listing.GetRect(40);
-                        if (Widgets.ButtonText(buttonsRect.RightPartPixels(80), "Github Search", false, true))
-                        {
-                            Application.OpenURL(@"https://github.com/search?l=C%23&q=" + $"{AnalyzerState.CurrentProfiler().meth.DeclaringType}.{AnalyzerState.CurrentProfiler().meth.Name}" + "&type=Code");
-                        }
-
-                        if (Widgets.ButtonText(buttonsRect.LeftPartPixels(120), "Open in Dnspy", false, true))
-                        {
-                            var meth = AnalyzerState.CurrentProfiler().meth;
-                            var path = meth.DeclaringType.Assembly.Location;
-                            if (path == null || path.Length == 0)
-                            {
-                                var contentPack = LoadedModManager.RunningMods.FirstOrDefault(m => m.assemblies.loadedAssemblies.Contains(meth.DeclaringType.Assembly));
-                                if (contentPack != null)
-                                {
-                                    path = ModContentPack.GetAllFilesForModPreserveOrder(contentPack, "Assemblies/", p => p.ToLower() == ".dll", null)
-                                        .Select(fileInfo => fileInfo.Item2.FullName)
-                                        .First(dll =>
-                                        {
-                                            var assembly = Assembly.ReflectionOnlyLoadFrom(dll);
-                                            return assembly.GetType(meth.DeclaringType.FullName) != null;
-                                        });
-                                }
-                            }
-
-                            var token = meth.MetadataToken;
-                            if (token != 0) 
-                                Process.Start(Analyzer.Settings.PathToDnspy, $"\"{path}\" --select 0x{token:X8}");
-                        }
-                    }
+                    if (Text.CalcSize(str).x > vec.x)
+                        vec = Text.CalcSize(str);
                 }
-                else
-                {
-                    listing.Label("Failed to grab the method associated with this entry - please report this");
-                }
-                listing.GapLine();
+
+                return vec.x;
             }
             private void DrawGeneral(Rect rect)
             {
@@ -991,34 +904,116 @@ namespace DubsAnalyzer
                 }
             }
 
-            private float GetLongestStat()
+            /*
+             * Side Panel
+             */
+            public void DrawPanel(Rect rect)
             {
-                string[] s1 = new string[]{
-                $" Entries: {CurrentLogStats.stats.Entries}", $" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms",
-                $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}",
-                $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms",
-                $" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}", $" % in category {AnalyzerState.CurrentLog.Average_s}"};
+                listing = new Listing_Standard();
 
-                Vector2 vec = Vector2.zero;
-                foreach (var str in s1)
-                {
-                    if (Text.CalcSize(str).x > vec.x)
-                        vec = Text.CalcSize(str);
+                var ListerBox = rect.TopPart(.75f);
+                ListerBox.width -= 10f;
+                Widgets.DrawMenuSection(ListerBox);
+                ListerBox = ListerBox.AtZero();
+
+                { // Begin Scope for Scroll & GUI Group/View
+                    Widgets.BeginScrollView(rect, ref ScrollPosition, ListerBox);
+                    GUI.BeginGroup(ListerBox);
+                    listing.Begin(ListerBox);
+
+                    DrawGeneralSidePanel();
+                    DrawStatisticsSidePanel();
+                    if (Analyzer.Settings.AdvancedMode)
+                    {
+                        DrawStackTraceSidePanel();
+                        DrawHarmonyOptionsSidePanel();
+                    }
+
+                    listing.End();
+                    GUI.EndGroup();
+                    Widgets.EndScrollView();
                 }
-
-                return vec.x;
+                var GraphBox = rect.BottomPart(.25f);
+                GraphBox.width -= 10f;
+                graph.Draw(GraphBox);
             }
 
-            private void DrawStatistics()
+            private void DrawGeneralSidePanel()
+            {
+                DubGUI.Heading(listing, "General");
+                Text.Font = font;
+
+                if (AnalyzerState.CurrentProfiler()?.meth != null)
+                {
+                    var ass = AnalyzerState.CurrentProfiler().meth.DeclaringType.Assembly.FullName;
+                    var assname = "";
+                    if (ass.Contains("Assembly-CSharp")) assname = "Rimworld - Core";
+                    else if (ass.Contains("UnityEngine")) assname = "Rimworld - Unity";
+                    else if (ass.Contains("System")) assname = "Rimworld - System";
+                    else
+                    {
+                        try
+                        {
+                            assname = AnalyzerCache.AssemblyToModname[ass];
+                        }
+                        catch (Exception) { assname = "Failed to locate assembly information"; }
+                    }
+
+                    DubGUI.InlineDoubleMessage($" Method Name: {AnalyzerState.CurrentProfiler().meth.Name}", $" From the mod: {assname}", listing, true);
+
+                    Color color = GUI.color;
+                    if (Analyzer.Settings.AdvancedMode)
+                        DubGUI.InlineDoubleMessage($" Declaring Type: {AnalyzerState.CurrentProfiler().meth.DeclaringType.Name}", $" From the assembly: {ass.Split(',').First()}.dll", listing, false);
+
+                    GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
+                    Widgets.DrawLineVertical(listing.ColumnWidth / 2, listing.curY, 6f);
+                    GUI.color = color;
+
+                    if (Analyzer.Settings.DevMode)
+                    {
+                        var buttonsRect = listing.GetRect(40);
+                        buttonsRect = buttonsRect.ContractedBy(5f);
+                        if (Widgets.ButtonText(buttonsRect.RightPartPixels(80), "Github Search", false, true))
+                        {
+                            Application.OpenURL(@"https://github.com/search?l=C%23&q=" + $"{AnalyzerState.CurrentProfiler().meth.DeclaringType}.{AnalyzerState.CurrentProfiler().meth.Name}" + "&type=Code");
+                        }
+
+                        if (Widgets.ButtonText(buttonsRect.LeftPartPixels(120), "Open in Dnspy", false, true))
+                        {
+                            var meth = AnalyzerState.CurrentProfiler().meth;
+                            var path = meth.DeclaringType.Assembly.Location;
+                            if (path == null || path.Length == 0)
+                            {
+                                var contentPack = LoadedModManager.RunningMods.FirstOrDefault(m => m.assemblies.loadedAssemblies.Contains(meth.DeclaringType.Assembly));
+                                if (contentPack != null)
+                                {
+                                    path = ModContentPack.GetAllFilesForModPreserveOrder(contentPack, "Assemblies/", p => p.ToLower() == ".dll", null)
+                                        .Select(fileInfo => fileInfo.Item2.FullName)
+                                        .First(dll =>
+                                        {
+                                            var assembly = Assembly.ReflectionOnlyLoadFrom(dll);
+                                            return assembly.GetType(meth.DeclaringType.FullName) != null;
+                                        });
+                                }
+                            }
+                            var token = meth.MetadataToken;
+                            if (token != 0) 
+                                Process.Start(Analyzer.Settings.PathToDnspy, $"\"{path}\" --select 0x{token:X8}");
+                        }
+                    }
+                }
+                else
+                {
+                    listing.Label("Failed to grab the method associated with this entry - please report this");
+                }
+                listing.GapLine();
+            }
+
+            private void DrawStatisticsSidePanel()
             {
                 if (Analyzer.Settings.DevMode)
                 {
                     DubGUI.CollapsableHeading(listing, "Statistics", ref AnalyzerState.HideStatistics);
-                    Text.Font = font;
-                }
-                else
-                {
-                    DubGUI.Heading(listing, "Statistics");
                     Text.Font = font;
                 }
 
@@ -1040,19 +1035,14 @@ namespace DubsAnalyzer
                     if (!AnalyzerState.HideStatistics)
                     {
                         lock (CurrentLogStats.sync)
-                        {
-                            DrawStatsPageSidePanel();
+                        {   
+                            DubGUI.InlineTripleMessage($" Entries: {CurrentLogStats.stats.Entries}", $" Σ Calls: {CurrentLogStats.stats.TotalCalls}", $" Σ Time: {CurrentLogStats.stats.TotalTime:0.000}ms ", listing, true);
+                            DubGUI.InlineTripleMessage($" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms", $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms ", listing, true);
+                            DubGUI.InlineTripleMessage($" % in category {AnalyzerState.CurrentLog.Average_s}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms ", listing, true);
+                            DubGUI.InlineDoubleMessage($" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count} ", listing, true);
                         }
                     }
                 }
-            }
-
-            private void DrawStatsPageSidePanel()
-            {
-                DubGUI.InlineTripleMessage($" Entries: {CurrentLogStats.stats.Entries}", $" Σ Calls: {CurrentLogStats.stats.TotalCalls}", $" Σ Time: {CurrentLogStats.stats.TotalTime:0.000}ms", listing, true);
-                DubGUI.InlineTripleMessage($" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms", $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}", listing, true);
-                DubGUI.InlineTripleMessage($" % in category {AnalyzerState.CurrentLog.Average_s}", $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms", listing, true);
-                DubGUI.InlineDoubleMessage($" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}", listing, true);
             }
 
             private void DrawStackTraceSidePanel()

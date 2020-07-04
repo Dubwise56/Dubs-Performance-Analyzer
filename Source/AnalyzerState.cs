@@ -106,6 +106,7 @@ namespace DubsAnalyzer
                 if (profileTab.UpdateMode == UpdateMode.Update)
                 {
                     ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType, true);
+
                     mode.IsPatched = true;
                     profileTab.Modes.Add(mode, null);
                     break;
@@ -114,10 +115,10 @@ namespace DubsAnalyzer
 
             SwapTab(tabName, UpdateMode.Update);
         }
-        
+
         public static void RemoveTab(KeyValuePair<ProfileMode, Type> tab)
         {
-            foreach(var profileTab in SideTabCategories)
+            foreach (var profileTab in SideTabCategories)
             {
                 var deletedTab = profileTab.Modes.Where(t => t.Key == tab.Key);
                 if (deletedTab == null || deletedTab.Count() == 0 || deletedTab.First().Key == null) continue;
@@ -165,7 +166,7 @@ namespace DubsAnalyzer
         {
             if (State == CurrentState.Uninitialised)
                 Dialog_Analyzer.Reboot();
-            
+
             if (!(CurrentSideTabCategory == UpdateToSideTab(updateMode)))
             {
                 CurrentSideTabCategory = UpdateToSideTab(updateMode);
@@ -179,7 +180,7 @@ namespace DubsAnalyzer
             CurrentTab = mode.Key;
             CurrentProfileKey = "Overview";
             ResetState();
-                
+
             if (!mode.Key.IsPatched)
                 mode.Key.ProfilePatch();
         }
@@ -192,10 +193,10 @@ namespace DubsAnalyzer
         {
             switch (updateMode)
             {
-                case UpdateMode.Dead:   return SideTabCategory.Home;
-                case UpdateMode.Tick:   return SideTabCategory.Tick;
+                case UpdateMode.Dead: return SideTabCategory.Home;
+                case UpdateMode.Tick: return SideTabCategory.Tick;
                 case UpdateMode.Update: return SideTabCategory.Update;
-                case UpdateMode.GUI:    return SideTabCategory.GUI;
+                case UpdateMode.GUI: return SideTabCategory.GUI;
             }
             return SideTabCategory.ModderAdded;
         }

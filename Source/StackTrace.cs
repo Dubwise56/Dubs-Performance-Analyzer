@@ -23,7 +23,8 @@ namespace DubsAnalyzer
 
         public static void Add(StackTrace trace)
         {
-            var key = QuickKey(trace);
+            var key = trace.ToString();
+
             if (traces.ContainsKey(key))
             {
                 traces[key].Count++;
@@ -66,6 +67,7 @@ namespace DubsAnalyzer
 
         private static string QuickKey(StackTrace stackTrace)
         {
+            
             StringBuilder builder = new StringBuilder();
             foreach (var frame in stackTrace.GetFrames())
                 builder.Append(frame.GetMethod().Name);
