@@ -420,6 +420,11 @@ namespace DubsAnalyzer
             Text.Anchor = TextAnchor.UpperLeft;
             TooltipHandler.TipRegion(rowby, "garbageTip".Translate());
 
+            //if (Widgets.ButtonInvisible(rowby))
+            //{
+            //    GC.RegisterForFullGCNotification();
+            //}
+
             rowby.x = rowby.xMax + 5;
             rowby.width = 50f;
             Widgets.Label(rowby, H_RootUpdate._fpsText);
