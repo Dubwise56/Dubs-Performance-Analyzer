@@ -13,6 +13,9 @@ namespace DubsAnalyzer
 {
     public static class Dialog_DeveloperSettings
     {
+        public enum UtilInput { SubTypes, ImplementedMethods }
+        public static UtilInput input = UtilInput.SubTypes;
+        public static string currentInput = null;
         public static void DrawOptions(Listing_Standard listing)
         {
             var left = listing.GetRect(Text.LineHeight * 11); // the average height of this is ~226, which is 10.2 * Text.LineHeight
@@ -22,7 +25,59 @@ namespace DubsAnalyzer
             PatchOptions.DrawPatches(left);
             PatchOptions.DrawUnPatches(right);
 
-            DubGUI.CenterText(() => listing.Label("Utilites"));
+            // maybe you want to get to this later.. doesn't work great
+
+            //DubGUI.CenterText(() => listing.Label("Utilites"));
+
+            //var rect = listing.GetRect((Text.LineHeight + 3) * 2);
+            //var rightRect = rect.RightPart(.48f);
+            //rect = rect.LeftPart(.48f);
+
+            //DubGUI.OptionalBox(rect.TopPart(0.48f), "input.subtypes".Translate(), () => input = UtilInput.SubTypes, input == UtilInput.SubTypes);
+            //DubGUI.OptionalBox(rect.BottomPart(0.48f), "input.methodimplementations".Translate(), () => input = UtilInput.ImplementedMethods, input == UtilInput.ImplementedMethods);
+            //DisplayUtilInputField(listing);
+            //if (Widgets.ButtonText(listing.GetRect(Text.CalcHeight("patch".Translate(), listing.ColumnWidth/2.0f)).LeftPart(.48f), "patch".Translate()))
+            //    if (currentInput != null)
+            //        ExecuteUtilPatch();
+
+        }
+
+        public static void DisplayUtilInputField(Listing_Standard listing)
+        {
+            string FieldDescription = null;
+
+            switch (input)
+            {
+                case UtilInput.SubTypes: FieldDescription = "Type"; break;
+                case UtilInput.ImplementedMethods: FieldDescription = "Type:Method"; break;
+            }
+
+            Rect inputBox = listing.GetRect(Text.LineHeight);
+            inputBox = inputBox.LeftPart(.48f);
+            DubGUI.InputField(inputBox, FieldDescription, ref currentInput, ShowName: true);
+        }
+
+        public static void ExecuteUtilPatch()
+        {
+            if (input == UtilInput.SubTypes)
+            {
+                foreach (var subType in AccessTools.TypeByName(currentInput).AllSubclasses())
+                {
+                    CustomProfilersUpdate.PatchType(subType.FullName);
+                }
+                AnalyzerState.SwapTab("Custom Update", UpdateMode.Update);
+            }
+            else
+            {
+                foreach (var subType in AccessTools.Method(currentInput).DeclaringType.AllSubclasses())
+                {
+                    foreach (var method in subType.GetMethods().Where(m => m.Name == currentInput))
+                    {
+                        CustomProfilersUpdate.PatchMeth(method.DeclaringType.FullName + ":" + method.Name);
+                    }
+                }
+                AnalyzerState.SwapTab("Custom Update", UpdateMode.Update);
+            }
         }
 
         internal static class PatchOptions
@@ -175,7 +230,7 @@ namespace DubsAnalyzer
                     case UnPatchType.All: Analyzer.UnPatchMethods(true); break;
                 }
             }
-        
+
             internal static class SearchBar
             {
                 public static Rect searchBoxRect;
@@ -350,6 +405,6 @@ namespace DubsAnalyzer
                 }
             }
         }
-            
+
     }
 }

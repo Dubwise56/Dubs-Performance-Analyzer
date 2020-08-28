@@ -66,7 +66,7 @@ namespace DubsAnalyzer
             GUI.color = color;
         }
 
-        public static void InlineDoubleMessage(string left, string right, Listing_Standard listing, bool capOff)
+        public static Rect InlineDoubleMessage(string left, string right, Listing_Standard listing, bool capOff)
         {
             left.Insert(0,  " "); right.Insert(0, " ");
 
@@ -74,6 +74,7 @@ namespace DubsAnalyzer
             var gronk = Text.CalcHeight(right, (listing.ColumnWidth/2 - 5f));
 
             var rect = listing.GetRect(Mathf.Max(grongo, gronk));
+            var rr = rect;
 
             var anchor = Text.Anchor;
             Text.Anchor = TextAnchor.MiddleCenter;
@@ -85,6 +86,31 @@ namespace DubsAnalyzer
             Widgets.Label(rightRect, right);
 
             Text.Anchor = anchor;
+
+            Color color = GUI.color;
+            GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
+            Widgets.DrawLineVertical(rect.center.x, rect.y, rect.height);
+            if (capOff)
+                Widgets.DrawLineHorizontal(rect.x, rect.y + rect.height, rect.width);
+            GUI.color = color;
+
+            return rr;
+        }
+
+        public static void InlineDoubleMessageNC(string left, string right, Listing_Standard listing, bool capOff)
+        {
+            left.Insert(0, " "); right.Insert(0, " ");
+
+            var grongo = Text.CalcHeight(left, listing.ColumnWidth / 2);
+            var gronk = Text.CalcHeight(right, (listing.ColumnWidth / 2 - 5f));
+
+            var rect = listing.GetRect(Mathf.Max(grongo, gronk));
+
+            var leftRect = rect.LeftPart(.5f);
+            Widgets.Label(leftRect, left);
+            var rightRect = rect.RightPart(.5f);
+            rightRect.x += 5;
+            Widgets.Label(rightRect, right);
 
             Color color = GUI.color;
             GUI.color = color * new Color(1f, 1f, 1f, 0.4f);

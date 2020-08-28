@@ -108,7 +108,8 @@ namespace DubsAnalyzer
                     ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType, true);
 
                     mode.IsPatched = true;
-                    profileTab.Modes.Add(mode, null);
+                    mode.SetActive(true);
+                    profileTab.Modes.Add(mode, myType);
                     break;
                 }
             }

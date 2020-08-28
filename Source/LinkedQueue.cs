@@ -48,7 +48,7 @@ namespace DubsAnalyzer
             this.MaxValues = maxValue;
         }
 
-        public LinkedQueue(IEnumerable<T> collection, int maxValue)
+        public LinkedQueue(IEnumerable<T> collection, int maxValue = int.MaxValue)
         {
             tail = null;
             head = tail;
@@ -56,7 +56,6 @@ namespace DubsAnalyzer
             foreach (T item in collection)
             {
                 Enqueue(item);
-                count++;
             }
         }
 

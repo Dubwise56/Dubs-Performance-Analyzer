@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,6 +88,26 @@ namespace DubsAnalyzer
             {
                 Dialog_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.NegativeEvent, false); });
             }
+        }
+
+
+        private static bool ValidMethod(MethodInfo method, bool silence)
+        {
+            if (method == null)
+            {
+                if (!silence) Error("Null MethodInfo");
+                return false;
+            }
+
+            if (!method.HasMethodBody())
+            {
+                if (!silence) Error("Does not have a methodbody");
+                return false;
+            }
+
+            
+
+            return true;
         }
 
         private static bool GetMethod(string name, bool silence, out MethodInfo methodInfo)
@@ -304,11 +325,15 @@ namespace DubsAnalyzer
 
                 foreach (var method in AccessTools.GetDeclaredMethods(type))
                 {
-                    if (!PatchedMethods.Contains(method.Name) && method.DeclaringType == type && !method.IsSpecialName && !method.IsAssembly && method.HasMethodBody())
+                    if (!PatchedMethods.Contains(method.Name) && method.DeclaringType == type && !method.IsSpecialName && !method.IsAssembly && method.HasMethodBody() && !method.IsGenericMethod)
                     {
                         try
                         {
-                            Analyzer.harmony.Patch(method, pre, post);
+                            var bytes = method.GetMethodBody()?.GetILAsByteArray();
+                            if (!(bytes?.Length == 0 || bytes?.Length == 1 && bytes.First() == 0x2A))
+                            {
+                                Analyzer.harmony.Patch(method, pre, post);
+                            }
                         }
                         catch (Exception e)
                         {

@@ -226,25 +226,22 @@ namespace DubsAnalyzer
         {
             if (!AnalyzerState.CurrentlyRunning) return null;
 
-            try
+
+            if (AnalyzerState.CurrentProfiles.TryGetValue(key, out var prof))
+                return prof.Start();
+            else
             {
-                var prof = AnalyzerState.CurrentProfiles[key];
-                prof.Start();
-                return prof;
+
+                if (GetLabel != null)
+                    AnalyzerState.CurrentProfiles[key] = new Profiler(key, GetLabel(), type, def, thing, meth);
+                else
+                    AnalyzerState.CurrentProfiles[key] = new Profiler(key, key, type, def, thing, meth);
+
+                prof = AnalyzerState.CurrentProfiles[key];
+                return prof.Start();
             }
-            catch (Exception)
-            {
-                if (!AnalyzerState.CurrentProfiles.ContainsKey(key))
-                {
-                    if (GetLabel != null)
-                        AnalyzerState.CurrentProfiles[key] = new Profiler(key, GetLabel(), type, def, thing, meth);
-                    else
-                        AnalyzerState.CurrentProfiles[key] = new Profiler(key, key, type, def, thing, meth);
-                }
-                var prof = AnalyzerState.CurrentProfiles[key];
-                prof.Start();
-                return prof;
-            }
+
+
         }
 
         public static void Stop(string key)
@@ -253,7 +250,7 @@ namespace DubsAnalyzer
             {
                 AnalyzerState.CurrentProfiles[key].Stop();
             }
-            catch (Exception) { }
+            catch { }
         }
 
         public static void UnPatchMethods(bool forceThrough = false)
@@ -282,7 +279,7 @@ namespace DubsAnalyzer
 
             AnalyzerState.State = CurrentState.Unpatching;
 
-            Log.Message("Beginning to unpatch methods");
+            Log.Message("Analyzer: Beginning to unpatch methods");
 
             ClearState();
             harmony.UnpatchAll(harmony.Id);

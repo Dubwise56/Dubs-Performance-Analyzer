@@ -47,7 +47,7 @@ namespace DubsAnalyzer
         public bool Basics = false;
         public Thread Patchinator = null;
         public bool Closable = false;
-
+        
         public void SetActive(bool b)
         {
             if (typeRef != null)
@@ -61,6 +61,8 @@ namespace DubsAnalyzer
         public static ProfileMode Create(string name, UpdateMode mode, string tip = null, bool basics = false, Type profilerClass = null, bool closable = false)
         {
             var getit = instances.FirstOrDefault(x => x.name == name && x.mode == mode);
+            if(profilerClass != null && getit != null) 
+                getit.typeRef = profilerClass;
             if (getit != null)
             {
                 return getit;
@@ -91,10 +93,6 @@ namespace DubsAnalyzer
             return null;
         }
 
-        //public void Stop(string key)
-        //{
-        //    //if (Active) Analyzer.Stop(key);
-        //}
         public void ProfilePatch()
         {
             if (Patchinator == null)

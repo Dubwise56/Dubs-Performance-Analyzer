@@ -41,7 +41,11 @@ namespace DubsAnalyzer
             History = new ProfilerHistory(Analyzer.MaxHistoryEntries);
         }
 
-        public void Start() => stopwatch.Start();
+        public Profiler Start()
+        {
+            stopwatch.Start();
+            return this;
+        }
 
         public void Stop()
         {
@@ -53,10 +57,11 @@ namespace DubsAnalyzer
                 HitCounter++;
 
                 //if (key == AnalyzerState.CurrentProfileKey)
-                //    if (HitCounter < MAX_ADD_INFO_PER_FRAME && !AnalyzerState.HideStatistics)
-                //        StackTraceRegex.Add(new System.Diagnostics.StackTrace(3, false));
+                //if (HitCounter < MAX_ADD_INFO_PER_FRAME && !AnalyzerState.HideStatistics)
+                //    StackTraceRegex.Add(new System.Diagnostics.StackTrace(2, false));
 
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Log.Warning($"Analyzer: Stop() failed with the error {e.Message}");
             }

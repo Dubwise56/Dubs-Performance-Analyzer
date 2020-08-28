@@ -191,111 +191,122 @@ namespace DubsAnalyzer
         {
             if (Event.current.type == EventType.Layout) return;
 
-            cachedWidth = windowRect.width;
-
-            /*
-             * Draw our side tab, including our:
-             * - Categories (Home, Modding Tools, Tick, Update, GUI)
-             * - Content (Modes inside each of the above categories)
-             */
-            sideTab.Draw(canvas);
-
-            /*
-             * Draw the actual screen we want, either:
-             * - Home Screen, Modders Tools, or one of the categories
-             */
-            Rect inner = canvas;
-            inner.x += SideTab.width;
-            inner.width -= SideTab.width;
-
-            switch (AnalyzerState.CurrentSideTabCategory)
+            try
             {
-                case SideTabCategory.Home:
-                    if (cache != -1)
-                    {
-                        windowRect.width -= 450;
-                        cache = -1;
-                    }
-                    Analyzer.Settings.DoSettings(inner);
-                    break;
-                default: // We are in one of our categories, which means we want to display our logs
-                    /*
-                     * Draw our top row, we will always show this, unconditionally
-                     */
-                    bool save = false;
+                cachedWidth = windowRect.width;
 
-                    if (!(AnalyzerState.State == CurrentState.Open) || AnalyzerState.CurrentProfileKey == "") // if we aren't currently 'open' draw a loading sign, and leave
-                    {
-                        DrawLoading(inner);
-                        return;
-                    }
+                /*
+                 * Draw our side tab, including our:
+                 * - Categories (Home, Modding Tools, Tick, Update, GUI)
+                 * - Content (Modes inside each of the above categories)
+                 */
+                sideTab.Draw(canvas);
 
-                    if (Analyzer.Settings.SidePanel)
-                    {
-                        if (cache == -1)
-                        {
-                            windowRect.width += 450;
-                            cache = windowRect.width;
-                        }
+                /*
+                 * Draw the actual screen we want, either:
+                 * - Home Screen, Modders Tools, or one of the categories
+                 */
+                Rect inner = canvas;
+                inner.x += SideTab.width;
+                inner.width -= SideTab.width;
 
-                        inner = canvas.LeftPartPixels(Logs.width);
-                        inner.x += SideTab.width;
-
-                        DrawTopRow(inner.TopPartPixels(20f), ref save);
-                        inner.y += 25;
-                        inner.height -= 25;
-                        Widgets.DrawMenuSection(inner);
-                        logs.Draw(inner, save);
-
-                        var AdditionalInfoBox = canvas.RightPartPixels(canvas.width - (Logs.width + SideTab.width - 1f)).Rounded();
-                        if (AnalyzerState.CurrentProfileKey == "Overview")
-                        {
-                            Dialog_StackedGraph.Display(AdditionalInfoBox);
-                        }
-                        else
-                        {
-                            additionalInfo.DrawPanel(AdditionalInfoBox);
-                        }
-                    }
-                    else
-                    {
+                switch (AnalyzerState.CurrentSideTabCategory)
+                {
+                    case SideTabCategory.Home:
                         if (cache != -1)
                         {
                             windowRect.width -= 450;
                             cache = -1;
                         }
+                        Analyzer.Settings.DoSettings(inner);
+                        break;
+                    default: // We are in one of our categories, which means we want to display our logs
+                        /*
+                         * Draw our top row, we will always show this, unconditionally
+                         */
+                        bool save = false;
 
-                        DrawTopRow(inner.TopPartPixels(20f), ref save);
-                        inner.y += 25;
-                        inner.height -= 25;
-
-                        var AdditionalInfoBox = canvas.BottomPart(.5f);
-                        if (AnalyzerState.CurrentProfileKey == "Overview")
+                        if (!(AnalyzerState.State == CurrentState.Open) || AnalyzerState.CurrentProfileKey == "") // if we aren't currently 'open' draw a loading sign, and leave
                         {
+                            DrawLoading(inner);
+                            return;
+                        }
+
+                        if (Analyzer.Settings.SidePanel)
+                        {
+                            if (cache == -1)
+                            {
+                                windowRect.width += 450;
+                                cache = windowRect.width;
+                            }
+
+                            inner = canvas.LeftPartPixels(Logs.width);
+                            inner.x += SideTab.width;
+
+                            DrawTopRow(inner.TopPartPixels(20f), ref save);
+                            inner.y += 25;
+                            inner.height -= 25;
                             Widgets.DrawMenuSection(inner);
                             logs.Draw(inner, save);
-                            Dialog_StackedGraph.Display(AdditionalInfoBox);
+
+                            var AdditionalInfoBox = canvas.RightPartPixels(canvas.width - (Logs.width + SideTab.width - 1f)).Rounded();
+                            if (AnalyzerState.CurrentProfileKey == "Overview")
+                            {
+                                Dialog_StackedGraph.Display(AdditionalInfoBox);
+                            }
+                            else
+                            {
+                                additionalInfo.DrawPanel(AdditionalInfoBox);
+                            }
                         }
                         else
                         {
-                            inner = inner.TopPart(0.5f);
-                            Widgets.DrawMenuSection(inner);
-                            logs.Draw(inner, save);
-                            additionalInfo.Draw(AdditionalInfoBox);
+                            if (cache != -1)
+                            {
+                                windowRect.width -= 450;
+                                cache = -1;
+                            }
+
+                            DrawTopRow(inner.TopPartPixels(20f), ref save);
+                            inner.y += 25;
+                            inner.height -= 25;
+
+                            var AdditionalInfoBox = canvas.BottomPart(.5f);
+                            if (AnalyzerState.CurrentProfileKey == "Overview")
+                            {
+                                Widgets.DrawMenuSection(inner);
+                                logs.Draw(inner, save);
+                                Dialog_StackedGraph.Display(AdditionalInfoBox);
+                            }
+                            else
+                            {
+                                inner = inner.TopPart(0.5f);
+                                Widgets.DrawMenuSection(inner);
+                                logs.Draw(inner, save);
+                                additionalInfo.Draw(AdditionalInfoBox);
+                            }
                         }
-                    }
 
-                    break;
+                        break;
+                }
+
+                // Now we are outside the scope of all of our gui, lets print the messages we had queued during this time
+                lock (messageSync)
+                {
+                    foreach (var action in QueuedMessages)
+                        action();
+
+                    QueuedMessages.Clear();
+                }
             }
-
-            // Now we are outside the scope of all of our gui, lets print the messages we had queued during this time
-            lock (messageSync)
+            catch (Exception e)
             {
-                foreach (var action in QueuedMessages)
-                    action();
+                Log.Error($"[Analyzer] Caught the error {e.Message}, handling and closing scroll and gui scope");
 
-                QueuedMessages.Clear();
+                GUI.EndScrollView();
+                GUI.EndGroup();
             }
+
         }
 
 
@@ -926,7 +937,7 @@ namespace DubsAnalyzer
                     if (Analyzer.Settings.AdvancedMode)
                     {
                         DrawStackTraceSidePanel();
-                        DrawHarmonyOptionsSidePanel();
+                        //DrawHarmonyOptionsSidePanel();
                     }
 
                     listing.End();
@@ -959,63 +970,80 @@ namespace DubsAnalyzer
                         catch (Exception) { assname = "Failed to locate assembly information"; }
                     }
 
-                    DubGUI.InlineDoubleMessage($" Method Name: {AnalyzerState.CurrentProfiler().meth.Name}", $" From the mod: {assname}", listing, true);
+                    DubGUI.InlineDoubleMessage($" Mod: {assname}", $" Assembly: {ass.Split(',').First()}.dll", listing, true);
+                    var anch = Text.Anchor;
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    var str = $"{AnalyzerState.CurrentProfiler().meth.DeclaringType.FullName}:{AnalyzerState.CurrentProfiler().meth.Name}";
+                    var strLen = Text.CalcHeight(str, listing.ColumnWidth * .95f);
 
-                    Color color = GUI.color;
+                    var rect = listing.GetRect(strLen);
+
+                    Widgets.Label(rect, str);
+
                     if (Analyzer.Settings.AdvancedMode)
-                        DubGUI.InlineDoubleMessage($" Declaring Type: {AnalyzerState.CurrentProfiler().meth.DeclaringType.Name}", $" From the assembly: {ass.Split(',').First()}.dll", listing, false);
-
-                    GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
-                    Widgets.DrawLineVertical(listing.ColumnWidth / 2, listing.curY, 6f);
-                    GUI.color = color;
-
-                    if (Analyzer.Settings.DevMode)
                     {
-                        var buttonsRect = listing.GetRect(40);
-                        buttonsRect = buttonsRect.ContractedBy(5f);
-                        if (Widgets.ButtonText(buttonsRect.RightPartPixels(80), "Github Search", false, true))
+                        Widgets.DrawHighlightIfMouseover(rect);
+                        if (Input.GetMouseButtonDown(1) && rect.Contains(Event.current.mousePosition)) // mouse button right
                         {
-                            Application.OpenURL(@"https://github.com/search?l=C%23&q=" + $"{AnalyzerState.CurrentProfiler().meth.DeclaringType}.{AnalyzerState.CurrentProfiler().meth.Name}" + "&type=Code");
+                            List<FloatMenuOption> options = new List<FloatMenuOption>()
+                            {
+                                new FloatMenuOption("Open In Github", () => OpenGithub()),
+                            };
+                            if (Analyzer.Settings.DevMode)
+                            {
+                                options.Add(new FloatMenuOption("Open In Dnspy (requires local path)", () => OpenDnspy()));
+                            }
+                            Find.WindowStack.Add(new FloatMenu(options));
+                        }
+                    }
+
+                    void OpenGithub()
+                    {
+                        Application.OpenURL(@"https://github.com/search?l=C%23&q=" + $"{AnalyzerState.CurrentProfiler().meth.DeclaringType}.{AnalyzerState.CurrentProfiler().meth.Name}" + "&type=Code");
+                    }
+
+                    void OpenDnspy()
+                    {
+                        if (Analyzer.Settings.PathToDnspy == "" || Analyzer.Settings.PathToDnspy == null)
+                        {
+                            Log.ErrorOnce("You have not given a local path to dnspy", 10293838);
+                            return;
                         }
 
-                        if (Widgets.ButtonText(buttonsRect.LeftPartPixels(120), "Open in Dnspy", false, true))
+                        var meth = AnalyzerState.CurrentProfiler().meth;
+                        var path = meth.DeclaringType.Assembly.Location;
+                        if (path == null || path.Length == 0)
                         {
-                            var meth = AnalyzerState.CurrentProfiler().meth;
-                            var path = meth.DeclaringType.Assembly.Location;
-                            if (path == null || path.Length == 0)
+                            var contentPack = LoadedModManager.RunningMods.FirstOrDefault(m => m.assemblies.loadedAssemblies.Contains(meth.DeclaringType.Assembly));
+                            if (contentPack != null)
                             {
-                                var contentPack = LoadedModManager.RunningMods.FirstOrDefault(m => m.assemblies.loadedAssemblies.Contains(meth.DeclaringType.Assembly));
-                                if (contentPack != null)
-                                {
-                                    path = ModContentPack.GetAllFilesForModPreserveOrder(contentPack, "Assemblies/", p => p.ToLower() == ".dll", null)
-                                        .Select(fileInfo => fileInfo.Item2.FullName)
-                                        .First(dll =>
-                                        {
-                                            var assembly = Assembly.ReflectionOnlyLoadFrom(dll);
-                                            return assembly.GetType(meth.DeclaringType.FullName) != null;
-                                        });
-                                }
+                                path = ModContentPack.GetAllFilesForModPreserveOrder(contentPack, "Assemblies/", p => p.ToLower() == ".dll", null)
+                                    .Select(fileInfo => fileInfo.Item2.FullName)
+                                    .First(dll =>
+                                    {
+                                        var assembly = Assembly.ReflectionOnlyLoadFrom(dll);
+                                        return assembly.GetType(meth.DeclaringType.FullName) != null;
+                                    });
                             }
-                            var token = meth.MetadataToken;
-                            if (token != 0) 
-                                Process.Start(Analyzer.Settings.PathToDnspy, $"\"{path}\" --select 0x{token:X8}");
                         }
+                        var token = meth.MetadataToken;
+                        if (token != 0)
+                            Process.Start(Analyzer.Settings.PathToDnspy, $"\"{path}\" --select 0x{token:X8}");
+
                     }
                 }
                 else
                 {
                     listing.Label("Failed to grab the method associated with this entry - please report this");
                 }
-                listing.GapLine();
+                listing.GapLine(0f);
             }
 
             private void DrawStatisticsSidePanel()
             {
-                if (Analyzer.Settings.DevMode)
-                {
-                    DubGUI.CollapsableHeading(listing, "Statistics", ref AnalyzerState.HideStatistics);
-                    Text.Font = font;
-                }
+
+                DubGUI.CollapsableHeading(listing, "Statistics", ref AnalyzerState.HideStatistics);
+                Text.Font = font;
 
                 if (!LogStats.IsActiveThread)
                 {
@@ -1035,7 +1063,41 @@ namespace DubsAnalyzer
                     if (!AnalyzerState.HideStatistics)
                     {
                         lock (CurrentLogStats.sync)
-                        {   
+                        {
+                            //var headings = new string[] { " Total:", " Highest:" };
+                            //Text.Font = GameFont.Medium;
+                            //var highest = Mathf.Max(Text.CalcHeight(headings[0], listing.ColumnWidth / 2.0f), Text.CalcHeight(headings[1], listing.ColumnWidth / 2.0f));
+
+                            //var headingRect = listing.GetRect(highest);
+
+                            //var leftSide = headingRect.LeftPart(.48f);
+                            //var rightSide = headingRect.RightPart(.48f);
+
+                            //Widgets.Label(leftSide, headings[0]);
+                            //Widgets.Label(rightSide, headings[1]);
+
+                            //Text.Font = GameFont.Small;
+                            //DubGUI.InlineDoubleMessageNC($" Entries: {CurrentLogStats.stats.Entries}", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count} ", listing, false);
+                            //DubGUI.InlineDoubleMessageNC($" Calls: {CurrentLogStats.stats.TotalCalls}", $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", listing, false);
+                            //DubGUI.InlineDoubleMessageNC($" Time: {CurrentLogStats.stats.TotalTime:0.000}ms ", $" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms", listing, true);
+
+                            //var secondheadings = new string[] { " Per Frame ", " Per Call " };
+
+                            //Text.Font = GameFont.Medium;
+                            //listing.Label(secondheadings[0]);
+                            //Text.Font = GameFont.Small;
+
+                            //listing.Label($" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}");
+                            //listing.Label($" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms ");
+
+
+                            //Text.Font = GameFont.Medium;
+                            //listing.Label(secondheadings[1]);
+                            //Text.Font = GameFont.Small;
+
+                            //listing.Label($" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms ");
+
+
                             DubGUI.InlineTripleMessage($" Entries: {CurrentLogStats.stats.Entries}", $" Σ Calls: {CurrentLogStats.stats.TotalCalls}", $" Σ Time: {CurrentLogStats.stats.TotalTime:0.000}ms ", listing, true);
                             DubGUI.InlineTripleMessage($" Highest Time: {CurrentLogStats.stats.HighestTime:0.000}ms", $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}", $" μ time (per call): {CurrentLogStats.stats.MeanTimePerCall:0.000}ms ", listing, true);
                             DubGUI.InlineTripleMessage($" % in category {AnalyzerState.CurrentLog.Average_s}", $" μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}", $" μ time (per frame): {CurrentLogStats.stats.MeanTimePerFrame:0.000}ms ", listing, true);
@@ -1059,18 +1121,52 @@ namespace DubsAnalyzer
 
                     foreach (var st in StackTraceRegex.traces.OrderBy(w => w.Value.Count).Reverse())
                     {
-                        var idx = st.Value.idx;
-                        DubGUI.InlineDoubleMessage(StackTraceRegex.MethToString(st.Value.methods.ElementAt(idx).Key), st.Value.Count.ToString(), listing, false);
-                        DubGUI.InlineDoubleMessage(StackTraceRegex.MethToString(st.Value.methods.ElementAt(idx + 1).Key), st.Value.Count.ToString(), listing, false);
-                        DubGUI.InlineDoubleMessage(StackTraceRegex.MethToString(st.Value.methods.ElementAt(idx + 2).Key), st.Value.Count.ToString(), listing, true);
+                        int i = 0;
+                        var traceInfo = st.Value;
+
+                        for (i = 0; i < st.Value.TranslatedArr().Count() - 2; i++)
+                        {
+                            DrawTrace(i, false);
+                        }
+
+                        DrawTrace(i, true);
+
+                        void DrawTrace(int idx, bool capoff)
+                        {
+                            var rect = DubGUI.InlineDoubleMessage(
+                                traceInfo.TranslatedArr()[idx], traceInfo.methods[idx].Item2.Count.ToString(), listing,
+                                capoff).LeftPart(.5f);
+
+                            if (Mouse.IsOver(rect))
+                            {
+                                StringBuilder builder = new StringBuilder();
+                                foreach (var p in traceInfo.methods[idx].Item2)
+                                    GetString(p);
+
+                                void GetString(StackTraceInformation.HarmonyPatch patch)
+                                {
+                                    if (patch.id != Analyzer.harmony.Id && patch.id != Analyzer.perfharmony.Id &&
+                                        patch.id != InternalMethodUtility.Harmony.Id)
+                                    {
+                                        var ass = patch.patch.DeclaringType.Assembly.FullName;
+                                        var assname = AnalyzerCache.AssemblyToModname[ass];
+
+                                        builder.AppendLine(
+                                            $"{patch.type} from {assname} with the index {patch.index} and the priority {patch.priority}\n");
+                                    }
+                                }
+
+                                TooltipHandler.TipRegion(rect, builder.ToString());
+                            }
+                        }
                     }
                 }
             }
 
-            private void DrawHarmonyOptionsSidePanel()
-            {
-                DubGUI.Heading(listing, "Harmony");
-            }
+            //private void DrawHarmonyOptionsSidePanel()
+            //{
+            //    DubGUI.Heading(listing, "Information");
+            //}
 
             internal class Graph
             {
