@@ -39,8 +39,9 @@ namespace DubsAnalyzer
                     foreach (var ret in GetSplitString(str))
                         yield return ret;
                 }
+                yield break;
             }
-            else if (name.Contains(';'))
+            if (name.Contains(';'))
             {
                 var range = name.Split(';');
                 range.Do(str => str.Trim());
@@ -49,23 +50,47 @@ namespace DubsAnalyzer
                     foreach (var ret in GetSplitString(str))
                         yield return ret;
                 }
+                yield break;
             }
-            else if (name.Contains('.'))
+
+            // check if our name has a ':', indicating a method
+            if (name.Contains(':'))
             {
-                if (name.CharacterCount('.') != 1)
-                {
-                    var ind = name.LastIndexOf('.');
+                yield return name.Trim();
+                yield break;
+            }
 
-                    yield return name.Remove(ind, 1).Insert(ind, ":").Trim();
-                }
-                else if (name.CharacterCount('.') == 1)
+            if (name.Contains('.'))
+            {
+                if (name.CharacterCount('.') == 1)
                 {
-                    yield return name.Replace(".", ":").Trim();
+                    if (AccessTools.TypeByName(name) != null) // namespace.type
+                    {
+                        yield return name.Trim();
+                        yield break;
+                    }
+                    else // type.method -> type:method
+                    {
+                        yield return name.Replace(".", ":").Trim();
+                        yield break;
+                    }
+                }
+                else
+                {
+                    if (AccessTools.TypeByName(name) != null) // namespace.type.type2 or namespace.namespace2.type etc
+                    {
+                        yield return name.Trim();
+                        yield break;
+                    }
+                    else
+                    {
+                        // namespace.type.method
+                        var ind = name.LastIndexOf('.');
+                        yield return name.Remove(ind, 1).Insert(ind, ":").Trim();
+                        yield break;
+                    }
                 }
             }
-            else
-                yield return name.Trim();
-
         }
 
         private static void Notify(string message)
@@ -105,7 +130,7 @@ namespace DubsAnalyzer
                 return false;
             }
 
-            
+
 
             return true;
         }

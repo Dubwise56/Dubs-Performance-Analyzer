@@ -86,15 +86,11 @@ namespace DubsAnalyzer
                 if (mod.Name == this.Content.Name) continue;
 
                 foreach (var ass in mod.assemblies.loadedAssemblies)
-                {
-                    try
-                    {
-                        AnalyzerCache.AssemblyToModname.Add(ass.FullName, mod.Name);
-                    }
-                    catch (Exception)
-                    {
-                        // we do this so if there are duplicated assemblies, we don't have duplicated keys(unnecessary complexity)
-                    }
+                { 
+                    // got annoyed at this exception stopping me while debugging...
+                    if(!AnalyzerCache.AssemblyToModname.ContainsKey(ass.FullName))
+                        AnalyzerCache.AssemblyToModname.Add(ass.FullName, mod.Name); 
+                    // we do this so if there are duplicated assemblies, we don't have duplicated keys(unnecessary complexity)
                 }
             }
 
@@ -227,8 +223,7 @@ namespace DubsAnalyzer
             if (!AnalyzerState.CurrentlyRunning) return null;
 
 
-            if (AnalyzerState.CurrentProfiles.TryGetValue(key, out var prof))
-                return prof.Start();
+            if (AnalyzerState.CurrentProfiles.TryGetValue(key, out var prof)) return prof.Start();
             else
             {
 
@@ -302,6 +297,8 @@ namespace DubsAnalyzer
 
         public static void ClearState()
         {
+            try
+            { 
             foreach (var maintab in AnalyzerState.SideTabCategories)
             {
                 List<KeyValuePair<ProfileMode, Type>> removes = new List<KeyValuePair<ProfileMode, Type>>();
@@ -319,9 +316,9 @@ namespace DubsAnalyzer
                     }
                 });
 
-                foreach (var val in removes)
-                    AnalyzerState.RemoveTab(val);
+                foreach (var val in removes) AnalyzerState.RemoveTab(val);
             }
+            } catch { }
 
             H_HarmonyPatches.PatchedPres = new List<Patch>();
             H_HarmonyPatches.PatchedPosts = new List<Patch>();
