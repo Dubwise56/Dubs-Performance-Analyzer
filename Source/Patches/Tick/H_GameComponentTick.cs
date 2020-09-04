@@ -6,14 +6,14 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("GameComponent", UpdateMode.Tick)]
+    [Entry("GameComponent", Category.Tick)]
     public static class H_GameComponent
     {
         public static bool Active = false;
 
         public static void ProfilePatch()
         {
-            Modbase.harmony.Patch(AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentTick)), new HarmonyMethod(typeof(H_GameComponent), nameof(GameComponentTick)));
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentTick)), new HarmonyMethod(typeof(H_GameComponent), nameof(GameComponentTick)));
         }
 
         public static bool GameComponentTick(MethodBase __originalMethod)
@@ -26,7 +26,7 @@ namespace Analyzer
                 try
                 {
                     string trash = components[i].GetType().Name;
-                    Profiler prof = Modbase.Start(trash, null, components[i].GetType(), null, null, __originalMethod);
+                    Profiler prof = Analyzer.Start(trash, null, components[i].GetType(), null, null, __originalMethod);
                     components[i].GameComponentTick();
                     prof.Stop();
                 }

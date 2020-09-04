@@ -6,7 +6,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("UIRootOnGUI", UpdateMode.Update)]
+    [Entry("UIRootOnGUI", Category.Update)]
     [HarmonyPatch(typeof(UIRoot_Play), nameof(UIRoot_Play.UIRootOnGUI))]
     internal class H_UIRootOnGUI
     {
@@ -19,7 +19,7 @@ namespace Analyzer
 
             void DoMe(Type t, string m)
             {
-                Modbase.harmony.Patch(AccessTools.Method(t, m), go, biff);
+                Modbase.Harmony.Patch(AccessTools.Method(t, m), go, biff);
             }
 
             DoMe(typeof(UnityGUIBugsFixer), nameof(UnityGUIBugsFixer.OnGUI));
@@ -50,7 +50,7 @@ namespace Analyzer
                     state = __originalMethod.GetType().Name;
                 }
 
-                __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
         }
 

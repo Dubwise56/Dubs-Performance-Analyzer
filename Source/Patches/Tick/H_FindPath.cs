@@ -17,7 +17,7 @@ namespace Analyzer
 
         public static int NodeIndex = 0;
 
-        public static Entry p = Entry.Create("PathFinder", UpdateMode.Tick, null, false, typeof(H_FindPath));
+        public static Entry p = Entry.Create("PathFinder", Category.Tick, null, typeof(H_FindPath), false);
         public static void ProfilePatch()
         {
             HarmonyMethod go = new HarmonyMethod(typeof(H_FindPath), nameof(Start));
@@ -25,12 +25,12 @@ namespace Analyzer
 
             void slop(Type e, string s)
             {
-                Modbase.harmony.Patch(AccessTools.Method(e, s), go, biff);
+                Modbase.Harmony.Patch(AccessTools.Method(e, s), go, biff);
             }
 
             MethodInfo mad = AccessTools.Method(typeof(Reachability), nameof(Reachability.CanReach),
                 new[] { typeof(IntVec3), typeof(LocalTargetInfo), typeof(PathEndMode), typeof(TraverseParms) });
-            Modbase.harmony.Patch(mad, go, biff);
+            Modbase.Harmony.Patch(mad, go, biff);
 
             // slop(typeof(PathFinder), nameof(PathFinder.CalculateDestinationRect));
             slop(typeof(PathFinder), nameof(PathFinder.GetAllowedArea));
@@ -43,7 +43,7 @@ namespace Analyzer
         [HarmonyPriority(Priority.Last)]
         public static void Start(MethodBase __originalMethod, ref Profiler __state)
         {
-            if (p.Active)
+            if (p.isActive)
             {
                 __state = p.Start(__originalMethod.Name, __originalMethod);
             }
@@ -52,7 +52,7 @@ namespace Analyzer
         [HarmonyPriority(Priority.First)]
         public static void Stop(Profiler __state)
         {
-            if (p.Active)
+            if (p.isActive)
             {
                 __state?.Stop();
             }
@@ -61,7 +61,7 @@ namespace Analyzer
         [HarmonyPriority(Priority.First)]
         public static void Prefix(MethodBase __originalMethod, ref Profiler __state)
         {
-            if (p.Active)
+            if (p.isActive)
             {
                 __state = p.Start("PathFinder.FindPath", __originalMethod);
                 pathing = true;
@@ -71,7 +71,7 @@ namespace Analyzer
         [HarmonyPriority(Priority.Last)]
         public static void Postfix(Profiler __state)
         {
-            if (p.Active)
+            if (p.isActive)
             {
                 pathing = false;
                 __state?.Stop();

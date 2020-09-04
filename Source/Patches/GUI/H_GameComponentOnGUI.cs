@@ -6,14 +6,14 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("Game Component", UpdateMode.Update)]
+    [Entry("Game Component", Category.Update)]
     public static class H_GameComponentUpdateGUI
     {
         public static bool Active = false;
 
         public static void ProfilePatch()
         {
-            Modbase.harmony.Patch(AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentOnGUI)), new HarmonyMethod(typeof(H_GameComponentUpdateGUI), nameof(GameComponentTick)));
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentOnGUI)), new HarmonyMethod(typeof(H_GameComponentUpdateGUI), nameof(GameComponentTick)));
         }
 
         public static bool GameComponentTick(MethodBase __originalMethod)

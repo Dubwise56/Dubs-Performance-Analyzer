@@ -13,7 +13,7 @@ namespace Analyzer
 
         public static Dictionary<string, StackTraceInformation> traces = new Dictionary<string, StackTraceInformation>();
 
-        private const string strRegex = @"(?<=:)(DMD.*)(?<=::)|(>)";
+        private const string strRegex = @"(?<=:)(DMD.*)(?<=::)|(>)"; // Get rid of the garbled error messages that harmony patched methods create   
         private static readonly Regex myRegex = new Regex(strRegex, RegexOptions.None);
 
         public static void Add(StackTrace trace)

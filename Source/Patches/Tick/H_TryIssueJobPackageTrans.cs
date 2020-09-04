@@ -9,7 +9,7 @@ using Verse.AI;
 
 namespace Analyzer
 {
-    [Entry("JobGiver_Work", UpdateMode.Tick, "JobGiveTipKey")]
+    [Entry("JobGiver_Work", Category.Tick, "JobGiveTipKey")]
     public static class H_TryIssueJobPackageTrans
     {
 
@@ -31,7 +31,7 @@ namespace Analyzer
             HarmonyMethod post = new HarmonyMethod(typeof(H_TryIssueJobPackageTrans), nameof(Postfix));
             HarmonyMethod t = new HarmonyMethod(typeof(H_TryIssueJobPackageTrans), nameof(piler));
             System.Reflection.MethodInfo o = AccessTools.Method(typeof(JobGiver_Work), nameof(JobGiver_Work.TryIssueJobPackage));
-            Modbase.harmony.Patch(o, pre, post, t);
+            Modbase.Harmony.Patch(o, pre, post, t);
         }
 
         public static void Prefix(Pawn pawn)
@@ -94,7 +94,7 @@ namespace Analyzer
                 CurrentKey = string.Intern(CurrentKey + pawnname);
             }
 
-            return Modbase.Start(CurrentKey, namer);
+            return Analyzer.Start(CurrentKey, namer);
         }
 
         public static void Stop(Profiler profiler)
@@ -162,7 +162,7 @@ namespace Analyzer
     }
 
 
-    [Entry("JobGiver_Work(Detoured)", UpdateMode.Tick, "DetourWorkTipKey")]
+    [Entry("JobGiver_Work(Detoured)", Category.Tick, "DetourWorkTipKey")]
     internal class H_TryIssueJobPackage
     {
         [Setting("By Work Type")] public static bool ByWorkType = false;
@@ -180,7 +180,7 @@ namespace Analyzer
             Log.Message("Patching workgiver");
             HarmonyMethod pre = new HarmonyMethod(typeof(H_TryIssueJobPackage), nameof(Prefix));
             System.Reflection.MethodInfo o = AccessTools.Method(typeof(JobGiver_Work), "TryIssueJobPackage", new Type[] { typeof(Pawn), typeof(JobIssueParams) });
-            Modbase.harmony.Patch(o, pre);
+            Modbase.Harmony.Patch(o, pre);
         }
 
         private static bool Prefix(JobGiver_Work __instance, Pawn pawn, ref ThinkResult __result)
@@ -299,7 +299,7 @@ namespace Analyzer
                                 {
                                     return !t.IsForbidden(pawn) && scanner.HasJobOnThing(pawn, t);
                                 }
-                                prof = Modbase.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
+                                prof = Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
                                 IEnumerable<Thing> enumerable = scanner.PotentialWorkThingsGlobal(pawn)?.Where(x => scanner.HasJobOnThing(pawn, x));
 
                                 //if (scanner is WorkGiver_Repair repair)
@@ -371,7 +371,7 @@ namespace Analyzer
 
                             if (scanner.def.scanCells)
                             {
-                                prof = Modbase.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
+                                prof = Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
                                 float closestDistSquared = 99999f;
                                 float bestPriority = float.MinValue;
                                 bool prioritized = scanner.Prioritized;
@@ -430,7 +430,7 @@ namespace Analyzer
                     if (bestTargetOfLastPriority.IsValid)
                     {
                         //  pawn.mindState.lastGivenWorkType = workGiver.def.workType;
-                        prof = Modbase.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
+                        prof = Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
                         Job job3;
                         if (bestTargetOfLastPriority.HasThing)
                         {

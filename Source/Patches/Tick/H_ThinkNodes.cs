@@ -6,7 +6,7 @@ using Verse.AI;
 
 namespace Analyzer
 {
-    [Entry("ThinkNodes", UpdateMode.Tick)]
+    [Entry("ThinkNodes", Category.Tick)]
     internal static class H_ThinkNodes
     {
         public static bool Active = false;
@@ -39,7 +39,7 @@ namespace Analyzer
                     {
                         if (!patched.Contains(trygive))
                         {
-                            Modbase.harmony.Patch(trygive, go, biff);
+                            Modbase.Harmony.Patch(trygive, go, biff);
                             patched.Add(trygive);
                         }
                     }
@@ -53,7 +53,7 @@ namespace Analyzer
                     {
                         if (!patched.Contains(mef))
                         {
-                            Modbase.harmony.Patch(mef, go, biff);
+                            Modbase.Harmony.Patch(mef, go, biff);
                             patched.Add(mef);
                         }
                     }
@@ -80,8 +80,7 @@ namespace Analyzer
                 {
                     state = __originalMethod.GetType().Name;
                 }
-
-                __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
         }
 

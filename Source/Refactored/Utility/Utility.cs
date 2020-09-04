@@ -171,7 +171,7 @@ namespace Analyzer
             PatchedMethods.Add(method.Name);
             try
             {
-                Modbase.harmony.Patch(method, pre, post);
+                Modbase.Harmony.Patch(method, pre, post);
             }
             catch (Exception e)
             {
@@ -248,7 +248,7 @@ namespace Analyzer
                 {
                     if (infosPrefix.PatchMethod == method)
                     {
-                        Modbase.harmony.Unpatch(methodBase, method);
+                        Modbase.Harmony.Unpatch(methodBase, method);
                         return;
                     }
                 }
@@ -256,7 +256,7 @@ namespace Analyzer
                 {
                     if (infosPostfixesx.PatchMethod == method)
                     {
-                        Modbase.harmony.Unpatch(methodBase, method);
+                        Modbase.Harmony.Unpatch(methodBase, method);
                         return;
                     }
                 }
@@ -277,7 +277,7 @@ namespace Analyzer
         }
         private static void UnpatchMethodsOnMethodFull(MethodInfo method)
         {
-            Modbase.harmony.Unpatch(method, HarmonyPatchType.All);
+            Modbase.Harmony.Unpatch(method, HarmonyPatchType.All);
         }
 
         /*
@@ -351,7 +351,7 @@ namespace Analyzer
                             byte[] bytes = method.GetMethodBody()?.GetILAsByteArray();
                             if (!(bytes?.Length == 0 || bytes?.Length == 1 && bytes.First() == 0x2A))
                             {
-                                Modbase.harmony.Patch(method, pre, post);
+                                Modbase.Harmony.Patch(method, pre, post);
                             }
                         }
                         catch (Exception e)
@@ -504,7 +504,7 @@ namespace Analyzer
         {
             try
             {
-                AnalyzerState.MakeAndSwitchTab(method.Name + "-int");
+                GUIController.SwapToEntry(method.Name + "-int");
 
                 InternalMethodUtility.curMeth = method;
                 InternalMethodUtility.PatchedInternals.Add(method);
@@ -582,7 +582,7 @@ namespace Analyzer
 
             if (assembly != null && assembly.Count() != 0)
             {
-                AnalyzerState.MakeAndSwitchTab(mod.Name + "-prof");
+                GUIController.SwapToEntry(mod.Name + "-prof");
                 HarmonyMethod pre = new HarmonyMethod(AccessTools.TypeByName(mod.Name + "-prof").GetMethod("Prefix", BindingFlags.Public | BindingFlags.Static));
                 HarmonyMethod post = new HarmonyMethod(AccessTools.TypeByName(mod.Name + "-prof").GetMethod("Postfix", BindingFlags.Public | BindingFlags.Static));
 

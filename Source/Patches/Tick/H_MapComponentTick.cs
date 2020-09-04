@@ -7,7 +7,7 @@ using Verse.AI.Group;
 
 namespace Analyzer
 {
-    [Entry("MapComponentTick", UpdateMode.Tick)]
+    [Entry("MapComponentTick", Category.Tick)]
     internal class H_MapComponentTick
     {
         public static bool Active = false;
@@ -15,7 +15,7 @@ namespace Analyzer
         [HarmonyPriority(Priority.Last)]
         public static void Start(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
-            if (!Active || !AnalyzerState.CurrentlyRunning) return;
+            if (!Active) return;
             string state = string.Empty;
             if (__instance != null)
             {
@@ -26,7 +26,7 @@ namespace Analyzer
             {
                 state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-            __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
@@ -42,7 +42,7 @@ namespace Analyzer
         {
             HarmonyMethod P = new HarmonyMethod(typeof(H_MapComponentTick), nameof(Prefix));
             MethodInfo D = AccessTools.Method(typeof(MapComponentUtility), nameof(MapComponentUtility.MapComponentTick));
-            Modbase.harmony.Patch(D, P);
+            Modbase.Harmony.Patch(D, P);
 
 
             HarmonyMethod go = new HarmonyMethod(typeof(H_MapComponentTick), nameof(Start));
@@ -50,7 +50,7 @@ namespace Analyzer
 
             void slop(Type e, string s)
             {
-                Modbase.harmony.Patch(AccessTools.Method(e, s), go, biff);
+                Modbase.Harmony.Patch(AccessTools.Method(e, s), go, biff);
             }
 
             slop(typeof(WildAnimalSpawner), nameof(WildAnimalSpawner.WildAnimalSpawnerTick));
@@ -82,7 +82,7 @@ namespace Analyzer
                 {
                     MapComponent comp = components[i];
 
-                    Profiler prof = Modbase.Start(comp.GetType().FullName, () => $"{comp.GetType()}", null, null, null, __originalMethod);
+                    Profiler prof = Analyzer.Start(comp.GetType().FullName, () => $"{comp.GetType()}", null, null, null, __originalMethod);
                     comp.MapComponentTick();
                     prof.Stop();
                 }

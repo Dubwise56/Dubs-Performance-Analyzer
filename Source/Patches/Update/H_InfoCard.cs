@@ -10,7 +10,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("InfoCard", UpdateMode.Update)]
+    [Entry("InfoCard", Category.Update)]
     internal class H_InfoCard
     {
         public static bool Active = false;
@@ -18,7 +18,7 @@ namespace Analyzer
         [HarmonyPriority(Priority.Last)]
         public static void Start(object __instance, MethodBase __originalMethod, ref Profiler __state)
         {
-            if (!Active || !AnalyzerState.CurrentlyRunning) return;
+            if (!Active) return;
             string state = string.Empty;
             if (__instance != null)
             {
@@ -29,7 +29,7 @@ namespace Analyzer
             {
                 state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-            __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
@@ -43,28 +43,28 @@ namespace Analyzer
 
         public static bool FUUUCK(Rect rect, Thing thing)
         {
-            if (!Active || !AnalyzerState.CurrentlyRunning) return true;
+            if (!Active) return true;
 
             Profiler prof = null;
             if (StatsReportUtility.cachedDrawEntries.NullOrEmpty<StatDrawEntry>())
             {
-                prof = Modbase.Start("SpecialDisplayStats");
+                prof = Analyzer.Start("SpecialDisplayStats");
                 StatsReportUtility.cachedDrawEntries.AddRange(thing.def.SpecialDisplayStats(StatRequest.For(thing)));
                 prof.Stop();
 
-                prof = Modbase.Start("StatsToDraw");
+                prof = Analyzer.Start("StatsToDraw");
                 StatsReportUtility.cachedDrawEntries.AddRange(StatsReportUtility.StatsToDraw(thing).Where(s => s.ShouldDisplay));
                 prof.Stop();
 
-                prof = Modbase.Start("RemoveAll");
+                prof = Analyzer.Start("RemoveAll");
                 StatsReportUtility.cachedDrawEntries.RemoveAll((StatDrawEntry de) => de.stat != null && !de.stat.showNonAbstract);
                 prof.Stop();
 
-                prof = Modbase.Start("FinalizeCachedDrawEntries");
+                prof = Analyzer.Start("FinalizeCachedDrawEntries");
                 StatsReportUtility.FinalizeCachedDrawEntries(StatsReportUtility.cachedDrawEntries);
                 prof.Stop();
             }
-            prof = Modbase.Start("DrawStatsWorker");
+            prof = Analyzer.Start("DrawStatsWorker");
             StatsReportUtility.DrawStatsWorker(rect, thing, null);
             prof.Stop();
 
@@ -80,7 +80,7 @@ namespace Analyzer
             {
                 try
                 {
-                    Modbase.harmony.Patch(AccessTools.Method(e, s, ypes), go, biff);
+                    Modbase.Harmony.Patch(AccessTools.Method(e, s, ypes), go, biff);
                 }
                 catch (Exception exception)
                 {
@@ -89,7 +89,7 @@ namespace Analyzer
 
             }
 
-            Modbase.harmony.Patch(
+            Modbase.Harmony.Patch(
                 AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(Thing) }),
                 new HarmonyMethod(typeof(H_InfoCard), nameof(FUUUCK))
                 );

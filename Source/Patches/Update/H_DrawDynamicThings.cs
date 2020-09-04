@@ -7,7 +7,7 @@ namespace Analyzer
 {
 
 
-    [Entry("DrawDynamicThings", UpdateMode.Update, "DrawDynThinTipKey")]
+    [Entry("DrawDynamicThings", Category.Update, "DrawDynThinTipKey")]
     [HarmonyPatch(typeof(DynamicDrawManager), nameof(DynamicDrawManager.DrawDynamicThings))]
     internal class H_DrawDynamicThings
     {
@@ -68,9 +68,9 @@ namespace Analyzer
                                         name = thing.GetType().Name;
                                     }
 
-                                    Modbase.Start(name, Namer, thing.GetType(), thing.def, null, __originalMethod);
+                                    Analyzer.Start(name, Namer, thing.GetType(), thing.def, null, __originalMethod);
                                     thing.Draw();
-                                    Modbase.Stop(name);
+                                    Analyzer.Stop(name);
                                 }
                                 catch (Exception ex)
                                 {

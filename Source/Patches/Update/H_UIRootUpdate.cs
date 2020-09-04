@@ -7,7 +7,7 @@ using Verse.Sound;
 
 namespace Analyzer
 {
-    [Entry("UIRootUpdate", UpdateMode.Update)]
+    [Entry("UIRootUpdate", Category.Update)]
     internal static class H_UIRootUpdate
     {
         public static bool Active = false;
@@ -20,7 +20,7 @@ namespace Analyzer
 
             void slop(Type e, string s)
             {
-                Modbase.harmony.Patch(AccessTools.Method(e, s), go, biff);
+                Modbase.Harmony.Patch(AccessTools.Method(e, s), go, biff);
             }
 
             slop(typeof(ScreenshotTaker), nameof(ScreenshotTaker.Update));
@@ -41,7 +41,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Modbase.Start($"{__originalMethod.DeclaringType} - {__originalMethod.Name}", null, null, null, null, __originalMethod);
+                __state = Analyzer.Start($"{__originalMethod.DeclaringType} - {__originalMethod.Name}", null, null, null, null, __originalMethod);
             }
         }
 

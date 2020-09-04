@@ -7,7 +7,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("Single Tick", UpdateMode.Tick)]
+    [Entry("Single Tick", Category.Tick)]
     internal class H_DoSingleTick
     {
         public static bool Active = false;
@@ -26,7 +26,7 @@ namespace Analyzer
             {
                 state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-            __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         public static void Stop(Profiler __state)
@@ -44,7 +44,7 @@ namespace Analyzer
 
             void slop(Type e, string s)
             {
-                Modbase.harmony.Patch(AccessTools.Method(e, s), go, biff);
+                Modbase.Harmony.Patch(AccessTools.Method(e, s), go, biff);
             }
             slop(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentTick));
             slop(typeof(ScreenshotTaker), nameof(ScreenshotTaker.QueueSilentScreenshot));

@@ -5,7 +5,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("SectionLayer_Things", UpdateMode.Update)]
+    [Entry("SectionLayer_Things", Category.Update)]
     [HarmonyPatch(typeof(SectionLayer_Things), "Regenerate")]
     internal class H_SectionLayer_Things
     {
@@ -27,7 +27,7 @@ namespace Analyzer
                         Thing thing = list[i];
 
                         __state = "Flag check";
-                        prof = Modbase.Start(__state, null, null, null, null, __originalMethod);
+                        prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
                         bool flag =
                             ((thing.def.seeThroughFog ||
                               !__instance.Map.fogGrid.fogGrid[
@@ -42,7 +42,7 @@ namespace Analyzer
                         if (flag)
                         {
                             __state = thing.def.defName;
-                            prof = Modbase.Start(__state, null, null, null, null, __originalMethod);
+                            prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
                             __instance.TakePrintFrom(thing);
                             prof.Stop();
                         }
@@ -51,7 +51,7 @@ namespace Analyzer
                 }
 
                 __state = "Finalize mesh";
-                prof = Modbase.Start(__state, null, null, null, null, __originalMethod);
+                prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
                 __instance.FinalizeMesh(MeshParts.All);
                 prof.Stop();
                 return false;

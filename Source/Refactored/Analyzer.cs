@@ -35,7 +35,7 @@ namespace Analyzer
 
         public static Profiler Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodBase meth = null)
         {
-            if (CurrentlyProfling) return null;
+            if (!CurrentlyProfling) return null;
 
             if (profiles.TryGetValue(key, out Profiler prof)) return prof.Start();
             else
@@ -60,7 +60,7 @@ namespace Analyzer
         public static void BeginUpdate()
         {
 #if DEBUG
-            if (CurrentlyProfling) return;
+            if (!CurrentlyProfling) return;
 
             if (midUpdate) Log.Error("[Analyzer] Attempting to begin new update cycle when the previous update has not ended");
             midUpdate = true;
@@ -93,6 +93,8 @@ namespace Analyzer
             // spawn a logic thread which will do our calcs
             // push to background
             // start
+
+            // currently (Modbase:ThreadStart) needs rework
         }
 
         public static void PatchEntry(Entry entry)
@@ -117,15 +119,16 @@ namespace Analyzer
         }
 
         // Remove all patches
+        // Remove all internal patches
         // Clear all caches which hold information to prevent double patching
         // Clear all temporary entries
         // Clear all profiles
         // Clear all logs
         public static void Cleanup()
         {
-            cleanupThread = new Thread(() => Modbase.UnPatchMethods());
-            cleanupThread.IsBackground = true;
-            cleanupThread.Start();
+            //cleanupThread = new Thread();
+            //cleanupThread.IsBackground = true;
+            //cleanupThread.Start();
         }
     }
 }

@@ -6,7 +6,7 @@ using Verse.AI;
 
 namespace Analyzer
 {
-    [Entry("Lord/Duty", UpdateMode.Tick)]
+    [Entry("Lord/Duty", Category.Tick)]
     internal class H_GetLord
     {
         public static bool Active = false;
@@ -26,7 +26,7 @@ namespace Analyzer
             {
                 state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-            __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
@@ -50,7 +50,7 @@ namespace Analyzer
                     try
                     {
                         __state = $"ThinkNode_Priority SubNode [{__instance.subNodes[i].GetType()}]";
-                        prof = Modbase.Start(__state, null, null, null, null, __originalMethod);
+                        prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
                         result = __instance.subNodes[i].TryIssueJobPackage(pawn, jobParams);
                         prof.Stop();
                     }
@@ -91,7 +91,7 @@ namespace Analyzer
             //   slop(typeof(LordUtility), nameof(LordUtility.GetLord), new Type[] { typeof(Pawn) });
             //  slop(typeof(LordUtility), nameof(LordUtility.GetLord), new Type[] { typeof(Building) });
             //Analyzer.harmony.Patch(AccessTools.Method(typeof(CastPositionFinder), nameof(CastPositionFinder.TryFindCastPosition)), null, new HarmonyMethod(typeof(H_GetLord), nameof(Frangle)));
-            Modbase.harmony.Patch(AccessTools.Method(typeof(ThinkNode_Priority), nameof(ThinkNode_Priority.TryIssueJobPackage)), new HarmonyMethod(typeof(H_GetLord), nameof(Fringe)));
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(ThinkNode_Priority), nameof(ThinkNode_Priority.TryIssueJobPackage)), new HarmonyMethod(typeof(H_GetLord), nameof(Fringe)));
         }
     }
 }

@@ -56,7 +56,7 @@ namespace Analyzer
                     entry.type = entryType;
 
                     // Find and append Entry to the correct Tab
-                    // TODO
+                    GUIController.Tab(entry.category).entries.Add(entry, entryType);
                 }
                 catch (Exception e)
                 {
@@ -65,7 +65,11 @@ namespace Analyzer
             }
 
             // Loop through our static instances and add them to the Correct Tab
-            // foreach (Entry entry in Entry.entries)
+            foreach (Entry entry in Entry.entries)
+            {
+                GUIController.Tab(entry.category).entries.Add(entry, entry.type);
+            }
+
         }
 
         public override void PostClose()
@@ -98,7 +102,7 @@ namespace Analyzer
 
         public override void DoWindowContents(Rect inRect)
         {
-            
+
         }
     }
 }

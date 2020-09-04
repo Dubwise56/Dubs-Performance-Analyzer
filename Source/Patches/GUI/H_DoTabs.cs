@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Analyzer
 {
-    [Entry("DoTabs", UpdateMode.Update)]
+    [Entry("DoTabs", Category.Update)]
     [HarmonyPatch(typeof(InspectPaneUtility), "DoTabs")]
     internal class H_DoTabs
     {
@@ -15,7 +15,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Modbase.Start("InspectPaneUtility.DoTabs", null, null, null, null, __originalMethod);
+                __state = Analyzer.Start("InspectPaneUtility.DoTabs", null, null, null, null, __originalMethod);
             }
         }
 

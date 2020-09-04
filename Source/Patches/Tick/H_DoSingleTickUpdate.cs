@@ -8,11 +8,8 @@ namespace Analyzer
     {
         public static void Postfix()
         {
-            if (AnalyzerState.CurrentTab != null)
-            {
-                if (AnalyzerState.CurrentTab.mode == UpdateMode.Tick)
-                    Modbase.UpdateEnd();
-            }
+            if (GUIController.GetCurrentCategory == Category.Tick) // If we in Tick mode, finish our update (can happen multiple times p frame)
+                Analyzer.EndUpdate();
         }
     }
 }

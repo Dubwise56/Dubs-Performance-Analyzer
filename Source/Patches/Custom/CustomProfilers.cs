@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Analyzer
 {
-    [Entry("Custom Tick", UpdateMode.Tick)]
+    [Entry("Custom Tick", Category.Tick)]
     internal class CustomProfilersTick
     {
         public static bool Active = false;
@@ -36,7 +36,7 @@ namespace Analyzer
                 state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
 
-            __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
@@ -49,7 +49,7 @@ namespace Analyzer
         }
     }
 
-    [Entry("Custom Update", UpdateMode.Update)]
+    [Entry("Custom Update", Category.Update)]
     internal class CustomProfilersUpdate
     {
         public static bool Active = false;
@@ -91,7 +91,7 @@ namespace Analyzer
                 state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
 
-            __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
@@ -104,7 +104,7 @@ namespace Analyzer
         }
     }
 
-    [Entry("Custom Harmony", UpdateMode.Update)]
+    [Entry("Custom Harmony", Category.Update)]
     internal class CustomProfilersHarmony
     {
         public static bool Active = false;
@@ -145,7 +145,7 @@ namespace Analyzer
                 state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
 
-            __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]

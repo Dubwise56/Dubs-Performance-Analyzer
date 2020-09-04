@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace Analyzer
 {
-    [Entry("Job AI", UpdateMode.Update)]
+    [Entry("Job AI", Category.Update)]
     public class H_JobAI
     {
         public static bool Active = false;
@@ -21,7 +21,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Modbase.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
+                __state = Analyzer.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
             }
         }
 

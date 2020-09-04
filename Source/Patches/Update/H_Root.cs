@@ -10,7 +10,7 @@ using Verse.Steam;
 
 namespace Analyzer
 {
-    [Entry("Root", UpdateMode.Update)]
+    [Entry("Root", Category.Update)]
     internal static class H_Root
     {
         public static bool Active = false;
@@ -23,7 +23,7 @@ namespace Analyzer
 
             void slop(Type e, string s)
             {
-                Modbase.harmony.Patch(AccessTools.Method(e, s), go, biff);
+                Modbase.Harmony.Patch(AccessTools.Method(e, s), go, biff);
             }
 
             slop(typeof(ResolutionUtility), nameof(ResolutionUtility.Update));
@@ -46,7 +46,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Modbase.Start($"{__originalMethod.DeclaringType} - {__originalMethod.Name}", null, null, null, null, __originalMethod);
+                __state = Analyzer.Start($"{__originalMethod.DeclaringType} - {__originalMethod.Name}", null, null, null, null, __originalMethod);
             }
         }
 

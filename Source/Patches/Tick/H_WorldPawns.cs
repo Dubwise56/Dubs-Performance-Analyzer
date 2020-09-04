@@ -9,7 +9,7 @@ using Verse;
 namespace Analyzer
 {
 
-    [Entry("World Tick", UpdateMode.Tick)]
+    [Entry("World Tick", Category.Tick)]
     public static class H_WorldPawns
     {
         public static bool Active = false;
@@ -25,14 +25,14 @@ namespace Analyzer
 
             void slop(Type e, string s)
             {
-                Modbase.harmony.Patch(AccessTools.Method(e, s), go, biff);
+                Modbase.Harmony.Patch(AccessTools.Method(e, s), go, biff);
             }
             slop(typeof(WorldPawns), nameof(WorldPawns.WorldPawnsTick));
             slop(typeof(FactionManager), nameof(FactionManager.FactionManagerTick));
             slop(typeof(WorldObjectsHolder), nameof(WorldObjectsHolder.WorldObjectsHolderTick));
             slop(typeof(WorldPathGrid), nameof(WorldPathGrid.WorldPathGridTick));
 
-            Modbase.harmony.Patch(AccessTools.Method(typeof(WorldComponentUtility), nameof(WorldComponentUtility.WorldComponentTick)), new HarmonyMethod(typeof(H_WorldPawns), nameof(WorldComponentTick)));
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(WorldComponentUtility), nameof(WorldComponentUtility.WorldComponentTick)), new HarmonyMethod(typeof(H_WorldPawns), nameof(WorldComponentTick)));
         }
 
         public static bool WorldComponentTick(MethodBase __originalMethod, World world)
@@ -45,7 +45,7 @@ namespace Analyzer
                 try
                 {
                     string picard = components[i].GetType().Name;
-                    Profiler prof = Modbase.Start(picard, null, null, null, null, __originalMethod);
+                    Profiler prof = Analyzer.Start(picard, null, null, null, null, __originalMethod);
                     components[i].WorldComponentTick();
                     prof.Stop();
                 }
@@ -76,7 +76,7 @@ namespace Analyzer
                 state = __originalMethod.GetType().Name;
             }
 
-            __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]

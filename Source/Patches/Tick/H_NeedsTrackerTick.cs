@@ -7,7 +7,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("NeedsTracker", UpdateMode.Tick)]
+    [Entry("NeedsTracker", Category.Tick)]
     internal static class H_NeedsTrackerTick
     {
         public static bool Active = false;
@@ -17,7 +17,7 @@ namespace Analyzer
 
         public static void ProfilePatch()
         {
-            Modbase.harmony.Patch(AccessTools.Method(typeof(Pawn_NeedsTracker), nameof(Pawn_NeedsTracker.NeedsTrackerTick)), new HarmonyMethod(typeof(H_NeedsTrackerTick), nameof(Detour)));
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(Pawn_NeedsTracker), nameof(Pawn_NeedsTracker.NeedsTrackerTick)), new HarmonyMethod(typeof(H_NeedsTrackerTick), nameof(Detour)));
 
 
             HarmonyMethod go = new HarmonyMethod(typeof(H_NeedsTrackerTick), nameof(Start));
@@ -25,7 +25,7 @@ namespace Analyzer
 
             void slop(Type e, string s)
             {
-                Modbase.harmony.Patch(AccessTools.Method(e, s), go, biff);
+                Modbase.Harmony.Patch(AccessTools.Method(e, s), go, biff);
             }
 
             slop(typeof(PawnRecentMemory), nameof(PawnRecentMemory.RecentMemoryInterval));
@@ -38,7 +38,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Modbase.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
+                __state = Analyzer.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
             }
         }
 
@@ -68,7 +68,7 @@ namespace Analyzer
                             __state = $"{__instance.needs[i].GetType().Name}";
                         }
 
-                        Profiler prof = Modbase.Start(__state, null, null, null, null, __originalMethod);
+                        Profiler prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
                         __instance.needs[i].NeedInterval();
                         prof.Stop();
                     }

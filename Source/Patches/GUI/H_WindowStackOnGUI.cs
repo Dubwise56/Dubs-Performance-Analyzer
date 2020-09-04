@@ -5,7 +5,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("WindowStackOnGUI", UpdateMode.Update, "WindowPatchTipKey")]
+    [Entry("WindowStackOnGUI", Category.Update, "WindowPatchTipKey")]
     [HarmonyPatch(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI))]
     internal class H_WindowStackOnGUI
     {
@@ -30,7 +30,7 @@ namespace Analyzer
                     name = string.Intern($"{__instance.windowStackOnGUITmpList[i].GetType()} ExtraOnGUI");
                 }
 
-                Profiler prof = Modbase.Start(name, null, null, null, null, __originalMethod);
+                Profiler prof = Analyzer.Start(name, null, null, null, null, __originalMethod);
                 __instance.windowStackOnGUITmpList[i].ExtraOnGUI();
                 prof.Stop();
             }
@@ -58,7 +58,7 @@ namespace Analyzer
                     name = string.Intern($"{__instance.windowStackOnGUITmpList[j].GetType()} WindowOnGUI");
                 }
 
-                Profiler prof = Modbase.Start(name, null, null, null, null, __originalMethod);
+                Profiler prof = Analyzer.Start(name, null, null, null, null, __originalMethod);
                 __instance.windowStackOnGUITmpList[j].WindowOnGUI();
                 prof.Stop();
             }

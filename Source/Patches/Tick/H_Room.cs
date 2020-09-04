@@ -6,7 +6,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("Room", UpdateMode.Tick)]
+    [Entry("Room", Category.Tick)]
     [HarmonyPatch(typeof(Room), "UpdateRoomStatsAndRole")]
     internal class H_Room
     {
@@ -29,7 +29,7 @@ namespace Analyzer
                 foreach (RoomStatDef roomStatDef in DefDatabase<RoomStatDef>.AllDefs.OrderByDescending((RoomStatDef x) => x.updatePriority))
                 {
                     string str = roomStatDef.defName;
-                    Profiler prof = Modbase.Start(str, () => $"{str} - {roomStatDef.workerClass}", null, null, null, __originalMethod);
+                    Profiler prof = Analyzer.Start(str, () => $"{str} - {roomStatDef.workerClass}", null, null, null, __originalMethod);
                     __instance.stats[roomStatDef] = roomStatDef.Worker.GetScore(__instance);
                     prof.Stop();
                 }

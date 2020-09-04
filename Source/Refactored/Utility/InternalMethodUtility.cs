@@ -161,7 +161,7 @@ namespace Analyzer
             ilGen.Emit(OpCodes.Ldsfld, AccessTools.TypeByName(originalMethodName + "-int").GetField("Active", BindingFlags.Public | BindingFlags.Static));
             ilGen.Emit(OpCodes.Brfalse_S, label);
 
-            ilGen.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(GUIController), nameof(GUIController.CurrentlyPaused)));
+            ilGen.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(GUIController), nameof(Analyzer.CurrentlyPaused)));
             ilGen.Emit(OpCodes.Brfalse_S, label);
         }
     }

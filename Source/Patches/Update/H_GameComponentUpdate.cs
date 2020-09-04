@@ -8,14 +8,14 @@ namespace Analyzer
 {
 
 
-    [Entry("Game Component", UpdateMode.Update)]
+    [Entry("Game Component", Category.Update)]
     public static class H_GameComponentUpdate
     {
         public static bool Active = false;
 
         public static void ProfilePatch()
         {
-            Modbase.harmony.Patch(AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentUpdate)), new HarmonyMethod(typeof(H_GameComponentUpdate), nameof(GameComponentTick)));
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentUpdate)), new HarmonyMethod(typeof(H_GameComponentUpdate), nameof(GameComponentTick)));
         }
 
         public static bool GameComponentTick(MethodBase __originalMethod)
@@ -28,7 +28,7 @@ namespace Analyzer
                 try
                 {
                     string trash = components[i].GetType().Name;
-                    Profiler prof = Modbase.Start(trash, null, components[i].GetType(), null, null, __originalMethod);
+                    Profiler prof = Analyzer.Start(trash, null, components[i].GetType(), null, null, __originalMethod);
                     components[i].GameComponentUpdate();
                     prof.Stop();
                 }

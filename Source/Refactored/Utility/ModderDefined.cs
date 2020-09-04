@@ -67,7 +67,7 @@ namespace Analyzer
             HarmonyMethod post = new HarmonyMethod(postmeth, Priority.First);
 
             foreach (MethodInfo meth in methods[name])
-                Modbase.harmony.Patch(meth, pre, post);
+                Modbase.Harmony.Patch(meth, pre, post);
         }
 
         private static void LogMethod(MethodInfo info)

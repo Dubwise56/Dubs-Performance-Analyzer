@@ -7,11 +7,12 @@ using System.Threading.Tasks;
 namespace Analyzer
 {
     public enum Category { Settings, Tick, Update, GUI, Modder }
+
     public static class GUIController
     {
         private static Tab currentTab;
         private static Dictionary<Category, Tab> tabs;
-        private static Category currentCategory;
+        private static Category currentCategory = Category.Settings;
         private static Profiler currentProfiler;
 
         public static Profiler GetCurrentProfiler => currentProfiler;

@@ -24,20 +24,20 @@ namespace Analyzer
             MethodInfo jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValue));
             HarmonyMethod pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(Prefix));
             HarmonyMethod post = new HarmonyMethod(typeof(H_GetStatValue), nameof(Postfix));
-            Modbase.harmony.Patch(jiff, pre, post);
+            Modbase.Harmony.Patch(jiff, pre, post);
 
 
             jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueAbstract), new[] { typeof(BuildableDef), typeof(StatDef), typeof(ThingDef) });
             pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(PrefixAb));
-            Modbase.harmony.Patch(jiff, pre, post);
+            Modbase.Harmony.Patch(jiff, pre, post);
 
             jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueAbstract), new[] { typeof(AbilityDef), typeof(StatDef) });
             pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(PrefixAbility));
-            Modbase.harmony.Patch(jiff, pre, post);
+            Modbase.Harmony.Patch(jiff, pre, post);
 
             jiff = AccessTools.Method(typeof(StatWorker), nameof(StatWorker.GetValue), new[] { typeof(StatRequest), typeof(bool) });
             pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(GetValueDetour));
-            Modbase.harmony.Patch(jiff, pre);
+            Modbase.Harmony.Patch(jiff, pre);
 
 
             HarmonyMethod go = new HarmonyMethod(typeof(H_GetStatValue), nameof(PartPrefix));
@@ -65,7 +65,7 @@ namespace Analyzer
 
                         if (F)
                         {
-                            Modbase.harmony.Patch(mef, go, biff);
+                            Modbase.Harmony.Patch(mef, go, biff);
                         }
                     }
                 }
@@ -92,7 +92,7 @@ namespace Analyzer
                     state = __originalMethod.GetType().ToString();
                 }
 
-                __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
         }
 
@@ -132,7 +132,7 @@ namespace Analyzer
                     slag = $"{__instance.stat.defName} GetValueUnfinalized";
                 }
 
-                Profiler prof = Modbase.Start(slag, null, null, null, null, __originalMethod);
+                Profiler prof = Analyzer.Start(slag, null, null, null, null, __originalMethod);
                 float valueUnfinalized = sw.GetValueUnfinalized(req, applyPostProcess);
                 prof.Stop();
 
@@ -145,7 +145,7 @@ namespace Analyzer
                     slag = $"{__instance.stat.defName} FinalizeValue";
                 }
 
-                prof = Modbase.Start(slag, null, null, null, null, __originalMethod);
+                prof = Analyzer.Start(slag, null, null, null, null, __originalMethod);
                 sw.FinalizeValue(req, ref valueUnfinalized, applyPostProcess);
                 prof.Stop();
 
@@ -170,7 +170,7 @@ namespace Analyzer
                     state = stat.defName;
                 }
 
-                __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
         }
 
@@ -199,7 +199,7 @@ namespace Analyzer
                     state = $"{stat.defName} abstract";
                 }
 
-                __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
         }
 
@@ -219,7 +219,7 @@ namespace Analyzer
                     state = $"{stat.defName} abstract";
                 }
 
-                __state = Modbase.Start(state, null, null, null, null, __originalMethod);
+                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
             }
         }
 

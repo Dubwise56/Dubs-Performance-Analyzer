@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Analyzer
 {
-    [Entry("ResourceReadoutOnGUI", UpdateMode.Update)]
+    [Entry("ResourceReadoutOnGUI", Category.Update)]
     [HarmonyPatch(typeof(ResourceReadout), nameof(ResourceReadout.ResourceReadoutOnGUI))]
     internal class H_ResourceReadoutOnGUI
     {
@@ -15,7 +15,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Modbase.Start("ResourceReadoutOnGUI", null, null, null, null, __originalMethod);
+                __state = Analyzer.Start("ResourceReadoutOnGUI", null, null, null, null, __originalMethod);
             }
         }
 

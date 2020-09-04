@@ -10,7 +10,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("HarmonyTranspilers", UpdateMode.Update, "TransPatchTipKey")]
+    [Entry("HarmonyTranspilers", Category.Update, "TransPatchTipKey")]
     internal class H_HarmonyTranspilers
     {
         public static bool Active = false;
@@ -61,7 +61,7 @@ namespace Analyzer
             {
                 if (log.Meth != null)
                 {
-                    Modbase.harmony.Unpatch(log.Meth, HarmonyPatchType.Transpiler, "*");
+                    Modbase.Harmony.Unpatch(log.Meth, HarmonyPatchType.Transpiler, "*");
                     Messages.Message("Unpatched", MessageTypeDefOf.TaskCompletion, false);
                 }
                 else
@@ -94,10 +94,10 @@ namespace Analyzer
                     {
                         p++;
 
-                        if (pilers.Any(x => x.owner != Modbase.harmony.Id && x.owner != Modbase.perfharmony.Id) && !PatchedMeths.Contains(mode))
+                        if (pilers.Any(x => x.owner != Modbase.Harmony.Id) && !PatchedMeths.Contains(mode))
                         {
                             PatchedMeths.Add(mode);
-                            Modbase.harmony.Patch(mode, go, biff);
+                            Modbase.Harmony.Patch(mode, go, biff);
                         }
                     }
                 }
@@ -130,7 +130,7 @@ namespace Analyzer
         {
             if (!Active) return;
 
-            __state = Modbase.Start(__originalMethod.Name, () =>
+            __state = Analyzer.Start(__originalMethod.Name, () =>
             {
                 if (__originalMethod.ReflectedType != null)
                 {
@@ -150,7 +150,7 @@ namespace Analyzer
         }
     }
 
-    [Entry("HarmonyPatches", UpdateMode.Update, "HarmPatchesTipKey")]
+    [Entry("HarmonyPatches", Category.Update, "HarmPatchesTipKey")]
     internal class H_HarmonyPatches
     {
         public static bool Active = false;
@@ -174,7 +174,7 @@ namespace Analyzer
                     {
                         if (infosPrefix.PatchMethod == log.Meth)
                         {
-                            Modbase.harmony.Unpatch(methodBase, HarmonyPatchType.All, "*");
+                            Modbase.Harmony.Unpatch(methodBase, HarmonyPatchType.All, "*");
                             Messages.Message("Unpatched prefixes", MessageTypeDefOf.TaskCompletion, false);
                         }
                     }
@@ -182,7 +182,7 @@ namespace Analyzer
                     {
                         if (infosPostfixesx.PatchMethod == log.Meth)
                         {
-                            Modbase.harmony.Unpatch(methodBase, HarmonyPatchType.All, "*");
+                            Modbase.Harmony.Unpatch(methodBase, HarmonyPatchType.All, "*");
                             Messages.Message("Unpatched postfixes", MessageTypeDefOf.TaskCompletion, false);
                         }
                     }
@@ -205,10 +205,10 @@ namespace Analyzer
                 {
                     try
                     {
-                        if (Modbase.harmony.Id != fix.owner && Modbase.perfharmony.Id != fix.owner && !PatchedPres.Contains(fix))
+                        if (Modbase.Harmony.Id != fix.owner && !PatchedPres.Contains(fix))
                         {
                             PatchedPres.Add(fix);
-                            Modbase.harmony.Patch(fix.PatchMethod, go, biff);
+                            Modbase.Harmony.Patch(fix.PatchMethod, go, biff);
                         }
                     }
                     catch (Exception)
@@ -221,10 +221,10 @@ namespace Analyzer
                 {
                     try
                     {
-                        if (Modbase.harmony.Id != fix.owner && Modbase.perfharmony.Id != fix.owner && !PatchedPosts.Contains(fix))
+                        if (Modbase.Harmony.Id != fix.owner && !PatchedPosts.Contains(fix))
                         {
                             PatchedPosts.Add(fix);
-                            Modbase.harmony.Patch(fix.PatchMethod, go, biff);
+                            Modbase.Harmony.Patch(fix.PatchMethod, go, biff);
                         }
                     }
                     catch (Exception)
@@ -240,7 +240,7 @@ namespace Analyzer
         {
             if (!Active) return;
 
-            __state = Modbase.Start(__originalMethod.GetHashCode().ToString(), () =>
+            __state = Analyzer.Start(__originalMethod.GetHashCode().ToString(), () =>
             {
                 if (__originalMethod.ReflectedType != null)
                 {

@@ -30,7 +30,7 @@ namespace Analyzer
 
         public static void Prefix()
         {
-            if (AnalyzerState.CurrentlyRunning)
+            if (Analyzer.CurrentlyProfling)
             {
                 long jam = totalBytesOfMemoryUsed;
                 totalBytesOfMemoryUsed = GC.GetTotalMemory(false);
@@ -103,7 +103,7 @@ namespace Analyzer
                 Analyzer.Stop("Game Update");
             }
 
-            if (AnalyzerState.CurrentTab?.category != Category.Tick) // If we are tick, we will 'update' in the TickManager.DoSingleTick method
+            if (GUIController.GetCurrentCategory != Category.Tick) // If we are tick, we will 'update' in the TickManager.DoSingleTick method
                 Analyzer.EndUpdate();
 
             if (Active)

@@ -184,20 +184,20 @@ namespace Analyzer
     //    }
     //}
 
-    [Entry("Selection", UpdateMode.Tick, "TickThingsSelectTipKey")]
+    [Entry("Selection", Category.Tick, "TickThingsSelectTipKey")]
     internal class H_TickSelection
     {
         public static bool Active = false;
     }
 
-    [Entry("TickDef", UpdateMode.Tick, "TickThingByDefTipKey")]
+    [Entry("TickDef", Category.Tick, "TickThingByDefTipKey")]
     internal class H_TickDef
     {
         public static bool Active = false;
     }
 
 
-    [Entry("TickThing", UpdateMode.Update, "LogTipThingTickByClass")]
+    [Entry("TickThing", Category.Update, "LogTipThingTickByClass")]
     [HarmonyPatch(typeof(TickList), nameof(TickList.Tick))]
     internal class H_TickListTick
     {
@@ -248,7 +248,7 @@ namespace Analyzer
                     return $"{sam.GetType()} {fix}";
                 }
 
-                Profiler prof = Modbase.Start(key, Namer, sam.GetType(), sam.def);
+                Profiler prof = Analyzer.Start(key, Namer, sam.GetType(), sam.def);
                 ac();
                 prof.Stop();
             }

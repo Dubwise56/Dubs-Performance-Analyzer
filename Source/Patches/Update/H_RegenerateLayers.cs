@@ -9,12 +9,12 @@ namespace Analyzer
     [HarmonyPatch(typeof(Section), nameof(Section.RegenerateLayers))]
     internal class H_RegenerateLayers
     {
-        public static Entry p = Entry.Create("Sections", UpdateMode.Update);
+        public static Entry p = Entry.Create("Sections", Category.Update, "", typeof(H_RegenerateLayers), false);
 
         public static bool Active = false;
         public static bool Prefix(MethodBase __originalMethod, Section __instance, MapMeshFlag changeType)
         {
-            if (p.Active)
+            if (p.isActive)
             {
                 for (int i = 0; i < __instance.layers.Count; i++)
                 {

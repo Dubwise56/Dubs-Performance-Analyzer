@@ -7,7 +7,7 @@ using Verse.AI;
 
 namespace Analyzer
 {
-    [Entry("Pawn Tick", UpdateMode.Tick)]
+    [Entry("Pawn Tick", Category.Tick)]
     internal static class H_PawnTickProfile
     {
         public static bool Active = false;
@@ -18,7 +18,7 @@ namespace Analyzer
 
             void slop(Type e, string s)
             {
-                Modbase.harmony.Patch(AccessTools.Method(e, s), go, biff);
+                Modbase.Harmony.Patch(AccessTools.Method(e, s), go, biff);
             }
 
             slop(typeof(Pawn), nameof(Pawn.TickRare));
@@ -51,7 +51,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Modbase.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
+                __state = Analyzer.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
             }
         }
 

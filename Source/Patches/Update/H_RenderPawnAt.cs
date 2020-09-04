@@ -5,7 +5,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("PawnRenderer", UpdateMode.Update)]
+    [Entry("PawnRenderer", Category.Update)]
     [HarmonyPatch(typeof(PawnRenderer), nameof(PawnRenderer.RenderPawnAt), typeof(Vector3), typeof(RotDrawMode), typeof(bool), typeof(bool))]
     internal class H_RenderPawnAt
     {
@@ -23,7 +23,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Modbase.Start(__instance.pawn.GetHashCode().ToString(), () => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}", null, null, null, __originalMethod);
+                __state = Analyzer.Start(__instance.pawn.GetHashCode().ToString(), () => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}", null, null, null, __originalMethod);
             }
         }
 
