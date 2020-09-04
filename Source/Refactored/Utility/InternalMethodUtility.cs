@@ -21,7 +21,7 @@ namespace Analyzer
 
         public static Dictionary<string, MethodInfo> KeyMethods = new Dictionary<string, MethodInfo>();
 
-        private static readonly MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(Modbase), nameof(Analyzer.Start));
+        private static readonly MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(Modbase), nameof(ProfileController.Start));
         private static readonly MethodInfo AnalyzerEndMeth = AccessTools.Method(typeof(Profiler), nameof(Profiler.Stop));
 
         private static readonly FieldInfo AnalyzerKeyDict = AccessTools.Field(typeof(InternalMethodUtility), "KeyMethods");
@@ -138,7 +138,7 @@ namespace Analyzer
 
             ilGen.Emit(OpCodes.Call, AnalyzerStartMeth);
             ilGen.Emit(OpCodes.Stloc, profiler.LocalIndex);
-            // localProfiler = Analyzer.Start(key, null, null, null, null, KeyMethods[key]);
+            // localProfiler = ProfileController.Start(key, null, null, null, null, KeyMethods[key]);
 
             ilGen.MarkLabel(skipLabel);
         }

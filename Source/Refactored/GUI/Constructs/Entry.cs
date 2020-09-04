@@ -75,7 +75,7 @@ namespace Analyzer
 
         public Profiler Start(string key, MethodBase info)
         {
-            return Analyzer.Start(key, null, null, null, null, info);
+            return ProfileController.Start(key, null, null, null, null, info);
         }
 
         public void PatchMethods()

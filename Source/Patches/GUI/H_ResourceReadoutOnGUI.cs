@@ -15,7 +15,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Analyzer.Start("ResourceReadoutOnGUI", null, null, null, null, __originalMethod);
+                __state = ProfileController.Start("ResourceReadoutOnGUI", null, null, null, null, __originalMethod);
             }
         }
 

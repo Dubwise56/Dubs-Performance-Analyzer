@@ -68,9 +68,9 @@ namespace Analyzer
                                         name = thing.GetType().Name;
                                     }
 
-                                    Analyzer.Start(name, Namer, thing.GetType(), thing.def, null, __originalMethod);
+                                    ProfileController.Start(name, Namer, thing.GetType(), thing.def, null, __originalMethod);
                                     thing.Draw();
-                                    Analyzer.Stop(name);
+                                    ProfileController.Stop(name);
                                 }
                                 catch (Exception ex)
                                 {

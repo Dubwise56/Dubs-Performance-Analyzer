@@ -51,7 +51,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Analyzer.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
+                __state = ProfileController.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
             }
         }
 

@@ -46,7 +46,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Analyzer.Start($"{__originalMethod.DeclaringType} - {__originalMethod.Name}", null, null, null, null, __originalMethod);
+                __state = ProfileController.Start($"{__originalMethod.DeclaringType} - {__originalMethod.Name}", null, null, null, null, __originalMethod);
             }
         }
 

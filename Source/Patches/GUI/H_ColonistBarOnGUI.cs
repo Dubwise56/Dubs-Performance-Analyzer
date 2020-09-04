@@ -16,7 +16,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Analyzer.Start("ColonistBarOnGUI", null, null, null, null, __originalMethod);
+                __state = ProfileController.Start("ColonistBarOnGUI", null, null, null, null, __originalMethod);
             }
         }
 

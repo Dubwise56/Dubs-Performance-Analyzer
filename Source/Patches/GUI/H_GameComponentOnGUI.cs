@@ -26,7 +26,7 @@ namespace Analyzer
                 try
                 {
                     string trash = components[i].GetType().Name;
-                    Profiler prof = Analyzer.Start(trash, null, components[i].GetType(), null, null, __originalMethod);
+                    Profiler prof = ProfileController.Start(trash, null, components[i].GetType(), null, null, __originalMethod);
                     components[i].GameComponentOnGUI();
                     prof.Stop();
                 }

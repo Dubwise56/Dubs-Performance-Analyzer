@@ -38,7 +38,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Analyzer.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
+                __state = ProfileController.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
             }
         }
 
@@ -68,7 +68,7 @@ namespace Analyzer
                             __state = $"{__instance.needs[i].GetType().Name}";
                         }
 
-                        Profiler prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
+                        Profiler prof = ProfileController.Start(__state, null, null, null, null, __originalMethod);
                         __instance.needs[i].NeedInterval();
                         prof.Stop();
                     }

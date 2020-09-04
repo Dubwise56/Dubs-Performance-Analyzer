@@ -130,7 +130,7 @@ namespace Analyzer
         {
             if (!Active) return;
 
-            __state = Analyzer.Start(__originalMethod.Name, () =>
+            __state = ProfileController.Start(__originalMethod.Name, () =>
             {
                 if (__originalMethod.ReflectedType != null)
                 {
@@ -240,7 +240,7 @@ namespace Analyzer
         {
             if (!Active) return;
 
-            __state = Analyzer.Start(__originalMethod.GetHashCode().ToString(), () =>
+            __state = ProfileController.Start(__originalMethod.GetHashCode().ToString(), () =>
             {
                 if (__originalMethod.ReflectedType != null)
                 {

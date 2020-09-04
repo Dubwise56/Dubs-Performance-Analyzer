@@ -26,7 +26,7 @@ namespace Analyzer
             {
                 state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
+            __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
@@ -50,7 +50,7 @@ namespace Analyzer
                     try
                     {
                         __state = $"ThinkNode_Priority SubNode [{__instance.subNodes[i].GetType()}]";
-                        prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
+                        prof = ProfileController.Start(__state, null, null, null, null, __originalMethod);
                         result = __instance.subNodes[i].TryIssueJobPackage(pawn, jobParams);
                         prof.Stop();
                     }

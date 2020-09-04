@@ -248,7 +248,7 @@ namespace Analyzer
                     return $"{sam.GetType()} {fix}";
                 }
 
-                Profiler prof = Analyzer.Start(key, Namer, sam.GetType(), sam.def);
+                Profiler prof = ProfileController.Start(key, Namer, sam.GetType(), sam.def);
                 ac();
                 prof.Stop();
             }

@@ -87,7 +87,7 @@ namespace Analyzer
             MethodInfo getDeclType = AccessTools.Method(typeof(MethodInfo), "get_DeclaringType");
             MethodInfo getName = AccessTools.Method(typeof(MethodInfo), "get_Name");
             MethodInfo format = AccessTools.Method(typeof(String), "Format", new Type[] { typeof(string), typeof(object), typeof(object) });
-            MethodInfo start = AccessTools.Method(typeof(Modbase), nameof(Analyzer.Start));
+            MethodInfo start = AccessTools.Method(typeof(Modbase), nameof(ProfileController.Start));
 
             MethodBuilder prefix = tb.DefineMethod(
                 "Prefix",
@@ -116,7 +116,7 @@ namespace Analyzer
 
             generator.Emit(OpCodes.Nop);
 
-            // call __state = Analyzer.Start($"{__originalMethod.DeclaringType} - {__originalMethod.Name}", null, null, null, null, __originalMethod as MethodInfo);
+            // call __state = ProfileController.Start($"{__originalMethod.DeclaringType} - {__originalMethod.Name}", null, null, null, null, __originalMethod as MethodInfo);
             generator.Emit(OpCodes.Ldarg_2); // __state
             generator.Emit(OpCodes.Ldstr, "{0} - {1}"); // format string
             generator.Emit(OpCodes.Ldarg_0); // declaring type
@@ -129,7 +129,7 @@ namespace Analyzer
             generator.Emit(OpCodes.Ldnull);
             generator.Emit(OpCodes.Ldnull);
             generator.Emit(OpCodes.Ldarg_0); // __originalMethod
-            generator.Emit(OpCodes.Call, start); // Analyzer.Start
+            generator.Emit(OpCodes.Call, start); // ProfileController.Start
             generator.Emit(OpCodes.Stind_Ref);
 
             // ...

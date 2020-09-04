@@ -16,8 +16,7 @@ namespace Analyzer
     {
         private static int currentLogCount; // How many update cycles have passed since beginning profiling an entry?
         public static List<ProfileLog> logs = new List<ProfileLog>();
-        private static Comparer<ProfileLog> logComparer = Comparer<ProfileLog>.Create( (ProfileLog first, ProfileLog second) => first.average < second.average ? 1 : 0);
-
+        private static Comparer<ProfileLog> logComparer = Comparer<ProfileLog>.Create( (ProfileLog first, ProfileLog second) => first.average < second.average ? 1 : -1);
 
         private static Thread logicThread; // Calculating stats for all active profilers (not the currently selected one)
         private static Thread patchingThread; // patching new methods, this prevents a stutter when patching mods
@@ -27,11 +26,6 @@ namespace Analyzer
         private static object logicSync = new object();
 
         private static bool currentlyProfiling = false;
-#if DEBUG
-        private static bool midUpdate = false;
-#endif
-        private static float deltaTime = 0.0f;
-        public static Dictionary<string, Profiler> profiles = new Dictionary<string, Profiler>();
 
         public static List<ProfileLog> Logs => logs;
         public static object LogicLock => logicSync;
@@ -40,66 +34,19 @@ namespace Analyzer
         public static void RefreshLogCount() => currentLogCount = 0;
         public static int GetCurrentLogCount => currentLogCount;
 
-
-
-        public static Profiler Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodBase meth = null)
-        {
-            if (!CurrentlyProfling) return null;
-
-            if (profiles.TryGetValue(key, out Profiler prof)) return prof.Start();
-            else
-            {
-                if (GetLabel != null) profiles[key] = new Profiler(key, GetLabel(), type, def, thing, meth);
-                else profiles[key] = new Profiler(key, key, type, def, thing, meth);
-
-                return profiles[key].Start();
-            }
-        }
-        public static void Stop(string key)
-        {
-            if (profiles.TryGetValue(key, out Profiler prof))
-                prof.Stop();
-        }
-
         // After this function has been called, the analyzer will be actively profiling / incuring lag :)
         public static void BeginProfiling() => currentlyProfiling = true;
         public static void EndProfiling() => currentlyProfiling = false;
 
-        // Mostly here for book keeping, should be optimised out of a release build.
-        public static void BeginUpdate()
+        internal static void UpdateCycle()
         {
-#if DEBUG
-            if (!CurrentlyProfling) return;
-
-            if (midUpdate) Log.Error("[Analyzer] Attempting to begin new update cycle when the previous update has not ended");
-            midUpdate = true;
-#endif
-        }
-
-        public static void EndUpdate()
-        {
-            UpdateCycle(); // Update all our profilers, record measurements
-
-            deltaTime += Time.deltaTime;
-            if (deltaTime >= 1f)
-            {
-                FinishUpdateCycle(); // Process the information for all our profilers.
-                deltaTime -= 1f;
-            }
-#if DEBUG
-            midUpdate = false;
-#endif
-        }
-
-        private static void UpdateCycle()
-        {
-            foreach (var profile in profiles)
+            foreach (var profile in ProfileController.profiles)
                 profile.Value.RecordMeasurement();
         }
 
-        private static void FinishUpdateCycle()
+        internal static void FinishUpdateCycle()
         {
-            logicThread = new Thread(() => LogicThread(new Dictionary<string, Profiler>(profiles)));
+            logicThread = new Thread(() => LogicThread(new Dictionary<string, Profiler>(ProfileController.profiles)));
             logicThread.IsBackground = true;
             logicThread.Start();
         }
@@ -140,23 +87,23 @@ namespace Analyzer
 
         private static void LogicThread(Dictionary<string, Profiler> Profiles)
         {
-            List<ProfileLog> newLogs = new List<ProfileLog>();
+            List<ProfileLog> newLogs = new List<ProfileLog>(Profiles.Count);
 
-            double total = 0;
+            double sumOfAverages = 0;
 
             foreach (var value in Profiles.Values)
             {
-                double av = value.GetAverageTime(Mathf.Min(Analyzer.GetCurrentLogCount, 2000));
-                newLogs.Add(new ProfileLog(value.label, string.Empty, av, (float)value.times.Max(), null, value.key, string.Empty, 0, value.type, value.meth));
+                double average = value.GetAverageTime(Mathf.Min(Analyzer.GetCurrentLogCount, 2000));
+                newLogs.Add(new ProfileLog(value.label, string.Empty, average, (float)value.times.Max(), null, value.key, string.Empty, 0, value.type, value.meth));
 
-                total += av;
+                sumOfAverages += average;
             }
 
             List<ProfileLog> sortedLogs = new List<ProfileLog>(newLogs.Count);
 
             foreach (var log in newLogs)
             {
-                float adjustedAverage = (float)(log.average / total);
+                float adjustedAverage = (float)(log.average / sumOfAverages);
                 log.average = adjustedAverage;
                 log.averageString = adjustedAverage.ToStringPercent();
 

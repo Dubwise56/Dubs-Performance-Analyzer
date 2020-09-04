@@ -45,7 +45,7 @@ namespace Analyzer
                 try
                 {
                     string picard = components[i].GetType().Name;
-                    Profiler prof = Analyzer.Start(picard, null, null, null, null, __originalMethod);
+                    Profiler prof = ProfileController.Start(picard, null, null, null, null, __originalMethod);
                     components[i].WorldComponentTick();
                     prof.Stop();
                 }
@@ -76,7 +76,7 @@ namespace Analyzer
                 state = __originalMethod.GetType().Name;
             }
 
-            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
+            __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]

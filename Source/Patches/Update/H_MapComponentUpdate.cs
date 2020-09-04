@@ -27,7 +27,7 @@ namespace Analyzer
                 state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
 
-            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
+            __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
         }
 
         [HarmonyPriority(Priority.First)]
@@ -86,7 +86,7 @@ namespace Analyzer
                 {
                     MapComponent comp = components[i];
 
-                    Profiler prof = Analyzer.Start(comp.GetType().FullName, () => $"{comp.GetType()}", null, null, null, __originalMethod);
+                    Profiler prof = ProfileController.Start(comp.GetType().FullName, () => $"{comp.GetType()}", null, null, null, __originalMethod);
                     comp.MapComponentUpdate();
                     prof.Stop();
                 }

@@ -29,7 +29,7 @@ namespace Analyzer
                 foreach (RoomStatDef roomStatDef in DefDatabase<RoomStatDef>.AllDefs.OrderByDescending((RoomStatDef x) => x.updatePriority))
                 {
                     string str = roomStatDef.defName;
-                    Profiler prof = Analyzer.Start(str, () => $"{str} - {roomStatDef.workerClass}", null, null, null, __originalMethod);
+                    Profiler prof = ProfileController.Start(str, () => $"{str} - {roomStatDef.workerClass}", null, null, null, __originalMethod);
                     __instance.stats[roomStatDef] = roomStatDef.Worker.GetScore(__instance);
                     prof.Stop();
                 }

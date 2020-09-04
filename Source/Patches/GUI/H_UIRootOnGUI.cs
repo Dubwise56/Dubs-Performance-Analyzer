@@ -50,7 +50,7 @@ namespace Analyzer
                     state = __originalMethod.GetType().Name;
                 }
 
-                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
+                __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
             }
         }
 

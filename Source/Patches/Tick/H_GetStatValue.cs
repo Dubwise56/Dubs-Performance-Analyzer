@@ -92,7 +92,7 @@ namespace Analyzer
                     state = __originalMethod.GetType().ToString();
                 }
 
-                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
+                __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
             }
         }
 
@@ -132,7 +132,7 @@ namespace Analyzer
                     slag = $"{__instance.stat.defName} GetValueUnfinalized";
                 }
 
-                Profiler prof = Analyzer.Start(slag, null, null, null, null, __originalMethod);
+                Profiler prof = ProfileController.Start(slag, null, null, null, null, __originalMethod);
                 float valueUnfinalized = sw.GetValueUnfinalized(req, applyPostProcess);
                 prof.Stop();
 
@@ -145,7 +145,7 @@ namespace Analyzer
                     slag = $"{__instance.stat.defName} FinalizeValue";
                 }
 
-                prof = Analyzer.Start(slag, null, null, null, null, __originalMethod);
+                prof = ProfileController.Start(slag, null, null, null, null, __originalMethod);
                 sw.FinalizeValue(req, ref valueUnfinalized, applyPostProcess);
                 prof.Stop();
 
@@ -170,7 +170,7 @@ namespace Analyzer
                     state = stat.defName;
                 }
 
-                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
+                __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
             }
         }
 
@@ -199,7 +199,7 @@ namespace Analyzer
                     state = $"{stat.defName} abstract";
                 }
 
-                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
+                __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
             }
         }
 
@@ -219,7 +219,7 @@ namespace Analyzer
                     state = $"{stat.defName} abstract";
                 }
 
-                __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
+                __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
             }
         }
 

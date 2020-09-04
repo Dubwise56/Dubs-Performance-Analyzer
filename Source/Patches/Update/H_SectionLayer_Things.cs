@@ -27,7 +27,7 @@ namespace Analyzer
                         Thing thing = list[i];
 
                         __state = "Flag check";
-                        prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
+                        prof = ProfileController.Start(__state, null, null, null, null, __originalMethod);
                         bool flag =
                             ((thing.def.seeThroughFog ||
                               !__instance.Map.fogGrid.fogGrid[
@@ -42,7 +42,7 @@ namespace Analyzer
                         if (flag)
                         {
                             __state = thing.def.defName;
-                            prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
+                            prof = ProfileController.Start(__state, null, null, null, null, __originalMethod);
                             __instance.TakePrintFrom(thing);
                             prof.Stop();
                         }
@@ -51,7 +51,7 @@ namespace Analyzer
                 }
 
                 __state = "Finalize mesh";
-                prof = Analyzer.Start(__state, null, null, null, null, __originalMethod);
+                prof = ProfileController.Start(__state, null, null, null, null, __originalMethod);
                 __instance.FinalizeMesh(MeshParts.All);
                 prof.Stop();
                 return false;

@@ -94,7 +94,7 @@ namespace Analyzer
                 CurrentKey = string.Intern(CurrentKey + pawnname);
             }
 
-            return Analyzer.Start(CurrentKey, namer);
+            return ProfileController.Start(CurrentKey, namer);
         }
 
         public static void Stop(Profiler profiler)
@@ -299,7 +299,7 @@ namespace Analyzer
                                 {
                                     return !t.IsForbidden(pawn) && scanner.HasJobOnThing(pawn, t);
                                 }
-                                prof = Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
+                                prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
                                 IEnumerable<Thing> enumerable = scanner.PotentialWorkThingsGlobal(pawn)?.Where(x => scanner.HasJobOnThing(pawn, x));
 
                                 //if (scanner is WorkGiver_Repair repair)
@@ -371,7 +371,7 @@ namespace Analyzer
 
                             if (scanner.def.scanCells)
                             {
-                                prof = Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
+                                prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
                                 float closestDistSquared = 99999f;
                                 float bestPriority = float.MinValue;
                                 bool prioritized = scanner.Prioritized;
@@ -430,7 +430,7 @@ namespace Analyzer
                     if (bestTargetOfLastPriority.IsValid)
                     {
                         //  pawn.mindState.lastGivenWorkType = workGiver.def.workType;
-                        prof = Analyzer.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
+                        prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
                         Job job3;
                         if (bestTargetOfLastPriority.HasThing)
                         {
@@ -503,9 +503,9 @@ namespace Analyzer
     //        float temperature = room.Temperature;
 
     //        __state = TryIssueJobPackage.key + ": SafeTemperatureRange";
-    //        Analyzer.Start(__state);
+    //        ProfileController.Start(__state);
     //        FloatRange floatRange = p.SafeTemperatureRange();
-    //        Analyzer.Stop(__state);
+    //        ProfileController.Stop(__state);
 
     //        Danger danger;
     //        if (floatRange.Includes(temperature))
@@ -564,9 +564,9 @@ namespace Analyzer
     //        }
     //        if (tp.maxDanger < Danger.Deadly && tp.pawn != null)
     //        {
-    //            Analyzer.Start(__state);
+    //            ProfileController.Start(__state);
     //            Danger danger = __instance.DangerFor(tp.pawn);
-    //            Analyzer.Stop(__state);
+    //            ProfileController.Stop(__state);
     //            if (isDestination || danger == Danger.Deadly)
     //            {
     //                Region region = tp.pawn.GetRegion(RegionType.Set_All);
@@ -673,14 +673,14 @@ namespace Analyzer
     //        }
 
     //        H_TryIssueJobPackageTrans.CurrentScan = __state;
-    //        Analyzer.Start(__state, namer, giver.GetType(), giver.def, pawn);
+    //        ProfileController.Start(__state, namer, giver.GetType(), giver.def, pawn);
     //    }
 
     //    public static void Postfix(string __state)
     //    {
     //        if (!string.IsNullOrEmpty(__state))
     //        {
-    //            Analyzer.Stop(__state);
+    //            ProfileController.Stop(__state);
     //        }
     //    }
     //}
@@ -697,14 +697,14 @@ namespace Analyzer
     //        if (Analyzer.loggingMode != LoggingMode.Work && Analyzer.loggingMode != LoggingMode.WorkType) return;
 
     //        __state = H_TryIssueJobPackageTrans.CurrentScan;
-    //        Analyzer.Start(H_TryIssueJobPackageTrans.CurrentScan);
+    //        ProfileController.Start(H_TryIssueJobPackageTrans.CurrentScan);
     //    }
 
     //    public static void Postfix(string __state)
     //    {
     //        if (!string.IsNullOrEmpty(__state))
     //        {
-    //            Analyzer.Stop(__state);
+    //            ProfileController.Stop(__state);
     //        }
     //    }
     //}
@@ -721,14 +721,14 @@ namespace Analyzer
     //        if (Analyzer.loggingMode != LoggingMode.Work && Analyzer.loggingMode != LoggingMode.WorkType) return;
 
     //        __state = H_TryIssueJobPackageTrans.CurrentScan;
-    //        Analyzer.Start(H_TryIssueJobPackageTrans.CurrentScan);
+    //        ProfileController.Start(H_TryIssueJobPackageTrans.CurrentScan);
     //    }
 
     //    public static void Postfix(string __state)
     //    {
     //        if (!string.IsNullOrEmpty(__state))
     //        {
-    //            Analyzer.Stop(__state);
+    //            ProfileController.Stop(__state);
     //        }
     //    }
     //}
@@ -794,14 +794,14 @@ namespace Analyzer
     //            __state = String.Intern(__state + pawn.Name.ToStringShort);
     //        }
 
-    //        Analyzer.Start(__state, namer, __instance.GetType(), __instance.def, pawn);
+    //        ProfileController.Start(__state, namer, __instance.GetType(), __instance.def, pawn);
     //    }
 
     //    public static void Postfix(string __state)
     //    {
     //        if (!String.IsNullOrEmpty(__state))
     //        {
-    //            Analyzer.Stop(__state);
+    //            ProfileController.Stop(__state);
     //        }
     //    }
     //}

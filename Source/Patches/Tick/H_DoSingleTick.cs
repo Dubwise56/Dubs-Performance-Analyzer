@@ -26,7 +26,7 @@ namespace Analyzer
             {
                 state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
             }
-            __state = Analyzer.Start(state, null, null, null, null, __originalMethod);
+            __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
         }
 
         public static void Stop(Profiler __state)

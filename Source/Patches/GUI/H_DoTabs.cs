@@ -15,7 +15,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Analyzer.Start("InspectPaneUtility.DoTabs", null, null, null, null, __originalMethod);
+                __state = ProfileController.Start("InspectPaneUtility.DoTabs", null, null, null, null, __originalMethod);
             }
         }
 

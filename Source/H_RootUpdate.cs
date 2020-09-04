@@ -88,10 +88,10 @@ namespace Analyzer
             }
 
             if (Active)
-                Analyzer.Start("Game Update");
+                ProfileController.Start("Game Update");
 
 #if DEBUG
-            Analyzer.BeginUpdate();
+            ProfileController.BeginUpdate();
 #endif
         }
 
@@ -99,15 +99,15 @@ namespace Analyzer
         {
             if (Active)
             {
-                Analyzer.Stop("Frame times");
-                Analyzer.Stop("Game Update");
+                ProfileController.Stop("Frame times");
+                ProfileController.Stop("Game Update");
             }
 
             if (GUIController.GetCurrentCategory != Category.Tick) // If we are tick, we will 'update' in the TickManager.DoSingleTick method
-                Analyzer.EndUpdate();
+                ProfileController.EndUpdate();
 
             if (Active)
-                Analyzer.Start("Frame times");
+                ProfileController.Start("Frame times");
 
         }
     }
