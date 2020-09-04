@@ -5,7 +5,7 @@ using System.Reflection;
 namespace Analyzer
 {
 
-    [Entry("ColonistBarOnGUI", UpdateMode.Update)]
+    [Entry("ColonistBarOnGUI", Category.GUI)]
     [HarmonyPatch(typeof(ColonistBar), nameof(ColonistBar.ColonistBarOnGUI))]
     internal class H_ColonistBarOnGUI
     {
@@ -16,7 +16,7 @@ namespace Analyzer
         {
             if (Active)
             {
-                __state = Modbase.Start("ColonistBarOnGUI", null, null, null, null, __originalMethod);
+                __state = Analyzer.Start("ColonistBarOnGUI", null, null, null, null, __originalMethod);
             }
         }
 

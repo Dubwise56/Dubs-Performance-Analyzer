@@ -6,7 +6,7 @@ using Verse;
 namespace Analyzer
 {
 
-    [Entry("Frame times", UpdateMode.Update, "frameTimeProfilerTip")]
+    [Entry("Frame times", Category.Update, "frameTimeProfilerTip")]
     [HarmonyPatch(typeof(Root_Play), nameof(Root_Play.Update))]
     public class H_RootUpdate
     {
@@ -24,18 +24,22 @@ namespace Analyzer
         public static long LastMinGC;
         public static long LastMaxGC;
 
+        public static string GarbageCollectionInfo { get; private set; }
+
+        private static long totalBytesOfMemoryUsed;
+
         public static void Prefix()
         {
             if (AnalyzerState.CurrentlyRunning)
             {
-                long jam = Dialog_Analyzer.totalBytesOfMemoryUsed;
-                Dialog_Analyzer.totalBytesOfMemoryUsed = GC.GetTotalMemory(false);
+                long jam = totalBytesOfMemoryUsed;
+                totalBytesOfMemoryUsed = GC.GetTotalMemory(false);
 
-                if (jam > Dialog_Analyzer.totalBytesOfMemoryUsed)
+                if (jam > totalBytesOfMemoryUsed)
                 {
-                    LastMinGC = Dialog_Analyzer.totalBytesOfMemoryUsed;
+                    LastMinGC = totalBytesOfMemoryUsed;
                     LastMaxGC = jam;
-                    Dialog_Analyzer.GarbageCollectionInfo = $"{Dialog_Analyzer.totalBytesOfMemoryUsed.ToMb()}MB";
+                    GarbageCollectionInfo = $"{totalBytesOfMemoryUsed.ToMb()}MB";
                 }
 
                 delta += Time.deltaTime;
@@ -50,7 +54,7 @@ namespace Analyzer
                     if (MemoryDifference < 0)
                         MemoryDifference = 0;
 
-                    Dialog_Analyzer.GarbageCollectionInfo = $"{CurrentAllocatedMemory.ToMb():0.00}MB +{MemoryDifference.ToMb():0.00}MB/s";
+                    GarbageCollectionInfo = $"{CurrentAllocatedMemory.ToMb():0.00}MB +{MemoryDifference.ToMb():0.00}MB/s";
                 }
 
 
@@ -86,18 +90,21 @@ namespace Analyzer
             if (Active)
                 Analyzer.Start("Game Update");
 
+#if DEBUG
+            Analyzer.BeginUpdate();
+#endif
         }
 
         public static void Postfix()
         {
             if (Active)
             {
-                Modbase.Stop("Frame times");
-                Modbase.Stop("Game Update");
+                Analyzer.Stop("Frame times");
+                Analyzer.Stop("Game Update");
             }
 
-            if (AnalyzerState.CurrentTab?.mode == UpdateMode.Update || AnalyzerState.CurrentTab?.mode == UpdateMode.GUI || AnalyzerState.CurrentTab?.mode == UpdateMode.ModderAdded)
-                Modbase.UpdateEnd();
+            if (AnalyzerState.CurrentTab?.category != Category.Tick) // If we are tick, we will 'update' in the TickManager.DoSingleTick method
+                Analyzer.EndUpdate();
 
             if (Active)
                 Analyzer.Start("Frame times");

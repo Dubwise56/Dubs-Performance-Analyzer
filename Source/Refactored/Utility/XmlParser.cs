@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,11 +41,13 @@ namespace Analyzer
                 {
                     switch (child.Name.ToLower())
                     {
-                        case "methods": case "method": 
-                            foreach(XmlNode method in child.ChildNodes)
+                        case "methods":
+                        case "method":
+                            foreach (XmlNode method in child.ChildNodes)
                                 meths.Add(ParseMethod(method.InnerText)); break;
-                        case "types": case "type": 
-                            foreach(XmlNode type in child.ChildNodes)
+                        case "types":
+                        case "type":
+                            foreach (XmlNode type in child.ChildNodes)
                                 meths.AddRange(ParseTypeMethods(type.InnerText)); break;
                         default:
                             Log.Error($"[Analyzer] Attempting to read unknown value from an Analyzer.xml, the given input was {child.Name}, it should have been either '(M/m)ethods' or '(T/t)ypes'");
@@ -54,15 +57,7 @@ namespace Analyzer
 
                 Type myType = DynamicTypeBuilder.CreateType(node.Name, meths);
 
-                foreach (ProfileTab profileTab in AnalyzerState.SideTabCategories)
-                {
-                    if (profileTab.UpdateMode == UpdateMode.ModderAdded)
-                    {
-                        Entry mode = Entry.Create(myType.Name, UpdateMode.ModderAdded, null, false, myType);
-                        profileTab.Modes.Add(mode, null);
-                        break;
-                    }
-                }
+                GUIController.Tab(Category.Modder).entries.Add(Entry.Create(myType.Name, Category.Modder, null, myType, false), myType);
             }
         }
 

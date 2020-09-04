@@ -33,11 +33,11 @@ namespace Analyzer
             Analyzer.BeginProfiling();
         }
 
-        public static void LoadModes()
+        public static void LoadEntries()
         {
-            List<Type> entries = GenTypes.AllTypes.Where(m => m.TryGetAttribute<Entry>(out _)).OrderBy(m => m.TryGetAttribute<Entry>().name).ToList();
+            List<Type> allEntries = GenTypes.AllTypes.Where(m => m.TryGetAttribute<Entry>(out _)).OrderBy(m => m.TryGetAttribute<Entry>().name).ToList();
 
-            foreach (Type entryType in entries)
+            foreach (Type entryType in allEntries)
             {
                 try
                 {

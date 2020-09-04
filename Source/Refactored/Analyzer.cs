@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,26 +14,28 @@ namespace Analyzer
 {
     public static class Analyzer
     {
-        private static int currentEntries; // How many update cycles have passed since beginning?
+        private static int currentLogCount; // How many update cycles have passed since beginning profiling an entry?
         private static Thread logicThread; // Calculating stats for all active profilers (not the currently selected one)
         private static Thread patchingThread; // patching new methods, this prevents a stutter when patching mods
         private static Thread cleanupThread; // 'cleanup' - Removing patches, getting rid of cached methods (already patched), clearing temporary entries
         private static bool currentlyProfiling = false;
+#if DEBUG
         private static bool midUpdate = false;
+#endif
         private static float deltaTime = 0.0f;
         public static Dictionary<string, Profiler> profiles = new Dictionary<string, Profiler>();
 
-
         public static bool CurrentlyPaused { get; set; } = false;
-        public static void RefreshEntryCount() => currentEntries = 0;
-        public static int GetCurrentEntryCount() => currentEntries;
+        public static bool CurrentlyProfling => currentlyProfiling && !CurrentlyPaused;
+        public static void RefreshLogCount() => currentLogCount = 0;
+        public static int GetCurrentLogCount => currentLogCount;
 
         private static object patchingSync = new object();
         private static object logicSync = new object();
 
         public static Profiler Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodBase meth = null)
         {
-            if (CurrentlyPaused) return null;
+            if (CurrentlyProfling) return null;
 
             if (profiles.TryGetValue(key, out Profiler prof)) return prof.Start();
             else
@@ -53,14 +56,15 @@ namespace Analyzer
         public static void BeginProfiling() => currentlyProfiling = true;
         public static void EndProfiling() => currentlyProfiling = false;
 
-        // Mostly here for book keeping 
+        // Mostly here for book keeping, should be optimised out of a release build.
         public static void BeginUpdate()
         {
-            if (!currentlyProfiling) return;
 #if DEBUG
+            if (CurrentlyProfling) return;
+
             if (midUpdate) Log.Error("[Analyzer] Attempting to begin new update cycle when the previous update has not ended");
-#endif
             midUpdate = true;
+#endif
         }
 
         public static void EndUpdate()
@@ -73,8 +77,9 @@ namespace Analyzer
                 FinishUpdateCycle(); // Process the information for all our profilers.
                 deltaTime -= 1f;
             }
-
+#if DEBUG
             midUpdate = false;
+#endif
         }
 
         private static void UpdateCycle()
@@ -121,11 +126,6 @@ namespace Analyzer
             cleanupThread = new Thread(() => Modbase.UnPatchMethods());
             cleanupThread.IsBackground = true;
             cleanupThread.Start();
-        }
-
-        public static bool CanCleanup()
-        {
-            return !midUpdate && !currentlyProfiling;
         }
     }
 }

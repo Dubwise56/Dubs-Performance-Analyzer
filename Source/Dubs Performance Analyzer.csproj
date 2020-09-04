@@ -80,7 +80,6 @@
     <Compile Include="GUI\ProfilerHistory.cs" />
     <Compile Include="Patches\Custom\CustomProfilers.cs" />
     <Compile Include="Patches\GUI\H_ColonistBarOnGUI.cs" />
-    <Compile Include="Patches\GUI\H_DoButtons.cs" />
     <Compile Include="Patches\Tick\H_DoSingleTick.cs" />
     <Compile Include="Patches\Tick\H_DoSingleTickUpdate.cs" />
     <Compile Include="Patches\GUI\H_DoTabs.cs" />

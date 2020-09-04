@@ -10,24 +10,29 @@ namespace Analyzer
     public static class GUIController
     {
         private static Tab currentTab;
-        private static List<Tab> tabs;
+        private static Dictionary<Category, Tab> tabs;
         private static Category currentCategory;
         private static Profiler currentProfiler;
 
-        public static Profiler GetCurrentProfiler() => currentProfiler;
-        public static Tab GetCurrentTab() => currentTab;
-        public static Category GetCurrentCategory() => currentCategory;
-
+        public static Profiler GetCurrentProfiler => currentProfiler;
+        public static Tab GetCurrentTabs => currentTab;
+        public static Category GetCurrentCategory => currentCategory;
+        public static IEnumerable<Tab> Tabs => tabs.Values;
+        public static Tab Tab(Category cat) => tabs[cat];
         static GUIController()
         {
-            tabs = new List<Tab>
+            tabs = new Dictionary<Category, Tab>();
+
+            addTab(ResourceCache.Strings.tab_setting, ResourceCache.Strings.tab_setting_desc, Category.Settings);
+            addTab(ResourceCache.Strings.tab_tick, ResourceCache.Strings.tab_tick_desc, Category.Tick);
+            addTab(ResourceCache.Strings.tab_update, ResourceCache.Strings.tab_update_desc, Category.Update);
+            addTab(ResourceCache.Strings.tab_gui, ResourceCache.Strings.tab_gui_desc, Category.GUI);
+            addTab(ResourceCache.Strings.tab_modder, ResourceCache.Strings.tab_modder_desc, Category.Settings);
+
+            void addTab(string name, string desc, Category cat)
             {
-                new Tab(ResourceCache.Strings.tab_setting,   () => { currentCategory = Category.Settings; },     () => currentCategory == Category.Settings,        UpdateMode.Update,     ResourceCache.Strings.tab_setting_desc),
-                new Tab(ResourceCache.Strings.tab_tick,      () => { currentCategory = Category.Tick; },         () => currentCategory == Category.Tick,            UpdateMode.Tick,       ResourceCache.Strings.tab_tick_desc),
-                new Tab(ResourceCache.Strings.tab_update,    () => { currentCategory = Category.Update; },       () => currentCategory == Category.Update,          UpdateMode.Update,     ResourceCache.Strings.tab_update_desc),
-                new Tab(ResourceCache.Strings.tab_gui,       () => { currentCategory = Category.GUI; },          () => currentCategory == Category.GUI,             UpdateMode.Update,     ResourceCache.Strings.tab_gui_desc),
-                new Tab(ResourceCache.Strings.tab_modder,    () => { currentCategory = Category.Modder; },       () => currentCategory == Category.Modder,        UpdateMode.Update,       ResourceCache.Strings.tab_modder_desc)
-            };
+                tabs.Add(cat, new Tab(name, () => currentCategory = cat, () => currentCategory == cat, cat == Category.Tick ? UpdateMode.Tick : UpdateMode.Update, desc));
+            }
         }
 
         public static void SwapToEntry(string entryName)

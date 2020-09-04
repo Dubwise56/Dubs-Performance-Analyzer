@@ -47,7 +47,7 @@ namespace Analyzer
 
         public void Stop()
         {
-            if (Analyzer.CurrentlyPaused) return;
+            if (!Analyzer.CurrentlyProfling) return;
 
             try
             {
@@ -61,9 +61,12 @@ namespace Analyzer
         }
 
         // This function will be added via transpiler to the end of `Stop()` when the option is toggled.
+        // Hopefully this can be injected as IL, not an xtra method call.
+        // Something.GetMethodIL();
+
         public static void StopFrameInfo(Profiler prof) 
         {
-            if (prof == GUIController.GetCurrentProfiler())
+            if (prof == GUIController.GetCurrentProfiler)
                 if (prof.hitCounter < MAX_ADD_INFO_PER_FRAME)
                     StackTraceRegex.Add(new StackTrace(2, false));
         }
@@ -78,7 +81,6 @@ namespace Analyzer
             currentIndex++;
             currentIndex %= RECORDS_HELD; // ring buffer
 
-            stopwatch.Stop();
             stopwatch.Reset();
             hitCounter = 0;
         }
