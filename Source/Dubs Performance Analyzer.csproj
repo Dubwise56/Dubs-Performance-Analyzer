@@ -55,6 +55,7 @@
     <Compile Include="GUI\DubGUI.cs" />
     <Compile Include="GUI\DubResources.cs" />
     <Compile Include="GUI\H_TickMonitor.cs" />
+    <Compile Include="Refactored\ResourceCache.cs" />
     <Compile Include="Refactored\Utility\LinkedQueue.cs" />
     <Compile Include="Refactored\Utility\InternalMethodUtility.cs" />
     <Compile Include="Patches\GUI\H_GameComponentOnGUI.cs" />
@@ -151,6 +152,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Refactored\Statistics\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PerfAnal.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

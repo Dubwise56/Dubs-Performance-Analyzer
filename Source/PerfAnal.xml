@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+	
+	<!--Tabs-->
+	<tab.settings>Settings</tab.settings>
+	<tab.tick>Tick</tab.tick>
+	<tab.update>Update</tab.update>
+	<tab.gui>GUI</tab.gui>
+	<tab.modder>Modder</tab.modder>
+	
+	<!--Tab Descriptions-->
+	<tab.settings.desc>Enable and disable optional settings which effect which information is displayed</tab.settings.desc>
+	<tab.tick.desc>Methods which are tick based</tab.tick.desc>
+	<tab.update.desc>Methods which are update based</tab.update.desc>
+	<tab.gui.desc>Methods which are run on gui</tab.gui.desc>
+	<tab.modder.desc>Methods which have been added by modders via Analyzer.xml</tab.modder.desc>
+
+	
+
+</LanguageData>

@@ -22,7 +22,6 @@ namespace Analyzer
             if (Find.WindowStack.WindowOfType<Dialog_Analyzer>() != null) 
             { 
                 Find.WindowStack.RemoveWindowsOfType(typeof(Dialog_Analyzer));
-                Analyzer.EndProfiling();
             }
             else 
             { 
