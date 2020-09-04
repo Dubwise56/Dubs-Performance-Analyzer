@@ -17,7 +17,7 @@ namespace Analyzer
     {
         private static int currentLogCount; // How many update cycles have passed since beginning profiling an entry?
         public static List<ProfileLog> logs = new List<ProfileLog>();
-        private static Comparer<ProfileLog> logComparer = Comparer<ProfileLog>.Create( (ProfileLog first, ProfileLog second) => first.average < second.average ? 1 : -1);
+        private static Comparer<ProfileLog> logComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.average < second.average ? 1 : -1);
 
         private static Thread logicThread; // Calculating stats for all active profilers (not the currently selected one)
         private static Thread patchingThread; // patching new methods, this prevents a stutter when patching mods
@@ -77,17 +77,11 @@ namespace Analyzer
             patchingThread.Start();
         }
 
-        // Remove all patches
-        // Remove all internal patches
-        // Clear all caches which hold information to prevent double patching
-        // Clear all temporary entries
-        // Clear all profiles
-        // Clear all logs
         public static void Cleanup()
         {
-            //cleanupThread = new Thread();
-            //cleanupThread.IsBackground = true;
-            //cleanupThread.Start();
+            cleanupThread = new Thread(() => CleanupBackground());
+            cleanupThread.IsBackground = true;
+            cleanupThread.Start();
         }
 
         private static void ProfileCalculations(Dictionary<string, Profiler> Profiles)
@@ -129,6 +123,40 @@ namespace Analyzer
             int index = Mathf.Abs(logs.BinarySearch(value, logComparer) + 1);
 
             logs.Insert(index, value);
+        }
+
+        // Remove all patches
+        // Remove all internal patches
+        // Clear all caches which hold information to prevent double patching
+        // Clear all temporary entries
+        // Clear all profiles
+        // Clear all logs
+
+        private static void CleanupBackground()
+        {
+            // idle for 30s chillin
+            for (int i = 0; i < 30; i++)
+            {
+                Thread.Sleep(1000);
+                if (CurrentlyProfling)
+                    return;
+            }
+
+            // unpatch all methods
+            Modbase.Harmony.UnpatchAll(Modbase.Harmony.Id);
+
+            // clear all patches to prevent double patching
+            Utility.ClearPatchedCaches();
+
+            // clear all profiles
+            ProfileController.Profiles.Clear();
+
+            // clear all logs
+            Analyzer.Logs.Clear();
+
+            // call GC
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
     }
 }

@@ -11,14 +11,29 @@ namespace Analyzer
 {
     public static class Utility
     {
-        public static List<string> PatchedAssemblies = new List<string>();
-        public static List<string> PatchedTypes = new List<string>();
-        public static List<string> PatchedMethods = new List<string>();
+        public static List<string> patchedAssemblies = new List<string>();
+        public static List<string> patchedTypes = new List<string>();
+        public static List<string> patchedMethods = new List<string>();
 
         private static Thread patchAssemblyThread = null;
         private static Thread patchTypeThread = null;
 
         public static bool displayMessages = false;
+
+
+        public static void ClearPatchedCaches()
+        {
+            patchedAssemblies.Clear();
+            patchedTypes.Clear();
+            patchedMethods.Clear();
+
+            H_HarmonyPatches.PatchedPres.Clear();
+            H_HarmonyPatches.PatchedPosts.Clear();
+            H_HarmonyTranspilers.PatchedMeths.Clear();
+
+            UnpatchAllInternalMethods();
+        }
+
 
         /*
          * Utility
@@ -181,13 +196,13 @@ namespace Analyzer
         }
         private static void PatchMethodFull(MethodInfo method, HarmonyMethod pre, HarmonyMethod post)
         {
-            if (PatchedMethods.Contains(method.Name))
+            if (patchedMethods.Contains(method.Name))
             {
                 Warn($"patching {method.Name} failed, already patched");
                 return;
             }
 
-            PatchedMethods.Add(method.Name);
+            patchedMethods.Add(method.Name);
             try
             {
                 Modbase.Harmony.Patch(method, pre, post);
@@ -267,7 +282,7 @@ namespace Analyzer
                         Modbase.Harmony.Unpatch(methodBase, method);
                         return;
                     }
-                }   
+                }
             }
             Warn("Failed to locate method to unpatch");
         }
@@ -340,17 +355,17 @@ namespace Analyzer
         {
             try
             {
-                if (PatchedTypes.Contains(type.FullName))
+                if (patchedTypes.Contains(type.FullName))
                 {
                     Warn($"patching {type.FullName} failed, already patched");
                     return;
                 }
-                PatchedTypes.Add(type.FullName);
+                patchedTypes.Add(type.FullName);
 
                 foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
                 {
 
-                    if (!PatchedMethods.Contains(method.Name) && method.DeclaringType == type)
+                    if (!patchedMethods.Contains(method.Name) && method.DeclaringType == type)
                     {
                         try
                         {
@@ -361,7 +376,7 @@ namespace Analyzer
                         {
                             Warn($"Failed to log method {method.Name} errored with the message {e.Message}");
                         }
-                        PatchedMethods.Add(method.Name);
+                        patchedMethods.Add(method.Name);
                     }
                 }
                 Notify($"Patched {type.FullName}");
@@ -532,6 +547,7 @@ namespace Analyzer
         {
             InternalMethodUtility.Harmony.UnpatchAll(InternalMethodUtility.Harmony.Id);
             InternalMethodUtility.PatchedInternals.Clear();
+            InternalMethodUtility.KeyMethods.Clear();
             InternalMethodUtility.curMeth = null;
         }
 
@@ -569,12 +585,12 @@ namespace Analyzer
             {
                 try
                 {
-                    if (PatchedAssemblies.Contains(assembly.FullName))
+                    if (patchedAssemblies.Contains(assembly.FullName))
                     {
                         Warn($"patching {assembly.FullName} failed, already patched");
                         return;
                     }
-                    PatchedAssemblies.Add(assembly.FullName);
+                    patchedAssemblies.Add(assembly.FullName);
 
                     foreach (Type type in assembly.GetTypes())
                     {
