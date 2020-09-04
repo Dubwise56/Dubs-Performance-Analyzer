@@ -5,19 +5,18 @@ using Verse;
 
 namespace Analyzer
 {
-    [ImmutableObject(true)]
-    public readonly struct ProfileLog
+    public struct ProfileLog
     {
-        public readonly string Average_s;
-        public readonly double Average;
-        public readonly string Key;
-        public readonly string Label;
-        public readonly string Mod;
-        public readonly float Max;
-        public readonly float Percent;
-        public readonly Type Type;
-        public readonly Def Def;
-        public readonly MethodBase Meth;
+        public string Average_s;
+        public double Average;
+        public string Key;
+        public string Label;
+        public string Mod;
+        public float Max;
+        public float Percent;
+        public Type Type;
+        public Def Def;
+        public MethodBase Meth;
 
         public ProfileLog(string label, string averageS, double average, float max, Def def, string key, string mod, float percent, Type type, MethodBase meth = null)
         {

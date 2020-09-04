@@ -12,25 +12,37 @@ using System.Threading;
 using UnityEngine;
 using Verse;
 
-/*  Naming Wise
- *  Tabs on the side, Ex 'HarmonyPatches', SideTab
- *  Categories for them, Ex 'Tick', SideTabCategories
- *  A Log 'inside' a SideTab, is a 'Log', each Log belongs to a SideTab
- */
-
 namespace Analyzer
 {
 
     [StaticConstructorOnStartup]
-    public class Dialog_Analyzer : Window
+    public class Window_Analyzer : Window
     {
         public static List<Action> QueuedMessages = new List<Action>();
         public static object messageSync = new object();
+        public static bool firstOpen = true;
 
         public override void PreOpen()
         {
             base.PreOpen();
+
+            if (firstOpen) // If we have not been opened yet, load all our entries
+            {
+                LoadEntries();
+                firstOpen = false;
+            }
+
             Analyzer.BeginProfiling();
+        }
+
+        public override void PostClose()
+        {
+            base.PostClose();
+            Analyzer.EndProfiling();
+            Modbase.Settings.Write();
+
+            // Pend the cleaning up of all of our state.
+            Analyzer.Cleanup();
         }
 
         public static void LoadEntries()
@@ -72,17 +84,7 @@ namespace Analyzer
 
         }
 
-        public override void PostClose()
-        {
-            base.PostClose();
-            Analyzer.EndProfiling();
-            Modbase.Settings.Write();
-
-            // Pend the cleaning up of all of our state.
-            Analyzer.Cleanup();
-        }
-
-        public Dialog_Analyzer()
+        public Window_Analyzer()
         {
             layer = WindowLayer.Super;
             forcePause = false;

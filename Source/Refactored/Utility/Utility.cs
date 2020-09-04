@@ -91,23 +91,23 @@ namespace Analyzer
 
         private static void Notify(string message)
         {
-            lock (Dialog_Analyzer.messageSync)
+            lock (Window_Analyzer.messageSync)
             {
-                Dialog_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.PositiveEvent, false); });
+                Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.PositiveEvent, false); });
             }
         }
         private static void Warn(string message)
         {
-            lock (Dialog_Analyzer.messageSync)
+            lock (Window_Analyzer.messageSync)
             {
-                Dialog_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.CautionInput, false); });
+                Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.CautionInput, false); });
             }
         }
         private static void Error(string message)
         {
-            lock (Dialog_Analyzer.messageSync)
+            lock (Window_Analyzer.messageSync)
             {
-                Dialog_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.NegativeEvent, false); });
+                Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.NegativeEvent, false); });
             }
         }
 

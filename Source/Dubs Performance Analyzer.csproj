@@ -43,9 +43,15 @@
   <ItemGroup>
     <Compile Include="Modbase.cs" />
     <Compile Include="Refactored\Analyzer.cs" />
-    <Compile Include="Refactored\Entry.cs" />
-    <Compile Include="Refactored\GUIController.cs" />
-    <Compile Include="Refactored\GUI\Dialog_Analyzer.cs" />
+    <Compile Include="Refactored\GUI\Constructs\Entry.cs" />
+    <Compile Include="Refactored\GUI\Constructs\GUIController.cs" />
+    <Compile Include="Refactored\GUI\GUIElement_TPS.cs" />
+    <Compile Include="Refactored\GUI\Panel_Graph.cs" />
+    <Compile Include="Refactored\GUI\Window_Analyzer.cs" />
+    <Compile Include="Refactored\GUI\Panel_Logs.cs" />
+    <Compile Include="Refactored\GUI\Panel_Settings.cs" />
+    <Compile Include="Refactored\GUI\Panel_SideInfo.cs" />
+    <Compile Include="Refactored\GUI\Window_ColorPicker.cs" />
     <Compile Include="Refactored\ModInfoCache.cs" />
     <Compile Include="AnalyzerState.cs" />
     <Compile Include="GUI\Dialog_Analyzer.cs" />
@@ -53,7 +59,6 @@
     <Compile Include="GUI\Dialog_LogAdditional.cs" />
     <Compile Include="GUI\DubGUI.cs" />
     <Compile Include="GUI\DubResources.cs" />
-    <Compile Include="GUI\H_TickMonitor.cs" />
     <Compile Include="Refactored\ResourceCache.cs" />
     <Compile Include="Refactored\Utility\LinkedQueue.cs" />
     <Compile Include="Refactored\Utility\InternalMethodUtility.cs" />
@@ -66,15 +71,15 @@
     <Compile Include="Patches\Update\H_RegenerateLayers.cs" />
     <Compile Include="Patches\Update\H_SectionLayer_Things.cs" />
     <Compile Include="Refactored\Utility\ModderDefined.cs" />
-    <Compile Include="Refactored\Profiler.cs" />
-    <Compile Include="Refactored\Tab.cs" />
+    <Compile Include="Refactored\Statistics\Profiler.cs" />
+    <Compile Include="Refactored\GUI\Constructs\Tab.cs" />
     <Compile Include="StackTrace.cs" />
     <Compile Include="GUI\LogStats.cs" />
     <Compile Include="H_RootUpdate.cs" />
     <Compile Include="Refactored\MainButton_Toggle.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="GUI\TabStats.cs" />
-    <Compile Include="GUI\ProfileLog.cs" />
+    <Compile Include="Refactored\ProfileLog.cs" />
     <Compile Include="Refactored\Utility\Utility.cs" />
     <Compile Include="GUI\ProfilerHistory.cs" />
     <Compile Include="Patches\Custom\CustomProfilers.cs" />
@@ -148,9 +153,7 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Refactored\Statistics\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="PerfAnal.xml" />
   </ItemGroup>

@@ -11,13 +11,17 @@ namespace Analyzer
     public static class GUIController
     {
         private static Tab currentTab;
-        private static Dictionary<Category, Tab> tabs;
-        private static Category currentCategory = Category.Settings;
+        private static Entry currentEntry;
         private static Profiler currentProfiler;
+        private static Category currentCategory = Category.Settings;
+
+        private static Dictionary<Category, Tab> tabs;
 
         public static Profiler GetCurrentProfiler => currentProfiler;
-        public static Tab GetCurrentTabs => currentTab;
+        public static Tab GetCurrentTab => currentTab;
         public static Category GetCurrentCategory => currentCategory;
+        public static Entry CurrentEntry => currentEntry;
+
         public static IEnumerable<Tab> Tabs => tabs.Values;
         public static Tab Tab(Category cat) => tabs[cat];
         static GUIController()

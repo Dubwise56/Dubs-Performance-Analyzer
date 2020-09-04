@@ -15,9 +15,15 @@ namespace Analyzer
     public static class Analyzer
     {
         private static int currentLogCount; // How many update cycles have passed since beginning profiling an entry?
+        public static List<ProfileLog> logs = new List<ProfileLog>();
+
         private static Thread logicThread; // Calculating stats for all active profilers (not the currently selected one)
         private static Thread patchingThread; // patching new methods, this prevents a stutter when patching mods
         private static Thread cleanupThread; // 'cleanup' - Removing patches, getting rid of cached methods (already patched), clearing temporary entries
+
+        private static object patchingSync = new object();
+        private static object logicSync = new object();
+
         private static bool currentlyProfiling = false;
 #if DEBUG
         private static bool midUpdate = false;
@@ -25,13 +31,14 @@ namespace Analyzer
         private static float deltaTime = 0.0f;
         public static Dictionary<string, Profiler> profiles = new Dictionary<string, Profiler>();
 
+        public static List<ProfileLog> Logs => logs;
+        public static object LogicLock => logicSync;
         public static bool CurrentlyPaused { get; set; } = false;
         public static bool CurrentlyProfling => currentlyProfiling && !CurrentlyPaused;
         public static void RefreshLogCount() => currentLogCount = 0;
         public static int GetCurrentLogCount => currentLogCount;
 
-        private static object patchingSync = new object();
-        private static object logicSync = new object();
+
 
         public static Profiler Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodBase meth = null)
         {
@@ -90,11 +97,9 @@ namespace Analyzer
 
         private static void FinishUpdateCycle()
         {
-            // spawn a logic thread which will do our calcs
-            // push to background
-            // start
-
-            // currently (Modbase:ThreadStart) needs rework
+            logicThread = new Thread(() => LogicThread(new Dictionary<string, Profiler>(profiles)));
+            logicThread.IsBackground = true;
+            logicThread.Start();
         }
 
         public static void PatchEntry(Entry entry)
@@ -129,6 +134,35 @@ namespace Analyzer
             //cleanupThread = new Thread();
             //cleanupThread.IsBackground = true;
             //cleanupThread.Start();
+        }
+
+        private static void LogicThread(Dictionary<string, Profiler> Profiles)
+        {
+            List<ProfileLog> newLogs = new List<ProfileLog>();
+            foreach (string key in Profiles.Keys)
+            {
+                Profiler value = Profiles[key];
+                double av = value.GetAverageTime(Mathf.Min(Analyzer.GetCurrentLogCount, 2000));
+                newLogs.Add(new ProfileLog(value.label, string.Empty, av, (float)value.times.Max(), null, key, string.Empty, 0, value.type, value.meth));
+            }
+
+            double total = newLogs.Sum(x => x.Average);
+
+            for (int index = 0; index < newLogs.Count; index++)
+            {
+                ProfileLog k = newLogs[index];
+                float pc = (float)(k.Average / total);
+                k.Average = pc;
+                k.Average_s = pc.ToStringPercent();
+            }
+
+            newLogs.SortByDescending(x => x.Average);
+
+            // Swap our old logs with the new ones
+            lock (LogicLock)
+            {
+                logs = newLogs;
+            }
         }
     }
 }

@@ -19,13 +19,13 @@ namespace Analyzer
 
         public override void Activate()
         {
-            if (Find.WindowStack.WindowOfType<Dialog_Analyzer>() != null) 
+            if (Find.WindowStack.WindowOfType<Window_Analyzer>() != null) 
             { 
-                Find.WindowStack.RemoveWindowsOfType(typeof(Dialog_Analyzer));
+                Find.WindowStack.RemoveWindowsOfType(typeof(Window_Analyzer));
             }
             else 
             { 
-                Find.WindowStack.Add(new Dialog_Analyzer());
+                Find.WindowStack.Add(new Window_Analyzer());
             }
         }
     }
