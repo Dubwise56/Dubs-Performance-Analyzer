@@ -1,18 +1,12 @@
 ﻿using HarmonyLib;
-using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using Verse.Noise;
 
-namespace DubsAnalyzer
+namespace Analyzer
 {
     public static class StackTraceRegex
     {
@@ -20,62 +14,22 @@ namespace DubsAnalyzer
         public static Dictionary<string, StackTraceInformation> traces = new Dictionary<string, StackTraceInformation>();
 
         private const string strRegex = @"(?<=:)(DMD.*)(?<=::)|(>)";
-        private static Regex myRegex = new Regex(strRegex, RegexOptions.None);
+        private static readonly Regex myRegex = new Regex(strRegex, RegexOptions.None);
 
         public static void Add(StackTrace trace)
         {
-            var key = trace.ToString();
+            string key = trace.ToString();
 
-            if (traces.ContainsKey(key))
-            {
-                traces[key].Count++;
-            }
+            if(traces.TryGetValue(key, out var value))
+                value.Count++;
             else
-            {
                 traces.Add(key, new StackTraceInformation(trace));
-                //IdentifyFirstUnique();
-            }
         }
-
-        //public static void IdentifyFirstUnique()
-        //{
-        //    List<StackTraceInformation> things = traces.Values.ToList();
-
-        //    for(int i = 0; i < things.Max(w => w.methods.Count); i++)
-        //    {
-        //        for(int j = 0; j < things.Count; j++)
-        //        {
-        //            for(int h = 0; h < things.Count; h++)
-        //            {
-        //                if(things[j].methods.ElementAt(i).Key != things[h].methods.ElementAt(i).Key)
-        //                {
-        //                    foreach(var e in things)
-        //                    {
-        //                        e.firstUnique = e.methods.ElementAt(i).Key.Name;
-        //                        e.idx = i;
-        //                    }
-        //                    return;
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
 
         public static void Reset()
         {
             traces = new Dictionary<string, StackTraceInformation>();
         }
-
-        private static string QuickKey(StackTrace stackTrace)
-        {
-            
-            StringBuilder builder = new StringBuilder();
-            foreach (var frame in stackTrace.GetFrames())
-                builder.Append(frame.GetMethod().Name);
-
-            return builder.ToString();
-        }
-
 
         public static string StackTrace(StackTrace stackTrace)
         {
@@ -88,7 +42,7 @@ namespace DubsAnalyzer
 
                 if (method == null) continue;
                 Type declaringType = method.DeclaringType;
-                if (declaringType == null) continue; 
+                if (declaringType == null) continue;
 
                 string @namespace = declaringType.Namespace;
 
@@ -120,7 +74,7 @@ namespace DubsAnalyzer
             }
             return stringBuilder.ToString();
         }
-        
+
         public static string MethToString(MethodBase method)
         {
             StringBuilder stringBuilder = new StringBuilder(255);
@@ -154,17 +108,17 @@ namespace DubsAnalyzer
                 stringBuilder.Append(parameters[j].ParameterType.Name);
             }
             stringBuilder.Append(")");
-            
+
             return ProcessString(stringBuilder.ToString());
         }
         public static string ProcessString(string str)
         {
-            var retStr = Regex.Replace(str, "#", "\n");
+            string retStr = Regex.Replace(str, "#", "\n");
             retStr = myRegex.Replace(retStr, @"");
 
             return retStr;
         }
-    
+
     }
 
     public class StackTraceInformation
@@ -190,41 +144,41 @@ namespace DubsAnalyzer
         private void ProccessInput(StackTrace stackTrace)
         {
             // Translate our input into the strings we will want to show the user
-            var rawString = StackTraceRegex.StackTrace(stackTrace);
-            var processedString = StackTraceRegex.ProcessString(rawString);
+            string rawString = StackTraceRegex.StackTrace(stackTrace);
+            string processedString = StackTraceRegex.ProcessString(rawString);
 
             translatedString = processedString;
             translatedStringArr = processedString.Split('\n');
 
             // Lets get the relevant methods that will be required for interactivity
-            for(int i = 0; i < stackTrace.FrameCount; i++)
+            for (int i = 0; i < stackTrace.FrameCount; i++)
             {
-                var frame = stackTrace.GetFrame(i);
-                var frameMethod = frame.GetMethod();
+                StackFrame frame = stackTrace.GetFrame(i);
+                MethodBase frameMethod = frame.GetMethod();
 
-                var baseMeth = GetBaseMeth(frameMethod as MethodInfo);
+                MethodInfo baseMeth = GetBaseMeth(frameMethod as MethodInfo);
 
-                var frameMethodPatches = Harmony.GetPatchInfo(baseMeth);
+                Patches frameMethodPatches = Harmony.GetPatchInfo(baseMeth);
                 methods.Insert(i, new Tuple<MethodInfo, List<HarmonyPatch>>(baseMeth, new List<HarmonyPatch>()));
-                if(frameMethodPatches != null) // add relevant patch information
+                if (frameMethodPatches != null) // add relevant patch information
                 {
-                    foreach (var patch in frameMethodPatches.Prefixes)      methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Prefix,       patch.owner, patch.index, patch.priority));
-                    foreach (var patch in frameMethodPatches.Postfixes)     methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Postfix,      patch.owner, patch.index, patch.priority));
-                    foreach (var patch in frameMethodPatches.Transpilers)   methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Transpiler,   patch.owner, patch.index, patch.priority));
-                    foreach (var patch in frameMethodPatches.Finalizers)    methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Finalizer,    patch.owner, patch.index, patch.priority));
+                    foreach (Patch patch in frameMethodPatches.Prefixes) methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Prefix, patch.owner, patch.index, patch.priority));
+                    foreach (Patch patch in frameMethodPatches.Postfixes) methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Postfix, patch.owner, patch.index, patch.priority));
+                    foreach (Patch patch in frameMethodPatches.Transpilers) methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Transpiler, patch.owner, patch.index, patch.priority));
+                    foreach (Patch patch in frameMethodPatches.Finalizers) methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Finalizer, patch.owner, patch.index, patch.priority));
                 }
             }
         }
 
         private MethodInfo GetBaseMeth(MethodInfo info)
         {
-            foreach (var methodBase in Harmony.GetAllPatchedMethods())
+            foreach (MethodBase methodBase in Harmony.GetAllPatchedMethods())
             {
-                var infos = Harmony.GetPatchInfo(methodBase);
-                foreach (var infosPrefix in infos.Prefixes) if (infosPrefix.PatchMethod == info)  return methodBase as MethodInfo;
-                foreach (var infosPrefix in infos.Postfixes) if (infosPrefix.PatchMethod == info)  return methodBase as MethodInfo;
-                foreach (var infosPrefix in infos.Transpilers) if (infosPrefix.PatchMethod == info)  return methodBase as MethodInfo;
-                foreach (var infosPrefix in infos.Finalizers) if (infosPrefix.PatchMethod == info)  return methodBase as MethodInfo;
+                Patches infos = Harmony.GetPatchInfo(methodBase);
+                foreach (Patch infosPrefix in infos.Prefixes) if (infosPrefix.PatchMethod == info) return methodBase as MethodInfo;
+                foreach (Patch infosPrefix in infos.Postfixes) if (infosPrefix.PatchMethod == info) return methodBase as MethodInfo;
+                foreach (Patch infosPrefix in infos.Transpilers) if (infosPrefix.PatchMethod == info) return methodBase as MethodInfo;
+                foreach (Patch infosPrefix in infos.Finalizers) if (infosPrefix.PatchMethod == info) return methodBase as MethodInfo;
             }
             return null;
         }
@@ -254,5 +208,5 @@ namespace DubsAnalyzer
         }
     }
 
-    
+
 }

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using RimWorld;
+using System;
 using System.Text;
-using RimWorld;
 using UnityEngine;
 using Verse;
 using Verse.Sound;
 
-namespace DubsAnalyzer
+namespace Analyzer
 {
     [StaticConstructorOnStartup]
     public static class DubGUI
@@ -36,20 +36,20 @@ namespace DubsAnalyzer
         {
             left.Insert(0, " "); right.Insert(0, " ");
 
-            var grongo = Text.CalcHeight(left, listing.ColumnWidth / 3f);
-            var gronk = Text.CalcHeight(middle, (listing.ColumnWidth / 3f) - 5);
-            var shiela = Text.CalcHeight(right, (listing.ColumnWidth / 3f) - 5);
+            float grongo = Text.CalcHeight(left, listing.ColumnWidth / 3f);
+            float gronk = Text.CalcHeight(middle, (listing.ColumnWidth / 3f) - 5);
+            float shiela = Text.CalcHeight(right, (listing.ColumnWidth / 3f) - 5);
 
 
-            var rect = listing.GetRect(Mathf.Max(Mathf.Max(grongo, gronk), shiela));
+            Rect rect = listing.GetRect(Mathf.Max(Mathf.Max(grongo, gronk), shiela));
 
-            var leftRect = rect.LeftPart(.3f);
-            var rightRect = rect.RightPart(.3f);
-            var middleRect = rect.LeftPart(.3f);
+            Rect leftRect = rect.LeftPart(.3f);
+            Rect rightRect = rect.RightPart(.3f);
+            Rect middleRect = rect.LeftPart(.3f);
             middleRect.x += (rect.width / 3f) + 5;
             rightRect.x += 5;
 
-            var anchor = Text.Anchor;
+            TextAnchor anchor = Text.Anchor;
             Text.Anchor = TextAnchor.MiddleCenter;
 
             Widgets.Label(leftRect, left);
@@ -59,8 +59,8 @@ namespace DubsAnalyzer
 
             Color color = GUI.color;
             GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
-            Widgets.DrawLineVertical(rect.width/3, rect.y, rect.height);
-            Widgets.DrawLineVertical(2*(rect.width/3), rect.y, rect.height);
+            Widgets.DrawLineVertical(rect.width / 3, rect.y, rect.height);
+            Widgets.DrawLineVertical(2 * (rect.width / 3), rect.y, rect.height);
             if (capOff)
                 Widgets.DrawLineHorizontal(rect.x, rect.y + rect.height, rect.width);
             GUI.color = color;
@@ -68,20 +68,20 @@ namespace DubsAnalyzer
 
         public static Rect InlineDoubleMessage(string left, string right, Listing_Standard listing, bool capOff)
         {
-            left.Insert(0,  " "); right.Insert(0, " ");
+            left.Insert(0, " "); right.Insert(0, " ");
 
-            var grongo = Text.CalcHeight(left, listing.ColumnWidth/2);
-            var gronk = Text.CalcHeight(right, (listing.ColumnWidth/2 - 5f));
+            float grongo = Text.CalcHeight(left, listing.ColumnWidth / 2);
+            float gronk = Text.CalcHeight(right, (listing.ColumnWidth / 2 - 5f));
 
-            var rect = listing.GetRect(Mathf.Max(grongo, gronk));
-            var rr = rect;
+            Rect rect = listing.GetRect(Mathf.Max(grongo, gronk));
+            Rect rr = rect;
 
-            var anchor = Text.Anchor;
+            TextAnchor anchor = Text.Anchor;
             Text.Anchor = TextAnchor.MiddleCenter;
 
-            var leftRect = rect.LeftPart(.5f);
+            Rect leftRect = rect.LeftPart(.5f);
             Widgets.Label(leftRect, left);
-            var rightRect = rect.RightPart(.5f);
+            Rect rightRect = rect.RightPart(.5f);
             rightRect.x += 5;
             Widgets.Label(rightRect, right);
 
@@ -101,14 +101,14 @@ namespace DubsAnalyzer
         {
             left.Insert(0, " "); right.Insert(0, " ");
 
-            var grongo = Text.CalcHeight(left, listing.ColumnWidth / 2);
-            var gronk = Text.CalcHeight(right, (listing.ColumnWidth / 2 - 5f));
+            float grongo = Text.CalcHeight(left, listing.ColumnWidth / 2);
+            float gronk = Text.CalcHeight(right, (listing.ColumnWidth / 2 - 5f));
 
-            var rect = listing.GetRect(Mathf.Max(grongo, gronk));
+            Rect rect = listing.GetRect(Mathf.Max(grongo, gronk));
 
-            var leftRect = rect.LeftPart(.5f);
+            Rect leftRect = rect.LeftPart(.5f);
             Widgets.Label(leftRect, left);
-            var rightRect = rect.RightPart(.5f);
+            Rect rightRect = rect.RightPart(.5f);
             rightRect.x += 5;
             Widgets.Label(rightRect, right);
 
@@ -122,7 +122,7 @@ namespace DubsAnalyzer
 
         public static Rect Scale(this Rect rect, float w, float h)
         {
-            var biff = new Rect(rect);
+            Rect biff = new Rect(rect);
             rect.width = w;
             rect.height = h;
             return biff.CenteredOnXIn(rect);
@@ -135,19 +135,19 @@ namespace DubsAnalyzer
 
         public static void CopyToClipboard(this string s)
         {
-            var te = new TextEditor { text = s };
+            TextEditor te = new TextEditor { text = s };
             te.SelectAll();
             te.Copy();
         }
 
         public static float SliderLabel(this Listing_Standard listing, string labia, float val, float min, float max)
         {
-            var lineHeight = Text.LineHeight;
-            var rect = listing.GetRect(lineHeight);
+            float lineHeight = Text.LineHeight;
+            Rect rect = listing.GetRect(lineHeight);
 
             Text.Font = GameFont.Tiny;
             Widgets.Label(rect.LeftHalf(), labia);
-            var valkilmer = Widgets.HorizontalSlider(rect.RightHalf(), val, min, max);
+            float valkilmer = Widgets.HorizontalSlider(rect.RightHalf(), val, min, max);
             Text.Font = GameFont.Small;
             listing.Gap(listing.verticalSpacing);
             return valkilmer;
@@ -156,7 +156,7 @@ namespace DubsAnalyzer
 
         public static bool Checkbox(Rect rect, string s, ref bool checkOn)
         {
-            var br = checkOn;
+            bool br = checkOn;
             if (Widgets.ButtonInvisible(rect))
             {
                 checkOn = !checkOn;
@@ -170,7 +170,7 @@ namespace DubsAnalyzer
                 }
             }
 
-            var anchor = Text.Anchor;
+            TextAnchor anchor = Text.Anchor;
             Text.Anchor = TextAnchor.MiddleLeft;
             //Widgets.CheckboxDraw(rect.x, rect.y, checkOn, false, 15f);
 
@@ -188,7 +188,7 @@ namespace DubsAnalyzer
 
         public static bool Checkbox(string s, Listing_Standard listing, ref bool checkOn)
         {
-            var rect = listing.GetRect( Mathf.CeilToInt(s.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight);
+            Rect rect = listing.GetRect(Mathf.CeilToInt(s.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight);
             return Checkbox(rect, s, ref checkOn);
         }
 
@@ -199,7 +199,7 @@ namespace DubsAnalyzer
 
         public static void CenterText(Action action)
         {
-            var anch = Text.Anchor;
+            TextAnchor anch = Text.Anchor;
             Text.Anchor = TextAnchor.MiddleCenter;
             action();
             Text.Anchor = anch;
@@ -212,11 +212,11 @@ namespace DubsAnalyzer
                 buff = "";
             }
 
-            var rect2 = rect;
+            Rect rect2 = rect;
 
             if (icon != null)
             {
-                var icoRect = rect;
+                Rect icoRect = rect;
                 icoRect.width = icoRect.height;
                 Widgets.DrawTextureFitted(icoRect, icon, 1f);
                 rect2.width -= icoRect.width;
@@ -229,14 +229,14 @@ namespace DubsAnalyzer
                 Widgets.Label(rect.LeftPartPixels(name.GetWidthCached()), name);
                 Text.Anchor = TextAnchor.UpperLeft;
 
-                rect2 = rect.RightPartPixels(rect.width - (name.GetWidthCached()+3));
+                rect2 = rect.RightPartPixels(rect.width - (name.GetWidthCached() + 3));
             }
 
             GUI.SetNextControlName(name);
 
             buff = GUI.TextField(rect2, buff, max, Text.CurTextAreaStyle);
 
-            var InFocus = GUI.GetNameOfFocusedControl() == name;
+            bool InFocus = GUI.GetNameOfFocusedControl() == name;
 
             if (!InFocus && forceFocus)
             {
@@ -264,7 +264,7 @@ namespace DubsAnalyzer
 
         public static void OptionalBox(Rect rect, string value, Action action, bool active)
         {
-            if(Widgets.RadioButtonLabeled(rect, value, active))
+            if (Widgets.RadioButtonLabeled(rect, value, active))
             {
                 action();
             }
@@ -272,7 +272,7 @@ namespace DubsAnalyzer
 
         public static void CollapsableHeading(Listing_Standard listing, string label, ref bool Collapsed)
         {
-            var Rect = listing.GetRect(30);
+            Rect Rect = listing.GetRect(30);
             Heading(Rect, label);
 
             Vector2 loc = new Vector2(Rect.x + Rect.width - Rect.height, Rect.y);

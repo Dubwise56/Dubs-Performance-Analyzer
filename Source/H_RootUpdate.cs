@@ -1,13 +1,12 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
+using System;
 using UnityEngine;
 using Verse;
 
-namespace DubsAnalyzer
+namespace Analyzer
 {
 
-    [PerformancePatch]
-    [ProfileMode("Frame times", UpdateMode.Update, "frameTimeProfilerTip", true)]
+    [Entry("Frame times", UpdateMode.Update, "frameTimeProfilerTip")]
     [HarmonyPatch(typeof(Root_Play), nameof(Root_Play.Update))]
     public class H_RootUpdate
     {
@@ -37,8 +36,6 @@ namespace DubsAnalyzer
                     LastMinGC = Dialog_Analyzer.totalBytesOfMemoryUsed;
                     LastMaxGC = jam;
                     Dialog_Analyzer.GarbageCollectionInfo = $"{Dialog_Analyzer.totalBytesOfMemoryUsed.ToMb()}MB";
-                    //if (Analyzer.running && !Analyzer.Settings.MuteGC)
-                    //    Messages.Message($"GC at {jam.ToMb()} MB", MessageTypeDefOf.TaskCompletion, false);
                 }
 
                 delta += Time.deltaTime;
@@ -46,10 +43,10 @@ namespace DubsAnalyzer
                 {
                     delta -= 1f;
 
-                    var PreviouslyAllocatedMemory = CurrentAllocatedMemory;
+                    long PreviouslyAllocatedMemory = CurrentAllocatedMemory;
                     CurrentAllocatedMemory = GC.GetTotalMemory(false);
 
-                    var MemoryDifference = CurrentAllocatedMemory - PreviouslyAllocatedMemory;
+                    long MemoryDifference = CurrentAllocatedMemory - PreviouslyAllocatedMemory;
                     if (MemoryDifference < 0)
                         MemoryDifference = 0;
 
@@ -57,7 +54,7 @@ namespace DubsAnalyzer
                 }
 
 
-                if (Time.unscaledTime > _timer) 
+                if (Time.unscaledTime > _timer)
                 {
                     int fps = (int)(1f / Time.unscaledDeltaTime);
                     _fpsText = "FPS: " + fps;
@@ -68,10 +65,10 @@ namespace DubsAnalyzer
                 {
                     if (Current.ProgramState == ProgramState.Playing)
                     {
-                        var TRM = Find.TickManager.TickRateMultiplier;
-                        var TPSTarget = (int)Math.Round(TRM == 0f ? 0f : 60f * TRM);
+                        float TRM = Find.TickManager.TickRateMultiplier;
+                        int TPSTarget = (int)Math.Round(TRM == 0f ? 0f : 60f * TRM);
 
-                        var CurrTime = DateTime.Now;
+                        DateTime CurrTime = DateTime.Now;
 
                         if (CurrTime.Second != PrevTime.Second)
                         {
@@ -95,12 +92,12 @@ namespace DubsAnalyzer
         {
             if (Active)
             {
-                Analyzer.Stop("Frame times");
-                Analyzer.Stop("Game Update");
+                Modbase.Stop("Frame times");
+                Modbase.Stop("Game Update");
             }
 
             if (AnalyzerState.CurrentTab?.mode == UpdateMode.Update || AnalyzerState.CurrentTab?.mode == UpdateMode.GUI || AnalyzerState.CurrentTab?.mode == UpdateMode.ModderAdded)
-                Analyzer.UpdateEnd();
+                Modbase.UpdateEnd();
 
             if (Active)
                 Analyzer.Start("Frame times");

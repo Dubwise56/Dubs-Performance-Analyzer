@@ -1,5 +1,5 @@
-﻿using System;
-using RimWorld;
+﻿using RimWorld;
+using System;
 using UnityEngine;
 using Verse;
 
@@ -43,19 +43,19 @@ namespace ColourPicker
 
         public colourPicker()
         {
-            for (var p = 0; p < 255; p++)
+            for (int p = 0; p < 255; p++)
             {
                 HuePicker.SetPixel(0, p, Color.HSVToRGB(Mathf.InverseLerp(0, 255, p), 1f, 1f));
             }
 
             HuePicker.Apply(false);
 
-            for (var x = 0; x < 255; x++)
+            for (int x = 0; x < 255; x++)
             {
-                for (var y = 0; y < 255; y++)
+                for (int y = 0; y < 255; y++)
                 {
-                    var col = Color.clear;
-                    var col3 = Color.Lerp(col, Color.white, Mathf.InverseLerp(0, 255, x));
+                    Color col = Color.clear;
+                    Color col3 = Color.Lerp(col, Color.white, Mathf.InverseLerp(0, 255, x));
                     col = Color32.Lerp(Color.black, col3, Mathf.InverseLerp(0, 255, y));
                     HSBPicker.SetPixel(x, y, col);
                 }
@@ -79,14 +79,14 @@ namespace ColourPicker
 
         public static Color CurrentCol => CurrentColInt.ToColor;
 
-      //  public override float Margin => 0f;
+        //  public override float Margin => 0f;
 
 
         public override Vector2 InitialSize => new Vector2(StaticRect.width, StaticRect.height);
 
         public Color HexToColor(string hexColor)
         {
-            ColorUtility.TryParseHtmlString("#" + hexColor, out var col);
+            ColorUtility.TryParseHtmlString("#" + hexColor, out Color col);
             return col;
         }
 
@@ -119,7 +119,7 @@ namespace ColourPicker
                 Setcol();
             }
             catch (Exception)
-            {   }
+            { }
 
 
             if (refresh)
@@ -154,7 +154,7 @@ namespace ColourPicker
             Text.Anchor = TextAnchor.MiddleCenter;
             Text.Font = GameFont.Tiny;
 
-            var DragRect = new Rect(inRect.x, inRect.y, inRect.width - 50f, 25f);
+            Rect DragRect = new Rect(inRect.x, inRect.y, inRect.width - 50f, 25f);
             GUI.DragWindow(DragRect);
 
             Widgets.DrawLine(new Vector2(DragRect.x, DragRect.y + DragRect.height * 0.25f),
@@ -170,7 +170,7 @@ namespace ColourPicker
             DragRect.width = 25f;
 
             inRect = inRect.ContractedBy(10f);
-            var MenuSection = inRect;
+            Rect MenuSection = inRect;
             MenuSection.y += 10f;
             HSB(ref MenuSection);
 
@@ -181,7 +181,7 @@ namespace ColourPicker
         public void HSB(ref Rect MenuSection)
         {
             // Widgets.DrawBoxSolid(MenuSection, Greyist);
-            var rekt = MenuSection.ContractedBy(10f);
+            Rect rekt = MenuSection.ContractedBy(10f);
             rekt.x = 40f;
             rekt.width = 15f;
             rekt.height = 220f;
@@ -193,7 +193,7 @@ namespace ColourPicker
 
             if (draggingHue)
             {
-                var lastSlide = HueSlider.y;
+                float lastSlide = HueSlider.y;
 
                 HueSlider.y = Mathf.InverseLerp(rekt.height, 0, Event.current.mousePosition.y - rekt.y);
 
@@ -212,7 +212,7 @@ namespace ColourPicker
             Widgets.DrawBoxSolid(rekt.ExpandedBy(1f), Color.grey);
             Widgets.DrawTexturePart(rekt, new Rect(0, 0, 1, 1), HuePicker);
 
-            var mark = new Rect(0, 0, 56, 16);
+            Rect mark = new Rect(0, 0, 56, 16);
             mark.center = new Vector2(rekt.center.x, rekt.height * (1f - HueSlider.y) + rekt.y).Rounded();
             Widgets.DrawTextureRotated(mark, hueMark, 0f);
 
@@ -246,7 +246,7 @@ namespace ColourPicker
             Widgets.DrawBoxSolid(rekt.ExpandedBy(1f), Color.grey);
             Widgets.DrawBoxSolid(rekt, Color.white);
 
-            var col = Color.HSVToRGB(hue, 1f, 1f);
+            Color col = Color.HSVToRGB(hue, 1f, 1f);
             GUI.color = col;
             Widgets.DrawTextureFitted(rekt, HSBPicker, 1f);
             GUI.color = Color.white;

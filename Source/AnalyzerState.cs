@@ -2,12 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Verse;
 
-namespace DubsAnalyzer
+namespace Analyzer
 {
     public enum CurrentState
     {
@@ -27,7 +23,7 @@ namespace DubsAnalyzer
 
         // 'Side Tabs'
         public static SideTabCategory CurrentSideTabCategory = SideTabCategory.Home;
-        public static ProfileMode CurrentTab;
+        public static Entry CurrentTab;
 
         // 'Profiles' 
         public static Dictionary<string, Profiler> CurrentProfiles = new Dictionary<string, Profiler>();
@@ -43,49 +39,18 @@ namespace DubsAnalyzer
         // Type Cache
         public static HashSet<string> types = new HashSet<string>();
 
-        public static List<ProfileTab> SideTabCategories = new List<ProfileTab>
-        {
-            new ProfileTab("Home", // category name
-                () => { CurrentSideTabCategory = SideTabCategory.Home; }, // onclick action   
-                () => CurrentSideTabCategory == SideTabCategory.Home, // how do we determine that this is selected
-                UpdateMode.Dead, // update mode
-                "Settings and utils"), // tooltip
-            new ProfileTab("Tick",          () => { CurrentSideTabCategory = SideTabCategory.Tick; },         () => CurrentSideTabCategory == SideTabCategory.Tick,            UpdateMode.Tick,         "Things that run on tick"),
-            new ProfileTab("Update",        () => { CurrentSideTabCategory = SideTabCategory.Update; },       () => CurrentSideTabCategory == SideTabCategory.Update,          UpdateMode.Update,       "Things that run per frame"),
-            new ProfileTab("GUI",           () => { CurrentSideTabCategory = SideTabCategory.GUI; },          () => CurrentSideTabCategory == SideTabCategory.GUI,             UpdateMode.GUI,          "Things that run on GUI"),
-            new ProfileTab("Modder Added",  () => { CurrentSideTabCategory = SideTabCategory.ModderAdded; },  () => CurrentSideTabCategory == SideTabCategory.ModderAdded,     UpdateMode.ModderAdded,  "Categories that modders have added")
-        };
-
         public static void ResetState()
         {
             Dialog_Analyzer.AdditionalInfo.Graph.reset();
-            foreach (var profiler in CurrentProfiles)
+            foreach (KeyValuePair<string, Profiler> profiler in CurrentProfiles)
                 profiler.Value.Stop();
 
             CurrentProfiles.Clear();
 
-            lock (Analyzer.sync)
+            lock (Modbase.sync)
             {
                 Logs.Clear();
             }
-        }
-        public static Profiler CurrentProfiler()
-        {
-            if (CurrentProfiles.ContainsKey(CurrentProfileKey))
-                return CurrentProfiles[CurrentProfileKey];
-
-            return null;
-        }
-        public static Profiler GetProfile(string key)
-        {
-            if (CurrentProfiles.ContainsKey(key))
-                return CurrentProfiles[key];
-
-            return null;
-        }
-        public static bool HasProfile(string key)
-        {
-            return CurrentProfiles.ContainsKey(key);
         }
 
         public static void MakeAndSwitchTab(string tabName)
@@ -101,11 +66,11 @@ namespace DubsAnalyzer
                 types.Add(tabName);
             }
 
-            foreach (var profileTab in SideTabCategories)
+            foreach (ProfileTab profileTab in SideTabCategories)
             {
                 if (profileTab.UpdateMode == UpdateMode.Update)
                 {
-                    ProfileMode mode = ProfileMode.Create(myType.Name, UpdateMode.Update, null, false, myType, true);
+                    Entry mode = Entry.Create(myType.Name, UpdateMode.Update, null, false, myType, true);
 
                     mode.IsPatched = true;
                     mode.SetActive(true);
@@ -117,11 +82,11 @@ namespace DubsAnalyzer
             SwapTab(tabName, UpdateMode.Update);
         }
 
-        public static void RemoveTab(KeyValuePair<ProfileMode, Type> tab)
+        public static void RemoveTab(KeyValuePair<Entry, Type> tab)
         {
-            foreach (var profileTab in SideTabCategories)
+            foreach (ProfileTab profileTab in SideTabCategories)
             {
-                var deletedTab = profileTab.Modes.Where(t => t.Key == tab.Key);
+                IEnumerable<KeyValuePair<Entry, Type>> deletedTab = profileTab.Modes.Where(t => t.Key == tab.Key);
                 if (deletedTab == null || deletedTab.Count() == 0 || deletedTab.First().Key == null) continue;
 
                 profileTab.Modes.Remove(deletedTab.First().Key);
@@ -143,9 +108,9 @@ namespace DubsAnalyzer
 
         public static void SwapTab(string name)
         {
-            foreach (var cat in SideTabCategories)
+            foreach (ProfileTab cat in SideTabCategories)
             {
-                var tab = cat.Modes.Where(m => m.Key.name == name);
+                IEnumerable<KeyValuePair<Entry, Type>> tab = cat.Modes.Where(m => m.Key.name == name);
                 if (tab == null || tab.Count() == 0 || tab.First().Key == null) return;
 
                 SwapTab(tab.First(), cat.UpdateMode);
@@ -154,16 +119,16 @@ namespace DubsAnalyzer
 
         public static void SwapTab(string name, UpdateMode updateMode)
         {
-            var cat = SideTabCategories.First(c => c.UpdateMode == updateMode);
+            ProfileTab cat = SideTabCategories.First(c => c.UpdateMode == updateMode);
             if (cat == null) return;
 
-            var tab = cat.Modes.Where(m => m.Key.name == name);
+            IEnumerable<KeyValuePair<Entry, Type>> tab = cat.Modes.Where(m => m.Key.name == name);
             if (tab == null || tab.Count() == 0 || tab.First().Key == null) return;
 
             SwapTab(tab.First(), updateMode);
         }
 
-        public static void SwapTab(KeyValuePair<ProfileMode, Type> mode, UpdateMode updateMode)
+        public static void SwapTab(KeyValuePair<Entry, Type> mode, UpdateMode updateMode)
         {
             if (State == CurrentState.Uninitialised)
                 Dialog_Analyzer.Reboot();
@@ -171,7 +136,7 @@ namespace DubsAnalyzer
             if (!(CurrentSideTabCategory == UpdateToSideTab(updateMode)))
             {
                 CurrentSideTabCategory = UpdateToSideTab(updateMode);
-                Analyzer.Settings.Write();
+                Modbase.Settings.Write();
             }
 
             if (CurrentTab != null)

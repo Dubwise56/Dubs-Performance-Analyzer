@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using HarmonyLib;
+﻿using HarmonyLib;
 using RimWorld;
+using System;
 using UnityEngine;
 using Verse;
 
-namespace DubsAnalyzer
+namespace Analyzer
 {
-    [PerformancePatch]
     public static class H_TickMonitor
     {
         private static DateTime PrevTime;
@@ -21,8 +16,8 @@ namespace DubsAnalyzer
 
         public static void PerformancePatch(Harmony harmony)
         {
-            var jiff = AccessTools.Method(typeof(GlobalControlsUtility), nameof(GlobalControlsUtility.DoTimespeedControls));
-            var pre = new HarmonyMethod(typeof(H_TickMonitor), nameof(Prefix));
+            System.Reflection.MethodInfo jiff = AccessTools.Method(typeof(GlobalControlsUtility), nameof(GlobalControlsUtility.DoTimespeedControls));
+            HarmonyMethod pre = new HarmonyMethod(typeof(H_TickMonitor), nameof(Prefix));
             harmony.Patch(jiff, pre);
         }
 

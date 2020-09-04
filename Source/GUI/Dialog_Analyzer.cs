@@ -8,11 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.Experimental.PlayerLoop;
-using UnityEngine.UIElements;
 using Verse;
 
 /*  Naming Wise
@@ -29,9 +26,9 @@ namespace DubsAnalyzer
     {
         public override Vector2 InitialSize => new Vector2(890, 650);
 
-        private SideTab sideTab;
-        private Logs logs;
-        private AdditionalInfo additionalInfo;
+        private readonly SideTab sideTab;
+        private readonly Logs logs;
+        private readonly AdditionalInfo additionalInfo;
 
         public static string GarbageCollectionInfo = string.Empty;
 
@@ -72,7 +69,7 @@ namespace DubsAnalyzer
                     }
 
 
-                    Analyzer.harmony.PatchAll(Assembly.GetExecutingAssembly());
+                    Modbase.harmony.PatchAll(Assembly.GetExecutingAssembly());
 
                     Log.Message("Done");
                 }
@@ -83,23 +80,23 @@ namespace DubsAnalyzer
             }
 
             AnalyzerState.State = CurrentState.Open;
-            Analyzer.StartProfiling();
+            Modbase.StartProfiling();
         }
 
         public static void LoadModes()
         {
-            var modes = GenTypes.AllTypes.Where(m => m.TryGetAttribute<ProfileMode>(out _)).OrderBy(m => m.TryGetAttribute<ProfileMode>().name).ToList();
+            List<Type> modes = GenTypes.AllTypes.Where(m => m.TryGetAttribute<ProfileMode>(out _)).OrderBy(m => m.TryGetAttribute<ProfileMode>().name).ToList();
 
-            foreach (var mode in modes)
+            foreach (Type mode in modes)
             {
                 try
                 {
-                    var att = mode.TryGetAttribute<ProfileMode>();
+                    ProfileMode att = mode.TryGetAttribute<ProfileMode>();
                     att.Settings = new Dictionary<FieldInfo, Setting>();
 
-                    foreach (var fieldInfo in mode.GetFields().Where(m => m.TryGetAttribute<Setting>(out _)))
+                    foreach (FieldInfo fieldInfo in mode.GetFields().Where(m => m.TryGetAttribute<Setting>(out _)))
                     {
-                        var sett = fieldInfo.TryGetAttribute<Setting>();
+                        Setting sett = fieldInfo.TryGetAttribute<Setting>();
                         att.Settings.SetOrAdd(fieldInfo, sett);
                     }
                     att.MouseOver = AccessTools.Method(mode, "MouseOver");
@@ -108,7 +105,7 @@ namespace DubsAnalyzer
                     att.Checkbox = AccessTools.Method(mode, "Checkbox");
                     att.typeRef = mode;
 
-                    foreach (var profileTab in AnalyzerState.SideTabCategories)
+                    foreach (ProfileTab profileTab in AnalyzerState.SideTabCategories)
                     {
                         if (att.mode == profileTab.UpdateMode)
                             profileTab.Modes.SetOrAdd(att, mode);
@@ -120,9 +117,9 @@ namespace DubsAnalyzer
                 }
             }
 
-            foreach (var profileMode in ProfileMode.instances)
+            foreach (ProfileMode profileMode in ProfileMode.instances)
             {
-                foreach (var profileTab in AnalyzerState.SideTabCategories)
+                foreach (ProfileTab profileTab in AnalyzerState.SideTabCategories)
                 {
                     if (profileMode.mode == profileTab.UpdateMode)
                     {
@@ -138,13 +135,13 @@ namespace DubsAnalyzer
         public override void PostClose()
         {
             base.PostClose();
-            Analyzer.StopProfiling();
-            Analyzer.Reset();
-            Analyzer.Settings.Write();
+            Modbase.StopProfiling();
+            Modbase.Reset();
+            Modbase.Settings.Write();
 
-            foreach (var tab in AnalyzerState.SideTabCategories)
+            foreach (ProfileTab tab in AnalyzerState.SideTabCategories)
             {
-                foreach (var mode in tab.Modes)
+                foreach (KeyValuePair<ProfileMode, Type> mode in tab.Modes)
                 {
                     mode.Key.SetActive(false);
                 }
@@ -153,7 +150,7 @@ namespace DubsAnalyzer
             // we add new functionality
             if (AnalyzerState.CanCleanup())
             {
-                CleanupPatches = new Thread(() => Analyzer.UnPatchMethods());
+                CleanupPatches = new Thread(() => Modbase.UnPatchMethods());
                 CleanupPatches.Start();
             }
 
@@ -218,7 +215,7 @@ namespace DubsAnalyzer
                             windowRect.width -= 450;
                             cache = -1;
                         }
-                        Analyzer.Settings.DoSettings(inner);
+                        Modbase.Settings.DoSettings(inner);
                         break;
                     default: // We are in one of our categories, which means we want to display our logs
                         /*
@@ -232,7 +229,7 @@ namespace DubsAnalyzer
                             return;
                         }
 
-                        if (Analyzer.Settings.SidePanel)
+                        if (Modbase.Settings.SidePanel)
                         {
                             if (cache == -1)
                             {
@@ -249,7 +246,7 @@ namespace DubsAnalyzer
                             Widgets.DrawMenuSection(inner);
                             logs.Draw(inner, save);
 
-                            var AdditionalInfoBox = canvas.RightPartPixels(canvas.width - (Logs.width + SideTab.width - 1f)).Rounded();
+                            Rect AdditionalInfoBox = canvas.RightPartPixels(canvas.width - (Logs.width + SideTab.width - 1f)).Rounded();
                             if (AnalyzerState.CurrentProfileKey == "Overview")
                             {
                                 Dialog_StackedGraph.Display(AdditionalInfoBox);
@@ -271,7 +268,7 @@ namespace DubsAnalyzer
                             inner.y += 25;
                             inner.height -= 25;
 
-                            var AdditionalInfoBox = canvas.BottomPart(.5f);
+                            Rect AdditionalInfoBox = canvas.BottomPart(.5f);
                             if (AnalyzerState.CurrentProfileKey == "Overview")
                             {
                                 Widgets.DrawMenuSection(inner);
@@ -293,7 +290,7 @@ namespace DubsAnalyzer
                 // Now we are outside the scope of all of our gui, lets print the messages we had queued during this time
                 lock (messageSync)
                 {
-                    foreach (var action in QueuedMessages)
+                    foreach (Action action in QueuedMessages)
                         action();
 
                     QueuedMessages.Clear();
@@ -365,7 +362,7 @@ namespace DubsAnalyzer
 
         internal class SideTab
         {
-            private Dialog_Analyzer super = null;
+            private readonly Dialog_Analyzer super = null;
             public static float width = 220f;
             private static Vector2 ScrollPosition = Vector2.zero;
             public static Listing_Standard listing = new Listing_Standard();
@@ -379,12 +376,12 @@ namespace DubsAnalyzer
 
             public void Draw(Rect rect)
             {
-                var ListerBox = rect.LeftPartPixels(width);
+                Rect ListerBox = rect.LeftPartPixels(width);
                 ListerBox.width -= 10f;
                 Widgets.DrawMenuSection(ListerBox);
                 ListerBox = ListerBox.ContractedBy(4f);
 
-                var baseRect = ListerBox.AtZero();
+                Rect baseRect = ListerBox.AtZero();
                 baseRect.width -= 16f;
                 baseRect.height = ListHeight;
 
@@ -398,7 +395,7 @@ namespace DubsAnalyzer
                     GUI.BeginGroup(baseRect);
                     listing.Begin(baseRect);
 
-                    foreach (var maintab in AnalyzerState.SideTabCategories)
+                    foreach (ProfileTab maintab in AnalyzerState.SideTabCategories)
                         if (!(maintab.label == "Modder Added" && maintab.Modes.Count == 0))
                             DrawSideTabList(maintab);
 
@@ -412,12 +409,12 @@ namespace DubsAnalyzer
                 ListHeight = yOffset;
             }
 
-            private void DrawSideTabList(ProfileTab tab)
+            private void DrawSideTabList(Tab tab)
             {
                 DubGUI.ResetFont();
                 yOffset += 40f;
 
-                var row = listing.GetRect(30f);
+                Rect row = listing.GetRect(30f);
 
                 if (tab.Selected) Widgets.DrawOptionSelected(row);
 
@@ -443,18 +440,16 @@ namespace DubsAnalyzer
                 Text.Anchor = TextAnchor.MiddleLeft;
                 Text.Font = GameFont.Tiny;
 
-                if (tab.Collapsed) return;
+                if (tab.collapsed) return;
 
-                foreach (var mode in tab.Modes)
+                foreach (KeyValuePair<Entry, Type> mode in tab.entries)
                 {
-                    DrawSideTab(ref row, mode, tab.UpdateMode);
+                    DrawSideTab(ref row, mode, tab.updateMode);
                 }
             }
 
-            private void DrawSideTab(ref Rect row, KeyValuePair<ProfileMode, Type> mode, UpdateMode updateMode)
+            private void DrawSideTab(ref Rect row, KeyValuePair<Entry, Type> mode, UpdateMode updateMode)
             {
-                if (!mode.Key.Basics && !Analyzer.Settings.AdvancedMode) return;
-
                 row = listing.GetRect(30f);
                 Widgets.DrawHighlightIfMouseover(row);
 
@@ -490,7 +485,7 @@ namespace DubsAnalyzer
                 if (AnalyzerState.CurrentTab == mode.Key)
                 {
                     bool firstEntry = true;
-                    foreach (var keySetting in mode.Key.Settings)
+                    foreach (KeyValuePair<FieldInfo, Setting> keySetting in mode.Key.Settings)
                     {
                         if (keySetting.Key.FieldType == typeof(bool))
                         {
@@ -514,7 +509,7 @@ namespace DubsAnalyzer
                             if (DubGUI.Checkbox(row, keySetting.Value.name, ref cur))
                             {
                                 keySetting.Key.SetValue(null, cur);
-                                Analyzer.Reset();
+                                Modbase.Reset();
                             }
                         }
 
@@ -531,7 +526,7 @@ namespace DubsAnalyzer
         }
         internal class Logs
         {
-            private Dialog_Analyzer super = null;
+            private readonly Dialog_Analyzer super = null;
             private static Vector2 ScrollPosition = Vector2.zero;
             public Rect GizmoListRect;
             private const float boxHeight = 40f;
@@ -562,7 +557,7 @@ namespace DubsAnalyzer
                     return;
                 }
 
-                var innerRect = rect.AtZero();
+                Rect innerRect = rect.AtZero();
                 //innerRect.width -= 16f;
                 innerRect.height = ListHeight;
 
@@ -587,9 +582,9 @@ namespace DubsAnalyzer
                 Text.Anchor = TextAnchor.MiddleLeft;
                 Text.Font = GameFont.Tiny;
 
-                lock (Analyzer.sync)
+                lock (Modbase.sync)
                 {
-                    foreach (var log in AnalyzerState.Logs)
+                    foreach (ProfileLog log in AnalyzerState.Logs)
                     {
                         DrawLog(log, save, ref currentListHeight);
                     }
@@ -597,7 +592,7 @@ namespace DubsAnalyzer
 
                 if (save)
                 {
-                    var path = GenFilePaths.FolderUnderSaveData("Profiling") + $"/{AnalyzerState.CurrentTab.name}_{DateTime.Now.ToFileTime()}.csv";
+                    string path = GenFilePaths.FolderUnderSaveData("Profiling") + $"/{AnalyzerState.CurrentTab.name}_{DateTime.Now.ToFileTime()}.csv";
                     File.WriteAllText(path, csv.ToString());
                     csv.Clear();
                     Messages.Message($"Saved to {path}", MessageTypeDefOf.TaskCompletion, false);
@@ -640,7 +635,7 @@ namespace DubsAnalyzer
                     return;
                 }
 
-                var profile = AnalyzerState.GetProfile(log.Key);
+                Profiler profile = AnalyzerState.GetProfile(log.Key);
 
                 bool on = true;
 
@@ -651,12 +646,12 @@ namespace DubsAnalyzer
 
                 if (AnalyzerState.CurrentTab.Checkbox != null)
                 {
-                    var checkboxRect = new Rect(visible.x, visible.y, 25f, visible.height);
+                    Rect checkboxRect = new Rect(visible.x, visible.y, 25f, visible.height);
                     visible.x += 25f;
                     if (DubGUI.Checkbox(checkboxRect, "", ref on))
                     {
                         AnalyzerState.CurrentTab.Checkbox?.Invoke(null, new object[] { profile, log });
-                        Analyzer.Settings.Write();
+                        Modbase.Settings.Write();
                     }
                 }
 
@@ -679,7 +674,7 @@ namespace DubsAnalyzer
 
                 // draw the bar
                 {
-                    var color = DubResources.grey;
+                    Texture2D color = DubResources.grey;
 
                     if (log.Percent > 0.25f) color = DubResources.blue;
                     else if (log.Percent > 0.75f) color = DubResources.red;
@@ -703,7 +698,7 @@ namespace DubsAnalyzer
 
                 if (save)
                 {
-                    foreach (var historyTime in profile.History.times)
+                    foreach (double historyTime in profile.History.times)
                     {
                         csv.Append($",{historyTime}");
                     }
@@ -724,22 +719,22 @@ namespace DubsAnalyzer
                     {
                         TipLabel = log.Label;
                         StringBuilder builder = new StringBuilder();
-                        var patches = Harmony.GetPatchInfo(log.Meth);
+                        Patches patches = Harmony.GetPatchInfo(log.Meth);
                         if (patches != null)
                         {
-                            foreach (var patch in patches.Prefixes) GetString("Prefix", patch);
-                            foreach (var patch in patches.Postfixes) GetString("Postfix", patch);
-                            foreach (var patch in patches.Transpilers) GetString("Transpiler", patch);
-                            foreach (var patch in patches.Finalizers) GetString("Finalizer", patch);
+                            foreach (Patch patch in patches.Prefixes) GetString("Prefix", patch);
+                            foreach (Patch patch in patches.Postfixes) GetString("Postfix", patch);
+                            foreach (Patch patch in patches.Transpilers) GetString("Transpiler", patch);
+                            foreach (Patch patch in patches.Finalizers) GetString("Finalizer", patch);
 
                             void GetString(string type, Patch patch)
                             {
-                                if (patch.owner != Analyzer.harmony.Id && patch.owner != Analyzer.perfharmony.Id && patch.owner != InternalMethodUtility.Harmony.Id)
+                                if (patch.owner != Modbase.harmony.Id && patch.owner != Modbase.perfharmony.Id && patch.owner != InternalMethodUtility.Harmony.Id)
                                 {
-                                    var ass = patch.PatchMethod.DeclaringType.Assembly.FullName;
-                                    var assname = AnalyzerCache.AssemblyToModname[ass];
+                                    string ass = patch.PatchMethod.DeclaringType.Assembly.FullName;
+                                    string assname = ModInfoCache.AssemblyToModname[ass];
 
-                                    if (Analyzer.Settings.AdvancedMode)
+                                    if (Modbase.Settings.AdvancedMode)
                                         builder.AppendLine($"{type} from {assname} with the index {patch.index} and the priority {patch.priority}\n");
                                     else
                                         builder.AppendLine($"{type} from {assname}\n");
@@ -759,7 +754,7 @@ namespace DubsAnalyzer
                     if (Input.GetKey(KeyCode.LeftControl))
                     {
                         AnalyzerState.CurrentTab.Clicked?.Invoke(null, new object[] { profile, log });
-                        Analyzer.Settings.Write();
+                        Modbase.Settings.Write();
                     }
                     else
                     {
@@ -780,10 +775,10 @@ namespace DubsAnalyzer
                     {
                         try
                         {
-                            var methnames = PatchUtils.GetSplitString(log.Key);
-                            foreach (var n in methnames)
+                            IEnumerable<string> methnames = Utility.GetSplitString(log.Key);
+                            foreach (string n in methnames)
                             {
-                                var meth = AccessTools.Method(n);
+                                MethodInfo meth = AccessTools.Method(n);
                                 List<FloatMenuOption> options = RightClickDropDown(meth).ToList();
                                 Find.WindowStack.Add(new FloatMenu(options));
                             }
@@ -794,24 +789,24 @@ namespace DubsAnalyzer
             }
             private static IEnumerable<FloatMenuOption> RightClickDropDown(MethodInfo meth)
             {
-                if (Analyzer.Settings.AdvancedMode)
+                if (Modbase.Settings.AdvancedMode)
                 {
                     if (AnalyzerState.CurrentProfileKey.Contains("Harmony")) // we can return an 'unpatch'
                     {
                         yield return new FloatMenuOption("Unpatch Method", delegate
                         {
-                            PatchUtils.UnpatchMethod(meth);
+                            Utility.UnpatchMethod(meth);
                         });
                     }
 
                     yield return new FloatMenuOption("Unpatch methods that patch", delegate
                     {
-                        PatchUtils.UnpatchMethodsOnMethod(meth);
+                        Utility.UnpatchMethodsOnMethod(meth);
                     });
 
                     yield return new FloatMenuOption("Profile the internal methods of", delegate
                     {
-                        PatchUtils.PatchInternalMethod(meth);
+                        Utility.PatchInternalMethod(meth);
                     });
                 }
             }
@@ -836,10 +831,10 @@ namespace DubsAnalyzer
              */
             public void Draw(Rect rect)
             {
-                var oldFont = Text.Font;
+                GameFont oldFont = Text.Font;
                 listing = new Listing_Standard();
 
-                var ListerBox = rect.TopPart(.4f);
+                Rect ListerBox = rect.TopPart(.4f);
                 Widgets.DrawMenuSection(rect);
                 ListerBox = ListerBox.AtZero();
 
@@ -860,7 +855,7 @@ namespace DubsAnalyzer
                     GUI.EndGroup();
                     Widgets.EndScrollView();
                 }
-                var GraphBox = rect.BottomPart(.6f);
+                Rect GraphBox = rect.BottomPart(.6f);
                 graph.Draw(GraphBox);
 
                 Text.Font = oldFont;
@@ -875,7 +870,7 @@ namespace DubsAnalyzer
                 $" σ {CurrentLogStats.stats.OutlierCutoff:0.000}ms", $" Number of Spikes: {CurrentLogStats.stats.Spikes.Count}", $" % in category {AnalyzerState.CurrentLog.Average_s}"};
 
                 Vector2 vec = Vector2.zero;
-                foreach (var str in s1)
+                foreach (string str in s1)
                 {
                     if (Text.CalcSize(str).x > vec.x)
                         vec = Text.CalcSize(str);
@@ -887,7 +882,7 @@ namespace DubsAnalyzer
             {
                 if (!LogStats.IsActiveThread)
                 {
-                    var s = new LogStats();
+                    LogStats s = new LogStats();
                     s.GenerateStats();
                 }
 
@@ -904,7 +899,7 @@ namespace DubsAnalyzer
                     {
                         //DrawStatsPageSidePanel();
                         float longestStat = GetLongestStat();
-                        var statRect = rect.LeftPartPixels(longestStat);
+                        Rect statRect = rect.LeftPartPixels(longestStat);
                         Widgets.Label(statRect,
                         $" Entries: {CurrentLogStats.stats.Entries}\n Highest Time: {CurrentLogStats.stats.HighestTime:0.000}\n" +
                         $" Highest Calls (per frame): {CurrentLogStats.stats.HighestCalls}\n μ calls (per frame): {CurrentLogStats.stats.MeanCallsPerFrame:0.00}\n" +
@@ -922,7 +917,7 @@ namespace DubsAnalyzer
             {
                 listing = new Listing_Standard();
 
-                var ListerBox = rect.TopPart(.75f);
+                Rect ListerBox = rect.TopPart(.75f);
                 ListerBox.width -= 10f;
                 Widgets.DrawMenuSection(ListerBox);
                 ListerBox = ListerBox.AtZero();
@@ -934,7 +929,7 @@ namespace DubsAnalyzer
 
                     DrawGeneralSidePanel();
                     DrawStatisticsSidePanel();
-                    if (Analyzer.Settings.AdvancedMode)
+                    if (Modbase.Settings.AdvancedMode)
                     {
                         DrawStackTraceSidePanel();
                         //DrawHarmonyOptionsSidePanel();
@@ -944,7 +939,7 @@ namespace DubsAnalyzer
                     GUI.EndGroup();
                     Widgets.EndScrollView();
                 }
-                var GraphBox = rect.BottomPart(.25f);
+                Rect GraphBox = rect.BottomPart(.25f);
                 GraphBox.width -= 10f;
                 graph.Draw(GraphBox);
             }
@@ -954,10 +949,10 @@ namespace DubsAnalyzer
                 DubGUI.Heading(listing, "General");
                 Text.Font = font;
 
-                if (AnalyzerState.CurrentProfiler()?.meth != null)
+                if (Analyzer.GetProfiler() != null)
                 {
-                    var ass = AnalyzerState.CurrentProfiler().meth.DeclaringType.Assembly.FullName;
-                    var assname = "";
+                    string ass = AnalyzerState.CurrentProfiler().meth.DeclaringType.Assembly.FullName;
+                    string assname = "";
                     if (ass.Contains("Assembly-CSharp")) assname = "Rimworld - Core";
                     else if (ass.Contains("UnityEngine")) assname = "Rimworld - Unity";
                     else if (ass.Contains("System")) assname = "Rimworld - System";
@@ -965,22 +960,22 @@ namespace DubsAnalyzer
                     {
                         try
                         {
-                            assname = AnalyzerCache.AssemblyToModname[ass];
+                            assname = ModInfoCache.AssemblyToModname[ass];
                         }
                         catch (Exception) { assname = "Failed to locate assembly information"; }
                     }
 
                     DubGUI.InlineDoubleMessage($" Mod: {assname}", $" Assembly: {ass.Split(',').First()}.dll", listing, true);
-                    var anch = Text.Anchor;
+                    TextAnchor anch = Text.Anchor;
                     Text.Anchor = TextAnchor.MiddleCenter;
-                    var str = $"{AnalyzerState.CurrentProfiler().meth.DeclaringType.FullName}:{AnalyzerState.CurrentProfiler().meth.Name}";
-                    var strLen = Text.CalcHeight(str, listing.ColumnWidth * .95f);
+                    string str = $"{AnalyzerState.CurrentProfiler().meth.DeclaringType.FullName}:{AnalyzerState.CurrentProfiler().meth.Name}";
+                    float strLen = Text.CalcHeight(str, listing.ColumnWidth * .95f);
 
-                    var rect = listing.GetRect(strLen);
+                    Rect rect = listing.GetRect(strLen);
 
                     Widgets.Label(rect, str);
 
-                    if (Analyzer.Settings.AdvancedMode)
+                    if (Modbase.Settings.AdvancedMode)
                     {
                         Widgets.DrawHighlightIfMouseover(rect);
                         if (Input.GetMouseButtonDown(1) && rect.Contains(Event.current.mousePosition)) // mouse button right
@@ -989,7 +984,7 @@ namespace DubsAnalyzer
                             {
                                 new FloatMenuOption("Open In Github", () => OpenGithub()),
                             };
-                            if (Analyzer.Settings.DevMode)
+                            if (Modbase.Settings.DevMode)
                             {
                                 options.Add(new FloatMenuOption("Open In Dnspy (requires local path)", () => OpenDnspy()));
                             }
@@ -1004,31 +999,31 @@ namespace DubsAnalyzer
 
                     void OpenDnspy()
                     {
-                        if (Analyzer.Settings.PathToDnspy == "" || Analyzer.Settings.PathToDnspy == null)
+                        if (Modbase.Settings.PathToDnspy == "" || Modbase.Settings.PathToDnspy == null)
                         {
                             Log.ErrorOnce("You have not given a local path to dnspy", 10293838);
                             return;
                         }
 
-                        var meth = AnalyzerState.CurrentProfiler().meth;
-                        var path = meth.DeclaringType.Assembly.Location;
+                        MethodBase meth = AnalyzerState.CurrentProfiler().meth;
+                        string path = meth.DeclaringType.Assembly.Location;
                         if (path == null || path.Length == 0)
                         {
-                            var contentPack = LoadedModManager.RunningMods.FirstOrDefault(m => m.assemblies.loadedAssemblies.Contains(meth.DeclaringType.Assembly));
+                            ModContentPack contentPack = LoadedModManager.RunningMods.FirstOrDefault(m => m.assemblies.loadedAssemblies.Contains(meth.DeclaringType.Assembly));
                             if (contentPack != null)
                             {
                                 path = ModContentPack.GetAllFilesForModPreserveOrder(contentPack, "Assemblies/", p => p.ToLower() == ".dll", null)
                                     .Select(fileInfo => fileInfo.Item2.FullName)
                                     .First(dll =>
                                     {
-                                        var assembly = Assembly.ReflectionOnlyLoadFrom(dll);
+                                        Assembly assembly = Assembly.ReflectionOnlyLoadFrom(dll);
                                         return assembly.GetType(meth.DeclaringType.FullName) != null;
                                     });
                             }
                         }
-                        var token = meth.MetadataToken;
+                        int token = meth.MetadataToken;
                         if (token != 0)
-                            Process.Start(Analyzer.Settings.PathToDnspy, $"\"{path}\" --select 0x{token:X8}");
+                            Process.Start(Modbase.Settings.PathToDnspy, $"\"{path}\" --select 0x{token:X8}");
 
                     }
                 }
@@ -1047,7 +1042,7 @@ namespace DubsAnalyzer
 
                 if (!LogStats.IsActiveThread)
                 {
-                    var s = new LogStats();
+                    LogStats s = new LogStats();
                     s.GenerateStats();
                 }
 
@@ -1109,7 +1104,7 @@ namespace DubsAnalyzer
 
             private void DrawStackTraceSidePanel()
             {
-                if (Analyzer.Settings.AdvancedMode)
+                if (Modbase.Settings.AdvancedMode)
                 {
                     DubGUI.CollapsableHeading(listing, "Stack Trace", ref AnalyzerState.HideStacktrace);
                     Text.Font = font;
@@ -1119,10 +1114,10 @@ namespace DubsAnalyzer
                 {
                     listing.Label($"Stacktraces: {StackTraceRegex.traces.Count}");
 
-                    foreach (var st in StackTraceRegex.traces.OrderBy(w => w.Value.Count).Reverse())
+                    foreach (KeyValuePair<string, StackTraceInformation> st in StackTraceRegex.traces.OrderBy(w => w.Value.Count).Reverse())
                     {
                         int i = 0;
-                        var traceInfo = st.Value;
+                        StackTraceInformation traceInfo = st.Value;
 
                         for (i = 0; i < st.Value.TranslatedArr().Count() - 2; i++)
                         {
@@ -1133,23 +1128,23 @@ namespace DubsAnalyzer
 
                         void DrawTrace(int idx, bool capoff)
                         {
-                            var rect = DubGUI.InlineDoubleMessage(
+                            Rect rect = DubGUI.InlineDoubleMessage(
                                 traceInfo.TranslatedArr()[idx], traceInfo.methods[idx].Item2.Count.ToString(), listing,
                                 capoff).LeftPart(.5f);
 
                             if (Mouse.IsOver(rect))
                             {
                                 StringBuilder builder = new StringBuilder();
-                                foreach (var p in traceInfo.methods[idx].Item2)
+                                foreach (StackTraceInformation.HarmonyPatch p in traceInfo.methods[idx].Item2)
                                     GetString(p);
 
                                 void GetString(StackTraceInformation.HarmonyPatch patch)
                                 {
-                                    if (patch.id != Analyzer.harmony.Id && patch.id != Analyzer.perfharmony.Id &&
+                                    if (patch.id != Modbase.harmony.Id && patch.id != Modbase.perfharmony.Id &&
                                         patch.id != InternalMethodUtility.Harmony.Id)
                                     {
-                                        var ass = patch.patch.DeclaringType.Assembly.FullName;
-                                        var assname = AnalyzerCache.AssemblyToModname[ass];
+                                        string ass = patch.patch.DeclaringType.Assembly.FullName;
+                                        string assname = ModInfoCache.AssemblyToModname[ass];
 
                                         builder.AppendLine(
                                             $"{patch.type} from {assname} with the index {patch.index} and the priority {patch.priority}\n");
@@ -1215,7 +1210,7 @@ namespace DubsAnalyzer
 
                 public void DisplayColorPicker(Rect rect, bool LineCol)
                 {
-                    Widgets.DrawBoxSolid(rect, (LineCol) ? Analyzer.Settings.LineCol : Analyzer.Settings.GraphCol);
+                    Widgets.DrawBoxSolid(rect, (LineCol) ? Modbase.Settings.LineCol : Modbase.Settings.GraphCol);
 
                     if (Widgets.ButtonInvisible(rect, true))
                     {
@@ -1224,13 +1219,13 @@ namespace DubsAnalyzer
 
                         else
                         {
-                            var cp = new colourPicker();
+                            colourPicker cp = new colourPicker();
                             if (LineCol)
-                                cp.Setcol = () => Analyzer.Settings.LineCol = colourPicker.CurrentCol;
+                                cp.Setcol = () => Modbase.Settings.LineCol = colourPicker.CurrentCol;
                             else
-                                cp.Setcol = () => Analyzer.Settings.GraphCol = colourPicker.CurrentCol;
+                                cp.Setcol = () => Modbase.Settings.GraphCol = colourPicker.CurrentCol;
 
-                            cp.SetColor((LineCol) ? Analyzer.Settings.LineCol : Analyzer.Settings.GraphCol);
+                            cp.SetColor((LineCol) ? Modbase.Settings.LineCol : Modbase.Settings.GraphCol);
 
                             Find.WindowStack.Add(cp);
                         }
@@ -1239,7 +1234,7 @@ namespace DubsAnalyzer
 
                 public void DrawSettings(Rect rect, int entries)
                 {
-                    var sliderRect = rect.RightPartPixels(200f);
+                    Rect sliderRect = rect.RightPartPixels(200f);
                     sliderRect.x -= 15;
                     entryCount = (int)Widgets.HorizontalSlider(sliderRect, entryCount, 10, 2000, true, string.Intern($"{entryCount} Entries"));
                     sliderRect = new Rect(sliderRect.xMax + 5, sliderRect.y + 2, 10, 10);
@@ -1265,34 +1260,34 @@ namespace DubsAnalyzer
 
                     Text.Font = GameFont.Small;
 
-                    var prof = AnalyzerState.CurrentProfiler();
+                    Profiler prof = AnalyzerState.CurrentProfiler();
                     if (prof == null || prof.History.times.Length <= 0) return;
 
-                    var entries = (prof.History.times.Length > entryCount) ? entryCount : prof.History.times.Length;
+                    int entries = (prof.History.times.Length > entryCount) ? entryCount : prof.History.times.Length;
 
-                    if (Analyzer.Settings.SidePanel)
+                    if (Modbase.Settings.SidePanel)
                     {
                         DrawSettings(position.TopPartPixels(30f).ContractedBy(2f), entries);
                         position = position.BottomPartPixels(position.height - 30f);
                     }
 
-                    Widgets.DrawBoxSolid(position, Analyzer.Settings.GraphCol);
+                    Widgets.DrawBoxSolid(position, Modbase.Settings.GraphCol);
 
                     GUI.color = Color.grey;
                     Widgets.DrawBox(position, 2);
                     GUI.color = Color.white;
 
-                    var gap = position.width / entries;
+                    float gap = position.width / entries;
 
                     GUI.BeginGroup(position);
                     position = position.AtZero();
 
-                    var LastMax = max;
+                    double LastMax = max;
                     max = prof.History.times[0];
 
-                    for (var i = 1; i < entries; i++)
+                    for (int i = 1; i < entries; i++)
                     {
-                        var entry = prof.History.times[i];
+                        double entry = prof.History.times[i];
 
                         if (entry > max)
                             max = entry;
@@ -1303,18 +1298,18 @@ namespace DubsAnalyzer
 
                     //bool DoHover = false;
 
-                    for (var i = 0; i < entries; i++)
+                    for (int i = 0; i < entries; i++)
                     {
                         float entry = (float)prof.History.times[i];
                         float y = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, entry);
 
-                        var screenPoint = new Vector2(position.xMax - (gap * i), y);
+                        Vector2 screenPoint = new Vector2(position.xMax - (gap * i), y);
 
                         if (i != 0)
                         {
-                            Widgets.DrawLine(last, screenPoint, Analyzer.Settings.LineCol, 1f);
+                            Widgets.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f);
 
-                            var relevantArea = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
+                            Rect relevantArea = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
                             if (Mouse.IsOver(relevantArea))
                             {
                                 //DoHover = true;
@@ -1333,8 +1328,8 @@ namespace DubsAnalyzer
                     if (LastMax != max)
                         MaxStr = $" Max {max}ms";
 
-                    var LogMaxY = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)max);
-                    var crunt = position;
+                    float LogMaxY = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)max);
+                    Rect crunt = position;
                     crunt.y = LogMaxY;
                     Widgets.Label(crunt, MaxStr);
                     Widgets.DrawLine(new Vector2(position.x, LogMaxY), new Vector2(position.xMax, LogMaxY), Color.red, 1f);
