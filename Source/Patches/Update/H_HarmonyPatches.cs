@@ -20,15 +20,15 @@ namespace Analyzer
 
         public static void MouseOver(Rect r, Profiler prof, ProfileLog log)
         {
-            if (LogCache != log.Label)
+            if (LogCache != log.label)
             {
-                LogCache = log.Label;
+                LogCache = log.label;
                 TipCache = string.Empty;
                 //   var patches = Harmony.GetAllPatchedMethods().ToList();
 
                 //    foreach (var methodBase in patches)
                 //    {
-                Patches infos = Harmony.GetPatchInfo(log.Meth);
+                Patches infos = Harmony.GetPatchInfo(log.meth);
                 //foreach (var infosPrefix in infos.Prefixes)
                 //{
                 //    if (infosPrefix.PatchMethod == log.Meth)
@@ -59,9 +59,9 @@ namespace Analyzer
         {
             if (Input.GetKey(KeyCode.LeftControl))
             {
-                if (log.Meth != null)
+                if (log.meth != null)
                 {
-                    Modbase.Harmony.Unpatch(log.Meth, HarmonyPatchType.Transpiler, "*");
+                    Modbase.Harmony.Unpatch(log.meth, HarmonyPatchType.Transpiler, "*");
                     Messages.Message("Unpatched", MessageTypeDefOf.TaskCompletion, false);
                 }
                 else
@@ -158,7 +158,7 @@ namespace Analyzer
         {
             if (Input.GetKey(KeyCode.LeftControl))
             {
-                if (log.Meth == null)
+                if (log.meth == null)
                 {
                     Messages.Message("Null method", MessageTypeDefOf.NegativeEvent, false);
                     return;
@@ -172,7 +172,7 @@ namespace Analyzer
                     Patches infos = Harmony.GetPatchInfo(methodBase);
                     foreach (Patch infosPrefix in infos.Prefixes)
                     {
-                        if (infosPrefix.PatchMethod == log.Meth)
+                        if (infosPrefix.PatchMethod == log.meth)
                         {
                             Modbase.Harmony.Unpatch(methodBase, HarmonyPatchType.All, "*");
                             Messages.Message("Unpatched prefixes", MessageTypeDefOf.TaskCompletion, false);
@@ -180,7 +180,7 @@ namespace Analyzer
                     }
                     foreach (Patch infosPostfixesx in infos.Postfixes)
                     {
-                        if (infosPostfixesx.PatchMethod == log.Meth)
+                        if (infosPostfixesx.PatchMethod == log.meth)
                         {
                             Modbase.Harmony.Unpatch(methodBase, HarmonyPatchType.All, "*");
                             Messages.Message("Unpatched postfixes", MessageTypeDefOf.TaskCompletion, false);

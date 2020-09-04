@@ -85,7 +85,7 @@ namespace Analyzer
                 return;
             }
 
-            Profiler profile = Analyzer.profiles[log.Key];
+            Profiler profile = Analyzer.profiles[log.key];
             Entry currentEntry = GUIController.CurrentEntry;
 
             bool currentlyActive = true;
@@ -125,22 +125,22 @@ namespace Analyzer
             {
                 Texture2D color = DubResources.grey;
 
-                if (log.Percent > 0.25f) color = DubResources.blue;
-                else if (log.Percent > 0.75f) color = DubResources.red;
+                if (log.percent > 0.25f) color = DubResources.blue;
+                else if (log.percent > 0.75f) color = DubResources.red;
 
-                Widgets.FillableBar(visible.BottomPartPixels(8f), log.Percent, color, DubResources.clear, false);
+                Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, color, DubResources.clear, false);
             }
             visible = visible.LeftPartPixels(60);
 
 
             if (!currentlyActive) GUI.color = Color.grey;
 
-            Widgets.Label(visible, $" {log.Max:0.000}ms");
+            Widgets.Label(visible, $" {log.max:0.000}ms");
 
             visible.x = visible.xMax + 15;
 
             visible.width = 2000;
-            Widgets.Label(visible, log.Label);
+            Widgets.Label(visible, log.label);
 
             GUI.color = Color.white;
 
@@ -151,13 +151,13 @@ namespace Analyzer
 
         public static void DrawHover(ProfileLog log, Rect visible)
         {
-            if (log.Meth != null)
+            if (log.meth != null)
             {
-                if (log.Label != TipLabel)
+                if (log.label != TipLabel)
                 {
-                    TipLabel = log.Label;
+                    TipLabel = log.label;
                     StringBuilder builder = new StringBuilder();
-                    Patches patches = Harmony.GetPatchInfo(log.Meth);
+                    Patches patches = Harmony.GetPatchInfo(log.meth);
                     if (patches != null)
                     {
                         foreach (Patch patch in patches.Prefixes) GetString("Prefix", patch);
@@ -198,16 +198,16 @@ namespace Analyzer
             }
             else if (Event.current.button == 1) // right click
             {
-                if (log.Meth != null)
+                if (log.meth != null)
                 {
-                    List<FloatMenuOption> options = RightClickDropDown(log.Meth as MethodInfo).ToList();
+                    List<FloatMenuOption> options = RightClickDropDown(log.meth as MethodInfo).ToList();
                     Find.WindowStack.Add(new FloatMenu(options));
                 }
                 else
                 {
                     try
                     {
-                        IEnumerable<string> methnames = Utility.GetSplitString(log.Key);
+                        IEnumerable<string> methnames = Utility.GetSplitString(log.key);
                         foreach (string n in methnames)
                         {
                             MethodInfo meth = AccessTools.Method(n);

@@ -16,6 +16,8 @@ namespace Analyzer
     {
         private static int currentLogCount; // How many update cycles have passed since beginning profiling an entry?
         public static List<ProfileLog> logs = new List<ProfileLog>();
+        private static Comparer<ProfileLog> logComparer = Comparer<ProfileLog>.Create( (ProfileLog first, ProfileLog second) => first.average < second.average ? 1 : 0);
+
 
         private static Thread logicThread; // Calculating stats for all active profilers (not the currently selected one)
         private static Thread patchingThread; // patching new methods, this prevents a stutter when patching mods
@@ -139,30 +141,42 @@ namespace Analyzer
         private static void LogicThread(Dictionary<string, Profiler> Profiles)
         {
             List<ProfileLog> newLogs = new List<ProfileLog>();
-            foreach (string key in Profiles.Keys)
+
+            double total = 0;
+
+            foreach (var value in Profiles.Values)
             {
-                Profiler value = Profiles[key];
                 double av = value.GetAverageTime(Mathf.Min(Analyzer.GetCurrentLogCount, 2000));
-                newLogs.Add(new ProfileLog(value.label, string.Empty, av, (float)value.times.Max(), null, key, string.Empty, 0, value.type, value.meth));
+                newLogs.Add(new ProfileLog(value.label, string.Empty, av, (float)value.times.Max(), null, value.key, string.Empty, 0, value.type, value.meth));
+
+                total += av;
             }
 
-            double total = newLogs.Sum(x => x.Average);
+            List<ProfileLog> sortedLogs = new List<ProfileLog>(newLogs.Count);
 
-            for (int index = 0; index < newLogs.Count; index++)
+            foreach (var log in newLogs)
             {
-                ProfileLog k = newLogs[index];
-                float pc = (float)(k.Average / total);
-                k.Average = pc;
-                k.Average_s = pc.ToStringPercent();
-            }
+                float adjustedAverage = (float)(log.average / total);
+                log.average = adjustedAverage;
+                log.averageString = adjustedAverage.ToStringPercent();
 
-            newLogs.SortByDescending(x => x.Average);
+                BinaryInsertion(sortedLogs, log);
+            }
 
             // Swap our old logs with the new ones
             lock (LogicLock)
             {
-                logs = newLogs;
+                logs = sortedLogs;
             }
+        }
+
+        // Assume the array is currently sorted
+        // We are looking for a position to insert a new entry
+        private static void BinaryInsertion(List<ProfileLog> logs, ProfileLog value)
+        {
+            int index = Mathf.Abs(logs.BinarySearch(value, logComparer) + 1);
+
+            logs.Insert(index, value);
         }
     }
 }
