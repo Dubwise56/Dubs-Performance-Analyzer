@@ -59,7 +59,7 @@
     <Compile Include="GUI\Dialog_LogAdditional.cs" />
     <Compile Include="GUI\DubGUI.cs" />
     <Compile Include="GUI\DubResources.cs" />
-    <Compile Include="Refactored\ProfileController.cs" />
+    <Compile Include="Refactored\Statistics\ProfileController.cs" />
     <Compile Include="Refactored\ResourceCache.cs" />
     <Compile Include="Refactored\Utility\LinkedQueue.cs" />
     <Compile Include="Refactored\Utility\InternalMethodUtility.cs" />
@@ -80,7 +80,7 @@
     <Compile Include="Refactored\MainButton_Toggle.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="GUI\TabStats.cs" />
-    <Compile Include="Refactored\ProfileLog.cs" />
+    <Compile Include="Refactored\Statistics\ProfileLog.cs" />
     <Compile Include="Refactored\Utility\Utility.cs" />
     <Compile Include="GUI\ProfilerHistory.cs" />
     <Compile Include="Patches\Custom\CustomProfilers.cs" />

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
@@ -29,8 +30,10 @@ namespace Analyzer
 
         public static List<ProfileLog> Logs => logs;
         public static object LogicLock => logicSync;
+
         public static bool CurrentlyPaused { get; set; } = false;
         public static bool CurrentlyProfling => currentlyProfiling && !CurrentlyPaused;
+
         public static void RefreshLogCount() => currentLogCount = 0;
         public static int GetCurrentLogCount => currentLogCount;
 
@@ -38,15 +41,17 @@ namespace Analyzer
         public static void BeginProfiling() => currentlyProfiling = true;
         public static void EndProfiling() => currentlyProfiling = false;
 
+        // Called every update period (tick / root update)
         internal static void UpdateCycle()
         {
-            foreach (var profile in ProfileController.profiles)
+            foreach (var profile in ProfileController.Profiles)
                 profile.Value.RecordMeasurement();
         }
 
+        // Called a variadic amount depending on the user settings, but most likely every 60 ticks / 1 second
         internal static void FinishUpdateCycle()
         {
-            logicThread = new Thread(() => LogicThread(new Dictionary<string, Profiler>(ProfileController.profiles)));
+            logicThread = new Thread(() => ProfileCalculations(new Dictionary<string, Profiler>(ProfileController.Profiles)));
             logicThread.IsBackground = true;
             logicThread.Start();
         }
@@ -85,7 +90,7 @@ namespace Analyzer
             //cleanupThread.Start();
         }
 
-        private static void LogicThread(Dictionary<string, Profiler> Profiles)
+        private static void ProfileCalculations(Dictionary<string, Profiler> Profiles)
         {
             List<ProfileLog> newLogs = new List<ProfileLog>(Profiles.Count);
 

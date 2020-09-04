@@ -13,7 +13,7 @@ namespace Analyzer
             HarmonyMethod go = new HarmonyMethod(typeof(H_JobAI), nameof(Prefix));
             HarmonyMethod biff = new HarmonyMethod(typeof(H_JobAI), nameof(Postfix));
 
-            Utility.PatchType("Pawn_JobTracker", go, biff, false);
+            Utility.PatchType("Pawn_JobTracker", go, biff);
         }
 
         [HarmonyPriority(Priority.Last)]

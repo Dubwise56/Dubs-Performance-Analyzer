@@ -18,6 +18,8 @@ namespace Analyzer
         private static Thread patchAssemblyThread = null;
         private static Thread patchTypeThread = null;
 
+        public static bool displayMessages = false;
+
         /*
          * Utility
          */
@@ -91,6 +93,10 @@ namespace Analyzer
 
         private static void Notify(string message)
         {
+#if DEBUG
+            Log.Error($"[Analyzer] Patching notification: {message}");
+#endif
+            if (displayMessages) return;
             lock (Window_Analyzer.messageSync)
             {
                 Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.PositiveEvent, false); });
@@ -98,6 +104,10 @@ namespace Analyzer
         }
         private static void Warn(string message)
         {
+#if DEBUG
+            Log.Error($"[Analyzer] Patching warning occured: {message}");
+#endif
+            if (displayMessages) return;
             lock (Window_Analyzer.messageSync)
             {
                 Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.CautionInput, false); });
@@ -105,66 +115,75 @@ namespace Analyzer
         }
         private static void Error(string message)
         {
-            lock (Window_Analyzer.messageSync)
-            {
-                Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.NegativeEvent, false); });
-            }
+#if DEBUG
+            Log.Error($"[Analyzer] Patching error occured: {message}");
+#endif
+            if (displayMessages)
+                lock (Window_Analyzer.messageSync)
+                {
+                    Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.NegativeEvent, false); });
+                }
         }
 
-
-        private static bool ValidMethod(MethodInfo method, bool silence)
+        // returns false is the method is invalid
+        private static bool ValidMethod(MethodInfo method)
         {
             if (method == null)
             {
-                if (!silence) Error("Null MethodInfo");
+                Error("Null MethodInfo");
                 return false;
             }
 
             if (!method.HasMethodBody())
             {
-                if (!silence) Error("Does not have a methodbody");
+                Error("Does not have a methodbody");
+                return false;
+            }
+
+            if (method.IsGenericMethod || method.ContainsGenericParameters)
+            {
+                Error("Can not currently patch generic methods");
                 return false;
             }
 
             return true;
         }
 
-        private static bool GetMethod(string name, bool silence, out MethodInfo methodInfo)
+        // returns true if the method is null, if(GetMethod(.., .., ..)) return;
+        private static bool GetMethod(string name, out MethodInfo methodInfo)
         {
             methodInfo = null;
             try
             {
                 methodInfo = AccessTools.Method(name);
+                return !ValidMethod(methodInfo);
             }
             catch (Exception e)
             {
-                if (!silence)
-                    Error($"failed to locate method {name}, errored with the message {e.Message}");
+                Error($"failed to locate method {name}, errored with the message {e.Message}");
                 return true;
             }
-            return false;
         }
 
         /*
          * Method Patching
          */
-        public static void PatchMethod(string name, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        public static void PatchMethod(string name, HarmonyMethod pre, HarmonyMethod post)
         {
-            if (GetMethod(name, false, out MethodInfo method))
+            if (GetMethod(name, out MethodInfo method))
                 return;
 
-            PatchMethod(method, pre, post, display);
+            PatchMethod(method, pre, post);
         }
-        public static void PatchMethod(MethodInfo method, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        public static void PatchMethod(MethodInfo method, HarmonyMethod pre, HarmonyMethod post)
         {
-            PatchMethodFull(method, pre, post, display);
+            PatchMethodFull(method, pre, post);
         }
-        private static void PatchMethodFull(MethodInfo method, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        private static void PatchMethodFull(MethodInfo method, HarmonyMethod pre, HarmonyMethod post)
         {
             if (PatchedMethods.Contains(method.Name))
             {
-                if (display)
-                    Warn($"patching {method.Name} failed, already patched");
+                Warn($"patching {method.Name} failed, already patched");
                 return;
             }
 
@@ -175,17 +194,15 @@ namespace Analyzer
             }
             catch (Exception e)
             {
-                if (display)
-                    Error($"Failed to log method {method.Name} errored with the message {e.Message}");
+                Error($"Failed to log method {method.Name} errored with the message {e.Message}");
             }
 
-            if (display)
-                Notify($"patching {method.Name} succeeded");
+            Notify($"patching {method.Name} succeeded");
         }
 
         public static IEnumerable<MethodInfo> GetMethodsPatchingMethod(string name)
         {
-            if (GetMethod(name, false, out MethodInfo method))
+            if (GetMethod(name, out MethodInfo method))
                 return null;
 
             return GetMethodsPatchingMethod(method);
@@ -194,52 +211,43 @@ namespace Analyzer
         {
             Patches patches = Harmony.GetPatchInfo(method);
 
-            foreach (Patch patch in patches.Prefixes) yield return patch.PatchMethod;
-            foreach (Patch patch in patches.Postfixes) yield return patch.PatchMethod;
-            foreach (Patch patch in patches.Transpilers) yield return patch.PatchMethod;
-            foreach (Patch patch in patches.Finalizers) yield return patch.PatchMethod;
+            foreach (var m in patches.Prefixes.Select(p => p.PatchMethod))
+                if (ValidMethod(m)) yield return m;
+            foreach (var m in patches.Postfixes.Select(p => p.PatchMethod))
+                if (ValidMethod(m)) yield return m;
+            foreach (var m in patches.Transpilers.Select(p => p.PatchMethod))
+                if (ValidMethod(m)) yield return m;
+            foreach (var m in patches.Finalizers.Select(p => p.PatchMethod))
+                if (ValidMethod(m)) yield return m;
         }
-        public static void PatchMethodPatches(string name, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        public static void PatchMethodPatches(string name, HarmonyMethod pre, HarmonyMethod post)
         {
-            if (GetMethod(name, false, out MethodInfo method))
+            if (GetMethod(name, out MethodInfo method))
                 return;
 
-            PatchMethodPatches(method, pre, post, display);
+            PatchMethodPatches(method, pre, post);
         }
-        public static void PatchMethodPatches(MethodInfo method, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        public static void PatchMethodPatches(MethodInfo method, HarmonyMethod pre, HarmonyMethod post)
         {
-            Patches patches = Harmony.GetPatchInfo(method);
-            if (patches == null) return;
-
-            foreach (Patch patch in patches.Prefixes)
-            {
-                PatchMethodFull(patch.PatchMethod, pre, post, display);
-            }
-            foreach (Patch patch in patches.Postfixes)
-            {
-                PatchMethodFull(patch.PatchMethod, pre, post, display);
-            }
-            foreach (Patch patch in patches.Transpilers)
-            {
-                PatchMethodFull(patch.PatchMethod, pre, post, display);
-            }
+            foreach (var meth in GetMethodsPatchingMethod(method))
+                PatchMethodFull(meth, pre, post);
         }
 
         /*
          * Method Unpatching
          */
-        public static void UnpatchMethod(string name, bool display = true)
+        public static void UnpatchMethod(string name)
         {
-            if (GetMethod(name, false, out MethodInfo method))
+            if (GetMethod(name, out MethodInfo method))
                 return;
 
             UnpatchMethod(method);
         }
-        public static void UnpatchMethod(MethodInfo method, bool display = true)
+        public static void UnpatchMethod(MethodInfo method)
         {
             UnpatchMethodFull(method);
         }
-        private static void UnpatchMethodFull(MethodInfo method, bool display = true)
+        private static void UnpatchMethodFull(MethodInfo method)
         {
             foreach (MethodBase methodBase in Harmony.GetAllPatchedMethods())
             {
@@ -259,14 +267,13 @@ namespace Analyzer
                         Modbase.Harmony.Unpatch(methodBase, method);
                         return;
                     }
-                }
+                }   
             }
-            if (display)
-                Warn("Failed to locate method to unpatch");
+            Warn("Failed to locate method to unpatch");
         }
         public static void UnpatchMethodsOnMethod(string name)
         {
-            if (GetMethod(name, false, out MethodInfo method))
+            if (GetMethod(name, out MethodInfo method))
                 return;
 
             UnpatchMethodsOnMethod(method);
@@ -309,7 +316,7 @@ namespace Analyzer
                 }
             }
         }
-        public static void PatchType(string name, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        public static void PatchType(string name, HarmonyMethod pre, HarmonyMethod post)
         {
             Type type = null;
             try
@@ -318,60 +325,53 @@ namespace Analyzer
             }
             catch (Exception e)
             {
-                if (display)
-                    Error($"Failed to locate type {name}, errored with the message {e.Message}");
+                Error($"Failed to locate type {name}, errored with the message {e.Message}");
                 return;
             }
 
-            PatchType(type, pre, post, display);
+            PatchType(type, pre, post);
         }
-        public static void PatchType(Type type, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        public static void PatchType(Type type, HarmonyMethod pre, HarmonyMethod post)
         {
-            patchTypeThread = new Thread(() => PatchTypeFull(type, pre, post, display));
+            patchTypeThread = new Thread(() => PatchTypeFull(type, pre, post));
             patchTypeThread.Start();
         }
-        private static void PatchTypeFull(Type type, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        private static void PatchTypeFull(Type type, HarmonyMethod pre, HarmonyMethod post)
         {
             try
             {
                 if (PatchedTypes.Contains(type.FullName))
                 {
-                    if (display)
-                        Warn($"patching {type.FullName} failed, already patched");
+                    Warn($"patching {type.FullName} failed, already patched");
                     return;
                 }
                 PatchedTypes.Add(type.FullName);
 
                 foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
                 {
-                    if (!PatchedMethods.Contains(method.Name) && method.DeclaringType == type && !method.IsSpecialName && !method.IsAssembly && method.HasMethodBody() && !method.IsGenericMethod)
+
+                    if (!PatchedMethods.Contains(method.Name) && method.DeclaringType == type)
                     {
                         try
                         {
-                            byte[] bytes = method.GetMethodBody()?.GetILAsByteArray();
-                            if (!(bytes?.Length == 0 || bytes?.Length == 1 && bytes.First() == 0x2A))
-                            {
+                            if (ValidMethod(method))
                                 Modbase.Harmony.Patch(method, pre, post);
-                            }
                         }
                         catch (Exception e)
                         {
-                            if (display)
-                                Warn($"Failed to log method {method.Name} errored with the message {e.Message}");
+                            Warn($"Failed to log method {method.Name} errored with the message {e.Message}");
                         }
                         PatchedMethods.Add(method.Name);
                     }
                 }
-                if (display)
-                    Notify($"Patched {type.FullName}");
+                Notify($"Patched {type.FullName}");
             }
             catch (Exception e)
             {
-                if (display)
-                    Error($"catch. patching {type.FullName} failed, {e.Message}");
+                Error($"catch. patching {type.FullName} failed, {e.Message}");
             }
         }
-        public static void PatchTypePatches(string name, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        public static void PatchTypePatches(string name, HarmonyMethod pre, HarmonyMethod post)
         {
             Type type = null;
             try
@@ -380,43 +380,27 @@ namespace Analyzer
             }
             catch (Exception e)
             {
-                if (display)
-                    Error($"Failed to locate type {name}, errored with the message {e.Message}");
+                Error($"Failed to locate type {name}, errored with the message {e.Message}");
                 return;
             }
 
-            PatchTypePatchesFull(type, pre, post, display);
+            PatchTypePatchesFull(type, pre, post);
         }
-        private static void PatchTypePatchesFull(Type type, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        private static void PatchTypePatchesFull(Type type, HarmonyMethod pre, HarmonyMethod post)
         {
             try
             {
                 foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
                 {
-                    Patches patches = Harmony.GetPatchInfo(method);
-                    if (patches == null) continue;
-
-                    foreach (Patch patch in patches.Prefixes)
-                    {
-                        PatchMethodFull(patch.PatchMethod, pre, post, display);
-                    }
-                    foreach (Patch patch in patches.Postfixes)
-                    {
-                        PatchMethodFull(patch.PatchMethod, pre, post, display);
-                    }
-                    foreach (Patch patch in patches.Transpilers)
-                    {
-                        PatchMethodFull(patch.PatchMethod, pre, post, display);
-                    }
+                    foreach (var meth in GetMethodsPatchingMethod(method))
+                        PatchMethodFull(meth, pre, post);
                 }
 
-                if (display)
-                    Notify($"Sucessfully Patched the methods patching {type.FullName}");
+                Notify($"Sucessfully Patched the methods patching {type.FullName}");
             }
             catch (Exception e)
             {
-                if (display)
-                    Error($"patching {type.FullName} failed, {e.Message}");
+                Error($"patching {type.FullName} failed, {e.Message}");
             }
         }
 
@@ -424,7 +408,7 @@ namespace Analyzer
          * Type Unpatching
          */
 
-        public static void UnPatchTypePatches(string name, bool display = true)
+        public static void UnPatchTypePatches(string name)
         {
             Type type = null;
             try
@@ -433,26 +417,23 @@ namespace Analyzer
             }
             catch (Exception e)
             {
-                if (display)
-                    Error($"Failed to locate type {name}, errored with the message {e.Message}");
+                Error($"Failed to locate type {name}, errored with the message {e.Message}");
                 return;
             }
 
-            UnPatchTypePatches(type, display);
+            UnPatchTypePatches(type);
         }
-        public static void UnPatchTypePatches(Type type, bool display = true)
+        public static void UnPatchTypePatches(Type type)
         {
             if (type == null)
             {
-                if (display)
-                    Error("Cannnot unpatch null");
-
+                Error("Cannnot unpatch null");
                 return;
             }
 
-            UnPatchTypePatchesFull(type, display);
+            UnPatchTypePatchesFull(type);
         }
-        private static void UnPatchTypePatchesFull(Type type, bool display = true)
+        private static void UnPatchTypePatchesFull(Type type)
         {
             try
             {
@@ -461,13 +442,11 @@ namespace Analyzer
                     UnpatchMethodsOnMethod(method);
                 }
 
-                if (display)
-                    Notify($"Sucessfully unpatched the methods patching {type.FullName}");
+                Notify($"Sucessfully unpatched the methods patching {type.FullName}");
             }
             catch (Exception e)
             {
-                if (display)
-                    Error($"unpatching {type.FullName} failed, {e.Message}");
+                Error($"unpatching {type.FullName} failed, {e.Message}");
             }
         }
 
@@ -475,7 +454,7 @@ namespace Analyzer
          * Internal Method Patching
          */
 
-        public static void PatchInternalMethod(string name, bool display = true)
+        public static void PatchInternalMethod(string name)
         {
             MethodInfo method = null;
             try
@@ -484,23 +463,21 @@ namespace Analyzer
             }
             catch (Exception e)
             {
-                if (display)
-                    Error($"Failed to locate method {name}, errored with the message {e.Message}");
+                Error($"Failed to locate method {name}, errored with the message {e.Message}");
                 return;
             }
-            PatchInternalMethod(method, display);
+            PatchInternalMethod(method);
         }
-        public static void PatchInternalMethod(MethodInfo method, bool display = true)
+        public static void PatchInternalMethod(MethodInfo method)
         {
             if (InternalMethodUtility.PatchedInternals.Contains(method))
             {
-                if (display)
-                    Warn("Trying to re-transpile an already profiled internal method");
+                Warn("Trying to re-transpile an already profiled internal method");
                 return;
             }
-            PatchInternalMethodFull(method, display);
+            PatchInternalMethodFull(method);
         }
-        private static void PatchInternalMethodFull(MethodInfo method, bool display = true)
+        private static void PatchInternalMethodFull(MethodInfo method)
         {
             try
             {
@@ -512,13 +489,12 @@ namespace Analyzer
             }
             catch (Exception e)
             {
-                if (display)
-                    Error("Failed to patch internal methods, failed with the error " + e.Message);
+                Error("Failed to patch internal methods, failed with the error " + e.Message);
                 InternalMethodUtility.PatchedInternals.Remove(method);
             }
         }
 
-        public static void UnpatchInternalMethod(string name, bool display = true)
+        public static void UnpatchInternalMethod(string name)
         {
             MethodInfo method = null;
             try
@@ -527,23 +503,21 @@ namespace Analyzer
             }
             catch (Exception e)
             {
-                if (display)
-                    Error($"Failed to locate method {name}, errored with the message {e.Message}");
+                Error($"Failed to locate method {name}, errored with the message {e.Message}");
                 return;
             }
-            UnpatchInternalMethod(method, display);
+            UnpatchInternalMethod(method);
         }
-        public static void UnpatchInternalMethod(MethodInfo method, bool display = true)
+        public static void UnpatchInternalMethod(MethodInfo method)
         {
             if (!InternalMethodUtility.PatchedInternals.Contains(method))
             {
-                if (display)
-                    Warn($"There is no method with the name {method.Name} that has been noted as profiled");
+                Warn($"There is no method with the name {method.Name} that has been noted as profiled");
                 return;
             }
-            UnpatchInternalMethodFull(method, display);
+            UnpatchInternalMethodFull(method);
         }
-        private static void UnpatchInternalMethodFull(MethodInfo method, bool display = true)
+        private static void UnpatchInternalMethodFull(MethodInfo method)
         {
             InternalMethodUtility.curMeth = method;
             InternalMethodUtility.Harmony.Unpatch(method, HarmonyPatchType.Transpiler, InternalMethodUtility.Harmony.Id);
@@ -561,22 +535,17 @@ namespace Analyzer
             InternalMethodUtility.curMeth = null;
         }
 
-        public static void PatchAssembly(string name, bool display = true)
+        public static void PatchAssembly(string name)
         {
             ModContentPack mod = LoadedModManager.RunningMods.FirstOrDefault(m => m.Name == name || m.PackageId == name.ToLower());
 
-            if (display)
-                Notify($"Mod is null? {mod == null}");
             if (mod != null)
             {
-                if (display)
-                    Notify($"Assembly count: { mod.assemblies?.loadedAssemblies?.Count ?? 0}");
+                Notify($"Assembly count: { mod.assemblies?.loadedAssemblies?.Count ?? 0}");
                 foreach (Assembly ass in mod.assemblies?.loadedAssemblies)
-                {
-                    if (display)
-                        Notify($"Assembly named: {ass.FullName}, located at {ass.Location}");
-                }
+                    Notify($"Assembly named: {ass.FullName}, located at {ass.Location}");
             }
+
 
             IEnumerable<Assembly> assembly = mod?.assemblies?.loadedAssemblies?.Where(w => !w.FullName.Contains("Harmony") && !w.FullName.Contains("0MultiplayerAPI"));
 
@@ -586,16 +555,15 @@ namespace Analyzer
                 HarmonyMethod pre = new HarmonyMethod(AccessTools.TypeByName(mod.Name + "-prof").GetMethod("Prefix", BindingFlags.Public | BindingFlags.Static));
                 HarmonyMethod post = new HarmonyMethod(AccessTools.TypeByName(mod.Name + "-prof").GetMethod("Postfix", BindingFlags.Public | BindingFlags.Static));
 
-                patchAssemblyThread = new Thread(() => PatchAssemblyFull(assembly.ToList(), pre, post, display));
+                patchAssemblyThread = new Thread(() => PatchAssemblyFull(assembly.ToList(), pre, post));
                 patchAssemblyThread.Start();
             }
             else
             {
-                if (display)
-                    Error($"Failed to patch {name}");
+                Error($"Failed to patch {name}");
             }
         }
-        private static void PatchAssemblyFull(List<Assembly> assemblies, HarmonyMethod pre, HarmonyMethod post, bool display = true)
+        private static void PatchAssemblyFull(List<Assembly> assemblies, HarmonyMethod pre, HarmonyMethod post)
         {
             foreach (Assembly assembly in assemblies)
             {
@@ -603,8 +571,7 @@ namespace Analyzer
                 {
                     if (PatchedAssemblies.Contains(assembly.FullName))
                     {
-                        if (display)
-                            Warn($"patching {assembly.FullName} failed, already patched");
+                        Warn($"patching {assembly.FullName} failed, already patched");
                         return;
                     }
                     PatchedAssemblies.Add(assembly.FullName);
@@ -612,16 +579,14 @@ namespace Analyzer
                     foreach (Type type in assembly.GetTypes())
                     {
                         if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null)
-                            PatchTypeFull(type, pre, post, display);
+                            PatchTypeFull(type, pre, post);
                     }
 
-                    if (display)
-                        Notify($"Patched {assembly.FullName}");
+                    Notify($"Patched {assembly.FullName}");
                 }
                 catch (Exception e)
                 {
-                    if (display)
-                        Error($"catch. patching {assembly.FullName} failed, {e.Message}");
+                    Error($"catch. patching {assembly.FullName} failed, {e.Message}");
                 }
             }
         }

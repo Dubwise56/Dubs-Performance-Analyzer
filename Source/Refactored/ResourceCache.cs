@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
+
 namespace Analyzer
 {
     public static class ResourceCache
@@ -28,20 +29,20 @@ namespace Analyzer
             public static Texture2D sav = ContentFinder<Texture2D>.Get("DPA/UI/sav", false);
         }
 
-        public static class Strings
+        public static class Strings // May want to disable Code Lens for the formatting here...
         {
             // Tabs
-            public static string tab_setting = "tab.settings".TranslateSimple();
-            public static string tab_tick = "tab.tick".TranslateSimple();
-            public static string tab_update = "tab.update".TranslateSimple();
-            public static string tab_gui = "tab.gui".TranslateSimple();
-            public static string tab_modder = "tab.modder".TranslateSimple();
+            public static string tab_setting => "tab.settings".TranslateSimple();
+            public static string tab_tick => "tab.tick".TranslateSimple();
+            public static string tab_update => "tab.update".TranslateSimple();
+            public static string tab_gui => "tab.gui".TranslateSimple();
+            public static string tab_modder => "tab.modder".TranslateSimple();
 
-            public static string tab_setting_desc = "tab.settings.desc".TranslateSimple();
-            public static string tab_tick_desc = "tab.tick.desc".TranslateSimple();
-            public static string tab_update_desc = "tab.update.desc".TranslateSimple();
-            public static string tab_gui_desc = "tab.gui.desc".TranslateSimple();
-            public static string tab_modder_desc = "tab.modder.desc".TranslateSimple();
+            public static string tab_setting_desc => "tab.settings.desc".TranslateSimple();
+            public static string tab_tick_desc => "tab.tick.desc".TranslateSimple();
+            public static string tab_update_desc => "tab.update.desc".TranslateSimple();
+            public static string tab_gui_desc => "tab.gui.desc".TranslateSimple();
+            public static string tab_modder_desc => "tab.modder.desc".TranslateSimple();
 
             // 
         }

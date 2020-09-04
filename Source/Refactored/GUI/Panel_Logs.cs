@@ -85,7 +85,7 @@ namespace Analyzer
                 return;
             }
 
-            Profiler profile = ProfileController.profiles[log.key];
+            Profiler profile = ProfileController.Profiles[log.key];
             Entry currentEntry = GUIController.CurrentEntry;
 
             bool currentlyActive = true;

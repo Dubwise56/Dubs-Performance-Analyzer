@@ -17,22 +17,24 @@ namespace Analyzer
         private static bool midUpdate = false;
         private static float deltaTime = 0.0f;
 
+        public static Dictionary<string, Profiler> Profiles => profiles;
+
         public static Profiler Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodBase meth = null)
         {
             if (!Analyzer.CurrentlyProfling) return null;
 
-            if (profiles.TryGetValue(key, out Profiler prof)) return prof.Start();
+            if (Profiles.TryGetValue(key, out Profiler prof)) return prof.Start();
             else
             {
-                if (GetLabel != null) profiles[key] = new Profiler(key, GetLabel(), type, def, thing, meth);
-                else profiles[key] = new Profiler(key, key, type, def, thing, meth);
+                Profiles[key] = GetLabel == null ? new Profiler(key, GetLabel(), type, def, thing, meth)
+                                                 : new Profiler(key, key, type, def, thing, meth);
 
-                return profiles[key].Start();
+                return Profiles[key].Start();
             }
         }
         public static void Stop(string key)
         {
-            if (profiles.TryGetValue(key, out Profiler prof))
+            if (Profiles.TryGetValue(key, out Profiler prof))
                 prof.Stop();
         }
 
