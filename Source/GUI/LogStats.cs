@@ -43,11 +43,11 @@ namespace Analyzer
 
         public void GenerateStats()
         {
-            if (GUIController.GetCurrentProfiler == null)
+            if (GUIController.CurrentProfiler == null)
                 return;
 
-            GUIController.GetCurrentProfiler.times.CopyTo(lTimes, 0);
-            GUIController.GetCurrentProfiler.hits.CopyTo(lCalls, 0);
+            GUIController.CurrentProfiler.times.CopyTo(lTimes, 0);
+            GUIController.CurrentProfiler.hits.CopyTo(lCalls, 0);
 
             thread = new Thread(() => ExecuteWorker(this, lCalls, lTimes));
             thread.IsBackground = true;

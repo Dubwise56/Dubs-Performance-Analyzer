@@ -80,7 +80,7 @@ namespace Analyzer
 
             Widgets.DrawHighlightIfMouseover(visible);
 
-            if (GUIController.GetCurrentProfiler.key == profile.key)
+            if (GUIController.CurrentProfiler.key == profile.key)
                 Widgets.DrawHighlightSelected(visible);
 
             // onhover tooltip
@@ -162,8 +162,8 @@ namespace Analyzer
                 }
                 else
                 {
-                    // This is now the active log 
-                    GUIController.GetCurrentProfiler = profile;
+                    // This is now the 'active' profile  
+                    GUIController.CurrentProfiler = profile;
                 }
             }
             else if (Event.current.button == 1) // right click
@@ -177,7 +177,7 @@ namespace Analyzer
 
         private static IEnumerable<FloatMenuOption> RightClickDropDown(MethodInfo meth)
         {
-            if (GUIController.GetCurrentProfiler.label.Contains("Harmony")) // we can return an 'unpatch'
+            if (GUIController.CurrentProfiler.label.Contains("Harmony")) // we can return an 'unpatch'
                 yield return new FloatMenuOption("Unpatch Method", () => Utility.UnpatchMethod(meth));
 
             yield return new FloatMenuOption("Unpatch methods that patch", () => Utility.UnpatchMethodsOnMethod(meth));

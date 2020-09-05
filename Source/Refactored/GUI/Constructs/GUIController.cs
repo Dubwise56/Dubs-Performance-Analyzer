@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Verse;
 
 namespace Analyzer
 {
@@ -17,7 +18,7 @@ namespace Analyzer
 
         private static Dictionary<Category, Tab> tabs;
 
-        public static Profiler GetCurrentProfiler { get { return currentProfiler; } set { currentProfiler = value; } }
+        public static Profiler CurrentProfiler { get { return currentProfiler; } set { currentProfiler = value; } }
         public static Tab GetCurrentTab => currentTab;
         public static Category GetCurrentCategory => currentCategory;
         public static Entry CurrentEntry => currentEntry;
@@ -37,7 +38,7 @@ namespace Analyzer
 
             void addTab(string name, string desc, Category cat)
             {
-                tabs.Add(cat, new Tab(name, () => currentCategory = cat, () => currentCategory == cat, cat == Category.Tick ? UpdateMode.Tick : UpdateMode.Update, desc));
+                tabs.Add(cat, new Tab(name, () => currentCategory = cat, () => currentCategory == cat, cat, desc));
             }
         }
 
@@ -46,7 +47,7 @@ namespace Analyzer
 
         }
 
-        public static void AddEntry(string name, string tabName, UpdateMode updateMode)
+        public static void AddEntry(string name, string tabName, Category updateMode)
         {
 
         }

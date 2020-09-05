@@ -10,19 +10,19 @@ namespace Analyzer
         public Func<bool> onSelect;
         public bool Selected => onSelect?.Invoke() ?? false;
 
-        public UpdateMode updateMode;
+        public Category category;
         public string label;
         public string tip;
         public bool collapsed = false;
 
         public Dictionary<Entry, Type> entries = new Dictionary<Entry, Type>();
 
-        public Tab(string label, Action onClick, Func<bool> onSelect, UpdateMode updateMode, string tip)
+        public Tab(string label, Action onClick, Func<bool> onSelect, Category category, string tip)
         {
             this.label = label;
             this.onClick = onClick;
             this.onSelect = onSelect;
-            this.updateMode = updateMode;
+            this.category = category;
             this.tip = tip;
         }
     }

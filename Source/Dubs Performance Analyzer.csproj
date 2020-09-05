@@ -48,7 +48,9 @@
     <Compile Include="Refactored\GUI\Constructs\Entry.cs" />
     <Compile Include="Refactored\GUI\Constructs\GUIController.cs" />
     <Compile Include="Refactored\GUI\GUIElement_TPS.cs" />
+    <Compile Include="Refactored\GUI\Panel_Tabs.cs" />
     <Compile Include="Refactored\GUI\Panel_Graph.cs" />
+    <Compile Include="Refactored\GUI\Panel_TopRow.cs" />
     <Compile Include="Refactored\GUI\Window_Analyzer.cs" />
     <Compile Include="Refactored\GUI\Panel_Logs.cs" />
     <Compile Include="Refactored\GUI\Panel_Settings.cs" />

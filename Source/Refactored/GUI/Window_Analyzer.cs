@@ -15,7 +15,6 @@ using Verse;
 namespace Analyzer
 {
 
-    [StaticConstructorOnStartup]
     public class Window_Analyzer : Window
     {
         public static List<Action> QueuedMessages = new List<Action>();
@@ -104,7 +103,35 @@ namespace Analyzer
 
         public override void DoWindowContents(Rect inRect)
         {
+            var tabs = GUIController.Tabs;
+            var currentProfiles = ProfileController.Profiles.Values;
+            var currentlySelectedProfiler = GUIController.CurrentProfiler;
 
+            Panel_Tabs.Draw(inRect, tabs);
+
+            if(GUIController.GetCurrentTab.category == Category.Settings)
+            {
+                Panel_Settings.Draw(inRect);
+                return;
+            }
+
+            Panel_TopRow.Draw(inRect.TopPartPixels(20f));
+            /*
+             * Draw Tabs
+             *      draw each entry which belongs to the side
+             * 
+             * Draw the top bar
+             * 
+             * if Settings
+             *  draw settings page - exit
+             * 
+             * draw logs
+             * 
+             * if currentlySelectedProfiler != null
+             *      draw side panel
+             *      draw graph
+             * 
+             */
         }
     }
 }

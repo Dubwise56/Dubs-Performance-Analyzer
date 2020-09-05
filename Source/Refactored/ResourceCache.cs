@@ -49,6 +49,14 @@ namespace Analyzer
             public static string settings_discord => "settings.discord".TranslateSimple();
             public static string settings_heading => "settings".TranslateSimple();
             public static string settings_dnspy => "settings.dnspy".TranslateSimple();
+
+            // Top Row
+            public static string top_pause_analyzer => "top.pause.analyzer".TranslateSimple();
+            public static string top_search => "top.search".TranslateSimple();
+            public static string top_gc_tip => "top.gc.tip".TranslateSimple();
+            public static string top_fps_tip => "top.fps.tip".TranslateSimple();
+            public static string top_tps_tip => "top.tps.tip".TranslateSimple();
+
         }
 
         [DefOf]

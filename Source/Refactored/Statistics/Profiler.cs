@@ -66,7 +66,7 @@ namespace Analyzer
 
         public static void StopFrameInfo(Profiler prof) 
         {
-            if (prof == GUIController.GetCurrentProfiler)
+            if (prof == GUIController.CurrentProfiler)
                 if (prof.hitCounter < MAX_ADD_INFO_PER_FRAME)
                     StackTraceRegex.Add(new StackTrace(2, false));
         }

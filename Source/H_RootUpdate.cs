@@ -26,7 +26,7 @@ namespace Analyzer
 
         public static string GarbageCollectionInfo { get; private set; }
 
-        private static long totalBytesOfMemoryUsed;
+        public static long totalBytesOfMemoryUsed;
 
         public static void Prefix()
         {
