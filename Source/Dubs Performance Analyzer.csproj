@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\1.1\Assemblies\</OutputPath>
+    <OutputPath>..\1.2\Assemblies\</OutputPath>
     <BaseIntermediateOutputPath>\bin-int\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
     <DefineConstants>DEBUG</DefineConstants>
@@ -26,6 +26,7 @@
     <WarningLevel>0</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>8.0</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <PlatformTarget>x64</PlatformTarget>
@@ -39,6 +40,7 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>8.0</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Modbase.cs" />
@@ -61,7 +63,6 @@
     <Compile Include="GUI\DubResources.cs" />
     <Compile Include="Refactored\Statistics\ProfileController.cs" />
     <Compile Include="Refactored\ResourceCache.cs" />
-    <Compile Include="Refactored\Utility\LinkedQueue.cs" />
     <Compile Include="Refactored\Utility\InternalMethodUtility.cs" />
     <Compile Include="Patches\GUI\H_GameComponentOnGUI.cs" />
     <Compile Include="Patches\Update\H_GameComponentUpdate.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="Refactored\Utility\ModderDefined.cs" />
     <Compile Include="Refactored\Statistics\Profiler.cs" />
     <Compile Include="Refactored\GUI\Constructs\Tab.cs" />
+    <Compile Include="Refactored\Utility\Myers.cs" />
     <Compile Include="StackTrace.cs" />
     <Compile Include="GUI\LogStats.cs" />
     <Compile Include="H_RootUpdate.cs" />

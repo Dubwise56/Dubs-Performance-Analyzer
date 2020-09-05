@@ -119,8 +119,19 @@ namespace Analyzer
             List<CodeInstruction> inst = PatchProcessor.GetOriginalInstructions(__originalMethod);
             List<CodeInstruction> modInstList = instructions.ToList();
 
-            List<CodeInstruction> origCalls = inst.Where(i => InternalMethodUtility.IsFunctionCall(i.opcode)).ToList();
-            List<CodeInstruction> modCalls = modInstList.Where(i => InternalMethodUtility.IsFunctionCall(i.opcode)).ToList();
+            Myers<CodeInstruction> insts = new Myers<CodeInstruction>(inst.ToArray(), modInstList.ToArray(), EqualityComparer<CodeInstruction>.Default);
+            insts.Compute();
+
+            foreach(var thing in insts.changeSet)
+            {
+                if(thing.change == ChangeType.Added)
+                {
+                    if(InternalMethodUtility.IsFunctionCall(thing.value.opcode))
+                    {
+                        // bingo
+                    }
+                }
+            }
 
             return instructions;
         }
