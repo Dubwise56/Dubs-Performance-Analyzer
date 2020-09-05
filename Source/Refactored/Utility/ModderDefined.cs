@@ -15,7 +15,7 @@ namespace Analyzer
         // this is what a static class looks like in attributes
 
         private static AssemblyBuilder assembly = null;
-        private static AssemblyBuilder Assembly => assembly ??= assembly = AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("DubsDynamicTypes"), AssemblyBuilderAccess.Run);
+        private static AssemblyBuilder Assembly => assembly ??= AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("DubsDynamicTypes"), AssemblyBuilderAccess.Run);
 
         private static ModuleBuilder moduleBuilder = null;
         private static ModuleBuilder ModuleBuilder => moduleBuilder ??= Assembly.DefineDynamicModule("DubsDynamicTypes", "DubsDynamicTypes.dll");

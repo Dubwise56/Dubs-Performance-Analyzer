@@ -71,6 +71,7 @@
     <Compile Include="Patches\Update\H_JobAI.cs" />
     <Compile Include="Patches\Update\H_RegenerateLayers.cs" />
     <Compile Include="Patches\Update\H_SectionLayer_Things.cs" />
+    <Compile Include="Refactored\Utility\ListExtensions.cs" />
     <Compile Include="Refactored\Utility\ModderDefined.cs" />
     <Compile Include="Refactored\Statistics\Profiler.cs" />
     <Compile Include="Refactored\GUI\Constructs\Tab.cs" />

@@ -17,13 +17,14 @@ namespace Analyzer
 
         private static Dictionary<Category, Tab> tabs;
 
-        public static Profiler GetCurrentProfiler => currentProfiler;
+        public static Profiler GetCurrentProfiler { get { return currentProfiler; } set { currentProfiler = value; } }
         public static Tab GetCurrentTab => currentTab;
         public static Category GetCurrentCategory => currentCategory;
         public static Entry CurrentEntry => currentEntry;
 
         public static IEnumerable<Tab> Tabs => tabs.Values;
         public static Tab Tab(Category cat) => tabs[cat];
+
         static GUIController()
         {
             tabs = new Dictionary<Category, Tab>();
@@ -32,7 +33,7 @@ namespace Analyzer
             addTab(ResourceCache.Strings.tab_tick, ResourceCache.Strings.tab_tick_desc, Category.Tick);
             addTab(ResourceCache.Strings.tab_update, ResourceCache.Strings.tab_update_desc, Category.Update);
             addTab(ResourceCache.Strings.tab_gui, ResourceCache.Strings.tab_gui_desc, Category.GUI);
-            addTab(ResourceCache.Strings.tab_modder, ResourceCache.Strings.tab_modder_desc, Category.Settings);
+            addTab(ResourceCache.Strings.tab_modder, ResourceCache.Strings.tab_modder_desc, Category.Modder);
 
             void addTab(string name, string desc, Category cat)
             {

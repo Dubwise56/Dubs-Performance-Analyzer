@@ -44,7 +44,11 @@ namespace Analyzer
             public static string tab_gui_desc => "tab.gui.desc".TranslateSimple();
             public static string tab_modder_desc => "tab.modder.desc".TranslateSimple();
 
-            // 
+            // Settings
+            public static string settings_wiki => "settings.wiki".TranslateSimple();
+            public static string settings_discord => "settings.discord".TranslateSimple();
+            public static string settings_heading => "settings".TranslateSimple();
+            public static string settings_dnspy => "settings.dnspy".TranslateSimple();
         }
 
         [DefOf]

@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Verse;
 
@@ -597,6 +599,7 @@ namespace Analyzer
                         if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null)
                             PatchTypeFull(type, pre, post);
                     }
+
 
                     Notify($"Patched {assembly.FullName}");
                 }

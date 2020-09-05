@@ -14,148 +14,116 @@ namespace Analyzer
     {
         private static Listing_Standard listing = new Listing_Standard();
         private static Rect viewFrustum;
-        private static Vector2 ScrollPosition = Vector2.zero;
+
         private const float boxHeight = 40f;
-        public static float ListHeight = 999999999;
-        public static float width = 630f;
+        private const float labelOffset = 60f;
 
-        public static string TipCache = "";
-        public static string TipLabel = "";
+        private static Vector2 ScrollPosition = Vector2.zero;
+        public static float cachedListHeight = float.MaxValue;
 
-        private static void DrawLogs(Rect rect, bool save)
+        public static string tipCache = "";
+        public static string tipLabelCache = "";
+
+        private static void DrawLogs(Rect rect)
         {
             if (!GUIController.CurrentEntry.isPatched)
             {
-
                 DubGUI.Heading(rect, $"Loading{GenText.MarchingEllipsis(0f)}");
                 return;
             }
 
             Rect innerRect = rect.AtZero();
-            //innerRect.width -= 16f;
-            innerRect.height = ListHeight;
+            innerRect.height = cachedListHeight;
 
-            viewFrustum = rect.AtZero();
-            viewFrustum.y += ScrollPosition.y;
+            viewFrustum = rect.AtZero(); // Our view frustum starts at 0,0 from the rect we are given
+            viewFrustum.y += ScrollPosition.y; // adjust our view frustum vertically based on the scroll position
 
-            Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect, false);
-            GUI.BeginGroup(innerRect);
-            listing.Begin(innerRect);
+            { // Begin scope for Scroll View
+                Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect, false);
+                GUI.BeginGroup(innerRect);
+                listing.Begin(innerRect);
 
-            float currentListHeight = 0;
+                float currentListHeight = 0;
 
-            // Lets have a 'tab' summary 
-            // We will get stats like a; total time on tab
-            Rect visible = listing.GetRect(20);
+                Text.Anchor = TextAnchor.MiddleLeft;
+                Text.Font = GameFont.Tiny;
 
-            Text.Anchor = TextAnchor.MiddleCenter;
-            currentListHeight += 24;
-            listing.GapLine(0f);
-
-            Text.Anchor = TextAnchor.MiddleLeft;
-            Text.Font = GameFont.Tiny;
-
-            lock (Analyzer.LogicLock)
-            {
-                foreach (ProfileLog log in Analyzer.Logs)
+                lock (Analyzer.LogicLock)
                 {
-                    DrawLog(log, save, ref currentListHeight);
+                    foreach (ProfileLog log in Analyzer.Logs)
+                        DrawLog(log, ref currentListHeight);
                 }
+
+                cachedListHeight = currentListHeight;
+
+                listing.End();
+                GUI.EndGroup();
+                Widgets.EndScrollView();
             }
-
-            ListHeight = currentListHeight;
-
-            listing.End();
-            GUI.EndGroup();
-            Widgets.EndScrollView();
 
             DubGUI.ResetFont();
         }
 
-        private static void DrawLog(ProfileLog log, bool save, ref float currentListHeight)
+        private static void DrawLog(ProfileLog log, ref float currentListHeight)
         {
             Rect visible = listing.GetRect(boxHeight);
 
             if (!visible.Overlaps(viewFrustum)) // if we don't overlap, continue, but continue to adjust for further logs.
             {
                 listing.GapLine(0f);
-                currentListHeight += 4f;
-                currentListHeight += visible.height;
+                currentListHeight += (boxHeight + 4);
 
                 return;
             }
 
             Profiler profile = ProfileController.Profiles[log.key];
-            Entry currentEntry = GUIController.CurrentEntry;
-
-            bool currentlyActive = true;
-
-            if (currentEntry.onSelect != null)
-            {
-                currentlyActive = (bool)currentEntry.onSelect.Invoke(null, new object[] { profile, log });
-            }
-
-            //if (currentEntry.on != null)
-            //{
-            //    Rect checkboxRect = new Rect(visible.x, visible.y, 25f, visible.height);
-            //    visible.x += 25f;
-            //    if (DubGUI.Checkbox(checkboxRect, "", ref currentlyActive))
-            //    {
-            //        AnalyzerState.CurrentTab.Checkbox?.Invoke(null, new object[] { profile, log });
-            //        Modbase.Settings.Write();
-            //    }
-            //}
 
             Widgets.DrawHighlightIfMouseover(visible);
 
-
-            //if (AnalyzerState.CurrentProfileKey == log.Key)
-            //{
-            //    Widgets.DrawHighlightSelected(visible);
-            //    AnalyzerState.CurrentLog = log; // because we create new ones, instead of recycle the same log, we need to update the ref.
-            //}
+            if (GUIController.GetCurrentProfiler.key == profile.key)
+                Widgets.DrawHighlightSelected(visible);
 
             // onhover tooltip
-            if (Mouse.IsOver(visible)) DrawHover(log, visible);
+            if (Mouse.IsOver(visible))
+                DrawHover(log, visible);
 
             // onclick work, left click view stats, right click internal patch, ctrl + left click unpatch
-            if (Widgets.ButtonInvisible(visible)) ClickWork(log, profile);
+            if (Widgets.ButtonInvisible(visible))
+                ClickWork(log, profile);
 
-            // draw the bar
-            {
-                Texture2D color = DubResources.grey;
+            // Colour a fillable bar below the log depending on the % fill of a log
 
-                if (log.percent > 0.25f) color = DubResources.blue;
-                else if (log.percent > 0.75f) color = DubResources.red;
-
-                Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, color, DubResources.clear, false);
-            }
-            visible = visible.LeftPartPixels(60);
+            if (log.average <= .25f) // 25% or less
+                Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, ResourceCache.GUI.grey, ResourceCache.GUI.clear, false);
+            else if (log.average <= .75f) // between 25-75%
+                Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, ResourceCache.GUI.blue, ResourceCache.GUI.clear, false);
+            else // >= 75%
+                Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, ResourceCache.GUI.red, ResourceCache.GUI.clear, false);
 
 
-            if (!currentlyActive) GUI.color = Color.grey;
+            // todo swap this value to things like average
+            string timeLabel = $" {log.max:0000}ms";
+            Widgets.Label(visible.LeftPartPixels(timeLabel.GetWidthCached()), timeLabel);
 
-            Widgets.Label(visible, $" {log.max:0.000}ms");
+            // Line all of our labels up
+            visible.x += labelOffset;
+            visible.width = float.MaxValue; // make sure we don't see log labels spill over multiple 'lines'
 
-            visible.x = visible.xMax + 15;
-
-            visible.width = 2000;
-            Widgets.Label(visible, log.label);
+            Widgets.Label(visible, log.label); // display our label
 
             GUI.color = Color.white;
 
             listing.GapLine(0f);
-            currentListHeight += 4f;
-            currentListHeight += visible.height;
+            currentListHeight += (boxHeight + 4);
         }
 
         public static void DrawHover(ProfileLog log, Rect visible)
         {
             if (log.meth != null)
             {
-                if (log.label != TipLabel)
+                if (log.label != tipLabelCache) // If we have a new label, re-create the string, else use our cached version.
                 {
-                    TipLabel = log.label;
+                    tipLabelCache = log.label;
                     StringBuilder builder = new StringBuilder();
                     Patches patches = Harmony.GetPatchInfo(log.meth);
                     if (patches != null)
@@ -170,18 +138,19 @@ namespace Analyzer
                             if (patch.owner != Modbase.Harmony.Id && patch.owner != InternalMethodUtility.Harmony.Id)
                             {
                                 string ass = patch.PatchMethod.DeclaringType.Assembly.FullName;
-                                string assname = ModInfoCache.AssemblyToModname[ass];
+                                string modName = ModInfoCache.AssemblyToModname[ass];
 
-                                builder.AppendLine($"{type} from {assname} with the index {patch.index} and the priority {patch.priority}\n");
+                                builder.AppendLine($"{type} from {modName} with the index {patch.index} and the priority {patch.priority}\n");
                             }
                         }
 
-                        TipCache = builder.ToString();
+                        tipCache = builder.ToString();
                     }
                 }
-                TooltipHandler.TipRegion(visible, TipCache);
+                TooltipHandler.TipRegion(visible, tipCache);
             }
         }
+
         public static void ClickWork(ProfileLog log, Profiler profile)
         {
             if (Event.current.button == 0) // left click
@@ -193,35 +162,21 @@ namespace Analyzer
                 }
                 else
                 {
-                    // This should now be the active log 
+                    // This is now the active log 
+                    GUIController.GetCurrentProfiler = profile;
                 }
             }
             else if (Event.current.button == 1) // right click
             {
-                if (log.meth != null)
-                {
-                    List<FloatMenuOption> options = RightClickDropDown(log.meth as MethodInfo).ToList();
-                    Find.WindowStack.Add(new FloatMenu(options));
-                }
-                else
-                {
-                    try
-                    {
-                        IEnumerable<string> methnames = Utility.GetSplitString(log.key);
-                        foreach (string n in methnames)
-                        {
-                            MethodInfo meth = AccessTools.Method(n);
-                            List<FloatMenuOption> options = RightClickDropDown(meth).ToList();
-                            Find.WindowStack.Add(new FloatMenu(options));
-                        }
-                    }
-                    catch (Exception) { }
-                }
+                if(log.meth == null) return; 
+
+                List<FloatMenuOption> options = RightClickDropDown(log.meth as MethodInfo).ToList();
+                Find.WindowStack.Add(new FloatMenu(options));
             }
         }
+
         private static IEnumerable<FloatMenuOption> RightClickDropDown(MethodInfo meth)
         {
-
             if (GUIController.GetCurrentProfiler.label.Contains("Harmony")) // we can return an 'unpatch'
                 yield return new FloatMenuOption("Unpatch Method", () => Utility.UnpatchMethod(meth));
 

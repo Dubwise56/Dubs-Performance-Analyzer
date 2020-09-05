@@ -53,21 +53,21 @@ namespace Analyzer
             listing.Begin(view.ContractedBy(10f));
 
             { // Draw the github and discord textures / Icons
-                if (80 + "PerfAnalWiki".Translate().GetWidthCached() + "DubModDisco".Translate().GetWidthCached() < listing.ColumnWidth)
+                if (80 + ResourceCache.Strings.settings_wiki.GetWidthCached() + ResourceCache.Strings.settings_discord.GetWidthCached() < listing.ColumnWidth)
                 {
                     Rect rec = listing.GetRect(24f);
                     Rect lrec = rec.LeftHalf();
                     rec = rec.RightHalf();
                     Widgets.DrawTextureFitted(lrec.LeftPartPixels(40f), Gfx.Support, 1f);
                     lrec.x += 40;
-                    if (Widgets.ButtonText(lrec.LeftPartPixels("PerfAnalWiki".Translate().GetWidthCached()), "PerfAnalWiki".Translate(), false, true))
+                    if (Widgets.ButtonText(lrec.LeftPartPixels(ResourceCache.Strings.settings_wiki.GetWidthCached()), ResourceCache.Strings.settings_wiki, false, true))
                     {
                         Application.OpenURL("https://github.com/Dubwise56/Dubs-Performance-Analyzer/wiki");
                     }
 
                     Widgets.DrawTextureFitted(rec.RightPartPixels(40f), Gfx.disco, 1f);
                     rec.width -= 40;
-                    if (Widgets.ButtonText(rec.RightPartPixels("DubModDisco".Translate().GetWidthCached()), "DubModDisco".Translate(), false, true))
+                    if (Widgets.ButtonText(rec.RightPartPixels(ResourceCache.Strings.settings_discord.GetWidthCached()), ResourceCache.Strings.settings_discord, false, true))
                     {
                         Application.OpenURL("https://discord.gg/Az5CnDW");
                     }
@@ -76,14 +76,14 @@ namespace Analyzer
                 {
                     Rect rec = listing.GetRect(24f);
                     Widgets.DrawTextureFitted(rec.LeftPartPixels(40f), Gfx.Support, 1f);
-                    if (Widgets.ButtonText(rec.RightPartPixels(rec.width - 40), "PerfAnalWiki".Translate(), false, true))
+                    if (Widgets.ButtonText(rec.RightPartPixels(rec.width - 40), ResourceCache.Strings.settings_wiki, false, true))
                     {
                         Application.OpenURL("https://github.com/Dubwise56/Dubs-Performance-Analyzer/wiki");
                     }
 
                     rec = listing.GetRect(24f);
                     Widgets.DrawTextureFitted(rec.LeftPartPixels(40f), Gfx.disco, 1f);
-                    if (Widgets.ButtonText(rec.RightPartPixels(rec.width - 40), "DubModDisco".Translate(), false, true))
+                    if (Widgets.ButtonText(rec.RightPartPixels(rec.width - 40), ResourceCache.Strings.settings_discord, false, true))
                     {
                         Application.OpenURL("https://discord.gg/Az5CnDW");
                     }
@@ -107,8 +107,8 @@ namespace Analyzer
 
         public void DrawDevOptions()
         {
-            listing.Label("settings.developer.heading".Translate());
-            DubGUI.InputField(listing.GetRect(Text.LineHeight), "Path to Dnspy.exe (including the exe)", ref PathToDnspy, ShowName: true);
+            listing.Label(ResourceCache.Strings.settings_heading);
+            DubGUI.InputField(listing.GetRect(Text.LineHeight), ResourceCache.Strings.settings_dnspy, ref PathToDnspy, ShowName: true);
 
             listing.GapLine();
 

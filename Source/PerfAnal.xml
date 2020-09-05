@@ -14,7 +14,12 @@
 	<tab.update.desc>Methods which are update based</tab.update.desc>
 	<tab.gui.desc>Methods which are run on gui</tab.gui.desc>
 	<tab.modder.desc>Methods which have been added by modders via Analyzer.xml</tab.modder.desc>
-
+	
+	<!--Settings-->
+	<settings.wiki>Analyzer Wiki</settings.wiki>
+	<settings.discord>Dubs Discord</settings.discord>
+	<settings>Settings</settings>
+	<settings.dnspy>Path to Dnspy (Including the Exe)</settings.dnspy>
 	
 
 </LanguageData>
