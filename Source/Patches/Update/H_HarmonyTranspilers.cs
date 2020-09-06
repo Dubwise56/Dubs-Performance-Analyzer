@@ -80,13 +80,10 @@ namespace Analyzer
                 if (thing.change != ChangeType.Added) continue;
                 if (!InternalMethodUtility.IsFunctionCall(thing.value.opcode)) continue;
 
-                Log.Message($"Method Injected in {__originalMethod.DeclaringType.FullName + ":" + __originalMethod.Name}, added the method {((MethodInfo)thing.value.operand).DeclaringType.FullName + ":" + ((MethodInfo)thing.value.operand).Name}");
-
                 var key = __originalMethod.DeclaringType.FullName + ":" + __originalMethod.Name;
                 if (!MethodInfos.ContainsKey(key))
                 {
                     MethodInfos.Add(key, (MethodInfo)__originalMethod);
-                    Log.Message($"Inserted key {key}");
                 }
 
                 var replaceInstruction = SupplantMethodCall(thing.value, key);

@@ -22,7 +22,6 @@ namespace Analyzer
 
         public static Profiler Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodBase meth = null)
         {
-            Log.Error("hi");
             if (!Analyzer.CurrentlyProfling) return null;
 
             if (Profiles.TryGetValue(key, out Profiler prof)) return prof.Start();
