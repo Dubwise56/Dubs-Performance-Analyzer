@@ -39,7 +39,6 @@ namespace Analyzer
         public static bool CurrentlyPaused { get; set; } = false;
         public static bool CurrentlyProfling => currentlyProfiling && !CurrentlyPaused;
 
-        public static void RefreshLogCount() => currentLogCount = 0;
         public static int GetCurrentLogCount => currentLogCount;
 
         // After this function has been called, the analyzer will be actively profiling / incuring lag :)
@@ -47,6 +46,17 @@ namespace Analyzer
         public static void EndProfiling() => currentlyProfiling = false;
 
         public static SortBy SortBy { get; set; } = SortBy.Percent;
+
+        public static void RefreshLogCount()
+        {   
+            currentLogCount = 0;
+            lock (LogicLock)
+            { 
+                logs.Clear();
+            }
+        }
+
+
 
         // Called every update period (tick / root update)
         internal static void UpdateCycle()
@@ -115,7 +125,7 @@ namespace Analyzer
 
             foreach (var value in Profiles.Values)
             {
-                value.GetAverageTime(Mathf.Min(currentLogCount, MAX_LOG_COUNT - 1), out var average, out var max, out var total);
+                value.CollectStatistics(Mathf.Min(currentLogCount, MAX_LOG_COUNT - 1), out var average, out var max, out var total);
                 newLogs.Add(new ProfileLog(value.label, string.Empty, average, (float)max, null, value.key, string.Empty, 0, (float)total, value.type, value.meth));
 
                 sumOfAverages += average;

@@ -85,7 +85,7 @@ namespace Analyzer
             hitCounter = 0;
         }
 
-        public void GetAverageTime(int entries, out double average, out double max, out double total)
+        public void CollectStatistics(int entries, out double average, out double max, out double total)
         {
             total = 0;
             average = 0;
