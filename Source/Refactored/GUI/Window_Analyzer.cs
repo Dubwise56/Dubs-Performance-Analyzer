@@ -45,6 +45,8 @@ namespace Analyzer
         {
             base.PostClose();
             Analyzer.EndProfiling();
+            GUIController.CurrentEntry?.SetActive(false);
+
             Modbase.Settings.Write();
 
             // Pend the cleaning up of all of our state.

@@ -56,8 +56,6 @@ namespace Analyzer
             }
         }
 
-
-
         // Called every update period (tick / root update)
         internal static void UpdateCycle()
         {
