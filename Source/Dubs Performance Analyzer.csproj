@@ -44,6 +44,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Modbase.cs" />
+    <Compile Include="Patches\Update\H_HarmonyTranspilers.cs" />
     <Compile Include="Refactored\Analyzer.cs" />
     <Compile Include="Refactored\GUI\Constructs\Entry.cs" />
     <Compile Include="Refactored\GUI\Constructs\GUIController.cs" />

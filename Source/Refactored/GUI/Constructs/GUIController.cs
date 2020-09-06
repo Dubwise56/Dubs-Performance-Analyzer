@@ -44,7 +44,7 @@ namespace Analyzer
 
         public static void SwapToEntry(string entryName)
         {
-            if(currentEntry != null)
+            if (currentEntry != null)
             {
                 currentEntry.SetActive(false);
                 ProfileController.Profiles.Clear();
@@ -57,11 +57,11 @@ namespace Analyzer
                 .First().entries
                     .First(e => e.Key.name == entryName).Key;
 
-            if(!currentEntry.isPatched)
+            if (!currentEntry.isPatched)
             {
                 currentEntry.PatchMethods();
-                currentEntry.SetActive(true);
             }
+            currentEntry.SetActive(true);
         }
 
         public static void AddEntry(string name, string tabName, Category updateMode)

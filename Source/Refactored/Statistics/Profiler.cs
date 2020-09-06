@@ -49,22 +49,15 @@ namespace Analyzer
         {
             if (!Analyzer.CurrentlyProfling) return;
 
-            try
-            {
-                stopwatch.Stop();
-                hitCounter++;
-            }
-            catch (Exception e)
-            {
-                Log.Warning($"[Analyzer] Profile:Stop() failed with the error {e.Message}");
-            }
+            stopwatch.Stop();
+            hitCounter++;
         }
 
         // This function will be added via transpiler to the end of `Stop()` when the option is toggled.
         // Hopefully this can be injected as IL, not an xtra method call.
         // Something.GetMethodIL();
 
-        public static void StopFrameInfo(Profiler prof) 
+        public static void StopFrameInfo(Profiler prof)
         {
             if (prof == GUIController.CurrentProfiler)
                 if (prof.hitCounter < MAX_ADD_INFO_PER_FRAME)
@@ -95,12 +88,12 @@ namespace Analyzer
             uint arrayIndex = (uint)currentIndex;
             int i = entries;
 
-            while(i >= 0)
+            while (i >= 0)
             {
                 var time = times[arrayIndex];
 
                 total += time;
-                if(time > max)
+                if (time > max)
                 {
                     max = time;
                 }
@@ -109,7 +102,7 @@ namespace Analyzer
                 arrayIndex = (arrayIndex - 1) % RECORDS_HELD;
             }
 
-            average = total/(float)entries;
+            average = total / (float)entries;
         }
     }
 }

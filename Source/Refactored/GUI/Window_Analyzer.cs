@@ -135,23 +135,9 @@ namespace Analyzer
             inRect.height -= 20f;
 
             Panel_Logs.DrawLogs(inRect);
+            
+            // now we need to draw our side panel && graph if applicable.
 
-            /*
-             * Draw Tabs
-             *      draw each entry which belongs to the side
-             * 
-             * Draw the top bar
-             * 
-             * if Settings
-             *  draw settings page - exit
-             * 
-             * draw logs
-             * 
-             * if currentlySelectedProfiler != null
-             *      draw side panel
-             *      draw graph
-             * 
-             */
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Analyzer
 
         public static Dictionary<string, MethodInfo> KeyMethods = new Dictionary<string, MethodInfo>();
 
-        private static readonly MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(Modbase), nameof(ProfileController.Start));
+        private static readonly MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(ProfileController), nameof(ProfileController.Start));
         private static readonly MethodInfo AnalyzerEndMeth = AccessTools.Method(typeof(Profiler), nameof(Profiler.Stop));
 
         private static readonly FieldInfo AnalyzerKeyDict = AccessTools.Field(typeof(InternalMethodUtility), "KeyMethods");
@@ -60,7 +60,7 @@ namespace Analyzer
         /*
          * Utility for replacing method calls
          */
-        private static CodeInstruction SupplantMethodCall(CodeInstruction instruction)
+        public static CodeInstruction SupplantMethodCall(CodeInstruction instruction)
         {
             MethodInfo currentMethod = null;
             try
@@ -161,8 +161,8 @@ namespace Analyzer
             ilGen.Emit(OpCodes.Ldsfld, AccessTools.TypeByName(originalMethodName + "-int").GetField("Active", BindingFlags.Public | BindingFlags.Static));
             ilGen.Emit(OpCodes.Brfalse_S, label);
 
-            ilGen.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(GUIController), nameof(Analyzer.CurrentlyPaused)));
-            ilGen.Emit(OpCodes.Brfalse_S, label);
+            ilGen.Emit(OpCodes.Callvirt, AccessTools.Property(typeof(Analyzer), nameof(Analyzer.CurrentlyPaused)).GetMethod);
+            ilGen.Emit(OpCodes.Brtrue_S, label);
         }
     }
 }
