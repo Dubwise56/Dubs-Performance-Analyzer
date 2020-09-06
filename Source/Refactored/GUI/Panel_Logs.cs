@@ -10,13 +10,25 @@ using Verse;
 
 namespace Analyzer
 {
+    public enum SortBy
+    {
+        Max, Average, Percent, Total, Name
+    }
+
     public static class Panel_Logs
     {
         private static Listing_Standard listing = new Listing_Standard();
         private static Rect viewFrustum;
 
-        private const float boxHeight = 40f;
-        private const float labelOffset = 60f;
+        private const float BOX_HEIGHT = 40f;
+        private const float LABEL_OFFSET = 200f;
+        private const float ARBITRARY_OFFSET = 4f;
+        private const float ARBITRARY_CLOSED_OFFSET = 12f;
+        private const string NUMERICAL_DUMMY_STRING = " xxxx.xxxxms ";
+        private const SortBy DEFAULT_SORTBY = SortBy.Percent;
+
+        private static float NUMERIC_WIDTH => Text.CalcSize(NUMERICAL_DUMMY_STRING).x + ARBITRARY_OFFSET;
+
 
         private static Vector2 ScrollPosition = Vector2.zero;
         public static float cachedListHeight = float.MaxValue;
@@ -24,9 +36,11 @@ namespace Analyzer
         public static string tipCache = "";
         public static string tipLabelCache = "";
 
-        private static void DrawLogs(Rect rect)
+        public static List<bool> columns = new List<bool> { true, true, true, true, true };
+
+        public static void DrawLogs(Rect rect)
         {
-            if (!GUIController.CurrentEntry.isPatched)
+            if (!GUIController.CurrentEntry?.isPatched ?? true)
             {
                 DubGUI.Heading(rect, $"Loading{GenText.MarchingEllipsis(0f)}");
                 return;
@@ -43,10 +57,13 @@ namespace Analyzer
                 GUI.BeginGroup(innerRect);
                 listing.Begin(innerRect);
 
-                float currentListHeight = 0;
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Text.Font = GameFont.Tiny;
+
+                DrawColumns(listing.GetRect(BOX_HEIGHT));
+                float currentListHeight = BOX_HEIGHT;
 
                 Text.Anchor = TextAnchor.MiddleLeft;
-                Text.Font = GameFont.Tiny;
 
                 lock (Analyzer.LogicLock)
                 {
@@ -64,14 +81,91 @@ namespace Analyzer
             DubGUI.ResetFont();
         }
 
+        private static void DrawColumns(Rect rect)
+        {
+            Widgets.DrawLineHorizontal(rect.x, rect.y + rect.height, rect.width);
+            // [ Max ] [ Average ] [ Percent ] [ Total ] [ Name ] 
+            //
+
+            // For numerical columns we want to support " xxxx.xxxxms " (12 characters)
+            DrawColumnHeader(ref rect, ResourceCache.Strings.logs_max, ResourceCache.Strings.logs_max_desc, SortBy.Max, NUMERIC_WIDTH);
+            DrawColumnHeader(ref rect, ResourceCache.Strings.logs_av, ResourceCache.Strings.logs_av_desc, SortBy.Average, NUMERIC_WIDTH);
+            DrawColumnHeader(ref rect, ResourceCache.Strings.logs_percent, ResourceCache.Strings.logs_percent_desc, SortBy.Percent, NUMERIC_WIDTH);
+            DrawColumnHeader(ref rect, ResourceCache.Strings.logs_total, ResourceCache.Strings.logs_total_desc, SortBy.Total, NUMERIC_WIDTH);
+            // give the name 'infinite' width so there is no wrapping
+            // Set text anchor to middle left so we can see our text
+            // offset by four chars to make it look offset
+            Text.Anchor = TextAnchor.MiddleLeft;
+            DrawColumnHeader(ref rect, "    " + ResourceCache.Strings.logs_name, ResourceCache.Strings.logs_name_desc, SortBy.Name, float.MaxValue);
+
+        }
+
+        private static void DrawColumnHeader(ref Rect inRect, string name, string desc, SortBy value, float width)
+        {
+
+            if (!columns[(int)value]) // If our column is currently collapsed
+            {
+                var innerRect = inRect.LeftPartPixels(ARBITRARY_CLOSED_OFFSET);
+                inRect.x += ARBITRARY_CLOSED_OFFSET;
+                inRect.width -= ARBITRARY_CLOSED_OFFSET;
+
+                Widgets.DrawLineVertical(inRect.x, innerRect.y, innerRect.height);
+
+                if (Widgets.ButtonInvisible(innerRect))
+                { // sort by 'max'
+                    if (Event.current.button == 0) // left click, change sort by
+                    {
+                        if (Analyzer.SortBy == value) Analyzer.SortBy = DEFAULT_SORTBY;
+                        else Analyzer.SortBy = value;
+                    }
+                    else // middle / right
+                    {
+                        columns[(int)value] = !columns[(int)value];
+                    }
+                }
+
+                if (Analyzer.SortBy == value) Widgets.DrawHighlight(innerRect);
+
+                return;
+            }
+
+            var rect = inRect.LeftPartPixels(width);
+
+            Widgets.Label(rect, name);
+
+            if (Analyzer.SortBy == value) Widgets.DrawHighlight(rect);
+
+            if (Widgets.ButtonInvisible(rect))
+            { // sort by 'max'
+                if (Event.current.button == 0) // left click, change sort by
+                {
+                    if (Analyzer.SortBy == value) Analyzer.SortBy = DEFAULT_SORTBY;
+                    else Analyzer.SortBy = value;
+                }
+                else // middle / right
+                {
+                    columns[(int)value] = !columns[(int)value];
+                }
+            }
+            TooltipHandler.TipRegion(rect, desc);
+
+            if (value != SortBy.Name)
+            {
+                inRect.x += width;
+                inRect.width -= width;
+
+                Widgets.DrawLineVertical(inRect.x, rect.y, rect.height);
+            }
+        }
+
         private static void DrawLog(ProfileLog log, ref float currentListHeight)
         {
-            Rect visible = listing.GetRect(boxHeight);
+            Rect visible = listing.GetRect(BOX_HEIGHT);
 
             if (!visible.Overlaps(viewFrustum)) // if we don't overlap, continue, but continue to adjust for further logs.
             {
                 listing.GapLine(0f);
-                currentListHeight += (boxHeight + 4);
+                currentListHeight += (BOX_HEIGHT + 4);
 
                 return;
             }
@@ -80,7 +174,7 @@ namespace Analyzer
 
             Widgets.DrawHighlightIfMouseover(visible);
 
-            if (GUIController.CurrentProfiler.key == profile.key)
+            if (GUIController.CurrentProfiler?.key == profile.key)
                 Widgets.DrawHighlightSelected(visible);
 
             // onhover tooltip
@@ -93,28 +187,41 @@ namespace Analyzer
 
             // Colour a fillable bar below the log depending on the % fill of a log
 
-            if (log.average <= .25f) // 25% or less
+            if (log.percent <= .25f) // 25% or less
                 Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, ResourceCache.GUI.grey, ResourceCache.GUI.clear, false);
-            else if (log.average <= .75f) // between 25-75%
+            else if (log.percent <= .75f) // between 25-75%
                 Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, ResourceCache.GUI.blue, ResourceCache.GUI.clear, false);
             else // >= 75%
                 Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, ResourceCache.GUI.red, ResourceCache.GUI.clear, false);
 
+            Text.Anchor = TextAnchor.MiddleCenter;
 
-            // todo swap this value to things like average
-            string timeLabel = $" {log.max:0000}ms";
-            Widgets.Label(visible.LeftPartPixels(timeLabel.GetWidthCached()), timeLabel);
+            DrawColumnContents(ref visible, $" {log.max:0.000}ms ", SortBy.Max);
+            DrawColumnContents(ref visible, $" {log.average:0.000}ms ", SortBy.Average);
+            DrawColumnContents(ref visible, $" {log.percent * 100:0.0}% ", SortBy.Percent);
+            DrawColumnContents(ref visible, $" {log.total:0.000}ms ", SortBy.Total);
 
-            // Line all of our labels up
-            visible.x += labelOffset;
-            visible.width = float.MaxValue; // make sure we don't see log labels spill over multiple 'lines'
-
-            Widgets.Label(visible, log.label); // display our label
+            Text.Anchor = TextAnchor.MiddleLeft;
+            visible.width = float.MaxValue;
+            DrawColumnContents(ref visible, "    " + log.label, SortBy.Name);
 
             GUI.color = Color.white;
 
             listing.GapLine(0f);
-            currentListHeight += (boxHeight + 4);
+            currentListHeight += (BOX_HEIGHT + 4);
+        }
+
+        public static void DrawColumnContents(ref Rect rect, string str, SortBy value)
+        {
+            if (columns[(int)value])
+            {
+                Widgets.Label(value == SortBy.Name ? rect : rect.LeftPartPixels(NUMERIC_WIDTH), str);
+                rect.x += NUMERIC_WIDTH;
+            }
+            else
+            {
+                rect.x += ARBITRARY_CLOSED_OFFSET;
+            }
         }
 
         public static void DrawHover(ProfileLog log, Rect visible)
@@ -168,7 +275,7 @@ namespace Analyzer
             }
             else if (Event.current.button == 1) // right click
             {
-                if(log.meth == null) return; 
+                if (log.meth == null) return;
 
                 List<FloatMenuOption> options = RightClickDropDown(log.meth as MethodInfo).ToList();
                 Find.WindowStack.Add(new FloatMenu(options));

@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Analyzer
 {
-    [Entry("DoTabs", Category.Update)]
+    [Entry("DoTabs", Category.GUI)]
     [HarmonyPatch(typeof(InspectPaneUtility), "DoTabs")]
     internal class H_DoTabs
     {

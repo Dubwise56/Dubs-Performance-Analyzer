@@ -16,6 +16,7 @@ namespace Analyzer
 
         private static bool midUpdate = false;
         private static float deltaTime = 0.0f;
+        public static float updateFrequency { get; set; } = .05f;
 
         public static Dictionary<string, Profiler> Profiles => profiles;
 
@@ -26,7 +27,7 @@ namespace Analyzer
             if (Profiles.TryGetValue(key, out Profiler prof)) return prof.Start();
             else
             {
-                Profiles[key] = GetLabel == null ? new Profiler(key, GetLabel(), type, def, thing, meth)
+                Profiles[key] = GetLabel != null ? new Profiler(key, GetLabel(), type, def, thing, meth)
                                                  : new Profiler(key, key, type, def, thing, meth);
 
                 return Profiles[key].Start();
@@ -38,7 +39,7 @@ namespace Analyzer
                 prof.Stop();
         }
 
-        // Mostly here for book keeping, should be optimised out of a release build.
+        // Mostly here for book keeping, optimised out of a release build.
         [Conditional("DEBUG")]
         public static void BeginUpdate()
         {
@@ -55,10 +56,10 @@ namespace Analyzer
             Analyzer.UpdateCycle(); // Update all our profilers, record measurements
 
             deltaTime += Time.deltaTime;
-            if (deltaTime >= 1f)
+            if (deltaTime >= updateFrequency)
             {
                 Analyzer.FinishUpdateCycle(); // Process the information for all our profilers.
-                deltaTime -= 1f;
+                deltaTime -= updateFrequency;
             }
 #if DEBUG
             midUpdate = false;

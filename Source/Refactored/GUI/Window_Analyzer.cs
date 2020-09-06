@@ -17,9 +17,16 @@ namespace Analyzer
 
     public class Window_Analyzer : Window
     {
+        public override Vector2 InitialSize => new Vector2(890, 650);
         public static List<Action> QueuedMessages = new List<Action>();
         public static object messageSync = new object();
         public static bool firstOpen = true;
+
+        public override void SetInitialSizeAndPosition()
+        {
+            windowRect = new Rect(50f, (UI.screenHeight - InitialSize.y) / 2f, InitialSize.x, InitialSize.y);
+            windowRect = windowRect.Rounded();
+        }
 
         public override void PreOpen()
         {
@@ -67,7 +74,8 @@ namespace Analyzer
                     entry.type = entryType;
 
                     // Find and append Entry to the correct Tab
-                    GUIController.Tab(entry.category).entries.Add(entry, entryType);
+                    if (!GUIController.Tab(entry.category).entries.ContainsKey(entry))
+                        GUIController.Tab(entry.category).entries.Add(entry, entryType);
                 }
                 catch (Exception e)
                 {
@@ -78,7 +86,8 @@ namespace Analyzer
             // Loop through our static instances and add them to the Correct Tab
             foreach (Entry entry in Entry.entries)
             {
-                GUIController.Tab(entry.category).entries.Add(entry, entry.type);
+                if (!GUIController.Tab(entry.category).entries.ContainsKey(entry))
+                    GUIController.Tab(entry.category).entries.Add(entry, entry.type);
             }
 
         }
@@ -109,13 +118,22 @@ namespace Analyzer
 
             Panel_Tabs.Draw(inRect, tabs);
 
-            if(GUIController.GetCurrentTab.category == Category.Settings)
-            {
-                Panel_Settings.Draw(inRect);
-                return;
-            }
+            //if (GUIController.GetCurrentTab.category == Category.Settings)
+            //{
+            //    Panel_Settings.Draw(inRect);
+            //    return;
+            //}
+
+            inRect.x += Panel_Tabs.width;
+            inRect.width -= Panel_Tabs.width;
 
             Panel_TopRow.Draw(inRect.TopPartPixels(20f));
+
+            inRect.y += 20f;
+            inRect.height -= 20f;
+
+            Panel_Logs.DrawLogs(inRect);
+
             /*
              * Draw Tabs
              *      draw each entry which belongs to the side

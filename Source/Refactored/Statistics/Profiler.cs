@@ -85,22 +85,31 @@ namespace Analyzer
             hitCounter = 0;
         }
 
-        public double GetAverageTime(int entries)
+        public void GetAverageTime(int entries, out double average, out double max, out double total)
         {
+            total = 0;
+            average = 0;
+            max = times[currentIndex];
             // we traverse backwards through the array, so when we reach -1
             // we wrap around back to the end
-            int arrayIndex = currentIndex;
+            uint arrayIndex = (uint)currentIndex;
             int i = entries;
-            double sum = 0;
 
-            while(i-- > 0)
+            while(i >= 0)
             {
-                sum += times[arrayIndex];
-                arrayIndex--;
-                arrayIndex %= RECORDS_HELD;
+                var time = times[arrayIndex];
+
+                total += time;
+                if(time > max)
+                {
+                    max = time;
+                }
+
+                i--;
+                arrayIndex = (arrayIndex - 1) % RECORDS_HELD;
             }
 
-            return sum/(float)entries;
+            average = total/(float)entries;
         }
     }
 }

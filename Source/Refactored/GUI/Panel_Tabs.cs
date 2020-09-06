@@ -65,7 +65,7 @@ namespace Analyzer
 
             if (tab.Selected) Widgets.DrawOptionSelected(row);
 
-            if (tab.label == "Settings")
+            if (tab.category == Category.Settings)
             {
                 if (Widgets.ButtonInvisible(row)) tab.onClick();
             }
@@ -77,9 +77,9 @@ namespace Analyzer
                 if (Widgets.ButtonImage(row.RightPartPixels(row.height), tab.collapsed ? DubGUI.DropDown : DubGUI.FoldUp)) tab.collapsed = !tab.collapsed;
             }
             row.x += 5f;
-            Widgets.Label(row, tab.label);
+            Widgets.Label(row, tab.Label);
 
-            TooltipHandler.TipRegion(row, tab.tip);
+            TooltipHandler.TipRegion(row, tab.Tip);
 
             Text.Anchor = TextAnchor.MiddleLeft;
             Text.Font = GameFont.Tiny;

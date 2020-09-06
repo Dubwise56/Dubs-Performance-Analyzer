@@ -6,7 +6,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("UIRootOnGUI", Category.Update)]
+    [Entry("UIRootOnGUI", Category.GUI)]
     [HarmonyPatch(typeof(UIRoot_Play), nameof(UIRoot_Play.UIRootOnGUI))]
     internal class H_UIRootOnGUI
     {

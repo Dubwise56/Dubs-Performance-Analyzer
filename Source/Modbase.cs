@@ -23,7 +23,13 @@ namespace Analyzer
             Settings = GetSettings<Settings>();
 
             ModInfoCache.PopulateCache(Content.Name);
+
+            GUIController.InitialiseTabs();
+            
+            // GUI needs to be initialised before xml (the tabs need to exist for entries to be inserted into them)
             XmlParser.CollectXmlData();
+
+            Harmony.PatchAll();
         }
 
         public override void DoSettingsWindowContents(Rect inRect)

@@ -24,7 +24,7 @@ namespace Analyzer
 
             TooltipHandler.TipRegion(row, ResourceCache.Strings.top_pause_analyzer);
 
-            Rect searchbox = row.LeftPartPixels(row.width - 350f);
+            Rect searchbox = rect.LeftPartPixels(rect.width - 350f);
             searchbox.x += 25f;
             DubGUI.InputField(searchbox, ResourceCache.Strings.top_search, ref TimesFilter, DubGUI.MintSearch);
             row.x = searchbox.xMax + 5;
@@ -38,11 +38,11 @@ namespace Analyzer
 
             row.x = row.xMax + 5;
             row.width = 50f;
-            Widgets.Label(row, H_RootUpdate._fpsText);
+            Widgets.Label(row, "FPS: " + GUIElement_TPS.FPS.ToString());
             TooltipHandler.TipRegion(row, ResourceCache.Strings.top_fps_tip);
             row.x = row.xMax + 5;
             row.width = 90f;
-            Widgets.Label(row, H_RootUpdate.tps);
+            Widgets.Label(row, "TPS: " + GUIElement_TPS.TPS.ToString() + "(" + GUIElement_TPS.TPSTarget.ToString() + ")");
             TooltipHandler.TipRegion(row, ResourceCache.Strings.top_tps_tip);
             row.x = row.xMax + 5;
             row.width = 30f;

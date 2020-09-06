@@ -6,7 +6,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("Game Component", Category.Update)]
+    [Entry("Game Component", Category.GUI)]
     public static class H_GameComponentUpdateGUI
     {
         public static bool Active = false;

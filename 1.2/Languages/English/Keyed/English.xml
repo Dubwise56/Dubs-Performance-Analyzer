@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+	
+	<!--Tabs-->
+	<tab.settings>Settings</tab.settings>
+	<tab.tick>Tick</tab.tick>
+	<tab.update>Update</tab.update>
+	<tab.gui>GUI</tab.gui>
+	<tab.modder>Modder</tab.modder>
+	
+	<!--Tab Descriptions-->
+	<tab.settings.desc>Enable and disable optional settings which effect which information is displayed</tab.settings.desc>
+	<tab.tick.desc>Methods which are tick based</tab.tick.desc>
+	<tab.update.desc>Methods which are update based</tab.update.desc>
+	<tab.gui.desc>Methods which are run on gui</tab.gui.desc>
+	<tab.modder.desc>Methods which have been added by modders via Analyzer.xml</tab.modder.desc>
+	
+	<!--Settings-->
+	<settings.wiki>Analyzer Wiki</settings.wiki>
+	<settings.discord>Dubs Discord</settings.discord>
+	<settings>Settings</settings>
+	<settings.dnspy>Path to Dnspy (Including the Exe)</settings.dnspy>
+	
+	<!--Top Row-->
+	<top.pause.analyzer>Pause/Unpause profiling that the analyzer is done, this is not equivalent to unpatching</top.pause.analyzer>
+	<top.search>Search by name or time to filter which entries show</top.search>
+	<top.gc.tip>This will show a rough estimate of the memory consumed and thrown away at a given time</top.gc.tip>
+	<top.fps.tip>This will show your calculated frames per second</top.fps.tip>
+	<top.tps.tip>This will show your ticks per second, ticks are the metric the game uses to quantiy time passing, multiple ticks can happen per second, the game aims to reach 60tps at 1x</top.tps.tip>
+	
+	<!-- Logs -->
+	<logs.max>Max</logs.max>
+	<logs.av>Average</logs.av>
+	<logs.percent>Percent</logs.percent>
+	<logs.total>Total</logs.total>
+	<logs.name>Name</logs.name>
+
+	<logs.max.desc>Sort the rows by the maximum (MS) peak the method has reached</logs.max.desc>
+	<logs.av.desc>Sort the rows by the average (MS) the method is reaching</logs.av.desc>
+	<logs.percent.desc>Sort the rows by relative percent in the category</logs.percent.desc>
+	<logs.total.desc>Sort the rows by total (MS) impact</logs.total.desc>
+	<logs.name.desc>Sort the rows in alphabetical order</logs.name.desc>
+
+</LanguageData>

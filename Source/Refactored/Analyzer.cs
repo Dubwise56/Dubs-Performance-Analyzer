@@ -15,9 +15,14 @@ namespace Analyzer
 {
     public static class Analyzer
     {
-        private static int currentLogCount; // How many update cycles have passed since beginning profiling an entry?
+        private const int MAX_LOG_COUNT = 2000;
+        private static int currentLogCount = 0; // How many update cycles have passed since beginning profiling an entry?
         public static List<ProfileLog> logs = new List<ProfileLog>();
-        private static Comparer<ProfileLog> logComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.average < second.average ? 1 : -1);
+        private static Comparer<ProfileLog> maxComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.max < second.max ? 1 : -1);
+        private static Comparer<ProfileLog> averageComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.average < second.average ? 1 : -1);
+        private static Comparer<ProfileLog> percentComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.percent < second.percent ? 1 : -1);
+        private static Comparer<ProfileLog> totalComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.total < second.total ? 1 : -1);
+        private static Comparer<ProfileLog> nameComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => string.Compare(first.label, second.label));
 
         private static Thread logicThread; // Calculating stats for all active profilers (not the currently selected one)
         private static Thread patchingThread; // patching new methods, this prevents a stutter when patching mods
@@ -41,19 +46,37 @@ namespace Analyzer
         public static void BeginProfiling() => currentlyProfiling = true;
         public static void EndProfiling() => currentlyProfiling = false;
 
+        public static SortBy SortBy { get; set; } = SortBy.Percent;
+
         // Called every update period (tick / root update)
         internal static void UpdateCycle()
         {
             foreach (var profile in ProfileController.Profiles)
                 profile.Value.RecordMeasurement();
+
+            if (currentLogCount < MAX_LOG_COUNT)
+                currentLogCount++;
         }
 
         // Called a variadic amount depending on the user settings, but most likely every 60 ticks / 1 second
         internal static void FinishUpdateCycle()
         {
-            logicThread = new Thread(() => ProfileCalculations(new Dictionary<string, Profiler>(ProfileController.Profiles)));
-            logicThread.IsBackground = true;
-            logicThread.Start();
+            if (ProfileController.Profiles.Count != 0)
+            {
+                Comparer<ProfileLog> comparer = percentComparer;
+                switch (SortBy)
+                {
+                    case SortBy.Max: comparer = maxComparer; break;
+                    case SortBy.Average: comparer = averageComparer; break;
+                    case SortBy.Percent: comparer = percentComparer; break;
+                    case SortBy.Total: comparer = totalComparer; break;
+                    case SortBy.Name: comparer = nameComparer; break;
+                }
+
+                logicThread = new Thread(() => ProfileCalculations(new Dictionary<string, Profiler>(ProfileController.Profiles), currentLogCount, comparer));
+                logicThread.IsBackground = true;
+                logicThread.Start();
+            }
         }
 
         public static void PatchEntry(Entry entry)
@@ -84,7 +107,7 @@ namespace Analyzer
             cleanupThread.Start();
         }
 
-        private static void ProfileCalculations(Dictionary<string, Profiler> Profiles)
+        private static void ProfileCalculations(Dictionary<string, Profiler> Profiles, int currentLogCount, Comparer<ProfileLog> comparer)
         {
             List<ProfileLog> newLogs = new List<ProfileLog>(Profiles.Count);
 
@@ -92,8 +115,8 @@ namespace Analyzer
 
             foreach (var value in Profiles.Values)
             {
-                double average = value.GetAverageTime(Mathf.Min(Analyzer.GetCurrentLogCount, 2000));
-                newLogs.Add(new ProfileLog(value.label, string.Empty, average, (float)value.times.Max(), null, value.key, string.Empty, 0, value.type, value.meth));
+                value.GetAverageTime(Mathf.Min(currentLogCount, MAX_LOG_COUNT - 1), out var average, out var max, out var total);
+                newLogs.Add(new ProfileLog(value.label, string.Empty, average, (float)max, null, value.key, string.Empty, 0, (float)total, value.type, value.meth));
 
                 sumOfAverages += average;
             }
@@ -103,10 +126,10 @@ namespace Analyzer
             foreach (var log in newLogs)
             {
                 float adjustedAverage = (float)(log.average / sumOfAverages);
-                log.average = adjustedAverage;
-                log.averageString = adjustedAverage.ToStringPercent();
+                log.percent = adjustedAverage;
+                log.percentString = adjustedAverage.ToStringPercent();
 
-                BinaryInsertion(sortedLogs, log);
+                BinaryInsertion(sortedLogs, log, comparer);
             }
 
             // Swap our old logs with the new ones
@@ -118,9 +141,9 @@ namespace Analyzer
 
         // Assume the array is currently sorted
         // We are looking for a position to insert a new entry
-        private static void BinaryInsertion(List<ProfileLog> logs, ProfileLog value)
+        private static void BinaryInsertion(List<ProfileLog> logs, ProfileLog value, Comparer<ProfileLog> comparer)
         {
-            int index = Mathf.Abs(logs.BinarySearch(value, logComparer) + 1);
+            int index = Mathf.Abs(logs.BinarySearch(value, comparer) + 1);
 
             logs.Insert(index, value);
         }

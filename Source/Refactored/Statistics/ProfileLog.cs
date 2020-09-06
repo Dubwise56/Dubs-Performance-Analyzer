@@ -7,21 +7,22 @@ namespace Analyzer
 {
     public class ProfileLog
     {
-        public string averageString;
+        public float percent;
+        public string percentString;
         public double average;
         public string key;
         public string label;
         public string mod;
         public float max;
-        public float percent;
+        public float total;
         public Type type;
         public Def def;
         public MethodBase meth;
 
-        public ProfileLog(string label, string averageString, double average, float max, Def def, string key, string mod, float percent, Type type, MethodBase meth = null)
+        public ProfileLog(string label, string percentString, double average, float max, Def def, string key, string mod, float percent, float total, Type type, MethodBase meth = null)
         {
             this.label = label;
-            this.averageString = averageString;
+            this.percentString = percentString;
             this.average = average;
             this.def = def;
             this.key = key;
@@ -30,6 +31,7 @@ namespace Analyzer
             this.percent = percent;
             this.type = type;
             this.meth = meth;
+            this.total = total;
         }
     }
 }

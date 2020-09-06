@@ -31,6 +31,8 @@ namespace Analyzer
             DynamicTypeBuilder.methods.Add(name, methods);
 
             ConstructorBuilder ivCtor = tb.DefineConstructor(MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, new Type[0]);
+            
+            // default initialise active to false.
             ILGenerator ctorIL = ivCtor.GetILGenerator();
             ctorIL.Emit(OpCodes.Ldc_I4_0);
             ctorIL.Emit(OpCodes.Stsfld, active);
@@ -87,7 +89,8 @@ namespace Analyzer
             MethodInfo getDeclType = AccessTools.Method(typeof(MethodInfo), "get_DeclaringType");
             MethodInfo getName = AccessTools.Method(typeof(MethodInfo), "get_Name");
             MethodInfo format = AccessTools.Method(typeof(String), "Format", new Type[] { typeof(string), typeof(object), typeof(object) });
-            MethodInfo start = AccessTools.Method(typeof(Modbase), nameof(ProfileController.Start));
+            MethodInfo start = AccessTools.Method(typeof(ProfileController), nameof(ProfileController.Start));
+            MethodInfo currentlyPaused = AccessTools.PropertyGetter(typeof(Analyzer), nameof(Analyzer.CurrentlyPaused));
 
             MethodBuilder prefix = tb.DefineMethod(
                 "Prefix",
@@ -105,14 +108,14 @@ namespace Analyzer
             ILGenerator generator = prefix.GetILGenerator();
             Label skipLabel = generator.DefineLabel();
 
-            // if(Active && AnalyzerState.CurrentlyRunning)
+            // if(Active && !Analyzer.CurrentlyPaused)
             // { 
             //...
             generator.Emit(OpCodes.Ldsfld, active);
             generator.Emit(OpCodes.Brfalse_S, skipLabel);
 
-            generator.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(AnalyzerState), "CurrentlyRunning"));
-            generator.Emit(OpCodes.Brfalse_S, skipLabel);
+            generator.Emit(OpCodes.Callvirt, currentlyPaused);
+            generator.Emit(OpCodes.Brtrue_S, skipLabel);
 
             generator.Emit(OpCodes.Nop);
 
@@ -144,6 +147,7 @@ namespace Analyzer
         private static void CreatePostfix(TypeBuilder tb, FieldBuilder active)
         {
             MethodInfo end = AccessTools.Method(typeof(Profiler), "Stop");
+            MethodInfo currentlyPaused = AccessTools.PropertyGetter(typeof(Analyzer), nameof(Analyzer.CurrentlyPaused));
 
             MethodBuilder postfix = tb.DefineMethod(
             "Postfix",
@@ -159,8 +163,8 @@ namespace Analyzer
             generator.Emit(OpCodes.Ldsfld, active);
             generator.Emit(OpCodes.Brfalse_S, skipLabel);
 
-            generator.Emit(OpCodes.Ldsfld, AccessTools.Field(typeof(AnalyzerState), "CurrentlyRunning"));
-            generator.Emit(OpCodes.Brfalse_S, skipLabel);
+            generator.Emit(OpCodes.Callvirt, currentlyPaused);
+            generator.Emit(OpCodes.Brtrue_S, skipLabel);
 
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Call, end);

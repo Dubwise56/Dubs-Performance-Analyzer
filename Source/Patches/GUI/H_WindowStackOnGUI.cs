@@ -5,7 +5,7 @@ using Verse;
 
 namespace Analyzer
 {
-    [Entry("WindowStackOnGUI", Category.Update, "WindowPatchTipKey")]
+    [Entry("WindowStackOnGUI", Category.GUI, "WindowPatchTipKey")]
     [HarmonyPatch(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI))]
     internal class H_WindowStackOnGUI
     {

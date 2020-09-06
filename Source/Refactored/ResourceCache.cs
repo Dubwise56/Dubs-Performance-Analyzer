@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
 
-
 namespace Analyzer
 {
     public static class ResourceCache
@@ -57,6 +56,18 @@ namespace Analyzer
             public static string top_fps_tip => "top.fps.tip".TranslateSimple();
             public static string top_tps_tip => "top.tps.tip".TranslateSimple();
 
+            // Logs Row
+            public static string logs_max => "logs.max".TranslateSimple();
+            public static string logs_av => "logs.av".TranslateSimple();
+            public static string logs_percent => "logs.percent".TranslateSimple();
+            public static string logs_total => "logs.total".TranslateSimple();
+            public static string logs_name => "logs.name".TranslateSimple();
+
+            public static string logs_max_desc => "logs.max.desc".TranslateSimple();
+            public static string logs_av_desc => "logs.av.desc".TranslateSimple();
+            public static string logs_percent_desc => "logs.percent.desc".TranslateSimple();
+            public static string logs_total_desc => "logs.total.desc".TranslateSimple();
+            public static string logs_name_desc => "logs.name.desc".TranslateSimple();
         }
 
         [DefOf]

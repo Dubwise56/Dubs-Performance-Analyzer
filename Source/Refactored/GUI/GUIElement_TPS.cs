@@ -16,15 +16,20 @@ namespace Analyzer
         private static DateTime prevTime;
         private static int prevTicks;
         private static int tpsActual = 0;
+        private static int tpsTarget = 0;
         private static int prevFrames;
         private static int fpsActual = 0;
+
+        public static int TPS => tpsActual;
+        public static int TPSTarget => tpsTarget;
+        public static int FPS => fpsActual;
 
         [HarmonyPrefix]
         public static void Prefix(float leftX, float width, ref float curBaseY)
         {
 
             float trm = Find.TickManager.TickRateMultiplier;
-            int tpsTarget = (int)Math.Round((trm == 0f) ? 0f : (60f * trm));
+            tpsTarget = (int)Math.Round((trm == 0f) ? 0f : (60f * trm));
 
             if (prevTicks == -1)
             {

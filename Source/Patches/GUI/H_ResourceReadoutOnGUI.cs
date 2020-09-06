@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Analyzer
 {
-    [Entry("ResourceReadoutOnGUI", Category.Update)]
+    [Entry("ResourceReadoutOnGUI", Category.GUI)]
     [HarmonyPatch(typeof(ResourceReadout), nameof(ResourceReadout.ResourceReadoutOnGUI))]
     internal class H_ResourceReadoutOnGUI
     {
