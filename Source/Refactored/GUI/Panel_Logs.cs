@@ -85,9 +85,7 @@ namespace Analyzer
         {
             Widgets.DrawLineHorizontal(rect.x, rect.y + rect.height, rect.width);
             // [ Max ] [ Average ] [ Percent ] [ Total ] [ Name ] 
-            //
 
-            // For numerical columns we want to support " xxxx.xxxxms " (12 characters)
             DrawColumnHeader(ref rect, ResourceCache.Strings.logs_max, ResourceCache.Strings.logs_max_desc, SortBy.Max, NUMERIC_WIDTH);
             DrawColumnHeader(ref rect, ResourceCache.Strings.logs_av, ResourceCache.Strings.logs_av_desc, SortBy.Average, NUMERIC_WIDTH);
             DrawColumnHeader(ref rect, ResourceCache.Strings.logs_percent, ResourceCache.Strings.logs_percent_desc, SortBy.Percent, NUMERIC_WIDTH);
@@ -105,28 +103,9 @@ namespace Analyzer
 
             if (!columns[(int)value]) // If our column is currently collapsed
             {
-                var innerRect = inRect.LeftPartPixels(ARBITRARY_CLOSED_OFFSET);
-                inRect.x += ARBITRARY_CLOSED_OFFSET;
-                inRect.width -= ARBITRARY_CLOSED_OFFSET;
-
-                Widgets.DrawLineVertical(inRect.x, innerRect.y, innerRect.height);
-
-                if (Widgets.ButtonInvisible(innerRect))
-                { // sort by 'max'
-                    if (Event.current.button == 0) // left click, change sort by
-                    {
-                        if (Analyzer.SortBy == value) Analyzer.SortBy = DEFAULT_SORTBY;
-                        else Analyzer.SortBy = value;
-                    }
-                    else // middle / right
-                    {
-                        columns[(int)value] = !columns[(int)value];
-                    }
-                }
-
-                if (Analyzer.SortBy == value) Widgets.DrawHighlight(innerRect);
-
-                return;
+                if(value != SortBy.Name)
+                width = ARBITRARY_CLOSED_OFFSET;
+                name = "";
             }
 
             var rect = inRect.LeftPartPixels(width);
