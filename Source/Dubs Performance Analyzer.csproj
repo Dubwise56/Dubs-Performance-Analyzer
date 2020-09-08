@@ -43,7 +43,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Modbase.cs" />
+    <Compile Include="Refactored\Modbase.cs" />
     <Compile Include="Patches\Update\H_HarmonyTranspilers.cs" />
     <Compile Include="Refactored\Analyzer.cs" />
     <Compile Include="Refactored\GUI\Constructs\Entry.cs" />
@@ -58,7 +58,6 @@
     <Compile Include="Refactored\GUI\Panel_SideInfo.cs" />
     <Compile Include="Refactored\GUI\Window_ColorPicker.cs" />
     <Compile Include="Refactored\ModInfoCache.cs" />
-    <Compile Include="AnalyzerState.cs" />
     <Compile Include="GUI\Dialog_Analyzer.cs" />
     <Compile Include="GUI\Dialog_Graph.cs" />
     <Compile Include="GUI\Dialog_LogAdditional.cs" />
@@ -76,15 +75,15 @@
     <Compile Include="Patches\Update\H_RegenerateLayers.cs" />
     <Compile Include="Patches\Update\H_SectionLayer_Things.cs" />
     <Compile Include="Refactored\Utility\ListExtensions.cs" />
-    <Compile Include="Refactored\Utility\ModderDefined.cs" />
+    <Compile Include="Refactored\Utility\DynamicTypeBuilder.cs" />
     <Compile Include="Refactored\Statistics\Profiler.cs" />
     <Compile Include="Refactored\GUI\Constructs\Tab.cs" />
     <Compile Include="Refactored\Utility\Myers.cs" />
-    <Compile Include="StackTrace.cs" />
+    <Compile Include="Refactored\StackTrace.cs" />
     <Compile Include="GUI\LogStats.cs" />
-    <Compile Include="H_RootUpdate.cs" />
+    <Compile Include="Refactored\H_RootUpdate.cs" />
     <Compile Include="Refactored\MainButton_Toggle.cs" />
-    <Compile Include="Settings.cs" />
+    <Compile Include="Refactored\Settings.cs" />
     <Compile Include="GUI\TabStats.cs" />
     <Compile Include="Refactored\Statistics\ProfileLog.cs" />
     <Compile Include="Refactored\Utility\Utility.cs" />

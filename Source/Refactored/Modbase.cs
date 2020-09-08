@@ -17,6 +17,7 @@ namespace Analyzer
         public static Settings Settings;
         private static Harmony harmony = null;
         public static Harmony Harmony => harmony ??= new Harmony("Dubwise.DubsProfiler");
+        public static bool isPatched = true;
 
         public Modbase(ModContentPack content) : base(content)
         {

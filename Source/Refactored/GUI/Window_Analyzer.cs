@@ -39,6 +39,9 @@ namespace Analyzer
             }
 
             Analyzer.BeginProfiling();
+
+            if(!Modbase.isPatched)
+                Modbase.Harmony.PatchAll();
         }
 
         public override void PostClose()
@@ -109,6 +112,8 @@ namespace Analyzer
             preventCameraMotion = false;
             onlyOneOfTypeAllowed = true;
             resizeable = true;
+            closeOnCancel = false;
+            closeOnAccept = false;
         }
 
 
@@ -120,14 +125,14 @@ namespace Analyzer
 
             Panel_Tabs.Draw(inRect, tabs);
 
-            //if (GUIController.GetCurrentTab.category == Category.Settings)
-            //{
-            //    Panel_Settings.Draw(inRect);
-            //    return;
-            //}
-
             inRect.x += Panel_Tabs.width;
             inRect.width -= Panel_Tabs.width;
+
+            if (GUIController.GetCurrentCategory == Category.Settings)
+            {
+                Panel_Settings.Draw(inRect);
+                return;
+            }
 
             Panel_TopRow.Draw(inRect.TopPartPixels(20f));
 
@@ -135,7 +140,7 @@ namespace Analyzer
             inRect.height -= 20f;
 
             Panel_Logs.DrawLogs(inRect);
-            
+
             // now we need to draw our side panel && graph if applicable.
 
         }

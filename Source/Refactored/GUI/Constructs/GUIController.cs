@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,7 @@ namespace Analyzer
         private static Category currentCategory = Category.Settings;
 
         private static Dictionary<Category, Tab> tabs;
+        public static HashSet<string> types = new HashSet<string>();
 
         public static Profiler CurrentProfiler { get { return currentProfiler; } set { currentProfiler = value; } }
         public static Tab GetCurrentTab => currentTab;
@@ -25,6 +27,7 @@ namespace Analyzer
 
         public static IEnumerable<Tab> Tabs => tabs.Values;
         public static Tab Tab(Category cat) => tabs[cat];
+        public static Entry EntryByName(string name) => Tabs.Where(t => t.entries.Keys.Any(e => e.name == name)).First().entries.First(e => e.Key.name == name).Key;
 
         public static void InitialiseTabs()
         {
@@ -42,6 +45,23 @@ namespace Analyzer
             }
         }
 
+        public static void ClearEntries()
+        { 
+            foreach(var tab in tabs.Values)
+            {
+                foreach (var entry in tab.entries.Keys)
+                {
+                    if(entry.isClosable)
+                    {
+                        RemoveEntry(entry.name);
+                        continue;
+                    }
+                    entry.isPatched = false;
+                }
+            }
+        }
+        
+
         public static void SwapToEntry(string entryName)
         {
             if (currentEntry != null)
@@ -51,29 +71,41 @@ namespace Analyzer
                 Analyzer.RefreshLogCount();
             }
 
-            currentEntry = Tabs
-                .Where(t => t.entries.Keys
-                    .Any(e => e.name == entryName))
-                .First().entries
-                    .First(e => e.Key.name == entryName).Key;
+            currentEntry = EntryByName(entryName);
 
             if (!currentEntry.isPatched)
             {
                 currentEntry.PatchMethods();
             }
+
             currentEntry.SetActive(true);
+            currentCategory = currentEntry.category;
+            currentTab = Tab(currentCategory);
         }
 
-        public static void AddEntry(string name, string tabName, Category updateMode)
+        public static void AddEntry(string name, Category category)
         {
+            Type myType = null;
+            if (types.Contains(name))
+            {
+                myType = AccessTools.TypeByName(name);
+            }
+            else
+            {
+                myType = DynamicTypeBuilder.CreateType(name, null);
+                types.Add(name);
+            }
 
+            GUIController.Tab(category).entries.Add(Entry.Create(myType.Name, category, null, myType, true), myType);
         }
 
         public static void RemoveEntry(string name)
         {
+            var entry = EntryByName(name);
+            entry.isPatched = false;
+            entry.SetActive(false);
 
+            Tab(entry.category).entries.Remove(entry);
         }
-
-
     }
 }

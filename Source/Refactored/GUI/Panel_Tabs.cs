@@ -86,9 +86,9 @@ namespace Analyzer
 
             if (tab.collapsed) return;
 
-            foreach (KeyValuePair<Entry, Type> mode in tab.entries)
+            foreach (KeyValuePair<Entry, Type> entry in tab.entries)
             {
-                DrawEntry(ref row, mode);
+                DrawEntry(ref row, entry);
             }
         }
 
@@ -154,7 +154,7 @@ namespace Analyzer
                         if (DubGUI.Checkbox(row, keySetting.Value.name, ref cur))
                         {
                             keySetting.Key.SetValue(null, cur);
-                            // todo need to trigger some sort of update here to clear profiles.
+                            ProfileController.Profiles.Clear();
                         }
                     }
 

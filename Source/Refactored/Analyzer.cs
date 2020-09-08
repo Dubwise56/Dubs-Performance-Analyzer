@@ -48,10 +48,10 @@ namespace Analyzer
         public static SortBy SortBy { get; set; } = SortBy.Percent;
 
         public static void RefreshLogCount()
-        {   
+        {
             currentLogCount = 0;
             lock (LogicLock)
-            { 
+            {
                 logs.Clear();
             }
         }
@@ -169,7 +169,8 @@ namespace Analyzer
             for (int i = 0; i < 30; i++)
             {
                 Thread.Sleep(1000);
-                if (CurrentlyProfling)
+                // Reads and writes of the following data types are atomic: bool, char, byte, sbyte, short, ushort, uint, int, float, and reference types. as found in C# Language Spec.
+                if (currentlyProfiling) // atomic, doesn't need a lock
                     return;
             }
 
@@ -185,9 +186,17 @@ namespace Analyzer
             // clear all logs
             Analyzer.Logs.Clear();
 
+            // clear all temp entries
+            GUIController.ClearEntries();
+
             // call GC
             GC.Collect();
             GC.WaitForPendingFinalizers();
+
+            // atomic reads and writes.
+            Modbase.isPatched = false;
+
+            Log.Error("CLEANUP FINISHED");
         }
     }
 }

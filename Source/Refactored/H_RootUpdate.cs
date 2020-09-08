@@ -91,7 +91,8 @@ namespace Analyzer
                 ProfileController.Start("Game Update");
 
 #if DEBUG
-            ProfileController.BeginUpdate();
+            if (GUIController.GetCurrentCategory != Category.Tick)
+                ProfileController.BeginUpdate();
 #endif
         }
 

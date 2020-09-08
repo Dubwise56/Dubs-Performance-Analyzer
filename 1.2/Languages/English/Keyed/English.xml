@@ -20,6 +20,39 @@
 	<settings.discord>Dubs Discord</settings.discord>
 	<settings>Settings</settings>
 	<settings.dnspy>Path to Dnspy (Including the Exe)</settings.dnspy>
+
+	<ProfilePatchMethod>Profile</ProfilePatchMethod>
+    <input.method>Method</input.method>
+    <input.type>Methods in Type</input.type>
+    <input.methodharmony>Patches on a Method</input.methodharmony>
+    <input.typeharmony>Patches on a Type</input.typeharmony>
+    <input.methodinternal>Method Internals</input.methodinternal>
+    <input.assembly>Assembly</input.assembly>
+    <patch.type.tick>Tick</patch.type.tick>
+    <patch.type.update>Update</patch.type.update>
+    <patch>Patch!</patch>
+
+    <!-- Unpatching -->
+    <UnProfilePatchMethod>Remove Profiling (Unpatching)</UnProfilePatchMethod>
+    <input.unpatchmethod>Method</input.unpatchmethod>
+    <input.unpatchmethodsonmethod>Patches on a Method</input.unpatchmethodsonmethod>
+    <input.unpatchtype>Patches on a Type</input.unpatchtype>
+    <input.unpatchinternalmethod>Patches inside a Method</input.unpatchinternalmethod>
+    <input.unpatchall>All</input.unpatchall>
+
+    <unpatch>UnPatch!</unpatch>
+    <CustoMethProfPatch>Profile a method e.g. ResourceReadout:ResourceReadoutOnGUI</CustoMethProfPatch>
+    <CustoTickPatch>Custom Tick</CustoTickPatch>
+    <CustoUpdatePatch>Custom Update</CustoUpdatePatch>
+    <inputMethod>Profile a method</inputMethod>
+    <inputType>Profile all the methods in a type</inputType>
+    <inputMethodHarmony>Profile all the harmony patches of a method</inputMethodHarmony>
+    <inputTypeHarmony>Profile all the harmony patches effecting a type</inputTypeHarmony>
+    <TryCustoPatch>Try patch</TryCustoPatch>
+    <TryCustoUnPatch>Try unpatch</TryCustoUnPatch>
+    <CustoUnPatchMeth>Unpatch a Method</CustoUnPatchMeth>
+    <CustoUnPatchAllOnMeth>Unpatch the patches on a method</CustoUnPatchAllOnMeth>
+    <CustoUnPatchAll>Unpatch all profiler patches</CustoUnPatchAll>
 	
 	<!--Top Row-->
 	<top.pause.analyzer>Pause/Unpause profiling that the analyzer is done, this is not equivalent to unpatching</top.pause.analyzer>

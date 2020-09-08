@@ -498,6 +498,7 @@ namespace Analyzer
         {
             try
             {
+                GUIController.AddEntry(method.Name + "-int", Category.Update);
                 GUIController.SwapToEntry(method.Name + "-int");
 
                 InternalMethodUtility.curMeth = method;
@@ -569,7 +570,9 @@ namespace Analyzer
 
             if (assembly != null && assembly.Count() != 0)
             {
+                GUIController.AddEntry(mod.Name + "-prof", Category.Update);
                 GUIController.SwapToEntry(mod.Name + "-prof");
+
                 HarmonyMethod pre = new HarmonyMethod(AccessTools.TypeByName(mod.Name + "-prof").GetMethod("Prefix", BindingFlags.Public | BindingFlags.Static));
                 HarmonyMethod post = new HarmonyMethod(AccessTools.TypeByName(mod.Name + "-prof").GetMethod("Postfix", BindingFlags.Public | BindingFlags.Static));
 
