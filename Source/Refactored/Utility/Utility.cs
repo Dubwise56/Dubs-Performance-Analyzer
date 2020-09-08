@@ -36,7 +36,6 @@ namespace Analyzer
             UnpatchAllInternalMethods();
         }
 
-
         /*
          * Utility
          */
@@ -113,7 +112,7 @@ namespace Analyzer
 #if DEBUG
             Log.Error($"[Analyzer] Patching notification: {message}");
 #endif
-            if (displayMessages) return;
+            if (!displayMessages) return;
             lock (Window_Analyzer.messageSync)
             {
                 Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.PositiveEvent, false); });
@@ -124,7 +123,7 @@ namespace Analyzer
 #if DEBUG
             Log.Error($"[Analyzer] Patching warning occured: {message}");
 #endif
-            if (displayMessages) return;
+            if (!displayMessages) return;
             lock (Window_Analyzer.messageSync)
             {
                 Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.CautionInput, false); });
@@ -135,7 +134,7 @@ namespace Analyzer
 #if DEBUG
             Log.Error($"[Analyzer] Patching error occured: {message}");
 #endif
-            if (displayMessages)
+            if (!displayMessages)
                 lock (Window_Analyzer.messageSync)
                 {
                     Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.NegativeEvent, false); });

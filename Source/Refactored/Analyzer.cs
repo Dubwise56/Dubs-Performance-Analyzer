@@ -196,7 +196,9 @@ namespace Analyzer
             // atomic reads and writes.
             Modbase.isPatched = false;
 
-            Log.Error("CLEANUP FINISHED");
+#if DEBUG
+            Log.Message($"Finished state cleanup");
+#endif
         }
     }
 }

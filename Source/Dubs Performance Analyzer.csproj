@@ -60,7 +60,6 @@
     <Compile Include="Refactored\ModInfoCache.cs" />
     <Compile Include="GUI\Dialog_Analyzer.cs" />
     <Compile Include="GUI\Dialog_Graph.cs" />
-    <Compile Include="GUI\Dialog_LogAdditional.cs" />
     <Compile Include="GUI\DubGUI.cs" />
     <Compile Include="GUI\DubResources.cs" />
     <Compile Include="Refactored\Statistics\ProfileController.cs" />
@@ -80,14 +79,12 @@
     <Compile Include="Refactored\GUI\Constructs\Tab.cs" />
     <Compile Include="Refactored\Utility\Myers.cs" />
     <Compile Include="Refactored\StackTrace.cs" />
-    <Compile Include="GUI\LogStats.cs" />
+    <Compile Include="Refactored\Statistics\LogStats.cs" />
     <Compile Include="Refactored\H_RootUpdate.cs" />
     <Compile Include="Refactored\MainButton_Toggle.cs" />
     <Compile Include="Refactored\Settings.cs" />
-    <Compile Include="GUI\TabStats.cs" />
     <Compile Include="Refactored\Statistics\ProfileLog.cs" />
     <Compile Include="Refactored\Utility\Utility.cs" />
-    <Compile Include="GUI\ProfilerHistory.cs" />
     <Compile Include="Patches\Custom\CustomProfilers.cs" />
     <Compile Include="Patches\GUI\H_ColonistBarOnGUI.cs" />
     <Compile Include="Patches\Tick\H_DoSingleTick.cs" />

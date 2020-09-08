@@ -46,12 +46,12 @@ namespace Analyzer
         }
 
         public static void ClearEntries()
-        { 
-            foreach(var tab in tabs.Values)
+        {
+            foreach (var tab in tabs.Values)
             {
                 foreach (var entry in tab.entries.Keys)
                 {
-                    if(entry.isClosable)
+                    if (entry.isClosable)
                     {
                         RemoveEntry(entry.name);
                         continue;
@@ -60,7 +60,7 @@ namespace Analyzer
                 }
             }
         }
-        
+
 
         public static void SwapToEntry(string entryName)
         {
@@ -95,6 +95,10 @@ namespace Analyzer
                 myType = DynamicTypeBuilder.CreateType(name, null);
                 types.Add(name);
             }
+
+#if DEBUG
+            Log.Message($"Adding entry {name} into the category {category.ToString()}");
+#endif
 
             GUIController.Tab(category).entries.Add(Entry.Create(myType.Name, category, null, myType, true), myType);
         }
