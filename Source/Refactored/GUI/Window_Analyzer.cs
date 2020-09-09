@@ -40,7 +40,7 @@ namespace Analyzer
 
             Analyzer.BeginProfiling();
 
-            if(!Modbase.isPatched)
+            if (!Modbase.isPatched)
                 Modbase.Harmony.PatchAll();
         }
 
@@ -139,9 +139,24 @@ namespace Analyzer
             inRect.y += 20f;
             inRect.height -= 20f;
 
-            Panel_Logs.DrawLogs(inRect);
+            if (GUIController.CurrentProfiler != null)
+            {
+                inRect.height -= 230;
+                Panel_Logs.DrawLogs(inRect);
+
+                inRect.y += 220;
+                inRect.height += 10;
+                inRect = inRect.BottomPartPixels(220);
+                Panel_Graph.Draw(inRect);
+            }
+            else
+            {
+                Panel_Logs.DrawLogs(inRect);
+            }
+
 
             // now we need to draw our side panel && graph if applicable.
+
 
         }
     }

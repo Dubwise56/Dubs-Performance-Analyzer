@@ -248,8 +248,10 @@ namespace Analyzer
                 }
                 else
                 {
-                    // This is now the 'active' profile  
-                    GUIController.CurrentProfiler = profile;
+                    if(GUIController.CurrentProfiler == profile)
+                        GUIController.CurrentProfiler = null;
+                    else // This is now the 'active' profile  
+                        GUIController.CurrentProfiler = profile;
                 }
             }
             else if (Event.current.button == 1) // right click

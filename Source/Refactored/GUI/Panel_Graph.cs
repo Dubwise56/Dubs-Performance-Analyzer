@@ -20,7 +20,6 @@ namespace Analyzer
 
         private static double max;
         private static string MaxStr;
-        private static string totalBytesStr;
         public static int Entries = 0;
 
         public static void DisplayColorPicker(Rect rect, bool LineCol)
@@ -64,89 +63,91 @@ namespace Analyzer
 
         public static void Draw(Rect position)
         {
-            //ResetRange++;
-            //if (ResetRange >= 500)
-            //{
-            //    ResetRange = 0;
-            //    WindowMax = 0;
-            //}
+            ResetRange++;
+            if (ResetRange >= 500)
+            {
+                ResetRange = 0;
+                WindowMax = 0;
+            }
 
-            //Text.Font = GameFont.Small;
+            Text.Font = GameFont.Small;
 
-            //Profiler prof = GUIController.GetCurrentProfiler;
-            //if (prof == null || prof.times.Length <= 0) return;
+            Profiler prof = GUIController.CurrentProfiler;
+            if(prof == null) return;
 
-            //int entries = (prof.times.Length > entryCount) ? entryCount : prof.times.Length;
+            int entries = Mathf.Min(Analyzer.GetCurrentLogCount, entryCount);
 
-            //DrawSettings(position.TopPartPixels(30f).ContractedBy(2f), entries);
-            //position = position.BottomPartPixels(position.height - 30f);
 
-            //Widgets.DrawBoxSolid(position, Modbase.Settings.GraphCol);
+            DrawSettings(position.TopPartPixels(30f).ContractedBy(2f), entries);
+            position = position.BottomPartPixels(position.height - 30f);
 
-            //GUI.color = Color.grey;
-            //Widgets.DrawBox(position, 2);
-            //GUI.color = Color.white;
+            Widgets.DrawBoxSolid(position, Modbase.Settings.GraphCol);
 
-            //float gap = position.width / entries;
+            GUI.color = Color.grey;
+            Widgets.DrawBox(position, 2);
+            GUI.color = Color.white;
 
-            //GUI.BeginGroup(position);
-            //position = position.AtZero();
+            float gap = position.width / entries;
 
-            //double LastMax = max;
-            //max = prof.times[0];
+            GUI.BeginGroup(position);
+            {
+                position = position.AtZero();
 
-            //for (int i = 1; i < entries; i++)
-            //{
-            //    double entry = prof.times[i];
+                double LastMax = max;
+                max = Analyzer.Logs.First(log => log.key == prof.key).max;
 
-            //    if (entry > max) max = entry;
-            //}
+                if (max > WindowMax)
+                    WindowMax = (float)max;
 
-            //if (max > WindowMax)
-            //    WindowMax = (float)max;
+                Vector2 last = new Vector2();
 
-            //Vector2 last = new Vector2();
+                int counter = entries;
+                uint profIndex = prof.currentIndex;
 
-            //for (int i = 0; i < entries; i++)
-            //{
-            //    float entry = (float)prof.times[i];
-            //    float y = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, entry);
+                // because its a circular buffer this becomes slightly awkward.
+                while (counter > 0)
+                {
+                    var adjIndex = entries - counter;
+                    var entry = (float)prof.times[profIndex];
+                    var y = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, entry);
+                    Vector2 screenPoint = new Vector2(position.xMax - (gap * adjIndex), y);
 
-            //    Vector2 screenPoint = new Vector2(position.xMax - (gap * i), y);
+                    if (adjIndex != 0)
+                    {
+                        Widgets.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f);
 
-            //    if (i != 0)
-            //    {
-            //        Widgets.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f);
+                        Rect relevantArea = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
+                        if (Mouse.IsOver(relevantArea))
+                        {
+                            if (adjIndex != hoverVal)
+                            {
+                                hoverVal = adjIndex;
+                                hoverValStr = $"{entry:0.00000}ms {prof.hits[profIndex]} calls";
+                            }
+                            SimpleCurveDrawer.DrawPoint(screenPoint);
+                        }
+                    }
 
-            //        Rect relevantArea = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
-            //        if (Mouse.IsOver(relevantArea))
-            //        {
-            //            //DoHover = true;
-            //            if (i != hoverVal)
-            //            {
-            //                hoverVal = i;
-            //                hoverValStr = $"{entry:0.00000}ms {prof.hits[i]} calls";
-            //            }
-            //            SimpleCurveDrawer.DrawPoint(screenPoint);
-            //        }
-            //    }
 
-            //    last = screenPoint;
-            //}
+                    last = screenPoint;
 
-            //if (LastMax != max) MaxStr = $" Max: {max:0.0000}ms";
+                    counter--;
+                    profIndex = (profIndex - 1) % Profiler.RECORDS_HELD;
+                }
 
-            //float LogMaxY = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)max);
-            //Rect crunt = position;
-            //crunt.y = LogMaxY;
-            //Widgets.Label(crunt, MaxStr);
-            //Widgets.DrawLine(new Vector2(position.x, LogMaxY), new Vector2(position.xMax, LogMaxY), Color.red, 1f);
+                if (LastMax != max) MaxStr = $" Max: {max:0.0000}ms";
 
-            //last = Vector2.zero;
+                float LogMaxY = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)max);
+                Rect crunt = position;
+                crunt.y = LogMaxY;
+                Widgets.Label(crunt, MaxStr);
+                Widgets.DrawLine(new Vector2(position.x, LogMaxY), new Vector2(position.xMax, LogMaxY), Color.red, 1f);
 
-            //GUI.EndGroup();
+                last = Vector2.zero;
+            }
+            GUI.EndGroup();
 
-            //Entries = entries;
+            Entries = entries;
         }
     }
 }

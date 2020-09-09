@@ -197,7 +197,7 @@ namespace Analyzer
     }
 
 
-    [Entry("TickThing", Category.Update, "LogTipThingTickByClass")]
+    [Entry("TickThing", Category.Tick, "LogTipThingTickByClass")]
     [HarmonyPatch(typeof(TickList), nameof(TickList.Tick))]
     internal class H_TickListTick
     {

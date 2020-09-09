@@ -24,7 +24,7 @@ namespace Analyzer
 
         public readonly double[] times;
         public readonly int[] hits;
-        public int currentIndex = 0; // ring buffer tracking
+        public uint currentIndex = 0; // ring buffer tracking
 
         public Profiler(string key, string label, Type type, Def def, Thing thing, MethodBase meth)
         {
@@ -66,7 +66,9 @@ namespace Analyzer
 
         public void RecordMeasurement()
         {
+#if DEBUG
             if (stopwatch.IsRunning) Log.Error($"[Analyzer] Profile {key} was still running when recorded");
+#endif
 
             times[currentIndex] = stopwatch.Elapsed.TotalMilliseconds;
             hits[currentIndex] = hitCounter;
@@ -85,7 +87,7 @@ namespace Analyzer
             max = times[currentIndex];
             // we traverse backwards through the array, so when we reach -1
             // we wrap around back to the end
-            uint arrayIndex = (uint)currentIndex;
+            uint arrayIndex = currentIndex;
             int i = entries;
 
             while (i >= 0)

@@ -1,10 +1,14 @@
 ﻿using HarmonyLib;
+using RimWorld.IO;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using Verse;
@@ -26,7 +30,7 @@ namespace Analyzer
                 catch { }
             }
 
-            return b1.operand == b1.operand;
+            return b1.operand == b2.operand;
         }
 
         public override int GetHashCode(CodeInstruction obj)
@@ -43,27 +47,26 @@ namespace Analyzer
         public static Dictionary<string, MethodInfo> MethodInfos = new Dictionary<string, MethodInfo>();
         public static CodeInstMethEqual methComparer = new CodeInstMethEqual();
 
+        public static List<Thread> transpilerThreads = new List<Thread>();
+
+        public static object PatchedMethsSync = new object();
+
         public static void ProfilePatch()
         {
             HarmonyMethod trans = new HarmonyMethod(typeof(H_HarmonyTranspilers), nameof(Transpiler));
 
-            List<MethodBase> patches = Harmony.GetAllPatchedMethods().ToList();
+            List<MethodBase> patches = Harmony.GetAllPatchedMethods().Where(meth => Harmony.GetPatchInfo(meth).Transpilers?.Any(p => p.owner != Modbase.Harmony.Id && !PatchedMeths.Contains(meth)) ?? false).ToList();
+
             foreach (MethodBase method in patches)
             {
                 try
-                {
-                    var transpilers = Harmony.GetPatchInfo(method).Transpilers;
-                    if (!transpilers.NullOrEmpty())
-                    {
-                        if (transpilers.Any(x => x.owner != Modbase.Harmony.Id) && !PatchedMeths.Contains(method))
-                        {
-                            PatchedMeths.Add(method);
-                            Modbase.Harmony.Patch(method, transpiler: trans);
-                        }
-                    }
+                { 
+                    PatchedMeths.Add(method);
+                    Modbase.Harmony.Patch(method, transpiler: trans);
                 }
                 catch { }
             }
+
         }
 
         [HarmonyPriority(Priority.Last)]

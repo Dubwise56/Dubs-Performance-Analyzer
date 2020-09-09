@@ -69,6 +69,7 @@ namespace Analyzer
                 currentEntry.SetActive(false);
                 ProfileController.Profiles.Clear();
                 Analyzer.RefreshLogCount();
+                currentProfiler = null;
             }
 
             currentEntry = EntryByName(entryName);

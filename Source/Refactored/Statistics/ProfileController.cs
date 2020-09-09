@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -14,12 +15,15 @@ namespace Analyzer
     {
         public static Dictionary<string, Profiler> profiles = new Dictionary<string, Profiler>();
 
+#if DEBUG
         private static bool midUpdate = false;
+#endif
         private static float deltaTime = 0.0f;
-        public static float updateFrequency { get; set; } = .05f;
+        public static float updateFrequency { get; set; } = .5f;
 
         public static Dictionary<string, Profiler> Profiles => profiles;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Profiler Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodBase meth = null)
         {
             if (!Analyzer.CurrentlyProfling) return null;

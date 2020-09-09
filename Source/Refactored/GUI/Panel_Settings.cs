@@ -289,6 +289,8 @@ namespace Analyzer
                 {
                     if (searchText.Length <= 4) return;
 
+                    searchText = searchText.ToLower();
+
                     lock (sync)
                     {
                         curSearching = true;
@@ -298,13 +300,13 @@ namespace Analyzer
 
                     foreach (Type type in GenTypes.AllTypes)
                     {
-                        if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null && !type.FullName.Contains("DubsAnalyzer"))
+                        if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null && !type.FullName.Contains("Analyzer"))
                         {
                             foreach (MethodInfo meth in type.GetMethods())
                             {
                                 if (meth.DeclaringType == type && !meth.IsSpecialName && !meth.IsAssembly && meth.HasMethodBody())
                                 {
-                                    string str = string.Concat(meth.DeclaringType, ":", meth.Name);
+                                    string str = string.Concat(meth.DeclaringType, ":", meth.Name).ToLower();
                                     if (str.Contains(searchText))
                                         names.Add(str);
                                 }
@@ -324,6 +326,8 @@ namespace Analyzer
                 {
                     if (searchText.Length <= 2) return;
 
+                    searchText = searchText.ToLower();
+
                     lock (sync)
                     {
                         curSearching = true;
@@ -334,7 +338,7 @@ namespace Analyzer
                     {
                         if (type.GetCustomAttribute<CompilerGeneratedAttribute>() == null)
                         {
-                            if (type.FullName.Contains(searchText) && !type.FullName.Contains("Analyzer"))
+                            if (type.FullName.ToLower().Contains(searchText) && !type.FullName.Contains("Analyzer"))
                                 names.Add(type.FullName);
                         }
                     }
