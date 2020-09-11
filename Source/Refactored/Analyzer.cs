@@ -27,7 +27,6 @@ namespace Analyzer
         private static Comparer<ProfileLog> callsComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.calls < second.calls ? 1 : -1);
         private static Comparer<ProfileLog> nameComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => string.Compare(first.label, second.label));
 
-        private static Thread logicThread; // Calculating stats for all active profilers (not the currently selected one)
         private static Thread cleanupThread; // 'cleanup' - Removing patches, getting rid of cached methods (already patched), clearing temporary entries
 
         private static object patchingSync = new object();
@@ -68,7 +67,8 @@ namespace Analyzer
                 currentLogCount++;
         }
 
-        // Called a variadic amount depending on the user settings, but most likely every 60 ticks / .5 second
+        // Called a variadic amount depending on the user settings
+        // Calculates stats for all active profilers (not the currently selected one)
         internal static void FinishUpdateCycle()
         {
             if (ProfileController.Profiles.Count != 0)
@@ -84,9 +84,7 @@ namespace Analyzer
                     case SortBy.Name: comparer = nameComparer; break;
                 }
 
-                logicThread = new Thread(() => ProfileCalculations(new Dictionary<string, Profiler>(ProfileController.Profiles), currentLogCount, comparer));
-                logicThread.IsBackground = true;
-                logicThread.Start();
+                Task.Factory.StartNew(() => ProfileCalculations(new Dictionary<string, Profiler>(ProfileController.Profiles), currentLogCount, comparer));
             }
         }
 
@@ -120,14 +118,18 @@ namespace Analyzer
             cleanupThread.Start();
         }
 
+        // n = count of profiles
+        // m = number of logs
+        // o(n*m + n*log(n)); - Could maybe thread this some more, to push higher update speeds
         private static void ProfileCalculations(Dictionary<string, Profiler> Profiles, int currentLogCount, Comparer<ProfileLog> comparer)
         {
             List<ProfileLog> newLogs = new List<ProfileLog>(Profiles.Count);
 
             double sumOfAverages = 0;
 
-            foreach (var value in Profiles.Values)
+            foreach (var value in Profiles.Values) // o(n)
             {
+                // o(m)
                 value.CollectStatistics(Mathf.Min(currentLogCount, MAX_LOG_COUNT - 1), out var average, out var max, out var total, out var calls);
                 newLogs.Add(new ProfileLog(value.label, string.Empty, average, (float)max, null, value.key, string.Empty, 0, (float)total, calls, value.type, value.meth));
 
@@ -136,12 +138,13 @@ namespace Analyzer
 
             List<ProfileLog> sortedLogs = new List<ProfileLog>(newLogs.Count);
 
-            foreach (var log in newLogs)
+            foreach (var log in newLogs) // o(n)
             {
                 float adjustedAverage = (float)(log.average / sumOfAverages);
                 log.percent = adjustedAverage;
                 log.percentString = adjustedAverage.ToStringPercent();
 
+                // o(logn)
                 BinaryInsertion(sortedLogs, log, comparer);
             }
 
