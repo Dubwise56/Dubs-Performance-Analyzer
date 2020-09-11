@@ -75,18 +75,6 @@ namespace Analyzer
             }
         }
 
-        private static void LogMethod(MethodInfo info)
-        {
-            Log.Message($"{info.Name} with the return type {info.ReturnType.Name}");
-
-            Log.Message("Params");
-            foreach (ParameterInfo param in info.GetParameters())
-            {
-                Log.Message($"Parameter: {param.Position} of the type: {param.ParameterType.Name} named: {param.Name}");
-            }
-        }
-
-
         private static void CreatePrefix(TypeBuilder tb, FieldBuilder active)
         {
             MethodInfo getDeclType = AccessTools.Method(typeof(MethodInfo), "get_DeclaringType");

@@ -62,7 +62,8 @@ namespace Analyzer
         {
             listing.Label(ResourceCache.Strings.settings_heading);
             DubGUI.InputField(listing.GetRect(Text.LineHeight), ResourceCache.Strings.settings_dnspy, ref Settings.PathToDnspy, ShowName: true);
-
+            DubGUI.LabeledSliderFloat(listing, ResourceCache.Strings.settings_updates_per_second, ref Settings.updatesPerSecond, 1.0f, 20.0f);
+            DubGUI.Checkbox(ResourceCache.Strings.settings_logging, listing, ref Settings.verboseLogging);
             listing.GapLine();
 
             DrawOptions(listing);
@@ -371,7 +372,7 @@ namespace Analyzer
 
                 public static void DrawSearchBar(Rect rect)
                 {
-                    rect.y += Text.LineHeight * 6.5f;
+                    rect.y += Text.LineHeight * 9.5f; // todo don't hardcore this :facepalm:
 
                     if (!rect.ExpandedBy(10f).Contains(Event.current.mousePosition)) return;
 

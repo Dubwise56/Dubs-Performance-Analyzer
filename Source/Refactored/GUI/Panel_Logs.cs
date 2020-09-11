@@ -103,8 +103,8 @@ namespace Analyzer
 
             if (!columns[(int)value]) // If our column is currently collapsed
             {
-                if(value != SortBy.Name)
-                width = ARBITRARY_CLOSED_OFFSET;
+                if (value != SortBy.Name)
+                    width = ARBITRARY_CLOSED_OFFSET;
                 name = "";
             }
 
@@ -121,7 +121,7 @@ namespace Analyzer
                     if (Analyzer.SortBy == value) Analyzer.SortBy = DEFAULT_SORTBY;
                     else Analyzer.SortBy = value;
                 }
-                else // middle / right
+                else // middle / right, close the tab
                 {
                     columns[(int)value] = !columns[(int)value];
                 }
@@ -130,8 +130,7 @@ namespace Analyzer
 
             if (value != SortBy.Name)
             {
-                inRect.x += width;
-                inRect.width -= width;
+                inRect.AdjustHorizonallyBy(width);
 
                 Widgets.DrawLineVertical(inRect.x, rect.y, rect.height);
             }
@@ -165,13 +164,12 @@ namespace Analyzer
                 ClickWork(log, profile);
 
             // Colour a fillable bar below the log depending on the % fill of a log
+            var colour = ResourceCache.GUI.grey;
+            if (log.percent <= .25f) colour = ResourceCache.GUI.grey; // <= 25%
+            else if (log.percent <= .75f) colour = ResourceCache.GUI.blue; //  25% < x <=75%
+            else if (log.percent <= .999) colour = ResourceCache.GUI.red; // 75% < x <= 99.99% (we want 100% to be grey)
 
-            if (log.percent <= .25f) // 25% or less
-                Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, ResourceCache.GUI.grey, ResourceCache.GUI.clear, false);
-            else if (log.percent <= .75f) // between 25-75%
-                Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, ResourceCache.GUI.blue, ResourceCache.GUI.clear, false);
-            else // >= 75%
-                Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, ResourceCache.GUI.red, ResourceCache.GUI.clear, false);
+            Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, colour, ResourceCache.GUI.clear, false);
 
             Text.Anchor = TextAnchor.MiddleCenter;
 
@@ -248,7 +246,7 @@ namespace Analyzer
                 }
                 else
                 {
-                    if(GUIController.CurrentProfiler == profile)
+                    if (GUIController.CurrentProfiler == profile)
                         GUIController.CurrentProfiler = null;
                     else // This is now the 'active' profile  
                         GUIController.CurrentProfiler = profile;
@@ -258,14 +256,16 @@ namespace Analyzer
             {
                 if (log.meth == null) return;
 
-                List<FloatMenuOption> options = RightClickDropDown(log.meth as MethodInfo).ToList();
+                List<FloatMenuOption> options = RightClickDropDown(log).ToList();
                 Find.WindowStack.Add(new FloatMenu(options));
             }
         }
 
-        private static IEnumerable<FloatMenuOption> RightClickDropDown(MethodInfo meth)
+        private static IEnumerable<FloatMenuOption> RightClickDropDown(ProfileLog log)
         {
-            if (GUIController.CurrentProfiler.label.Contains("Harmony")) // we can return an 'unpatch'
+            var meth = log.meth as MethodInfo;
+
+            if (GUIController.CurrentEntry.name.Contains("Harmony")) // we can return an 'unpatch' for methods in a harmony tab
                 yield return new FloatMenuOption("Unpatch Method", () => Utility.UnpatchMethod(meth));
 
             yield return new FloatMenuOption("Unpatch methods that patch", () => Utility.UnpatchMethodsOnMethod(meth));

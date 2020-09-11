@@ -19,7 +19,7 @@ namespace Analyzer
         private static bool midUpdate = false;
 #endif
         private static float deltaTime = 0.0f;
-        public static float updateFrequency { get; set; } = .5f;
+        public static float updateFrequency => 1/Settings.updatesPerSecond; // how many ms per update (capped at every 0.05ms)
 
         public static Dictionary<string, Profiler> Profiles => profiles;
 
@@ -50,7 +50,7 @@ namespace Analyzer
 #if DEBUG
             if (!Analyzer.CurrentlyProfling) return;
 
-            if (midUpdate) Log.Error("[Analyzer] Attempting to begin new update cycle when the previous update has not ended");
+            if (midUpdate) ThreadSafeLogger.Error("[Analyzer] Attempting to begin new update cycle when the previous update has not ended");
             midUpdate = true;
 #endif
         }

@@ -20,6 +20,8 @@
 	<settings.discord>Dubs Discord</settings.discord>
 	<settings>Settings</settings>
 	<settings.dnspy>Path to Dnspy (Including the Exe)</settings.dnspy>
+	<settings.ups>Stat updates per second</settings.ups>
+	<settings.logging>Verbose Logging</settings.logging>
 
 	<ProfilePatchMethod>Profile</ProfilePatchMethod>
     <input.method>Method</input.method>

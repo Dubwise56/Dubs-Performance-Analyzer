@@ -153,6 +153,36 @@ namespace Analyzer
             return valkilmer;
         }
 
+        public static void LabeledSliderFloat(Listing_Standard listing, string label, ref float value, float min, float max, bool percent = false)
+        {
+
+            var anchor = Text.Anchor;
+            var font = Text.Font;
+            Text.Anchor = TextAnchor.MiddleCenter;
+            Text.Font = GameFont.Small;
+
+            var rect = listing.GetRect(Text.LineHeight);
+            if (percent) Widgets.Label(rect, $"{label}: {value * 100}%");
+            else Widgets.Label(rect, $"{label}: {value:0.00}");
+            rect = listing.GetRect(Text.LineHeight);
+
+            var minWidth = min.ToString().GetWidthCached();
+            var maxWidth = max.ToString().GetWidthCached();
+
+            Widgets.Label(rect.LeftPartPixels(minWidth), min.ToString());
+            Widgets.Label(rect.RightPartPixels(maxWidth), max.ToString());
+
+            rect.x += minWidth + 5;
+            rect.width -= minWidth + 5;
+
+            value = Widgets.HorizontalSlider(rect.LeftPartPixels(rect.width - (maxWidth + 5)), value, min, max, roundTo: 0.05f);
+
+            Text.Font = font;
+            Text.Anchor = anchor;
+
+            listing.Gap(listing.verticalSpacing);
+        }
+
 
         public static bool Checkbox(Rect rect, string s, ref bool checkOn)
         {

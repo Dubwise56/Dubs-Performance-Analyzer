@@ -54,7 +54,7 @@ namespace Analyzer
                     if (entry.isClosable)
                     {
                         RemoveEntry(entry.name);
-                        continue;
+                        continue; // already set to unpatched + inactive here
                     }
                     entry.isPatched = false;
                 }
@@ -98,7 +98,7 @@ namespace Analyzer
             }
 
 #if DEBUG
-            Log.Message($"Adding entry {name} into the category {category.ToString()}");
+            ThreadSafeLogger.Message($"Adding entry {name} into the category {category.ToString()}");
 #endif
 
             GUIController.Tab(category).entries.Add(Entry.Create(myType.Name, category, null, myType, true), myType);

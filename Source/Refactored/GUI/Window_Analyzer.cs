@@ -18,8 +18,6 @@ namespace Analyzer
     public class Window_Analyzer : Window
     {
         public override Vector2 InitialSize => new Vector2(890, 650);
-        public static List<Action> QueuedMessages = new List<Action>();
-        public static object messageSync = new object();
         public static bool firstOpen = true;
 
         public override void SetInitialSizeAndPosition()
@@ -119,14 +117,14 @@ namespace Analyzer
 
         public override void DoWindowContents(Rect inRect)
         {
+            // Display our logged messages :)
+            ThreadSafeLogger.DisplayLogs();
+
             var tabs = GUIController.Tabs;
-            var currentProfiles = ProfileController.Profiles.Values;
-            var currentlySelectedProfiler = GUIController.CurrentProfiler;
 
             Panel_Tabs.Draw(inRect, tabs);
 
-            inRect.x += Panel_Tabs.width;
-            inRect.width -= Panel_Tabs.width;
+            inRect.AdjustHorizonallyBy(Panel_Tabs.width);
 
             if (GUIController.GetCurrentCategory == Category.Settings)
             {
@@ -136,8 +134,7 @@ namespace Analyzer
 
             Panel_TopRow.Draw(inRect.TopPartPixels(20f));
 
-            inRect.y += 20f;
-            inRect.height -= 20f;
+            inRect.AdjustVerticallyBy(20f);
 
             if (GUIController.CurrentProfiler != null)
             {
@@ -153,10 +150,6 @@ namespace Analyzer
             {
                 Panel_Logs.DrawLogs(inRect);
             }
-
-
-            // now we need to draw our side panel && graph if applicable.
-
 
         }
     }

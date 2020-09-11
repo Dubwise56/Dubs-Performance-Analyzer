@@ -20,7 +20,7 @@ namespace Analyzer
         private static Thread patchAssemblyThread = null;
         private static Thread patchTypeThread = null;
 
-        public static bool displayMessages = false;
+        public static bool displayMessages => Settings.verboseLogging;
 
 
         public static void ClearPatchedCaches()
@@ -110,35 +110,32 @@ namespace Analyzer
         private static void Notify(string message)
         {
 #if DEBUG
-            Log.Error($"[Analyzer] Patching notification: {message}");
+            ThreadSafeLogger.Error($"[Analyzer] Patching notification: {message}");
 #endif
+#if NDEBUG
             if (!displayMessages) return;
-            lock (Window_Analyzer.messageSync)
-            {
-                Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.PositiveEvent, false); });
-            }
+            ThreadSafeLogger.Message($"[Analyzer] Patching notification: {message}");
+#endif
         }
         private static void Warn(string message)
         {
 #if DEBUG
-            Log.Error($"[Analyzer] Patching warning occured: {message}");
+            ThreadSafeLogger.Error($"[Analyzer] Patching warning occured: {message}");
 #endif
+#if NDEBUG
             if (!displayMessages) return;
-            lock (Window_Analyzer.messageSync)
-            {
-                Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.CautionInput, false); });
-            }
+            ThreadSafeLogger.Warning($"[Analyzer] Patching notification: {message}");
+#endif
         }
         private static void Error(string message)
         {
 #if DEBUG
-            Log.Error($"[Analyzer] Patching error occured: {message}");
+            ThreadSafeLogger.Error($"[Analyzer] Patching error occured: {message}");
 #endif
-            if (!displayMessages)
-                lock (Window_Analyzer.messageSync)
-                {
-                    Window_Analyzer.QueuedMessages.Add(delegate { Messages.Message(message, MessageTypeDefOf.NegativeEvent, false); });
-                }
+#if NDEBUG
+            if (!displayMessages) return;
+            ThreadSafeLogger.Error($"[Analyzer] Patching error occured: {message}");
+#endif
         }
 
         // returns false is the method is invalid
@@ -268,18 +265,13 @@ namespace Analyzer
             foreach (MethodBase methodBase in Harmony.GetAllPatchedMethods())
             {
                 Patches infos = Harmony.GetPatchInfo(methodBase);
-                foreach (Patch infosPrefix in infos.Prefixes)
+
+                var allPatches = infos.Prefixes.Concat(infos.Postfixes, infos.Transpilers, infos.Finalizers);
+
+                foreach(var patch in allPatches)
                 {
-                    if (infosPrefix.PatchMethod == method)
-                    {
-                        Modbase.Harmony.Unpatch(methodBase, method);
-                        return;
-                    }
-                }
-                foreach (Patch infosPostfixesx in infos.Postfixes)
-                {
-                    if (infosPostfixesx.PatchMethod == method)
-                    {
+                    if(patch.PatchMethod == method)
+                    { 
                         Modbase.Harmony.Unpatch(methodBase, method);
                         return;
                     }

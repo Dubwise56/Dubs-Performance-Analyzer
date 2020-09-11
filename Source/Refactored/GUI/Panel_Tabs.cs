@@ -39,10 +39,10 @@ namespace Analyzer
                 listing.Begin(baseRect);
 
                 foreach (Tab tab in tabs)
-                { 
+                {
                     if (tab.category == Category.Modder && tab.entries.Count == 0) // if the modder tab is empty, no need to draw it
                         continue;
-                    
+
                     DrawTabs(tab);
                 }
 
@@ -112,16 +112,13 @@ namespace Analyzer
 
             if (entry.Key.isClosable)
             {
-                if (Input.GetMouseButtonDown(1)) // mouse button right
+                if (Input.GetMouseButtonDown(1) && row.Contains(Event.current.mousePosition))
                 {
-                    if (row.Contains(Event.current.mousePosition))
-                    {
-                        List<FloatMenuOption> options = new List<FloatMenuOption>()
+                    List<FloatMenuOption> options = new List<FloatMenuOption>()
                             {
                                 new FloatMenuOption("Close", () => GUIController.RemoveEntry(entry.Key.name))
                             };
-                        Find.WindowStack.Add(new FloatMenu(options));
-                    }
+                    Find.WindowStack.Add(new FloatMenu(options));
                 }
             }
 
@@ -143,7 +140,7 @@ namespace Analyzer
                         {
                             Widgets.DrawLineVertical(row.x, row.y - 15f, 15f);
                         }
-                        
+
                         row.x += 10f;
                         Widgets.DrawLineHorizontal(row.x - 10f, row.y + 15f, 10f);
                         GUI.color = Color.white;

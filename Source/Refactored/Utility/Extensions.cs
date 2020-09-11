@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace Analyzer
 {
@@ -22,6 +23,30 @@ namespace Analyzer
 
             foreach (var inst in instance)
                 yield return inst;
+        }
+
+        public static void AdjustHorizonallyBy(this ref Rect rect, int width)
+        {
+            rect.x += width;
+            rect.width -= width;
+        }
+
+        public static void AdjustHorizonallyBy(this ref Rect rect, float width)
+        {
+            rect.x += width;
+            rect.width -= width;
+        }
+
+        public static void AdjustVerticallyBy(this ref Rect rect, int height)
+        {
+            rect.y += height;
+            rect.height -= height;
+        }
+
+        public static void AdjustVerticallyBy(this ref Rect rect, float height)
+        {
+            rect.y += height;
+            rect.height -= height;
         }
     }
 }

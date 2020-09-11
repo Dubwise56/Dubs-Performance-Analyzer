@@ -67,7 +67,7 @@ namespace Analyzer
         public void RecordMeasurement()
         {
 #if DEBUG
-            if (stopwatch.IsRunning) Log.Error($"[Analyzer] Profile {key} was still running when recorded");
+            if (stopwatch.IsRunning) ThreadSafeLogger.Error($"[Analyzer] Profile {key} was still running when recorded");
 #endif
 
             times[currentIndex] = stopwatch.Elapsed.TotalMilliseconds;

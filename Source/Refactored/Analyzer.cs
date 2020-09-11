@@ -18,6 +18,8 @@ namespace Analyzer
         private const int MAX_LOG_COUNT = 2000;
         private static int currentLogCount = 0; // How many update cycles have passed since beginning profiling an entry?
         public static List<ProfileLog> logs = new List<ProfileLog>();
+
+        // todo, how can I do this more elegantly?
         private static Comparer<ProfileLog> maxComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.max < second.max ? 1 : -1);
         private static Comparer<ProfileLog> averageComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.average < second.average ? 1 : -1);
         private static Comparer<ProfileLog> percentComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.percent < second.percent ? 1 : -1);
@@ -66,7 +68,7 @@ namespace Analyzer
                 currentLogCount++;
         }
 
-        // Called a variadic amount depending on the user settings, but most likely every 60 ticks / 1 second
+        // Called a variadic amount depending on the user settings, but most likely every 60 ticks / .5 second
         internal static void FinishUpdateCycle()
         {
             if (ProfileController.Profiles.Count != 0)
@@ -196,8 +198,8 @@ namespace Analyzer
             // atomic reads and writes.
             Modbase.isPatched = false;
 
-#if DEBUG
-            Log.Message($"Finished state cleanup");
+#if DEBUG 
+            ThreadSafeLogger.Message($"Finished state cleanup");
 #endif
         }
     }

@@ -27,7 +27,10 @@ namespace Analyzer
         public static string TypeSearch = string.Empty;
 
         public static string @PathToDnspy = "";
-        public bool verboseLogging;
+        public static float updatesPerSecond = 2;
+        public static bool verboseLogging = false;
+
+
         public override void ExposeData()
         {
             base.ExposeData();
@@ -35,6 +38,7 @@ namespace Analyzer
             Scribe_Values.Look(ref LineCol, "LineCol", new Color32(79, 147, 191, 255));
             Scribe_Values.Look(ref GraphCol, "GraphCol", new Color32(17, 17, 17, 255));
             Scribe_Values.Look(ref PathToDnspy, "dnspyPath");
+            Scribe_Values.Look(ref updatesPerSecond, "updatesPerSecond", 2);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
         }
 
