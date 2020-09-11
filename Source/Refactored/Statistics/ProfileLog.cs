@@ -15,11 +15,12 @@ namespace Analyzer
         public string mod;
         public float max;
         public float total;
+        public float calls;
         public Type type;
         public Def def;
         public MethodBase meth;
 
-        public ProfileLog(string label, string percentString, double average, float max, Def def, string key, string mod, float percent, float total, Type type, MethodBase meth = null)
+        public ProfileLog(string label, string percentString, double average, float max, Def def, string key, string mod, float percent, float total, float calls, Type type, MethodBase meth = null)
         {
             this.label = label;
             this.percentString = percentString;
@@ -32,6 +33,7 @@ namespace Analyzer
             this.type = type;
             this.meth = meth;
             this.total = total;
+            this.calls = calls;
         }
     }
 }

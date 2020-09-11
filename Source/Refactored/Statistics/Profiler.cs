@@ -80,10 +80,11 @@ namespace Analyzer
             hitCounter = 0;
         }
 
-        public void CollectStatistics(int entries, out double average, out double max, out double total)
+        public void CollectStatistics(int entries, out double average, out double max, out double total, out float calls)
         {
             total = 0;
             average = 0;
+            calls = 0;
             max = times[currentIndex];
             // we traverse backwards through the array, so when we reach -1
             // we wrap around back to the end
@@ -94,6 +95,7 @@ namespace Analyzer
             {
                 var time = times[arrayIndex];
 
+                calls += hits[arrayIndex];
                 total += time;
                 if (time > max)
                 {

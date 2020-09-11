@@ -68,12 +68,14 @@
 	<logs.av>Average</logs.av>
 	<logs.percent>Percent</logs.percent>
 	<logs.total>Total</logs.total>
+	<logs.calls>Calls</logs.calls>
 	<logs.name>Name</logs.name>
 
 	<logs.max.desc>Sort the rows by the maximum (MS) peak the method has reached</logs.max.desc>
 	<logs.av.desc>Sort the rows by the average (MS) the method is reaching</logs.av.desc>
 	<logs.percent.desc>Sort the rows by relative percent in the category</logs.percent.desc>
 	<logs.total.desc>Sort the rows by total (MS) impact</logs.total.desc>
+	<logs.calls.desc>Sort the rows by total amount of calls</logs.calls.desc>
 	<logs.name.desc>Sort the rows in alphabetical order</logs.name.desc>
 
 </LanguageData>

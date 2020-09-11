@@ -81,6 +81,7 @@ namespace Analyzer
                 for (int i = 0; i < currentMaxIndex; i++)
                 {
                     logic.TotalTime += LocalTimes[i];
+
                     if (logic.HighestTime < LocalTimes[i])
                         logic.HighestTime = LocalTimes[i];
 

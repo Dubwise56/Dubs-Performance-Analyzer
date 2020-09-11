@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -12,7 +13,7 @@ namespace Analyzer
 {
     public enum SortBy
     {
-        Max, Average, Percent, Total, Name
+        Max, Average, Percent, Total, Calls, Name
     }
 
     public static class Panel_Logs
@@ -36,7 +37,7 @@ namespace Analyzer
         public static string tipCache = "";
         public static string tipLabelCache = "";
 
-        public static List<bool> columns = new List<bool> { true, true, true, true, true };
+        public static List<bool> columns = new List<bool> { true, true, true, true, true, true };
 
         public static void DrawLogs(Rect rect)
         {
@@ -84,12 +85,16 @@ namespace Analyzer
         private static void DrawColumns(Rect rect)
         {
             Widgets.DrawLineHorizontal(rect.x, rect.y + rect.height, rect.width);
-            // [ Max ] [ Average ] [ Percent ] [ Total ] [ Name ] 
+            // [ Max ] [ Average ] [ Percent ] [ Total ] [ Calls ] [ Name ] 
 
             DrawColumnHeader(ref rect, ResourceCache.Strings.logs_max, ResourceCache.Strings.logs_max_desc, SortBy.Max, NUMERIC_WIDTH);
             DrawColumnHeader(ref rect, ResourceCache.Strings.logs_av, ResourceCache.Strings.logs_av_desc, SortBy.Average, NUMERIC_WIDTH);
+
             DrawColumnHeader(ref rect, ResourceCache.Strings.logs_percent, ResourceCache.Strings.logs_percent_desc, SortBy.Percent, NUMERIC_WIDTH);
             DrawColumnHeader(ref rect, ResourceCache.Strings.logs_total, ResourceCache.Strings.logs_total_desc, SortBy.Total, NUMERIC_WIDTH);
+
+            if (GUIController.CurrentEntry.name != "HarmonyTranspilers")
+                DrawColumnHeader(ref rect, ResourceCache.Strings.logs_calls, ResourceCache.Strings.logs_calls_desc, SortBy.Calls, NUMERIC_WIDTH);
             // give the name 'infinite' width so there is no wrapping
             // Set text anchor to middle left so we can see our text
             // offset by four chars to make it look offset
@@ -177,6 +182,9 @@ namespace Analyzer
             DrawColumnContents(ref visible, $" {log.average:0.000}ms ", SortBy.Average);
             DrawColumnContents(ref visible, $" {log.percent * 100:0.0}% ", SortBy.Percent);
             DrawColumnContents(ref visible, $" {log.total:0.000}ms ", SortBy.Total);
+            if (GUIController.CurrentEntry.name != "HarmonyTranspilers")
+                DrawColumnContents(ref visible, $" {log.calls.ToString("N0", CultureInfo.InvariantCulture)} ", SortBy.Calls);
+
 
             Text.Anchor = TextAnchor.MiddleLeft;
             visible.width = float.MaxValue;

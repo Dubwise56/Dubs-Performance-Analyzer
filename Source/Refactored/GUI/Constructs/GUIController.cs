@@ -111,6 +111,10 @@ namespace Analyzer
             entry.SetActive(false);
 
             Tab(entry.category).entries.Remove(entry);
+
+#if DEBUG
+            ThreadSafeLogger.Message($"Removing entry {name} from the category {entry.category.ToString()}");
+#endif
         }
     }
 }

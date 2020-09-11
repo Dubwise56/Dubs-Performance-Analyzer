@@ -15,41 +15,41 @@ namespace Analyzer
     internal class H_HarmonyPatches
     {
         public static bool Active = false;
-        public static void Clicked(Profiler prof, ProfileLog log)
-        {
-            if (Input.GetKey(KeyCode.LeftControl))
-            {
-                if (log.meth == null)
-                {
-                    Messages.Message("Null method", MessageTypeDefOf.NegativeEvent, false);
-                    return;
-                }
+        //public static void Clicked(Profiler prof, ProfileLog log)
+        //{
+        //    if (Input.GetKey(KeyCode.LeftControl))
+        //    {
+        //        if (log.meth == null)
+        //        {
+        //            Messages.Message("Null method", MessageTypeDefOf.NegativeEvent, false);
+        //            return;
+        //        }
 
-                List<MethodBase> patches = Harmony.GetAllPatchedMethods().ToList();
-                // Patches patchInfo = Harmony.GetPatchInfo(log.Meth);
+        //        List<MethodBase> patches = Harmony.GetAllPatchedMethods().ToList();
+        //        // Patches patchInfo = Harmony.GetPatchInfo(log.Meth);
 
-                foreach (MethodBase methodBase in patches)
-                {
-                    Patches infos = Harmony.GetPatchInfo(methodBase);
-                    foreach (Patch infosPrefix in infos.Prefixes)
-                    {
-                        if (infosPrefix.PatchMethod == log.meth)
-                        {
-                            Modbase.Harmony.Unpatch(methodBase, HarmonyPatchType.All, "*");
-                            Messages.Message("Unpatched prefixes", MessageTypeDefOf.TaskCompletion, false);
-                        }
-                    }
-                    foreach (Patch infosPostfixesx in infos.Postfixes)
-                    {
-                        if (infosPostfixesx.PatchMethod == log.meth)
-                        {
-                            Modbase.Harmony.Unpatch(methodBase, HarmonyPatchType.All, "*");
-                            Messages.Message("Unpatched postfixes", MessageTypeDefOf.TaskCompletion, false);
-                        }
-                    }
-                }
-            }
-        }
+        //        foreach (MethodBase methodBase in patches)
+        //        {
+        //            Patches infos = Harmony.GetPatchInfo(methodBase);
+        //            foreach (Patch infosPrefix in infos.Prefixes)
+        //            {
+        //                if (infosPrefix.PatchMethod == log.meth)
+        //                {
+        //                    Modbase.Harmony.Unpatch(methodBase, HarmonyPatchType.All, "*");
+        //                    Messages.Message("Unpatched prefixes", MessageTypeDefOf.TaskCompletion, false);
+        //                }
+        //            }
+        //            foreach (Patch infosPostfixesx in infos.Postfixes)
+        //            {
+        //                if (infosPostfixesx.PatchMethod == log.meth)
+        //                {
+        //                    Modbase.Harmony.Unpatch(methodBase, HarmonyPatchType.All, "*");
+        //                    Messages.Message("Unpatched postfixes", MessageTypeDefOf.TaskCompletion, false);
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
         public static List<Patch> PatchedPres = new List<Patch>();
         public static List<Patch> PatchedPosts = new List<Patch>();

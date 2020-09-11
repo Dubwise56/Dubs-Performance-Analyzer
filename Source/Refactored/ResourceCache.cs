@@ -63,12 +63,14 @@ namespace Analyzer
             public static string logs_av => "logs.av".TranslateSimple();
             public static string logs_percent => "logs.percent".TranslateSimple();
             public static string logs_total => "logs.total".TranslateSimple();
+            public static string logs_calls => "logs.calls".TranslateSimple();
             public static string logs_name => "logs.name".TranslateSimple();
 
             public static string logs_max_desc => "logs.max.desc".TranslateSimple();
             public static string logs_av_desc => "logs.av.desc".TranslateSimple();
             public static string logs_percent_desc => "logs.percent.desc".TranslateSimple();
             public static string logs_total_desc => "logs.total.desc".TranslateSimple();
+            public static string logs_calls_desc => "logs.calls.desc".TranslateSimple();
             public static string logs_name_desc => "logs.name.desc".TranslateSimple();
         }
 

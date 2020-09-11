@@ -24,6 +24,7 @@ namespace Analyzer
         private static Comparer<ProfileLog> averageComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.average < second.average ? 1 : -1);
         private static Comparer<ProfileLog> percentComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.percent < second.percent ? 1 : -1);
         private static Comparer<ProfileLog> totalComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.total < second.total ? 1 : -1);
+        private static Comparer<ProfileLog> callsComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.calls < second.calls ? 1 : -1);
         private static Comparer<ProfileLog> nameComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => string.Compare(first.label, second.label));
 
         private static Thread logicThread; // Calculating stats for all active profilers (not the currently selected one)
@@ -80,6 +81,7 @@ namespace Analyzer
                     case SortBy.Average: comparer = averageComparer; break;
                     case SortBy.Percent: comparer = percentComparer; break;
                     case SortBy.Total: comparer = totalComparer; break;
+                    case SortBy.Calls: comparer = callsComparer; break;
                     case SortBy.Name: comparer = nameComparer; break;
                 }
 
@@ -125,8 +127,8 @@ namespace Analyzer
 
             foreach (var value in Profiles.Values)
             {
-                value.CollectStatistics(Mathf.Min(currentLogCount, MAX_LOG_COUNT - 1), out var average, out var max, out var total);
-                newLogs.Add(new ProfileLog(value.label, string.Empty, average, (float)max, null, value.key, string.Empty, 0, (float)total, value.type, value.meth));
+                value.CollectStatistics(Mathf.Min(currentLogCount, MAX_LOG_COUNT - 1), out var average, out var max, out var total, out var calls);
+                newLogs.Add(new ProfileLog(value.label, string.Empty, average, (float)max, null, value.key, string.Empty, 0, (float)total, calls, value.type, value.meth));
 
                 sumOfAverages += average;
             }
