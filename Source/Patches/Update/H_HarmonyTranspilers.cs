@@ -47,30 +47,38 @@ namespace Analyzer
         public static Dictionary<string, MethodInfo> MethodInfos = new Dictionary<string, MethodInfo>();
         public static CodeInstMethEqual methComparer = new CodeInstMethEqual();
 
-        public static List<Thread> transpilerThreads = new List<Thread>();
-
-        public static object PatchedMethsSync = new object();
-
         public static void ProfilePatch()
         {
             HarmonyMethod trans = new HarmonyMethod(typeof(H_HarmonyTranspilers), nameof(Transpiler));
+            var patches = Harmony.GetAllPatchedMethods().ToList();
 
-            List<MethodBase> patches = Harmony.GetAllPatchedMethods().Where(meth => Harmony.GetPatchInfo(meth).Transpilers?.Any(p => p.owner != Modbase.Harmony.Id && !PatchedMeths.Contains(meth)) ?? false).ToList();
+            var filteredTranspilers = patches
+                .Where(m => Harmony.GetPatchInfo(m).Transpilers.Any(p => p.owner != Modbase.Harmony.Id && !PatchedMeths.Contains(p.PatchMethod)))
+                .ToList();
 
-            foreach (MethodBase method in patches)
+            PatchedMeths.AddRange(filteredTranspilers);
+
+            foreach (var meth in filteredTranspilers)
             {
                 try
-                { 
-                    PatchedMeths.Add(method);
-                    Modbase.Harmony.Patch(method, transpiler: trans);
+                {
+                    Modbase.Harmony.Patch(meth, transpiler: trans);
                 }
-                catch { }
+                catch (Exception e)
+                {
+#if DEBUG
+                        ThreadSafeLogger.Error($"[Analyzer] Failed to patch transpiler, failed with the message {e.Message}");
+#endif
+#if NDEBUG
+                    if (Settings.verboseLogging)
+                        ThreadSafeLogger.Error($"[Analyzer] Failed to patch transpiler, failed with the message {e.Message}");
+#endif
+                }
             }
-
         }
 
         [HarmonyPriority(Priority.Last)]
-        public static IEnumerable<CodeInstruction> Transpiler(MethodBase __originalMethod, IEnumerable<CodeInstruction> instructions, ILGenerator ilGen)
+        public static IEnumerable<CodeInstruction> Transpiler(MethodBase __originalMethod, IEnumerable<CodeInstruction> instructions)
         {
             List<CodeInstruction> inst = PatchProcessor.GetOriginalInstructions(__originalMethod);
             List<CodeInstruction> modInstList = instructions.ToList();

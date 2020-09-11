@@ -38,6 +38,7 @@ namespace Analyzer
         public MethodInfo onClick;
 
         public bool isActive = false;
+        public bool isLoading = false;
         public bool isPatched = false;
         public bool isClosable = false;
 
@@ -80,7 +81,11 @@ namespace Analyzer
 
         public void PatchMethods()
         {
-            if (!isPatched) Analyzer.PatchEntry(this);
+            if (!isPatched && !isLoading)
+            {
+                isLoading = true;
+                Analyzer.PatchEntry(this);
+            }
         }
     }
 }

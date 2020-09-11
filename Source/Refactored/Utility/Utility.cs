@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Verse;
 
 namespace Analyzer
@@ -494,7 +495,8 @@ namespace Analyzer
 
                 InternalMethodUtility.curMeth = method;
                 InternalMethodUtility.PatchedInternals.Add(method);
-                InternalMethodUtility.Harmony.Patch(method, null, null, InternalMethodUtility.InternalProfiler);
+
+                Task.Factory.StartNew( () => InternalMethodUtility.Harmony.Patch(method, null, null, InternalMethodUtility.InternalProfiler));
             }
             catch (Exception e)
             {

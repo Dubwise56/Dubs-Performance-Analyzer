@@ -28,7 +28,6 @@ namespace Analyzer
         private static Comparer<ProfileLog> nameComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => string.Compare(first.label, second.label));
 
         private static Thread logicThread; // Calculating stats for all active profilers (not the currently selected one)
-        private static Thread patchingThread; // patching new methods, this prevents a stutter when patching mods
         private static Thread cleanupThread; // 'cleanup' - Removing patches, getting rid of cached methods (already patched), clearing temporary entries
 
         private static object patchingSync = new object();
@@ -93,23 +92,25 @@ namespace Analyzer
 
         public static void PatchEntry(Entry entry)
         {
-            lock (patchingSync) // If we are already patching something, we are just going to hang rimworld until it finishes :)
+            Task.Factory.StartNew(() =>
             {
-                patchingThread = new Thread(() =>
+                try
                 {
-                    lock (patchingSync)
-                    {
-                        try
-                        {
-                            AccessTools.Method(entry.type, "ProfilePatch")?.Invoke(null, null);
-                            entry.isPatched = true;
-                        }
-                        catch { }
-                    }
-                });
-            }
-            patchingThread.IsBackground = true;
-            patchingThread.Start();
+                    AccessTools.Method(entry.type, "ProfilePatch")?.Invoke(null, null);
+                    entry.isLoading = false;
+                    entry.isPatched = true;
+                }
+                catch (Exception e)
+                {
+#if DEBUG
+                    ThreadSafeLogger.Error($"[Analyzer] Failed to patch entry, failed with the message {e.Message}");
+#endif
+#if NDEBUG
+                    if (Settings.verboseLogging)
+                        ThreadSafeLogger.Error($"[Analyzer] Failed to patch entry, failed with the message {e.Message}");
+#endif
+                }
+            });
         }
 
         public static void Cleanup()
