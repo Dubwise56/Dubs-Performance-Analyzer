@@ -17,8 +17,16 @@ namespace Analyzer
 
     public class Window_Analyzer : Window
     {
-        public override Vector2 InitialSize => new Vector2(890, 650);
+        public const float TOP_ROW_HEIGHT = 20f;
+        public const float DRAGGABLE_RECT_DIM = 18f;
+
+        public static Vector2 Initial = new Vector2(890, 650);
+        public override Vector2 InitialSize => Initial;
+        public override float Margin => 0;
         public static bool firstOpen = true;
+        public static float GraphHeight = 220f;
+        public static float SidePanelWidth = 0f;
+
 
         public override void SetInitialSizeAndPosition()
         {
@@ -46,6 +54,7 @@ namespace Analyzer
         {
             base.PostClose();
             Analyzer.EndProfiling();
+            GUIController.CurrentProfiler = null;
             GUIController.CurrentEntry?.SetActive(false);
 
             Modbase.Settings.Write();
@@ -109,48 +118,112 @@ namespace Analyzer
             drawShadow = true;
             preventCameraMotion = false;
             onlyOneOfTypeAllowed = true;
-            resizeable = true;
+            resizeable = false;
             closeOnCancel = false;
             closeOnAccept = false;
+            draggable = false;
+        }
+
+        public void HandleWindowMovement()
+        {
+            if (Event.current.type != EventType.Repaint)
+            {
+                Rect lhs = WindowUtility.ResizeAnalyzerWindow(windowRect);
+                if (lhs != windowRect)
+                {
+                    resizeLater = true;
+                    resizeLaterRect = lhs;
+                }
+            }
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                WindowUtility.ResizeAnalyzerWindow(windowRect);
+            }
+        }
+
+        public override void WindowOnGUI()
+        {
+            if (resizeLater)
+            {
+                windowRect = resizeLaterRect;
+                resizeLater = false;
+            }
+
+            base.WindowOnGUI();
         }
 
 
-        public override void DoWindowContents(Rect inRect)
+        public override void DoWindowContents(Rect rect)
         {
-            // Display our logged messages :)
+            // Do Window Resizing
+            HandleWindowMovement();
+
+            Action handleDrag = () => GUI.DragWindow(rect);
+
+            rect = rect.ContractedBy(18f); // Adjust by our (removed) margin
+
+            // Display our logged messages that we may have recieved from other threads.
             ThreadSafeLogger.DisplayLogs();
 
-            var tabs = GUIController.Tabs;
+            Panel_Tabs.Draw(rect, GUIController.Tabs);
 
-            Panel_Tabs.Draw(inRect, tabs);
-
-            inRect.AdjustHorizonallyBy(Panel_Tabs.width);
+            rect.AdjustHorizonallyBy(Panel_Tabs.width); // Shift the x and shrink the width by the width of the Tabs
 
             if (GUIController.GetCurrentCategory == Category.Settings)
             {
-                Panel_Settings.Draw(inRect);
+                Panel_Settings.Draw(rect);
+                handleDrag();
+
                 return;
             }
 
-            Panel_TopRow.Draw(inRect.TopPartPixels(20f));
+            // We are in one of our entry-filled tabs. 
+            /*  - Conditionally Change our Rect size (for side panel)
+             *  - Draw our Top Row (always)
+             *  - Draw our active logs (always)
+             *  - Draw our graph (if there is a current profiler)
+             *  - Draw our side panel (if there is a current profile && the setting is enabled)
+             */
 
-            inRect.AdjustVerticallyBy(20f);
-
-            if (GUIController.CurrentProfiler != null)
+            if (Settings.sidePanel && GUIController.CurrentProfiler != null)
             {
-                inRect.height -= 230;
-                Panel_Logs.DrawLogs(inRect);
-
-                inRect.y += 220;
-                inRect.height += 10;
-                inRect = inRect.BottomPartPixels(220);
-                Panel_Graph.Draw(inRect);
-            }
-            else
-            {
-                Panel_Logs.DrawLogs(inRect);
+                rect.width -= SidePanelWidth;
             }
 
+            Panel_TopRow.Draw(rect.TopPartPixels(TOP_ROW_HEIGHT));
+
+            rect.AdjustVerticallyBy(TOP_ROW_HEIGHT);
+
+            if (GUIController.CurrentProfiler == null)
+            {
+                Panel_Logs.DrawLogs(rect);
+                handleDrag();
+
+                return;
+            }
+
+            // If there is a current profiler, we need to adjust the height of the logs 
+            rect.height -= (GraphHeight + DRAGGABLE_RECT_DIM);
+            Panel_Logs.DrawLogs(rect);
+
+            // Move our rect down to just below the Logs 
+            rect.y += GraphHeight;
+            rect.height += DRAGGABLE_RECT_DIM;
+            rect = rect.BottomPartPixels(GraphHeight + DRAGGABLE_RECT_DIM);
+
+            Widgets.DrawHighlightIfMouseover(rect.TopPartPixels(DRAGGABLE_RECT_DIM));
+
+            rect.AdjustVerticallyBy(DRAGGABLE_RECT_DIM);
+            Panel_Graph.Draw(rect);
+
+            if (Settings.sidePanel && SidePanelWidth >= 100)
+            {
+                var sidePanelRect = new Rect(rect.xMax, 20f, SidePanelWidth, windowRect.height - 20f);
+                Panel_SideInfo.Draw(sidePanelRect);
+            }
+
+            handleDrag();
         }
     }
 }

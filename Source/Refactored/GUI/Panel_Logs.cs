@@ -144,7 +144,7 @@ namespace Analyzer
         private static void DrawLog(ProfileLog log, ref float currentListHeight)
         {
             if (Panel_TopRow.TimesFilter != "")
-                if(!log.label.ToLower().Contains(Panel_TopRow.TimesFilter.ToLower())) return;
+                if (!log.label.ToLower().Contains(Panel_TopRow.TimesFilter.ToLower())) return;
 
 
             Rect visible = listing.GetRect(BOX_HEIGHT);

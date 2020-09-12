@@ -1,9 +1,12 @@
-﻿using System;
+﻿using RimWorld;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 using Verse;
+using Verse.Noise;
 
 namespace Analyzer
 {
@@ -68,8 +71,9 @@ namespace Analyzer
 
                 Array.Sort(LocalCalls);
                 Array.Sort(LocalTimes);
+                    
 
-                for(int i = 0; i < currentLogCount; i++)
+                for (int i = 0; i < currentLogCount; i++)
                 {
                     logic.TotalCalls += LocalCalls[i];
                     logic.TotalTime += LocalTimes[i];
@@ -90,8 +94,9 @@ namespace Analyzer
 
                 // general
                 logic.Entries = currentLogCount;
-                logic.OutlierCutoff = MovingWindowFiltered.OutlierThresholdFromData(LocalTimes.ToList(), 3, 3, 2);
+                logic.OutlierCutoff = MovingWindowFiltered.OutlierThresholdFromData(LocalTimes.ToList(), logic.TotalTime, 3, 3, 2);
                 GetSpikes(ref logic.Spikes, LocalTimes, logic.MeanTimePerCall + logic.OutlierCutoff);
+                // iterates as many times as there are spikes
 
 
                 lock (CurrentLogStats.sync) // Dump our current statistics into our static class which our drawing class uses
@@ -99,19 +104,26 @@ namespace Analyzer
                     CurrentLogStats.stats = logic;
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
 #if DEBUG
-                ThreadSafeLogger.Error("[Analyzer] Failed while calculating stats for profiler");
+                ThreadSafeLogger.Error($"[Analyzer] Failed while calculating stats for profiler, errored with the message {e.Message}");
 #endif
+                #if NDEBUG
+                    if(Settings.verboseLogging)
+                        ThreadSafeLogger.Error($"[Analyzer] Failed while calculating stats for profiler, errored with the message {e.Message}");
+                #endif
             }
         }
 
         public static void GetSpikes(ref List<double> spikes, double[] numbers, double cutoff)
         {
-            foreach (double num in numbers)
-                if (num > cutoff)
-                    spikes.Add(num);
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                if (numbers[i] < cutoff) return;
+
+                spikes.Add(numbers[i]);
+            }
         }
 
     }
@@ -119,21 +131,39 @@ namespace Analyzer
 
     public static class MovingWindowFiltered
     {
-        public static double OutlierThresholdFromData(List<double> data, double reportStd, double outlierStd,
-            double outlierMaxIterations)
+        public static double OutlierThresholdFromData(List<double> data, double dataSum, double reportStd, double outlierStd, double outlierMaxIterations)
         {
-            List<double> filtered = data;
+            var filtered = data;
+            var filteredSum = dataSum;
+
+            var dataAverage = dataSum / data.Count;
+            var dataStandardDevation = data.StandardDeviation(dataAverage); // o(n)
+            var boundary = outlierStd * dataStandardDevation;
 
             // Perform outlier analysis
             for (int k = 0; k < outlierMaxIterations; k++)
             {
-                double boundary = outlierStd * data.StandardDeviation();
+                double max = 0.0;
+                var indexOfMax = -1;
+                // because data is sorted, we know the outliers are going to either be the highest or lowest values so we can optimise an otherwise o(n) check, making it o(1) 
+                double upperValue = Math.Abs(filtered[0] - dataAverage);
+                double lowerValue = Math.Abs(filtered[filtered.Count - 1] - dataAverage);
 
-                double average = data.Sum() / data.Count;
-                double max = filtered.MaxBy(datum => Math.Abs(datum - average));
-                if (Math.Abs(max - average) > boundary)
+                if (upperValue > lowerValue)
                 {
-                    filtered.Remove(max);
+                    indexOfMax = 0;
+                    max = upperValue;
+                }
+                else if (lowerValue > max)
+                {
+                    indexOfMax = filtered.Count - 1;
+                    max = lowerValue;
+                }
+
+                if (max > boundary)
+                {
+                    filtered.RemoveAt(indexOfMax); // o(1)
+                    filteredSum -= max;
                 }
                 else
                 {
@@ -141,12 +171,11 @@ namespace Analyzer
                 }
             }
 
-            return filtered.Sum() / filtered.Count + reportStd * filtered.StandardDeviation();
+            return filteredSum / filtered.Count + reportStd * filtered.StandardDeviation(filteredSum / filtered.Count); // o(n)
         }
 
-        public static double StandardDeviation(this List<double> data)
+        public static double StandardDeviation(this List<double> data, double average)
         {
-            double average = data.Sum() / data.Count;
             double deviations = data.Sum(datum => (datum - average) * (datum - average));
             return Math.Sqrt(deviations / data.Count);
         }

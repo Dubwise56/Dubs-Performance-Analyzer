@@ -22,6 +22,7 @@
 	<settings.dnspy>Path to Dnspy (Including the Exe)</settings.dnspy>
 	<settings.ups>Stat updates per second</settings.ups>
 	<settings.logging>Verbose Logging</settings.logging>
+	<settings.side.panel>Enable Side Panel</settings.side.panel>
 
 	<ProfilePatchMethod>Profile</ProfilePatchMethod>
     <input.method>Method</input.method>

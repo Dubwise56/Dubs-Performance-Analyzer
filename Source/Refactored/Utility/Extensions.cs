@@ -37,6 +37,22 @@ namespace Analyzer
             rect.width -= width;
         }
 
+        public static Rect RetAdjustHorizonallyBy(this Rect rect, int width)
+        {
+            rect.x += width;
+            rect.width -= width;
+
+            return rect;
+        }
+
+        public static Rect RetAdjustHorizonallyBy(this Rect rect, float width)
+        {
+            rect.x += width;
+            rect.width -= width;
+
+            return rect;
+        }
+
         public static void AdjustVerticallyBy(this ref Rect rect, int height)
         {
             rect.y += height;
@@ -48,5 +64,22 @@ namespace Analyzer
             rect.y += height;
             rect.height -= height;
         }
+
+        public static Rect RetAdjustVerticallyBy(this Rect rect, int height)
+        {
+            rect.y += height;
+            rect.height -= height;
+
+            return rect;
+        }
+
+        public static Rect RetAdjustVerticallyBy(this Rect rect, float height)
+        {
+            rect.y += height;
+            rect.height -= height;
+
+            return rect;
+        }
     }
+
 }

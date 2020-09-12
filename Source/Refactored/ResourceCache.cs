@@ -50,6 +50,7 @@ namespace Analyzer
             public static string settings_dnspy => "settings.dnspy".TranslateSimple();
             public static string settings_updates_per_second => "settings.ups".TranslateSimple();
             public static string settings_logging => "settings.logging".TranslateSimple();
+            public static string settings_side_panel => "settings.side.panel".TranslateSimple();
 
             // Top Row
             public static string top_pause_analyzer => "top.pause.analyzer".TranslateSimple();

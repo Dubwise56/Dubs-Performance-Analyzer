@@ -64,6 +64,14 @@ namespace Analyzer
             DubGUI.InputField(listing.GetRect(Text.LineHeight), ResourceCache.Strings.settings_dnspy, ref Settings.PathToDnspy, ShowName: true);
             DubGUI.LabeledSliderFloat(listing, ResourceCache.Strings.settings_updates_per_second, ref Settings.updatesPerSecond, 1.0f, 20.0f);
             DubGUI.Checkbox(ResourceCache.Strings.settings_logging, listing, ref Settings.verboseLogging);
+            DubGUI.Checkbox(ResourceCache.Strings.settings_side_panel, listing, ref Settings.sidePanel);
+
+#if DEBUG
+            listing.GapLine();
+
+            DubGUI.Checkbox("Enable Grappling-Box Visualisation", listing, ref Settings.showGrapplingBoxes);
+#endif
+
             listing.GapLine();
 
             DrawOptions(listing);

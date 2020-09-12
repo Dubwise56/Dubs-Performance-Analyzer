@@ -31,7 +31,7 @@ namespace Analyzer
             row.width = 130f;
             Text.Anchor = TextAnchor.MiddleCenter;
             Text.Font = GameFont.Tiny;
-            Widgets.FillableBar(row, Mathf.Clamp01(Mathf.InverseLerp(H_RootUpdate.LastMinGC, H_RootUpdate.LastMaxGC, H_RootUpdate.totalBytesOfMemoryUsed)), DubResources.darkgrey);
+            Widgets.FillableBar(row, Mathf.Clamp01(Mathf.InverseLerp(H_RootUpdate.LastMinGC, H_RootUpdate.LastMaxGC, H_RootUpdate.totalBytesOfMemoryUsed)), ResourceCache.GUI.darkgrey);
             Widgets.Label(row, H_RootUpdate.GarbageCollectionInfo);
             Text.Anchor = TextAnchor.UpperLeft;
             TooltipHandler.TipRegion(row, ResourceCache.Strings.top_gc_tip);

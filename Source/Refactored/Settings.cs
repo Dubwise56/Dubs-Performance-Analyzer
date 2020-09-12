@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Permissions;
 using UnityEngine;
 using Verse;
 
@@ -26,10 +27,17 @@ namespace Analyzer
         public static string MethSearch = string.Empty;
         public static string TypeSearch = string.Empty;
 
+        // Developer settings
         public static string @PathToDnspy = "";
         public static float updatesPerSecond = 2;
         public static bool verboseLogging = false;
+        public static bool sidePanel = false;
 
+#if DEBUG
+        // Debug settings
+        public static bool showGrapplingBoxes = false;
+
+#endif
 
         public override void ExposeData()
         {
@@ -40,6 +48,11 @@ namespace Analyzer
             Scribe_Values.Look(ref PathToDnspy, "dnspyPath");
             Scribe_Values.Look(ref updatesPerSecond, "updatesPerSecond", 2);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
+            Scribe_Values.Look(ref sidePanel, "sidePanel", false);
+
+#if DEBUG
+            Scribe_Values.Look(ref showGrapplingBoxes, "grapplingBoxes", false);
+#endif
         }
 
         public void DoSettings(Rect canvas)

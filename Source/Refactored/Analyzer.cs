@@ -173,8 +173,8 @@ namespace Analyzer
 
         private static void CleanupBackground()
         {
-            // idle for 30s chillin
-            for (int i = 0; i < 30; i++)
+            // idle for 10s chillin
+            for (int i = 0; i < 10; i++)
             {
                 Thread.Sleep(1000);
                 // Reads and writes of the following data types are atomic: bool, char, byte, sbyte, short, ushort, uint, int, float, and reference types. as found in C# Language Spec.
@@ -184,6 +184,8 @@ namespace Analyzer
 
             // unpatch all methods
             Modbase.Harmony.UnpatchAll(Modbase.Harmony.Id);
+            // atomic reads and writes.
+            Modbase.isPatched = false;
 
             // clear all patches to prevent double patching
             Utility.ClearPatchedCaches();
@@ -201,8 +203,7 @@ namespace Analyzer
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
-            // atomic reads and writes.
-            Modbase.isPatched = false;
+
 
 #if DEBUG 
             ThreadSafeLogger.Message($"Finished state cleanup");
