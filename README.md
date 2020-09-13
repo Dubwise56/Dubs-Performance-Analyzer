@@ -1,7 +1,7 @@
 # How to Use
 
 ## Lingo
-![Lingo](About/Identification.PNG)
+![Lingo](About/Identification.png)
 
 ## Some Basic Statistics
 Rimworld's update cycle is broken up into units called *ticks*, this is the basis for the speed at which things change in your game. When you adjust the game speed in the bottom right, you increase the amount of ticks the game tries to execute per second. At 1x it tries to reach 60tps, 2x 180tps, 3x 360, and the dev mode 4x, or the Smart Speed mod, 900. These numbers get doubled when all player controlled pawns on a map are sleeping.
