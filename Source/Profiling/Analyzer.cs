@@ -13,11 +13,6 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    public enum CleanupState
-    {
-        Idle, Unpatching, ClearingPatchCaches, ClearingProfiles, ClearingLogs, ClearingEntries, GC
-    }
-
     public static class Analyzer
     {
         private const int MAX_LOG_COUNT = 2000;

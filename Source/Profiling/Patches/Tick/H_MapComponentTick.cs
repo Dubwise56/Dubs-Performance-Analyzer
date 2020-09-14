@@ -1,7 +1,11 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using Verse;
 using Verse.AI.Group;
 
@@ -11,6 +15,7 @@ namespace Analyzer.Profiling
     internal class H_MapComponentTick
     {
         public static bool Active = false;
+        private static Dictionary<string, MethodInfo> methDict = new Dictionary<string, MethodInfo>();
 
         [HarmonyPriority(Priority.Last)]
         public static void Start(object __instance, MethodBase __originalMethod, ref Profiler __state)
@@ -69,27 +74,24 @@ namespace Analyzer.Profiling
 
         private static bool Prefix(MethodBase __originalMethod, Map map)
         {
-            if (!Active)
-            {
-                return true;
-            }
+            if (!Active) return true;
 
-            System.Collections.Generic.List<MapComponent> components = map.components;
-            int c = components.Count;
-            for (int i = 0; i < c; i++)
+            var components = map.components;
+            for (int i = 0; i < components.Count; i++)
             {
-                try
-                {
-                    MapComponent comp = components[i];
 
-                    Profiler prof = ProfileController.Start(comp.GetType().FullName, () => $"{comp.GetType()}", null, null, null, __originalMethod);
-                    comp.MapComponentTick();
-                    prof.Stop();
-                }
-                catch (Exception ex)
+                MapComponent comp = components[i];
+                var name = comp.GetType().FullName;
+
+                if (!methDict.TryGetValue(name, out var meth))
                 {
-                    Log.Error(ex.ToString());
+                    meth = comp.GetType().GetMethod("MapComponentTick", BindingFlags.Public | BindingFlags.Instance);
+                    methDict[name] = meth;
                 }
+
+                var prof = ProfileController.Start(name, () => $"{name}", null, null, null, meth);
+                comp.MapComponentTick();
+                prof.Stop();
             }
 
             return false;
