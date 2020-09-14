@@ -61,7 +61,7 @@ namespace Analyzer.Profiling
                 Text.Anchor = TextAnchor.MiddleCenter;
                 Text.Font = GameFont.Tiny;
 
-                DrawColumns(listing.GetRect(BOX_HEIGHT));
+                DrawColumns(listing.GetRect(BOX_HEIGHT));   
                 float currentListHeight = BOX_HEIGHT;
 
                 Text.Anchor = TextAnchor.MiddleLeft;
@@ -99,7 +99,7 @@ namespace Analyzer.Profiling
             // Set text anchor to middle left so we can see our text
             // offset by four chars to make it look offset
             Text.Anchor = TextAnchor.MiddleLeft;
-            DrawColumnHeader(ref rect, "    " + ResourceCache.Strings.logs_name, ResourceCache.Strings.logs_name_desc, SortBy.Name, float.MaxValue);
+            DrawColumnHeader(ref rect, "    " + ResourceCache.Strings.logs_name, ResourceCache.Strings.logs_name_desc, SortBy.Name, 10000);
 
         }
 
@@ -191,7 +191,7 @@ namespace Analyzer.Profiling
 
 
             Text.Anchor = TextAnchor.MiddleLeft;
-            visible.width = float.MaxValue;
+            visible.width = 10000;
             DrawColumnContents(ref visible, "    " + log.label, SortBy.Name);
 
             GUI.color = Color.white;
