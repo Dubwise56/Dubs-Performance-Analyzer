@@ -66,7 +66,7 @@ namespace Analyzer.Profiling
                 {
                     try
                     {
-                        if (Modbase.Harmony.Id != fix.owner && !PatchedPres.Contains(fix))
+                        if (Modbase.Harmony.Id != fix.owner && Modbase.StaticHarmony.Id != fix.owner && !PatchedPres.Contains(fix))
                         {
                             PatchedPres.Add(fix);
                             Modbase.Harmony.Patch(fix.PatchMethod, go, biff);
@@ -82,7 +82,7 @@ namespace Analyzer.Profiling
                 {
                     try
                     {
-                        if (Modbase.Harmony.Id != fix.owner && !PatchedPosts.Contains(fix))
+                        if (Modbase.Harmony.Id != fix.owner && Modbase.StaticHarmony.Id != fix.owner && !PatchedPosts.Contains(fix))
                         {
                             PatchedPosts.Add(fix);
                             Modbase.Harmony.Patch(fix.PatchMethod, go, biff);

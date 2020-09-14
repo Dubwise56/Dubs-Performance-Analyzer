@@ -53,7 +53,7 @@ namespace Analyzer.Profiling
             var patches = Harmony.GetAllPatchedMethods().ToList();
 
             var filteredTranspilers = patches
-                .Where(m => Harmony.GetPatchInfo(m).Transpilers.Any(p => p.owner != Modbase.Harmony.Id && !PatchedMeths.Contains(p.PatchMethod)))
+                .Where(m => Harmony.GetPatchInfo(m).Transpilers.Any(p => p.owner != Modbase.Harmony.Id && p.owner != Modbase.StaticHarmony.Id && !PatchedMeths.Contains(p.PatchMethod)))
                 .ToList();
 
             PatchedMeths.AddRange(filteredTranspilers);
