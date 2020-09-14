@@ -57,6 +57,8 @@ namespace Analyzer.Profiling
 
         public static void EndUpdate()
         {
+            if(Analyzer.CurrentlyPaused) return; 
+
             Analyzer.UpdateCycle(); // Update all our profilers, record measurements
 
             deltaTime += Time.deltaTime;

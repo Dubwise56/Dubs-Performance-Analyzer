@@ -74,12 +74,5 @@ namespace Analyzer
             public static string logs_calls_desc => "logs.calls.desc".TranslateSimple();
             public static string logs_name_desc => "logs.name.desc".TranslateSimple();
         }
-
-        [DefOf]
-        public static class DefOfs
-        {
-
-        }
-
     }
 }

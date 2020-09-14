@@ -37,6 +37,14 @@ namespace Analyzer.Profiling
             UnpatchAllInternalMethods();
         }
 
+        private static void UnpatchAllInternalMethods()
+        {
+            InternalMethodUtility.Harmony.UnpatchAll(InternalMethodUtility.Harmony.Id);
+            InternalMethodUtility.PatchedInternals.Clear();
+
+            MethodTransplanting.methods.Clear();
+        }
+
         /*
          * Utility
          */
@@ -269,10 +277,10 @@ namespace Analyzer.Profiling
 
                 var allPatches = infos.Prefixes.Concat(infos.Postfixes, infos.Transpilers, infos.Finalizers);
 
-                foreach(var patch in allPatches)
+                foreach (var patch in allPatches)
                 {
-                    if(patch.PatchMethod == method)
-                    { 
+                    if (patch.PatchMethod == method)
+                    {
                         Modbase.Harmony.Unpatch(methodBase, method);
                         return;
                     }
@@ -493,10 +501,9 @@ namespace Analyzer.Profiling
                 GUIController.AddEntry(method.Name + "-int", Category.Update);
                 GUIController.SwapToEntry(method.Name + "-int");
 
-                InternalMethodUtility.curMeth = method;
                 InternalMethodUtility.PatchedInternals.Add(method);
 
-                Task.Factory.StartNew( () => InternalMethodUtility.Harmony.Patch(method, null, null, InternalMethodUtility.InternalProfiler));
+                Task.Factory.StartNew(() => InternalMethodUtility.Harmony.Patch(method, null, null, InternalMethodUtility.InternalProfiler));
             }
             catch (Exception e)
             {
@@ -530,22 +537,10 @@ namespace Analyzer.Profiling
         }
         private static void UnpatchInternalMethodFull(MethodInfo method)
         {
-            InternalMethodUtility.curMeth = method;
             InternalMethodUtility.Harmony.Unpatch(method, HarmonyPatchType.Transpiler, InternalMethodUtility.Harmony.Id);
             InternalMethodUtility.PatchedInternals.Remove(method);
         }
 
-        public static void UnpatchAllInternalMethods()
-        {
-            UnpatchAllInternalMethodsFull();
-        }
-        private static void UnpatchAllInternalMethodsFull()
-        {
-            InternalMethodUtility.Harmony.UnpatchAll(InternalMethodUtility.Harmony.Id);
-            InternalMethodUtility.PatchedInternals.Clear();
-            InternalMethodUtility.KeyMethods.Clear();
-            InternalMethodUtility.curMeth = null;
-        }
 
         public static void PatchAssembly(string name)
         {

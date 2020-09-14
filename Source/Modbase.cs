@@ -1,5 +1,4 @@
-﻿using Analyzer.Profiling;
-using HarmonyLib;
+﻿using HarmonyLib;
 using RimWorld;
 using System;
 using System.Collections.Generic;

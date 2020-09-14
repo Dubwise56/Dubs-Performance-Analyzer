@@ -19,7 +19,7 @@ namespace Analyzer.Profiling
             if (Widgets.ButtonImage(row, TexButton.SpeedButtonTextures[Analyzer.CurrentlyPaused ? 1 : 0]))
             {
                 Analyzer.CurrentlyPaused = !Analyzer.CurrentlyPaused;
-                GUIController.CurrentEntry.SetActive(Analyzer.CurrentlyPaused);
+                GUIController.CurrentEntry.SetActive(!Analyzer.CurrentlyPaused);
             }
 
             TooltipHandler.TipRegion(row, ResourceCache.Strings.top_pause_analyzer);

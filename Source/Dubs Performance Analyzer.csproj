@@ -52,6 +52,7 @@
     <Compile Include="Profiling\GUI\Panel_Tabs.cs" />
     <Compile Include="Profiling\GUI\Panel_Graph.cs" />
     <Compile Include="Profiling\GUI\Panel_TopRow.cs" />
+    <Compile Include="Profiling\Utility\MethodTransplanting.cs" />
     <Compile Include="Window_Analyzer.cs" />
     <Compile Include="Profiling\GUI\Panel_Logs.cs" />
     <Compile Include="Panel_Settings.cs" />
