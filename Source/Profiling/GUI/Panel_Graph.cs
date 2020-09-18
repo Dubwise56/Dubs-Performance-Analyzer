@@ -96,11 +96,10 @@ namespace Analyzer.Profiling
                 double LastMax = max;
                 var log = Analyzer.Logs.First(log => log.key == prof.key);
                 max = log.max;
+                var maxCalls = log.maxCalls;
 
                 if (max > WindowMax)
                     WindowMax = (float)max;
-
-                Vector2 last = new Vector2();
 
                 int counter = entries;
                 uint profIndex = prof.currentIndex;
@@ -108,18 +107,25 @@ namespace Analyzer.Profiling
                 var diff = position.y - position.height;
                 var av = log.average;
 
+                Vector2 last = new Vector2();
+                //Vector2 lastHits = new Vector2();
+
                 while (counter > 0)
                 {
                     var adjIndex = entries - counter;
                     var timeEntry = (float)prof.times[profIndex];
+                    var hitsEntry = prof.hits[profIndex];
 
                     var y = position.height + (diff) * (timeEntry / WindowMax);
+                    //var callsY = position.height + (diff) * (hitsEntry / maxCalls);
 
                     Vector2 screenPoint = new Vector2(position.xMax - (gap * adjIndex), y);
+                    //Vector2 hitsPoint = new Vector2(position.xMax - (gap * adjIndex), callsY);
 
                     if (adjIndex != 0)
                     {
                         Widgets.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f);
+                        //Widgets.DrawLine(lastHits, hitsPoint, Color.yellow, 1f);
 
                         Rect relevantArea = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
                         if (Mouse.IsOver(relevantArea))
@@ -127,7 +133,7 @@ namespace Analyzer.Profiling
                             if (adjIndex != hoverVal)
                             {
                                 hoverVal = adjIndex;
-                                hoverValStr = $"{timeEntry:0.00000}ms {prof.hits[profIndex]} calls";
+                                hoverValStr = $"{timeEntry:0.00000}ms {hitsEntry} calls";
                             }
                             SimpleCurveDrawer.DrawPoint(screenPoint);
                         }
@@ -135,6 +141,7 @@ namespace Analyzer.Profiling
 
 
                     last = screenPoint;
+                    //lastHits = hitsPoint;
 
                     counter--;
                     profIndex = (profIndex - 1) % Profiler.RECORDS_HELD;
@@ -152,7 +159,7 @@ namespace Analyzer.Profiling
                 float LogMaxY = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)max);
                 Rect crunt = position;
                 crunt.y = LogMaxY;
-                Widgets.Label(crunt, MaxStr);
+                Widgets.Label(crunt, MaxStr); // $" Max Time: {max:0.0000}ms\nMax Calls: {maxCalls}");
                 Widgets.DrawLine(new Vector2(position.x, LogMaxY), new Vector2(position.xMax, LogMaxY), Color.red, 1f);
 
                 last = Vector2.zero;

@@ -1,66 +1,26 @@
 ﻿using HarmonyLib;
 using RimWorld;
-using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Verse;
 
 namespace Analyzer.Profiling
 {
     [Entry("UIRootOnGUI", Category.GUI)]
-    [HarmonyPatch(typeof(UIRoot_Play), nameof(UIRoot_Play.UIRootOnGUI))]
     internal class H_UIRootOnGUI
     {
         public static bool Active = false;
 
-        public static void ProfilePatch()
+        public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            HarmonyMethod go = new HarmonyMethod(typeof(H_UIRootOnGUI), nameof(Prefix));
-            HarmonyMethod biff = new HarmonyMethod(typeof(H_UIRootOnGUI), nameof(Postfix));
-
-            void DoMe(Type t, string m)
-            {
-                Modbase.Harmony.Patch(AccessTools.Method(t, m), go, biff);
-            }
-
-            DoMe(typeof(UnityGUIBugsFixer), nameof(UnityGUIBugsFixer.OnGUI));
-            DoMe(typeof(MapInterface), nameof(MapInterface.MapInterfaceOnGUI_BeforeMainTabs));
-            DoMe(typeof(MapInterface), nameof(MapInterface.MapInterfaceOnGUI_AfterMainTabs));
-            DoMe(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentOnGUI));
-            DoMe(typeof(MainButtonsRoot), nameof(MainButtonsRoot.MainButtonsOnGUI));
-            DoMe(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI));
-            DoMe(typeof(AlertsReadout), nameof(AlertsReadout.AlertsReadoutOnGUI));
-        }
-
-        [HarmonyPriority(Priority.Last)]
-        public static void Prefix(object __instance, MethodBase __originalMethod, ref Profiler __state)
-        {
-            if (Active || H_RootUpdate.Active)
-            {
-                string state = string.Empty;
-                if (__instance != null)
-                {
-                    state = __instance.GetType().Name;
-                }
-                else if (__originalMethod.ReflectedType != null)
-                {
-                    state = __originalMethod.ReflectedType.Name;
-                }
-                else
-                {
-                    state = __originalMethod.GetType().Name;
-                }
-
-                __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
-            }
-        }
-
-        [HarmonyPriority(Priority.First)]
-        public static void Postfix(Profiler __state)
-        {
-            if (Active || H_RootUpdate.Active)
-            {
-                __state?.Stop();
-            }
+            yield return AccessTools.Method(typeof(UIRoot_Play), nameof(UIRoot_Play.UIRootOnGUI));
+            yield return AccessTools.Method(typeof(UnityGUIBugsFixer), nameof(UnityGUIBugsFixer.OnGUI));
+            yield return AccessTools.Method(typeof(MapInterface), nameof(MapInterface.MapInterfaceOnGUI_BeforeMainTabs));
+            yield return AccessTools.Method(typeof(MapInterface), nameof(MapInterface.MapInterfaceOnGUI_AfterMainTabs));
+            yield return AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentOnGUI));
+            yield return AccessTools.Method(typeof(MainButtonsRoot), nameof(MainButtonsRoot.MainButtonsOnGUI));
+            yield return AccessTools.Method(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI));
+            yield return AccessTools.Method(typeof(AlertsReadout), nameof(AlertsReadout.AlertsReadoutOnGUI));
         }
     }
 }

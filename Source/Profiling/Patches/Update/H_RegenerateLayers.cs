@@ -1,50 +1,22 @@
 ﻿using HarmonyLib;
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Verse;
 
 namespace Analyzer.Profiling
 {
     [StaticConstructorOnStartup]
-    [HarmonyPatch(typeof(Section), nameof(Section.RegenerateLayers))]
     internal class H_RegenerateLayers
     {
         public static Entry p = Entry.Create("Sections", Category.Update, "", typeof(H_RegenerateLayers), false);
 
         public static bool Active = false;
-        public static bool Prefix(MethodBase __originalMethod, Section __instance, MapMeshFlag changeType)
-        {
-            if (p.isActive)
-            {
-                for (int i = 0; i < __instance.layers.Count; i++)
-                {
-                    SectionLayer sectionLayer = __instance.layers[i];
-                    if ((sectionLayer.relevantChangeTypes & changeType) != MapMeshFlag.None)
-                    {
-                        try
-                        {
-                            Profiler prof = p.Start(__instance.layers[i].GetType().FullName, __originalMethod);
-                            sectionLayer.Regenerate();
-                            prof.Stop();
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.Error(string.Concat(new object[]
-                            {
-                                "Could not regenerate layer ",
-                                sectionLayer.ToStringSafe<SectionLayer>(),
-                                ": ",
-                                ex
-                            }), false);
-                        }
-                    }
-                }
 
-                return false;
-            }
-
-            return true;
-        }
+        public static IEnumerable<MethodInfo> GetPatchMethods() => typeof(SectionLayer).AllSubclasses().Select(sl => sl.GetMethod("Regenerate"));
+        public static string GetLabel(SectionLayer __instance) => __instance.GetType().FullName;
     }
 
     // [ProfileMode("MapDrawer", UpdateMode.Update)]

@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Verse;
@@ -11,26 +12,10 @@ namespace Analyzer.Profiling
     {
         public static bool Active = false;
         public static List<MethodInfo> patched = new List<MethodInfo>();
-        public static void ProfilePatch()
+
+        public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            HarmonyMethod go = new HarmonyMethod(typeof(H_ThinkNodes), nameof(Prefix));
-            HarmonyMethod biff = new HarmonyMethod(typeof(H_ThinkNodes), nameof(Postfix));
-
-            //foreach (var allLeafSubclass in typeof(ThinkNode).AllSubclassesNonAbstract())
-            //{
-            //    var mef = AccessTools.Method(allLeafSubclass, nameof(ThinkNode.TryIssueJobPackage));
-
-            //    if (!mef.DeclaringType.IsAbstract && mef.DeclaringType == allLeafSubclass)
-            //    {
-            //        if (!patched.Contains(mef))
-            //        {
-            //            Analyzer.harmony.Patch(mef, go, biff);
-            //            patched.Add(mef);
-            //        }
-            //    }
-            //}
-
-            foreach (System.Type typ in GenTypes.AllTypes)
+            foreach (Type typ in GenTypes.AllTypes)
             {
                 if (typeof(ThinkNode_JobGiver).IsAssignableFrom(typ))
                 {
@@ -39,13 +24,12 @@ namespace Analyzer.Profiling
                     {
                         if (!patched.Contains(trygive))
                         {
-                            Modbase.Harmony.Patch(trygive, go, biff);
+                            yield return trygive;
                             patched.Add(trygive);
                         }
                     }
                 }
-                else
-                if (typeof(ThinkNode).IsAssignableFrom(typ))
+                else if (typeof(ThinkNode).IsAssignableFrom(typ))
                 {
                     MethodInfo mef = AccessTools.Method(typ, nameof(ThinkNode.TryIssueJobPackage));
 
@@ -53,43 +37,11 @@ namespace Analyzer.Profiling
                     {
                         if (!patched.Contains(mef))
                         {
-                            Modbase.Harmony.Patch(mef, go, biff);
+                            yield return mef;
                             patched.Add(mef);
                         }
                     }
                 }
-            }
-        }
-
-        [HarmonyPriority(Priority.Last)]
-        public static void Prefix(object __instance, MethodBase __originalMethod, ref Profiler __state)
-        {
-            if (Active)
-            {
-                string state = string.Empty;
-                if (__instance != null)
-                {
-                    state = __instance.GetType().Name;
-                }
-                else
-                if (__originalMethod.ReflectedType != null)
-                {
-                    state = __originalMethod.ReflectedType.Name;
-                }
-                else
-                {
-                    state = __originalMethod.GetType().Name;
-                }
-                __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
-            }
-        }
-
-        [HarmonyPriority(Priority.First)]
-        public static void Postfix(Profiler __state)
-        {
-            if (Active)
-            {
-                __state.Stop();
             }
         }
     }

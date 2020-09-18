@@ -5,8 +5,6 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-
-
     [Entry("DrawDynamicThings", Category.Update, "DrawDynThinTipKey")]
     [HarmonyPatch(typeof(DynamicDrawManager), nameof(DynamicDrawManager.DrawDynamicThings))]
     internal class H_DrawDynamicThings
@@ -68,9 +66,9 @@ namespace Analyzer.Profiling
                                         name = thing.GetType().Name;
                                     }
 
-                                    ProfileController.Start(name, Namer, thing.GetType(), thing.def, null, __originalMethod);
+                                    var prof = ProfileController.Start(name, Namer, thing.GetType(), thing.def, null, __originalMethod);
                                     thing.Draw();
-                                    ProfileController.Stop(name);
+                                    prof.Stop();
                                 }
                                 catch (Exception ex)
                                 {

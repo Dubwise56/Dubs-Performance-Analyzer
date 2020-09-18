@@ -52,7 +52,8 @@
     <Compile Include="Profiling\GUI\Panel_Tabs.cs" />
     <Compile Include="Profiling\GUI\Panel_Graph.cs" />
     <Compile Include="Profiling\GUI\Panel_TopRow.cs" />
-    <Compile Include="Profiling\Utility\MethodTransplanting.cs" />
+    <Compile Include="Profiling\Utility\Patching Helpers\MethodTransplanting.cs" />
+    <Compile Include="Profiling\Utility\Patching Helpers\TranspilerMethodUtility.cs" />
     <Compile Include="Window_Analyzer.cs" />
     <Compile Include="Profiling\GUI\Panel_Logs.cs" />
     <Compile Include="Panel_Settings.cs" />
@@ -62,7 +63,7 @@
     <Compile Include="Profiling\GUI\DubGUI.cs" />
     <Compile Include="Profiling\Statistics\ProfileController.cs" />
     <Compile Include="ResourceCache.cs" />
-    <Compile Include="Profiling\Utility\InternalMethodUtility.cs" />
+    <Compile Include="Profiling\Utility\Patching Helpers\InternalMethodUtility.cs" />
     <Compile Include="Profiling\Patches\GUI\H_GameComponentOnGUI.cs" />
     <Compile Include="Profiling\Patches\Update\H_GameComponentUpdate.cs" />
     <Compile Include="Profiling\Patches\Tick\H_GameComponentTick.cs" />
@@ -83,7 +84,7 @@
     <Compile Include="MainButton_Toggle.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Profiling\Statistics\ProfileLog.cs" />
-    <Compile Include="Profiling\Utility\Utility.cs" />
+    <Compile Include="Profiling\Utility\Patching Helpers\Utility.cs" />
     <Compile Include="Profiling\Patches\Custom\CustomProfilers.cs" />
     <Compile Include="Profiling\Patches\GUI\H_ColonistBarOnGUI.cs" />
     <Compile Include="Profiling\Patches\Tick\H_DoSingleTick.cs" />

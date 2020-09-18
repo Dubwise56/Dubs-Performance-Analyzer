@@ -159,7 +159,7 @@ namespace Analyzer.Profiling
 
             void CollectPatchInformation(string type, Patch patch)
             {
-                if (patch.owner == Modbase.Harmony.Id || patch.owner == InternalMethodUtility.Harmony.Id) return;
+                if (patch.owner == Modbase.Harmony.Id) return;
 
                 GeneralInformation subPatch = new GeneralInformation();
                 subPatch.method = patch.PatchMethod;

@@ -89,8 +89,8 @@ namespace Analyzer.Profiling
                 logic.MedianCalls = LocalCalls[currentLogCount / 2];
 
                 // Max
-                logic.HighestTime = LocalTimes[0];
-                logic.HighestCalls = LocalCalls[0];
+                logic.HighestTime = LocalTimes[currentLogCount - 1];
+                logic.HighestCalls = LocalCalls[currentLogCount - 1];
 
                 // general
                 logic.Entries = currentLogCount;

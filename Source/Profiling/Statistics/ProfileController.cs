@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RimWorld.QuestGen;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -19,14 +20,14 @@ namespace Analyzer.Profiling
         private static bool midUpdate = false;
 #endif
         private static float deltaTime = 0.0f;
-        public static float updateFrequency => 1/Settings.updatesPerSecond; // how many ms per update (capped at every 0.05ms)
+        public static float updateFrequency => 1 / Settings.updatesPerSecond; // how many ms per update (capped at every 0.05ms)
 
         public static Dictionary<string, Profiler> Profiles => profiles;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Profiler Start(string key, Func<string> GetLabel = null, Type type = null, Def def = null, Thing thing = null, MethodBase meth = null)
         {
-            if (!Analyzer.CurrentlyProfling) return null;
+            if (!Analyzer.CurrentlyProfiling) return null;
 
             if (Profiles.TryGetValue(key, out Profiler prof)) return prof.Start();
             else
@@ -37,6 +38,7 @@ namespace Analyzer.Profiling
                 return Profiles[key].Start();
             }
         }
+
         public static void Stop(string key)
         {
             if (Profiles.TryGetValue(key, out Profiler prof))
@@ -48,7 +50,7 @@ namespace Analyzer.Profiling
         public static void BeginUpdate()
         {
 #if DEBUG
-            if (!Analyzer.CurrentlyProfling) return;
+            if (!Analyzer.CurrentlyProfiling) return;
 
             if (midUpdate) ThreadSafeLogger.Error("[Analyzer] Attempting to begin new update cycle when the previous update has not ended");
             midUpdate = true;
@@ -57,7 +59,7 @@ namespace Analyzer.Profiling
 
         public static void EndUpdate()
         {
-            if(Analyzer.CurrentlyPaused) return; 
+            if (Analyzer.CurrentlyPaused) return;
 
             Analyzer.UpdateCycle(); // Update all our profilers, record measurements
 

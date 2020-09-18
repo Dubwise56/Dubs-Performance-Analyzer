@@ -1,31 +1,16 @@
 ﻿using HarmonyLib;
 using RimWorld;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace Analyzer.Profiling
 {
     [Entry("DoTabs", Category.GUI)]
-    [HarmonyPatch(typeof(InspectPaneUtility), "DoTabs")]
     internal class H_DoTabs
     {
         public static bool Active = false;
 
-        [HarmonyPriority(Priority.Last)]
-        public static void Prefix(MethodBase __originalMethod, ref Profiler __state)
-        {
-            if (Active)
-            {
-                __state = ProfileController.Start("InspectPaneUtility.DoTabs", null, null, null, null, __originalMethod);
-            }
-        }
-
-        [HarmonyPriority(Priority.First)]
-        public static void Postfix(Profiler __state)
-        {
-            if (Active)
-            {
-                __state.Stop();
-            }
-        }
+        public static IEnumerable<MethodInfo> GetPatchMethods() { yield return AccessTools.Method(typeof(InspectPaneUtility), nameof(InspectPaneUtility.DoTabs)); }
+        public static string GetLabel() => "InspectPaneUtility-DoTabs";
     }
 }

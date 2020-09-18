@@ -14,21 +14,19 @@ namespace Analyzer.Profiling
         public static HarmonyMethod InternalProfiler = new HarmonyMethod(typeof(InternalMethodUtility), nameof(InternalMethodUtility.Transpiler));
 
         public static HashSet<MethodInfo> PatchedInternals = new HashSet<MethodInfo>();
+        public static Dictionary<string, MethodInfo> transpiledMethods = new Dictionary<string, MethodInfo>();
 
-        private static Harmony inst = null;
-        public static Harmony Harmony => inst ??= new Harmony("InternalMethodProfiling");
+        public static void ClearCaches()
+        {
+            PatchedInternals.Clear();
+            transpiledMethods.Clear();
+        }
 
-        public static Dictionary<string, MethodInfo> KeyMethods = new Dictionary<string, MethodInfo>();
-
-        /*
-         * Utility
-         */
         public static bool IsFunctionCall(OpCode instruction)
         {
             return (instruction == OpCodes.Call || instruction == OpCodes.Callvirt);// || instruction == OpCodes.Calli);
         }
 
-        [HarmonyDebug]
         private static IEnumerable<CodeInstruction> Transpiler(MethodBase __originalMethod, IEnumerable<CodeInstruction> codeInstructions)
         {
             List<CodeInstruction> instructions = new List<CodeInstruction>(codeInstructions);
@@ -37,19 +35,27 @@ namespace Analyzer.Profiling
             {
                 if (IsFunctionCall(instructions[i].opcode))
                 {
-                    if (i == 0 || (i != 0 && instructions[i - 1].opcode != OpCodes.Constrained)) // lets ignore complicated cases
+                    if (i == 0 || instructions[i - 1].opcode != OpCodes.Constrained)
                     {
-                        CodeInstruction inst = MethodTransplanting.ReplaceMethodInstruction(instructions[i], AccessTools.TypeByName(__originalMethod.Name + "-int"));
-                        if (inst != instructions[i])
-                        {
-                            instructions[i] = inst;
-                        }
+                        MethodInfo meth = null;
+                        try { meth = instructions[i].operand as MethodInfo; } catch { }
+                        if(meth == null) continue;
+
+                        CodeInstruction inst = MethodTransplanting.ReplaceMethodInstruction(
+                            instructions[i],
+                            meth.DeclaringType.FullName + "." + meth.Name,
+                            AccessTools.TypeByName(__originalMethod.Name + "-int"),
+                            AccessTools.Field(typeof(InternalMethodUtility), "transpiledMethods"),
+                            ref transpiledMethods);
+
+                        if (inst != instructions[i]) instructions[i] = inst;
                     }
                 }
             }
 
             return instructions;
         }
+
 
     }
 }

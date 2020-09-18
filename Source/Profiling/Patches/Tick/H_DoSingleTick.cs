@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using RimWorld.Planet;
-using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Verse;
 
@@ -12,56 +12,24 @@ namespace Analyzer.Profiling
     {
         public static bool Active = false;
 
-        public static void Start(object __instance, MethodBase __originalMethod, ref Profiler __state)
+        public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            if (!Active) return;
-
-            string state = string.Empty;
-            if (__instance != null)
-            {
-                state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
-            }
-            else
-            if (__originalMethod.ReflectedType != null)
-            {
-                state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
-            }
-            __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
-        }
-
-        public static void Stop(Profiler __state)
-        {
-            if (Active)
-            {
-                __state?.Stop();
-            }
-        }
-
-        public static void ProfilePatch()
-        {
-            HarmonyMethod go = new HarmonyMethod(typeof(H_DoSingleTick), nameof(Start));
-            HarmonyMethod biff = new HarmonyMethod(typeof(H_DoSingleTick), nameof(Stop));
-
-            void slop(Type e, string s)
-            {
-                Modbase.Harmony.Patch(AccessTools.Method(e, s), go, biff);
-            }
-            slop(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentTick));
-            slop(typeof(ScreenshotTaker), nameof(ScreenshotTaker.QueueSilentScreenshot));
-            slop(typeof(FilthMonitor), nameof(FilthMonitor.FilthMonitorTick));
-            slop(typeof(Map), nameof(Map.MapPreTick));
-            slop(typeof(Map), nameof(Map.MapPostTick));
-            slop(typeof(DateNotifier), nameof(DateNotifier.DateNotifierTick));
-            slop(typeof(Scenario), nameof(Scenario.TickScenario));
-            slop(typeof(World), nameof(World.WorldTick));
-            slop(typeof(StoryWatcher), nameof(StoryWatcher.StoryWatcherTick));
-            slop(typeof(GameEnder), nameof(GameEnder.GameEndTick));
-            slop(typeof(Storyteller), nameof(Storyteller.StorytellerTick));
-            slop(typeof(TaleManager), nameof(TaleManager.TaleManagerTick));
-            slop(typeof(World), nameof(World.WorldPostTick));
-            slop(typeof(History), nameof(History.HistoryTick));
-            slop(typeof(LetterStack), nameof(LetterStack.LetterStackTick));
-            slop(typeof(Autosaver), nameof(Autosaver.AutosaverTick));
+            yield return AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentTick));
+            yield return AccessTools.Method(typeof(ScreenshotTaker), nameof(ScreenshotTaker.QueueSilentScreenshot));
+            yield return AccessTools.Method(typeof(FilthMonitor), nameof(FilthMonitor.FilthMonitorTick));
+            yield return AccessTools.Method(typeof(Map), nameof(Map.MapPreTick));
+            yield return AccessTools.Method(typeof(Map), nameof(Map.MapPostTick));
+            yield return AccessTools.Method(typeof(DateNotifier), nameof(DateNotifier.DateNotifierTick));
+            yield return AccessTools.Method(typeof(Scenario), nameof(Scenario.TickScenario));
+            yield return AccessTools.Method(typeof(World), nameof(World.WorldTick));
+            yield return AccessTools.Method(typeof(StoryWatcher), nameof(StoryWatcher.StoryWatcherTick));
+            yield return AccessTools.Method(typeof(GameEnder), nameof(GameEnder.GameEndTick));
+            yield return AccessTools.Method(typeof(Storyteller), nameof(Storyteller.StorytellerTick));
+            yield return AccessTools.Method(typeof(TaleManager), nameof(TaleManager.TaleManagerTick));
+            yield return AccessTools.Method(typeof(World), nameof(World.WorldPostTick));
+            yield return AccessTools.Method(typeof(History), nameof(History.HistoryTick));
+            yield return AccessTools.Method(typeof(LetterStack), nameof(LetterStack.LetterStackTick));
+            yield return AccessTools.Method(typeof(Autosaver), nameof(Autosaver.AutosaverTick));
         }
     }
 }

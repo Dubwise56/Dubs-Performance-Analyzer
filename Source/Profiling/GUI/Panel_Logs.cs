@@ -231,7 +231,7 @@ namespace Analyzer.Profiling
 
                         void GetString(string type, Patch patch)
                         {
-                            if (patch.owner != Modbase.Harmony.Id && patch.owner != InternalMethodUtility.Harmony.Id)
+                            if (patch.owner != Modbase.Harmony.Id)
                             {
                                 string ass = patch.PatchMethod.DeclaringType.Assembly.FullName;
                                 string modName = ModInfoCache.AssemblyToModname[ass];

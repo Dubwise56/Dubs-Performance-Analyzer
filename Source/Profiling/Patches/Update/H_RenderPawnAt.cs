@@ -1,4 +1,7 @@
 ﻿using HarmonyLib;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using Verse;
@@ -6,34 +9,16 @@ using Verse;
 namespace Analyzer.Profiling
 {
     [Entry("PawnRenderer", Category.Update)]
-    [HarmonyPatch(typeof(PawnRenderer), nameof(PawnRenderer.RenderPawnAt), typeof(Vector3), typeof(RotDrawMode), typeof(bool), typeof(bool))]
     internal class H_RenderPawnAt
     {
         public static bool Active = false;
 
-        //public static void PatchMe()
-        //{
-        //    var biff = new HarmonyMethod(typeof(H_RenderPawnAt).GetMethod(nameof(Prefix)), new[] { typeof(Vector3), typeof(RotDrawMode), typeof(bool), typeof(bool) }]);
-        //    var skiff = typeof(PawnRenderer).GetMethod(nameof(PawnRenderer.RenderPawnAt));
-        //    Analyzer.harmony.Patch(skiff, biff);
-        //}
-
-        [HarmonyPriority(Priority.Last)]
-        public static void Prefix(MethodBase __originalMethod, PawnRenderer __instance, ref Profiler __state)
+        public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            if (Active)
-            {
-                __state = ProfileController.Start(__instance.pawn.GetHashCode().ToString(), () => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}", null, null, null, __originalMethod);
-            }
+            yield return AccessTools.Method(typeof(PawnRenderer), nameof(PawnRenderer.RenderPawnAt), new Type[] { typeof(Vector3), typeof(RotDrawMode), typeof(bool), typeof(bool)});
         }
+        public static string GetLabel(PawnRenderer __instance) => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}";
+        public static string GetName(PawnRenderer __instance) => __instance.pawn.GetHashCode().ToString();
 
-        [HarmonyPriority(Priority.First)]
-        public static void Postfix(Profiler __state)
-        {
-            if (Active)
-            {
-                __state.Stop();
-            }
-        }
     }
 }

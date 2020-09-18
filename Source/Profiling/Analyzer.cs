@@ -35,7 +35,7 @@ namespace Analyzer.Profiling
         public static object LogicLock => logicSync;
 
         public static bool CurrentlyPaused { get; set; } = false;
-        public static bool CurrentlyProfling => currentlyProfiling && !CurrentlyPaused;
+        public static bool CurrentlyProfiling => currentlyProfiling && !CurrentlyPaused;
 
         public static int GetCurrentLogCount => currentLogCount;
 
@@ -92,7 +92,11 @@ namespace Analyzer.Profiling
             {
                 try
                 {
-                    AccessTools.Method(entry.type, "ProfilePatch")?.Invoke(null, null);
+                    var meth = AccessTools.Method(entry.type, "ProfilePatch");
+
+                    if(meth != null) meth.Invoke(null, null);
+                    else MethodTransplanting.PatchMethods(entry.type);
+
                     entry.isLoading = false;
                     entry.isPatched = true;
                 }
@@ -126,8 +130,8 @@ namespace Analyzer.Profiling
             foreach (var value in Profiles.Values) // o(n)
             {
                 // o(m)
-                value.CollectStatistics(Mathf.Min(currentLogCount, MAX_LOG_COUNT - 1), out var average, out var max, out var total, out var calls);
-                newLogs.Add(new ProfileLog(value.label, string.Empty, average, (float)max, null, value.key, string.Empty, 0, (float)total, calls, value.type, value.meth));
+                value.CollectStatistics(Mathf.Min(currentLogCount, MAX_LOG_COUNT - 1), out var average, out var max, out var total, out var calls, out var maxCalls);
+                newLogs.Add(new ProfileLog(value.label, string.Empty, average, (float)max, null, value.key, string.Empty, 0, (float)total, calls, maxCalls, value.type, value.meth));
 
                 sumOfAverages += average;
             }

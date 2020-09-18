@@ -60,5 +60,6 @@ namespace Analyzer
 
             Panel_Settings.Draw(canvas);
         }
+
     }
 }

@@ -151,7 +151,9 @@ namespace Analyzer.Profiling
                         if (DubGUI.Checkbox(row, keySetting.Value.name, ref cur))
                         {
                             keySetting.Key.SetValue(null, cur);
+
                             ProfileController.Profiles.Clear();
+                            Analyzer.RefreshLogCount();
                         }
                     }
 

@@ -2,6 +2,8 @@
 using RimWorld;
 using RimWorld.Planet;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using Verse;
 using Verse.AI;
@@ -15,46 +17,21 @@ namespace Analyzer.Profiling
     {
         public static bool Active = false;
 
-        public static void ProfilePatch()
+        public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-
-            HarmonyMethod go = new HarmonyMethod(typeof(H_Root), nameof(Start));
-            HarmonyMethod biff = new HarmonyMethod(typeof(H_Root), nameof(Stop));
-
-            void slop(Type e, string s)
-            {
-                Modbase.Harmony.Patch(AccessTools.Method(e, s), go, biff);
-            }
-
-            slop(typeof(ResolutionUtility), nameof(ResolutionUtility.Update));
-            slop(typeof(RealTime), nameof(RealTime.Update));
-            slop(typeof(LongEventHandler), nameof(LongEventHandler.LongEventsUpdate));
-            slop(typeof(Rand), nameof(Rand.EnsureStateStackEmpty));
-            slop(typeof(Widgets), nameof(Widgets.EnsureMousePositionStackEmpty));
-            slop(typeof(SteamManager), nameof(SteamManager.Update));
-            slop(typeof(PortraitsCache), nameof(PortraitsCache.PortraitsCacheUpdate));
-            slop(typeof(AttackTargetsCache), nameof(AttackTargetsCache.AttackTargetsCacheStaticUpdate));
-            slop(typeof(Pawn_MeleeVerbs), nameof(Pawn_MeleeVerbs.PawnMeleeVerbsStaticUpdate));
-            slop(typeof(Storyteller), nameof(Storyteller.StorytellerStaticUpdate));
-            slop(typeof(CaravanInventoryUtility), nameof(CaravanInventoryUtility.CaravanInventoryUtilityStaticUpdate));
-            slop(typeof(UIRoot), nameof(UIRoot.UIRootUpdate));
-            slop(typeof(SoundRoot), nameof(SoundRoot.Update));
-        }
-
-        [HarmonyPriority(Priority.Last)]
-        public static void Start(MethodInfo __originalMethod, ref Profiler __state)
-        {
-            if (Active)
-            {
-                __state = ProfileController.Start($"{__originalMethod.DeclaringType} - {__originalMethod.Name}", null, null, null, null, __originalMethod);
-            }
-        }
-
-        [HarmonyPriority(Priority.First)]
-        public static void Stop(Profiler __state)
-        {
-            if (Active)
-                __state?.Stop();
+            yield return AccessTools.Method(typeof(ResolutionUtility), nameof(ResolutionUtility.Update));
+            yield return AccessTools.Method(typeof(RealTime), nameof(RealTime.Update));
+            yield return AccessTools.Method(typeof(LongEventHandler), nameof(LongEventHandler.LongEventsUpdate));
+            yield return AccessTools.Method(typeof(Rand), nameof(Rand.EnsureStateStackEmpty));
+            yield return AccessTools.Method(typeof(Widgets), nameof(Widgets.EnsureMousePositionStackEmpty));
+            yield return AccessTools.Method(typeof(SteamManager), nameof(SteamManager.Update));
+            yield return AccessTools.Method(typeof(PortraitsCache), nameof(PortraitsCache.PortraitsCacheUpdate));
+            yield return AccessTools.Method(typeof(AttackTargetsCache), nameof(AttackTargetsCache.AttackTargetsCacheStaticUpdate));
+            yield return AccessTools.Method(typeof(Pawn_MeleeVerbs), nameof(Pawn_MeleeVerbs.PawnMeleeVerbsStaticUpdate));
+            yield return AccessTools.Method(typeof(Storyteller), nameof(Storyteller.StorytellerStaticUpdate));
+            yield return AccessTools.Method(typeof(CaravanInventoryUtility), nameof(CaravanInventoryUtility.CaravanInventoryUtilityStaticUpdate));
+            yield return AccessTools.Method(typeof(UIRoot), nameof(UIRoot.UIRootUpdate));
+            yield return AccessTools.Method(typeof(SoundRoot), nameof(SoundRoot.Update));
         }
     }
 }

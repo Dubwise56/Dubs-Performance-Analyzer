@@ -1,5 +1,8 @@
 ﻿using HarmonyLib;
+using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
+using Verse.AI;
 
 namespace Analyzer.Profiling
 {
@@ -8,30 +11,6 @@ namespace Analyzer.Profiling
     {
         public static bool Active = false;
 
-        public static void ProfilePatch()
-        {
-            HarmonyMethod go = new HarmonyMethod(typeof(H_JobAI), nameof(Prefix));
-            HarmonyMethod biff = new HarmonyMethod(typeof(H_JobAI), nameof(Postfix));
-
-            Utility.PatchType("Pawn_JobTracker", go, biff);
-        }
-
-        [HarmonyPriority(Priority.Last)]
-        public static void Prefix(MethodBase __originalMethod, ref Profiler __state)
-        {
-            if (Active)
-            {
-                __state = ProfileController.Start(__originalMethod.Name, null, null, null, null, __originalMethod);
-            }
-        }
-
-        [HarmonyPriority(Priority.First)]
-        public static void Postfix(Profiler __state)
-        {
-            if (Active)
-            {
-                __state.Stop();
-            }
-        }
+        public static IEnumerable<MethodInfo> GetPatchMethods() => Utility.GetTypeMethods(typeof(Pawn_JobTracker));
     }
 }

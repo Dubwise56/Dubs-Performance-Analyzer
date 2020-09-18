@@ -1,41 +1,32 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("GameComponent", Category.Tick)]
+    [Entry("Game Component", Category.Tick)]
     public static class H_GameComponent
     {
         public static bool Active = false;
 
-        public static void ProfilePatch()
+        public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            Modbase.Harmony.Patch(AccessTools.Method(typeof(GameComponentUtility), nameof(GameComponentUtility.GameComponentTick)), new HarmonyMethod(typeof(H_GameComponent), nameof(GameComponentTick)));
-        }
+            var passedTypes = new List<Type>();
+            var types = typeof(GameComponent).AllSubclassesNonAbstract();
 
-        public static bool GameComponentTick(MethodBase __originalMethod)
-        {
-            if (!Active) return true;
-
-            List<GameComponent> components = Current.Game.components;
-            for (int i = 0; i < components.Count; i++)
+            foreach (var type in types)
             {
-                try
-                {
-                    string trash = components[i].GetType().Name;
-                    Profiler prof = ProfileController.Start(trash, null, components[i].GetType(), null, null, __originalMethod);
-                    components[i].GameComponentTick();
-                    prof.Stop();
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex.ToString(), false);
-                }
+                if(!passedTypes.Any(ty => type.IsAssignableFrom(ty)))
+                    passedTypes.Add(type);
             }
-            return false;
+
+
+            return passedTypes.Select(gc => gc.GetMethod("GameComponentTick"));
         }
+        public static string GetLabel(GameComponent __instance) => __instance.GetType().Name;
     }
 }
+

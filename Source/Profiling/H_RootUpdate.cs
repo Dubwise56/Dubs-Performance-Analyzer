@@ -28,7 +28,7 @@ namespace Analyzer.Profiling
 
         public static void Prefix()
         {
-            if (Analyzer.CurrentlyProfling)
+            if (Analyzer.CurrentlyProfiling)
             {
                 long jam = totalBytesOfMemoryUsed;
                 totalBytesOfMemoryUsed = GC.GetTotalMemory(false);

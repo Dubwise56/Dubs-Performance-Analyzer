@@ -15,30 +15,24 @@ namespace Analyzer.Profiling
     {
         public static bool Active = false;
 
-        [HarmonyPriority(Priority.Last)]
-        public static void Start(object __instance, MethodBase __originalMethod, ref Profiler __state)
+        public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            if (!Active) return;
-            string state = string.Empty;
-            if (__instance != null)
-            {
-                state = $"{__instance.GetType().Name}.{__originalMethod.Name}";
-            }
-            else
-            if (__originalMethod.ReflectedType != null)
-            {
-                state = $"{__originalMethod.ReflectedType.Name}.{__originalMethod.Name}";
-            }
-            __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
-        }
+            yield return AccessTools.Method(typeof(Dialog_InfoCard), nameof(Dialog_InfoCard.DoWindowContents));
+            yield return AccessTools.Method(typeof(Dialog_InfoCard), nameof(Dialog_InfoCard.FillCard));
+            yield return AccessTools.Method(typeof(Dialog_InfoCard), nameof(Dialog_InfoCard.DefsToHyperlinks), new[] { typeof(IEnumerable<ThingDef>) });
+            yield return AccessTools.Method(typeof(Dialog_InfoCard), nameof(Dialog_InfoCard.DefsToHyperlinks), new[] { typeof(IEnumerable<DefHyperlink>) });
+            yield return AccessTools.Method(typeof(Dialog_InfoCard), nameof(Dialog_InfoCard.TitleDefsToHyperlinks));
+            yield return AccessTools.Method(typeof(ThingDef), nameof(ThingDef.SpecialDisplayStats));
 
-        [HarmonyPriority(Priority.First)]
-        public static void Stop(Profiler __state)
-        {
-            if (Active)
-            {
-                __state.Stop();
-            }
+            yield return AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(Def), typeof(ThingDef) });
+            yield return AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(RoyalTitleDef), typeof(Faction) });
+            yield return AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(Faction) });
+            yield return AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(AbilityDef) });
+            yield return AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(Thing) });
+            yield return AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(WorldObject) });
+
+            yield return AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsWorker));
+            yield return AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.FinalizeCachedDrawEntries));
         }
 
         public static bool FUUUCK(Rect rect, Thing thing)
@@ -73,50 +67,11 @@ namespace Analyzer.Profiling
 
         public static void ProfilePatch()
         {
-            HarmonyMethod go = new HarmonyMethod(typeof(H_InfoCard), nameof(Start));
-            HarmonyMethod biff = new HarmonyMethod(typeof(H_InfoCard), nameof(Stop));
+            MethodTransplanting.PatchMethods(typeof(H_InfoCard));
 
-            void slop(Type e, string s, Type[] ypes = null)
-            {
-                try
-                {
-                    Modbase.Harmony.Patch(AccessTools.Method(e, s, ypes), go, biff);
-                }
-                catch (Exception exception)
-                {
-                    Log.Error($"{s} {ypes} didn't patch\n{exception}");
-                }
+            Modbase.Harmony.Patch( AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(Thing) }),
+                new HarmonyMethod(typeof(H_InfoCard), nameof(FUUUCK)));
 
-            }
-
-            Modbase.Harmony.Patch(
-                AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(Thing) }),
-                new HarmonyMethod(typeof(H_InfoCard), nameof(FUUUCK))
-                );
-
-            slop(typeof(Dialog_InfoCard), nameof(Dialog_InfoCard.DoWindowContents));
-            slop(typeof(Dialog_InfoCard), nameof(Dialog_InfoCard.FillCard));
-            slop(typeof(Dialog_InfoCard), nameof(Dialog_InfoCard.DefsToHyperlinks), new[] { typeof(IEnumerable<ThingDef>) });
-            slop(typeof(Dialog_InfoCard), nameof(Dialog_InfoCard.DefsToHyperlinks), new[] { typeof(IEnumerable<DefHyperlink>) });
-            slop(typeof(Dialog_InfoCard), nameof(Dialog_InfoCard.TitleDefsToHyperlinks));
-            slop(typeof(ThingDef), nameof(ThingDef.SpecialDisplayStats));
-
-            slop(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(Def), typeof(ThingDef) });
-            slop(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(RoyalTitleDef), typeof(Faction) });
-            slop(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(Faction) });
-            slop(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(AbilityDef) });
-            slop(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(Thing) });
-            slop(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(WorldObject) });
-
-            //   slop(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(Def), typeof(ThingDef) });
-            //   slop(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(AbilityDef) });
-            // slop(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(Thing) });
-            //  slop(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(WorldObject) });
-            //  slop(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(RoyalTitleDef), typeof(Faction) });
-            //  slop(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(Faction) });
-
-            slop(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsWorker));
-            slop(typeof(StatsReportUtility), nameof(StatsReportUtility.FinalizeCachedDrawEntries));
         }
     }
 }

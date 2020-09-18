@@ -50,7 +50,7 @@ namespace Analyzer.Profiling
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Stop()
         {
-            if (!Analyzer.CurrentlyProfling) return;
+            if (!Analyzer.CurrentlyProfiling) return;
 
             stopwatch.Stop();
             hitCounter++;
@@ -83,11 +83,12 @@ namespace Analyzer.Profiling
             hitCounter = 0;
         }
 
-        public void CollectStatistics(int entries, out double average, out double max, out double total, out float calls)
+        public void CollectStatistics(int entries, out double average, out double max, out double total, out float calls, out float maxCalls)
         {
             total = 0;
             average = 0;
             calls = 0;
+            maxCalls = hits[currentIndex];
             max = times[currentIndex];
             // we traverse backwards through the array, so when we reach -1
             // we wrap around back to the end
@@ -97,12 +98,17 @@ namespace Analyzer.Profiling
             while (i >= 0)
             {
                 var time = times[arrayIndex];
+                var call = hits[arrayIndex];
 
-                calls += hits[arrayIndex];
+                calls += call;
                 total += time;
                 if (time > max)
                 {
                     max = time;
+                }
+                if(call > maxCalls)
+                {
+                    maxCalls = call;
                 }
 
                 i--;

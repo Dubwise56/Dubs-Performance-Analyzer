@@ -32,17 +32,10 @@ namespace Analyzer.Profiling
 
             H_HarmonyPatches.PatchedPres.Clear();
             H_HarmonyPatches.PatchedPosts.Clear();
-            H_HarmonyTranspilers.PatchedMeths.Clear();
 
-            UnpatchAllInternalMethods();
-        }
-
-        private static void UnpatchAllInternalMethods()
-        {
-            InternalMethodUtility.Harmony.UnpatchAll(InternalMethodUtility.Harmony.Id);
-            InternalMethodUtility.PatchedInternals.Clear();
-
-            MethodTransplanting.methods.Clear();
+            InternalMethodUtility.ClearCaches();
+            MethodTransplanting.ClearCaches();
+            TranspilerMethodUtility.ClearCaches();
         }
 
         /*
@@ -503,7 +496,7 @@ namespace Analyzer.Profiling
 
                 InternalMethodUtility.PatchedInternals.Add(method);
 
-                Task.Factory.StartNew(() => InternalMethodUtility.Harmony.Patch(method, null, null, InternalMethodUtility.InternalProfiler));
+                Task.Factory.StartNew(() => Modbase.Harmony.Patch(method, transpiler: InternalMethodUtility.InternalProfiler));
             }
             catch (Exception e)
             {
@@ -537,7 +530,7 @@ namespace Analyzer.Profiling
         }
         private static void UnpatchInternalMethodFull(MethodInfo method)
         {
-            InternalMethodUtility.Harmony.Unpatch(method, HarmonyPatchType.Transpiler, InternalMethodUtility.Harmony.Id);
+            Modbase.Harmony.Unpatch(method, HarmonyPatchType.Transpiler, Modbase.Harmony.Id);
             InternalMethodUtility.PatchedInternals.Remove(method);
         }
 
@@ -561,10 +554,7 @@ namespace Analyzer.Profiling
                 GUIController.AddEntry(mod.Name + "-prof", Category.Update);
                 GUIController.SwapToEntry(mod.Name + "-prof");
 
-                HarmonyMethod pre = new HarmonyMethod(AccessTools.TypeByName(mod.Name + "-prof").GetMethod("Prefix", BindingFlags.Public | BindingFlags.Static));
-                HarmonyMethod post = new HarmonyMethod(AccessTools.TypeByName(mod.Name + "-prof").GetMethod("Postfix", BindingFlags.Public | BindingFlags.Static));
-
-                patchAssemblyThread = new Thread(() => PatchAssemblyFull(assembly.ToList(), pre, post));
+                patchAssemblyThread = new Thread(() => PatchAssemblyFull(mod.Name + "-prof", assembly.ToList()));
                 patchAssemblyThread.Start();
             }
             else
@@ -572,8 +562,10 @@ namespace Analyzer.Profiling
                 Error($"Failed to patch {name}");
             }
         }
-        private static void PatchAssemblyFull(List<Assembly> assemblies, HarmonyMethod pre, HarmonyMethod post)
+        private static void PatchAssemblyFull(string key, List<Assembly> assemblies)
         {
+            var meths = new HashSet<MethodInfo>();
+
             foreach (Assembly assembly in assemblies)
             {
                 try
@@ -588,7 +580,32 @@ namespace Analyzer.Profiling
                     foreach (Type type in assembly.GetTypes())
                     {
                         if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null)
-                            PatchTypeFull(type, pre, post);
+                        {
+                            if (patchedTypes.Contains(type.FullName))
+                            {
+                                Warn($"patching {type.FullName} failed, already patched");
+                                return;
+                            }
+                            patchedTypes.Add(type.FullName);
+
+                            foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
+                            {
+
+                                if (!patchedMethods.Contains(method.Name) && method.DeclaringType == type)
+                                {
+                                    try
+                                    {
+                                        if (ValidMethod(method))
+                                            meths.Add(method);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Warn($"Failed to log method {method.Name} errored with the message {e.Message}");
+                                    }
+                                    patchedMethods.Add(method.Name);
+                                }
+                            }
+                        }
                     }
 
 
@@ -599,6 +616,8 @@ namespace Analyzer.Profiling
                     Error($"catch. patching {assembly.FullName} failed, {e.Message}");
                 }
             }
+
+            DynamicTypeBuilder.methods[key] = meths;
         }
 
     }
