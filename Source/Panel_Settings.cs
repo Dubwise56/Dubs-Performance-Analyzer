@@ -240,14 +240,14 @@ namespace Analyzer
 
             public static void ExecuteUnPatch()
             {
-                switch (unPatchType)
-                {
-                    case UnPatchType.Method: Utility.UnpatchMethod(currentUnPatch); break;
-                    case UnPatchType.MethodsOnMethod: Utility.UnpatchMethod(currentUnPatch); break;
-                    case UnPatchType.Type: Utility.UnPatchTypePatches(currentUnPatch); break;
-                    case UnPatchType.InternalMethod: Utility.UnpatchInternalMethod(currentUnPatch); break;
-                    case UnPatchType.All: Analyzer.Cleanup(); break;
-                }
+                //switch (unPatchType)
+                //{
+                //    case UnPatchType.Method: Utility.UnpatchMethod(currentUnPatch); break;
+                //    case UnPatchType.MethodsOnMethod: Utility.UnpatchMethod(currentUnPatch); break;
+                //    case UnPatchType.Type: Utility.UnPatchTypePatches(currentUnPatch); break;
+                //    case UnPatchType.InternalMethod: Utility.UnpatchInternalMethod(currentUnPatch); break;
+                //    case UnPatchType.All: Analyzer.Cleanup(); break;
+                //}
             }
 
             internal static class SearchBar

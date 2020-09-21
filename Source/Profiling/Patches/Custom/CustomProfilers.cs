@@ -12,10 +12,10 @@ namespace Analyzer.Profiling
 
         public static void PatchMeth(string strde)
         {
-            foreach (string str in Utility.GetSplitString(strde))
-            {
-                Utility.PatchMethod(str, pre, post);
-            }
+            //foreach (string str in Utility.GetSplitString(strde))
+            //{
+            //    Utility.PatchMethod(str, pre, post);
+            //}
         }
 
         [HarmonyPriority(Priority.Last)]
@@ -57,18 +57,18 @@ namespace Analyzer.Profiling
         public static HarmonyMethod post = new HarmonyMethod(typeof(CustomProfilersUpdate), nameof(Postfix));
         public static void PatchMeth(string strde)
         {
-            foreach (string str in Utility.GetSplitString(strde))
-            {
-                Utility.PatchMethod(str, pre, post);
-            }
+            //foreach (string str in Utility.GetSplitString(strde))
+            //{
+            //    Utility.PatchMethod(str, pre, post);
+            //}
         }
 
         public static void PatchType(string strde)
         {
-            foreach (string str in Utility.GetSplitString(strde))
-            {
-                Utility.PatchType(str, pre, post);
-            }
+            //foreach (string str in Utility.GetSplitString(strde))
+            //{
+            //    Utility.PatchType(str, pre, post);
+            //}
         }
 
 
@@ -112,17 +112,17 @@ namespace Analyzer.Profiling
         public static HarmonyMethod post = new HarmonyMethod(typeof(CustomProfilersHarmony), nameof(Postfix));
         public static void PatchMeth(string strde)
         {
-            foreach (string str in Utility.GetSplitString(strde))
-            {
-                Utility.PatchMethodPatches(str, pre, post);
-            }
+            //foreach (string str in Utility.GetSplitString(strde))
+            //{
+            //    Utility.PatchMethodPatches(str, pre, post);
+            //}
         }
         public static void PatchType(string strde)
         {
-            foreach (string str in Utility.GetSplitString(strde))
-            {
-                Utility.PatchTypePatches(str, pre, post);
-            }
+            //foreach (string str in Utility.GetSplitString(strde))
+            //{
+            //    Utility.PatchTypePatches(str, pre, post);
+            //}
         }
 
 

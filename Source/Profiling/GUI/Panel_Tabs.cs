@@ -152,8 +152,7 @@ namespace Analyzer.Profiling
                         {
                             keySetting.Key.SetValue(null, cur);
 
-                            ProfileController.Profiles.Clear();
-                            Analyzer.RefreshLogCount();
+                            GUIController.ResetProfilers();
                         }
                     }
 

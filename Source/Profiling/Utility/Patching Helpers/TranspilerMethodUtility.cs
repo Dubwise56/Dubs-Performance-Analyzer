@@ -57,6 +57,8 @@ namespace Analyzer.Profiling
             Myers<CodeInstruction> insts = new Myers<CodeInstruction>(inst.ToArray(), modInstList.ToArray(), methComparer);
             insts.Compute();
 
+            transpiledMethods.Add(__originalMethod.DeclaringType.FullName + "." + __originalMethod.Name, __originalMethod as MethodInfo);
+
             foreach (var thing in insts.changeSet)
             {
                 if (thing.change != ChangeType.Added) continue;
@@ -66,8 +68,7 @@ namespace Analyzer.Profiling
                     thing.value,
                     __originalMethod.DeclaringType.FullName + "." + __originalMethod.Name,
                     typeof(H_HarmonyTranspilers),
-                    AccessTools.Field(typeof(TranspilerMethodUtility), "transpiledMethods"),
-                    ref transpiledMethods);
+                    AccessTools.Field(typeof(TranspilerMethodUtility), "transpiledMethods"));
 
                 for (int i = 0; i < modInstList.Count; i++)
                 {

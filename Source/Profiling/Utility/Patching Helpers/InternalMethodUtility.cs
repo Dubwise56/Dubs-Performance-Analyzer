@@ -41,12 +41,16 @@ namespace Analyzer.Profiling
                         try { meth = instructions[i].operand as MethodInfo; } catch { }
                         if(meth == null) continue;
 
+                        var key = meth.DeclaringType.FullName + "." + meth.Name;
+
+                        if(!transpiledMethods.ContainsKey(key))
+                            transpiledMethods.Add(key, meth);
+                        
                         CodeInstruction inst = MethodTransplanting.ReplaceMethodInstruction(
                             instructions[i],
-                            meth.DeclaringType.FullName + "." + meth.Name,
+                            key,
                             AccessTools.TypeByName(__originalMethod.Name + "-int"),
-                            AccessTools.Field(typeof(InternalMethodUtility), "transpiledMethods"),
-                            ref transpiledMethods);
+                            AccessTools.Field(typeof(InternalMethodUtility), "transpiledMethods"));
 
                         if (inst != instructions[i]) instructions[i] = inst;
                     }

@@ -277,10 +277,10 @@ namespace Analyzer.Profiling
         {
             var meth = log.meth as MethodInfo;
 
-            if (GUIController.CurrentEntry.name.Contains("Harmony")) // we can return an 'unpatch' for methods in a harmony tab
-                yield return new FloatMenuOption("Unpatch Method", () => Utility.UnpatchMethod(meth));
+            //if (GUIController.CurrentEntry.name.Contains("Harmony")) // we can return an 'unpatch' for methods in a harmony tab
+            //    yield return new FloatMenuOption("Unpatch Method", () => Utility.UnpatchMethod(meth));
 
-            yield return new FloatMenuOption("Unpatch methods that patch", () => Utility.UnpatchMethodsOnMethod(meth));
+            //yield return new FloatMenuOption("Unpatch methods that patch", () => Utility.UnpatchMethodsOnMethod(meth));
             yield return new FloatMenuOption("Profile the internal methods of", () => Utility.PatchInternalMethod(meth));
         }
     }

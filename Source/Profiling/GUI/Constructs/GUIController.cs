@@ -66,14 +66,18 @@ namespace Analyzer.Profiling
             if (currentEntry != null)
             {
                 currentEntry.SetActive(false);
-                ProfileController.Profiles.Clear();
-                Analyzer.RefreshLogCount();
-                currentProfiler = null;
-                currentEntry = null;
+                ResetProfilers();
             }
 
             currentTab = Tab(Category.Settings);
             currentCategory = Category.Settings;
+        }
+
+        public static void ResetProfilers()
+        {
+            ProfileController.Profiles.Clear();
+            Analyzer.RefreshLogCount();
+            currentProfiler = null;
         }
 
         public static void SwapToEntry(string entryName)

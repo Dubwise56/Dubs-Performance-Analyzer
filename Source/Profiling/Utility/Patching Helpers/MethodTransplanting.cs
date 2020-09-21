@@ -8,12 +8,14 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine.TestTools;
 using Verse;
 
 namespace Analyzer.Profiling
 {
     public static class MethodTransplanting
     {
+        public static HashSet<MethodInfo> patchedMeths = new HashSet<MethodInfo>();
         public static Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
         public static ConcurrentDictionary<MethodBase, Type> typeInfo = new ConcurrentDictionary<MethodBase, Type>();
 
@@ -48,12 +50,21 @@ namespace Analyzer.Profiling
         public static void PatchMethods(Type type)
         {
             // get the methods
-            var meths = (IEnumerable<MethodInfo>)type.GetMethod("GetPatchMethods", BindingFlags.Public | BindingFlags.Static).Invoke(null, null);
+            var meths = (IEnumerable<MethodInfo>)type.GetMethod("GetPatchMethods", BindingFlags.Public | BindingFlags.Static)?.Invoke(null, null);
 
+            if (meths != null)
+                UpdateMethods(type, meths);
+        }
+
+        public static void UpdateMethods(Type type, IEnumerable<MethodInfo> meths)
+        {
             List<Task> tasks = new List<Task>();
 
             foreach (var meth in meths)
             {
+                if (patchedMeths.Contains(meth)) continue;
+
+                patchedMeths.Add(meth);
                 typeInfo.TryAdd(meth, type);
                 try
                 {
@@ -61,8 +72,6 @@ namespace Analyzer.Profiling
                 }
                 catch { }
             }
-
-            //Task.WaitAll(tasks.ToArray());
         }
 
         public static IEnumerable<CodeInstruction> Transpiler(MethodBase __originalMethod, IEnumerable<CodeInstruction> instructions, ILGenerator ilGen)
@@ -217,7 +226,7 @@ namespace Analyzer.Profiling
 
         // Utility for internal && transpiler profiling.
 
-        public static CodeInstruction ReplaceMethodInstruction(CodeInstruction inst, string key, Type type, FieldInfo dictFieldInfo, ref Dictionary<string, MethodInfo> meths)
+        public static CodeInstruction ReplaceMethodInstruction(CodeInstruction inst, string key, Type type, FieldInfo dictFieldInfo)
         {
             MethodInfo method = null;
             try { method = (MethodInfo)inst.operand; } catch (Exception) { return inst; }
@@ -248,9 +257,6 @@ namespace Analyzer.Profiling
             LocalBuilder localProfiler = gen.DeclareLocal(typeof(Profiler));
 
             InsertStartIL(type, gen, key, localProfiler, dictFieldInfo);
-
-            if (!meths.ContainsKey(key))
-                meths.Add(key, method);
 
             // dynamically add our parameters, as many as they are, into our method
             for (int i = 0; i < parameters.Count(); i++)

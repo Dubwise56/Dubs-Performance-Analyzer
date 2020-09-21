@@ -67,7 +67,7 @@ namespace Analyzer.Profiling
         }
         private static IEnumerable<MethodInfo> ParseTypeMethods(string str)
         {
-            return Utility.GetTypeMethods(str);
+            return Utility.GetTypeMethods(AccessTools.TypeByName(str));
         }
     }
 }
