@@ -10,8 +10,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-
-    [Entry("HarmonyPatches", Category.Update, "HarmPatchesTipKey")]
+    [Entry("entry.update.harmonypatches", Category.Update, "entry.update.harmonypatches.tooltip")]
     internal class H_HarmonyPatches
     {
         public static bool Active = false;

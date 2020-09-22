@@ -1,57 +1,31 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Verse;
 using Verse.Sound;
 
 namespace Analyzer.Profiling
 {
-    [Entry("UIRootUpdate", Category.Update)]
+    [Entry("entry.update.uiroot", Category.Update, "entry.update.uiroot")]
     internal static class H_UIRootUpdate
     {
         public static bool Active = false;
 
-        public static void ProfilePatch()
+        public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-
-            HarmonyMethod go = new HarmonyMethod(typeof(H_UIRootUpdate), nameof(Start));
-            HarmonyMethod biff = new HarmonyMethod(typeof(H_UIRootUpdate), nameof(Stop));
-
-            void slop(Type e, string s)
-            {
-                Modbase.Harmony.Patch(AccessTools.Method(e, s), go, biff);
-            }
-
-            slop(typeof(ScreenshotTaker), nameof(ScreenshotTaker.Update));
-            slop(typeof(DragSliderManager), nameof(DragSliderManager.DragSlidersUpdate));
-            slop(typeof(WindowStack), nameof(WindowStack.WindowsUpdate));
-            slop(typeof(MouseoverSounds), nameof(MouseoverSounds.ResolveFrame));
-            slop(typeof(UIHighlighter), nameof(UIHighlighter.UIHighlighterUpdate));
-            slop(typeof(Messages), nameof(Messages.Update));
-            slop(typeof(WorldInterface), nameof(WorldInterface.WorldInterfaceUpdate));
-            slop(typeof(MapInterface), nameof(MapInterface.MapInterfaceUpdate));
-            slop(typeof(AlertsReadout), nameof(AlertsReadout.AlertsReadoutUpdate));
-            slop(typeof(LessonAutoActivator), nameof(LessonAutoActivator.LessonAutoActivatorUpdate));
-            slop(typeof(Tutor), nameof(Tutor.TutorUpdate));
-        }
-
-        [HarmonyPriority(Priority.Last)]
-        public static void Start(MethodInfo __originalMethod, ref Profiler __state)
-        {
-            if (Active)
-            {
-                __state = ProfileController.Start($"{__originalMethod.DeclaringType} - {__originalMethod.Name}", null, null, null, null, __originalMethod);
-            }
-        }
-
-        [HarmonyPriority(Priority.First)]
-        public static void Stop(Profiler __state)
-        {
-            if (Active)
-            {
-                __state?.Stop();
-            }
+            yield return AccessTools.Method(typeof(ScreenshotTaker), nameof(ScreenshotTaker.Update));
+            yield return AccessTools.Method(typeof(DragSliderManager), nameof(DragSliderManager.DragSlidersUpdate));
+            yield return AccessTools.Method(typeof(WindowStack), nameof(WindowStack.WindowsUpdate));
+            yield return AccessTools.Method(typeof(MouseoverSounds), nameof(MouseoverSounds.ResolveFrame));
+            yield return AccessTools.Method(typeof(UIHighlighter), nameof(UIHighlighter.UIHighlighterUpdate));
+            yield return AccessTools.Method(typeof(Messages), nameof(Messages.Update));
+            yield return AccessTools.Method(typeof(WorldInterface), nameof(WorldInterface.WorldInterfaceUpdate));
+            yield return AccessTools.Method(typeof(MapInterface), nameof(MapInterface.MapInterfaceUpdate));
+            yield return AccessTools.Method(typeof(AlertsReadout), nameof(AlertsReadout.AlertsReadoutUpdate));
+            yield return AccessTools.Method(typeof(LessonAutoActivator), nameof(LessonAutoActivator.LessonAutoActivatorUpdate));
+            yield return AccessTools.Method(typeof(Tutor), nameof(Tutor.TutorUpdate));
         }
     }
 }

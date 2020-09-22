@@ -9,7 +9,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("NeedsTracker", Category.Tick)]
+    [Entry("entry.tick.needs", Category.Tick, "entry.tick.needs.tooltip")]
     internal static class H_NeedsTrackerTick
     {
         public static bool Active = false;

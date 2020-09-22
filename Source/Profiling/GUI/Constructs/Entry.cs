@@ -50,7 +50,7 @@ namespace Analyzer.Profiling
             isActive = value;
         }
 
-        public static Entry Create(string name, Category category, string tip, Type type, bool closeable)
+        public static Entry Create(string name, Category category, string tip, Type type, bool closeable, bool dynGen = false)
         {
             Entry entry = entries.FirstOrDefault(
                 x => x.name == name
@@ -60,6 +60,12 @@ namespace Analyzer.Profiling
             if (entry != null) return entry;
 
             entry = new Entry(name, category, tip);
+            // get rid of the untranslated garbage
+            if (dynGen)
+            {
+                entry.name = name;
+                entry.tip = tip;
+            }
             entry.type = type;
             entry.isClosable = closeable;
             entries.Add(entry);
@@ -69,9 +75,9 @@ namespace Analyzer.Profiling
 
         public Entry(string name, Category category, string tip = null)
         {
-            this.name = name;
+            this.name = name?.TranslateSimple();
             this.category = category;
-            this.tip = tip;
+            this.tip = tip?.TranslateSimple();
         }
 
         public Profiler Start(string key, MethodBase info)

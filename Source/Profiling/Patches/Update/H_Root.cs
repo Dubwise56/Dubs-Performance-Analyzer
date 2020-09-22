@@ -12,7 +12,7 @@ using Verse.Steam;
 
 namespace Analyzer.Profiling
 {
-    [Entry("Root", Category.Update)]
+    [Entry("entry.update.root", Category.Update, "entry.update.root.tooltip")]
     internal static class H_Root
     {
         public static bool Active = false;

@@ -5,7 +5,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("Frame times", Category.Update, "frameTimeProfilerTip")]
+    [Entry("entry.update.frametimes", Category.Update, "entry.update.frametimes.tooltip")]
     public class H_RootUpdate
     {
         public static bool Active = false;
@@ -89,7 +89,7 @@ namespace Analyzer.Profiling
                 ProfileController.Start("Game Update");
 
 #if DEBUG
-            if (GUIController.GetCurrentCategory != Category.Tick)
+            if (GUIController.CurrentCategory != Category.Tick)
                 ProfileController.BeginUpdate();
 #endif
         }
@@ -102,7 +102,7 @@ namespace Analyzer.Profiling
                 ProfileController.Stop("Game Update");
             }
 
-            if (GUIController.GetCurrentCategory != Category.Tick) // If we are tick, we will 'update' in the TickManager.DoSingleTick method
+            if (GUIController.CurrentCategory != Category.Tick) // If we are tick, we will 'update' in the TickManager.DoSingleTick method
                 ProfileController.EndUpdate();
 
             if (Active)

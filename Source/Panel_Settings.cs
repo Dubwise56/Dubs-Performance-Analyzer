@@ -96,7 +96,7 @@ namespace Analyzer
 
             public static CurrentInput input = CurrentInput.Method;
             public static UnPatchType unPatchType = UnPatchType.Method;
-            public static UpdateMode patchType = UpdateMode.Update;
+            public static Category patchType = Category.Update;
 
             public static string currentInput = null;
             public static string currentUnPatch = null;
@@ -123,9 +123,9 @@ namespace Analyzer
 
                 Rect box = lListing.GetRect(Text.LineHeight + 3);
 
-                DubGUI.OptionalBox(box.LeftPart(.3f), "patch.type.tick".Translate(), () => patchType = UpdateMode.Tick, patchType == UpdateMode.Tick);
+                DubGUI.OptionalBox(box.LeftPart(.3f), "patch.type.tick".Translate(), () => patchType = Category.Tick, patchType == Category.Tick);
                 box = box.RightPart(.65f);
-                DubGUI.OptionalBox(box.LeftPart(.4f), "patch.type.update".Translate(), () => patchType = UpdateMode.Update, patchType == UpdateMode.Update);
+                DubGUI.OptionalBox(box.LeftPart(.4f), "patch.type.update".Translate(), () => patchType = Category.Update, patchType == Category.Update);
 
                 if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.KeypadEnter)
                 {
@@ -164,40 +164,58 @@ namespace Analyzer
             }
             public static void ExecutePatch()
             {
-                switch (input)
+                if (patchType == Category.Tick)
                 {
-                    case CurrentInput.Method:
-                        if (patchType == UpdateMode.Tick)
-                        {
-                            CustomProfilersTick.PatchMeth(currentInput);
-                            GUIController.SwapToEntry("Custom Tick");
-                        }
-                        else
-                        {
-                            CustomProfilersUpdate.PatchMeth(currentInput);
-                            GUIController.SwapToEntry("Custom Update");
-                        }
-                        return;
-                    case CurrentInput.Type:
-                        CustomProfilersUpdate.PatchType(currentInput);
-                        GUIController.SwapToEntry("Custom Update");
-                        return;
-                    case CurrentInput.MethodHarmony:
-                        CustomProfilersHarmony.PatchMeth(currentInput);
-                        GUIController.SwapToEntry("Custom Harmony");
-                        return;
-                    case CurrentInput.TypeHarmony:
-                        CustomProfilersHarmony.PatchType(currentInput);
-                        GUIController.SwapToEntry("Custom Harmony");
-                        return;
-                    case CurrentInput.InternalMethod:
-                        Utility.PatchInternalMethod(currentInput);
-                        return;
-                    case CurrentInput.Assembly:
-                        Utility.PatchAssembly(currentInput);
-                        return;
+                    switch (input)
+                    {
+                        case CurrentInput.Method:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetMethods(currentInput));
+                            break;
+                        case CurrentInput.Type:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetTypeMethods(AccessTools.TypeByName(currentInput)));
+                            break;
+                        case CurrentInput.MethodHarmony:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetMethodsPatching(currentInput));
+                            break;
+                        case CurrentInput.TypeHarmony:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetMethodsPatchingType(AccessTools.TypeByName(currentInput)));
+                            break;
+                        case CurrentInput.InternalMethod:
+                            Utility.PatchInternalMethod(currentInput);
+                            return;
+                        case CurrentInput.Assembly:
+                            Utility.PatchAssembly(currentInput, Category.Tick);
+                            return;
+                    }
+                    GUIController.SwapToEntry("Custom Tick");
+                }
+                else
+                {
+                    switch (input)
+                    {
+                        case CurrentInput.Method:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetMethods(currentInput));
+                            break;
+                        case CurrentInput.Type:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetTypeMethods(AccessTools.TypeByName(currentInput)));
+                            break;
+                        case CurrentInput.MethodHarmony:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetMethodsPatching(currentInput));
+                            break;
+                        case CurrentInput.TypeHarmony:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetMethodsPatchingType(AccessTools.TypeByName(currentInput)));
+                            break;
+                        case CurrentInput.InternalMethod:
+                            Utility.PatchInternalMethod(currentInput);
+                            return;
+                        case CurrentInput.Assembly:
+                            Utility.PatchAssembly(currentInput, Category.Update);
+                            return;
+                    }
+                    GUIController.SwapToEntry("Custom Update");
                 }
             }
+
             public static void DrawUnPatches(Rect right)
             {
                 Listing_Standard rListing = new Listing_Standard();

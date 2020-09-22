@@ -166,6 +166,39 @@ namespace Analyzer.Profiling
             return patchId != Modbase.Harmony.Id && patchId != Modbase.StaticHarmony.Id;
         }
 
+        public static IEnumerable<MethodInfo> GetMethods(string str)
+        {
+            foreach (var s in GetSplitString(str))
+                yield return AccessTools.Method(s);
+        }
+
+        public static IEnumerable<MethodInfo> GetMethodsPatching(string str)
+        {
+            foreach (var meth in GetMethods(str))
+            {
+                var patches = Harmony.GetPatchInfo(meth);
+
+                foreach (Patch patch in patches.Prefixes) yield return patch.PatchMethod;
+                foreach (Patch patch in patches.Postfixes) yield return patch.PatchMethod;
+                foreach (Patch patch in patches.Transpilers) yield return patch.PatchMethod;
+                foreach (Patch patch in patches.Finalizers) yield return patch.PatchMethod;
+            }
+        }
+
+        public static IEnumerable<MethodInfo> GetMethodsPatchingType(Type type)
+        {
+            foreach (var meth in GetTypeMethods(type))
+            {
+                var patches = Harmony.GetPatchInfo(meth);
+
+                foreach (Patch patch in patches.Prefixes) yield return patch.PatchMethod;
+                foreach (Patch patch in patches.Postfixes) yield return patch.PatchMethod;
+                foreach (Patch patch in patches.Transpilers) yield return patch.PatchMethod;
+                foreach (Patch patch in patches.Finalizers) yield return patch.PatchMethod;
+            }
+        }
+
+
 
         public static IEnumerable<MethodInfo> GetTypeMethods(Type type)
         {
@@ -175,12 +208,14 @@ namespace Analyzer.Profiling
 
         public static IEnumerable<MethodInfo> SubClassImplementationsOf(Type baseType, Func<MethodInfo, bool> predicate)
         {
-            return baseType.AllSubclasses().SelectMany(t => AccessTools.GetDeclaredMethods(t).Where(m => predicate(m)));
+            return baseType.AllSubclasses()
+                    .SelectMany(t => GetTypeMethods(t).Where(m => predicate(m)));
         }
 
         public static IEnumerable<MethodInfo> SubClassNonAbstractImplementationsOf(Type baseType, Func<MethodInfo, bool> predicate)
         {
-            return baseType.AllSubclassesNonAbstract().SelectMany(t => AccessTools.GetDeclaredMethods(t).Where(m => predicate(m)));
+            return baseType.AllSubclassesNonAbstract()
+                    .SelectMany(t => GetTypeMethods(t).Where(m => predicate(m)));
         }
 
         public static IEnumerable<MethodInfo> GetAssemblyMethods(Assembly assembly)
@@ -219,7 +254,7 @@ namespace Analyzer.Profiling
         public static void UnpatchMethodsOnMethod(string name) => UnpatchMethodsOnMethod(AccessTools.Method(name));
         public static void UnpatchMethodsOnMethod(MethodInfo method) => Modbase.Harmony.Unpatch(method, HarmonyPatchType.All);
 
-        public static void UnPatchTypePatches(string name) => UnPatchTypePatches    (AccessTools.TypeByName(name));
+        public static void UnPatchTypePatches(string name) => UnPatchTypePatches(AccessTools.TypeByName(name));
         public static void UnPatchTypePatches(Type type)
         {
             foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
@@ -258,7 +293,7 @@ namespace Analyzer.Profiling
         {
             try
             {
-                GUIController.AddEntry(method.Name + "-int", Category.Update);
+                GUIController.AddEntry(method.Name + "-int", GUIController.CurrentCategory);
                 GUIController.SwapToEntry(method.Name + "-int");
 
                 InternalMethodUtility.PatchedInternals.Add(method);
@@ -272,7 +307,7 @@ namespace Analyzer.Profiling
             }
         }
 
-        public static void PatchAssembly(string name)
+        public static void PatchAssembly(string name, Category type)
         {
             ModContentPack mod = LoadedModManager.RunningMods.FirstOrDefault(m => m.Name == name || m.PackageId == name.ToLower());
 
@@ -288,10 +323,10 @@ namespace Analyzer.Profiling
 
             if (assembly != null && assembly.Count() != 0)
             {
-                GUIController.AddEntry(mod.Name + "-prof", Category.Update);
+                GUIController.AddEntry(mod.Name + "-prof", type);
                 GUIController.SwapToEntry(mod.Name + "-prof");
 
-                Task.Factory.StartNew( () => PatchAssemblyFull(mod.Name + "-prof", assembly.ToList()));
+                Task.Factory.StartNew(() => PatchAssemblyFull(mod.Name + "-prof", assembly.ToList()));
             }
             else
             {
@@ -315,7 +350,7 @@ namespace Analyzer.Profiling
 
                     foreach (Type type in assembly.GetTypes())
                     {
-                        if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null)
+                        if (type.GetCustomAttribute<CompilerGeneratedAttribute>() == null)
                         {
                             if (patchedTypes.Contains(type.FullName))
                             {

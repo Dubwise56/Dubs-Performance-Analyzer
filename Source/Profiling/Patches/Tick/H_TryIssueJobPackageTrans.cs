@@ -9,7 +9,7 @@ using Verse.AI;
 
 namespace Analyzer.Profiling
 {
-    [Entry("JobGiver_Work", Category.Tick, "JobGiveTipKey")]
+    [Entry("entry.tick.jobgiver", Category.Tick, "entry.tick.jobgiver.tooltip")]
     public static class H_TryIssueJobPackageTrans
     {
 
@@ -162,7 +162,7 @@ namespace Analyzer.Profiling
     }
 
 
-    [Entry("JobGiver_Work(Detoured)", Category.Tick, "DetourWorkTipKey")]
+    [Entry("entry.tick.jobgiverd", Category.Tick, "entry.tick.jobgiverd")]
     internal class H_TryIssueJobPackage
     {
         [Setting("By Work Type")] public static bool ByWorkType = false;

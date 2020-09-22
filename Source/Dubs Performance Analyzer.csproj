@@ -44,6 +44,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Modbase.cs" />
+    <Compile Include="Profiling\Patches\Custom\CustomTick.cs" />
     <Compile Include="Profiling\Patches\Update\H_HarmonyTranspilers.cs" />
     <Compile Include="Profiling\Analyzer.cs" />
     <Compile Include="Profiling\GUI\Constructs\Entry.cs" />
@@ -70,7 +71,6 @@
     <Compile Include="Profiling\Patches\Tick\H_GameComponentTick.cs" />
     <Compile Include="Profiling\Patches\Tick\H_GetLord.cs" />
     <Compile Include="Profiling\Patches\Update\H_InfoCard.cs" />
-    <Compile Include="Profiling\Patches\Update\H_JobAI.cs" />
     <Compile Include="Profiling\Patches\Update\H_RegenerateLayers.cs" />
     <Compile Include="Profiling\Patches\Update\H_SectionLayer_Things.cs" />
     <Compile Include="Profiling\Utility\Extensions.cs" />
@@ -86,10 +86,10 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Profiling\Statistics\ProfileLog.cs" />
     <Compile Include="Profiling\Utility\Patching Helpers\Utility.cs" />
-    <Compile Include="Profiling\Patches\Custom\CustomProfilers.cs" />
+    <Compile Include="Profiling\Patches\Custom\CustomUpdate.cs" />
     <Compile Include="Profiling\Patches\GUI\H_ColonistBarOnGUI.cs" />
     <Compile Include="Profiling\Patches\Tick\H_DoSingleTick.cs" />
-    <Compile Include="Profiling\Patches\Tick\H_DoSingleTickUpdate.cs" />
+    <Compile Include="Profiling\H_DoSingleTickUpdate.cs" />
     <Compile Include="Profiling\Patches\GUI\H_DoTabs.cs" />
     <Compile Include="Profiling\Patches\Update\H_DrawDynamicThings.cs" />
     <Compile Include="Profiling\Patches\Tick\H_FindPath.cs" />

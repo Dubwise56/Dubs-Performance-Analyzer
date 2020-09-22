@@ -15,7 +15,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("HarmonyTranspilers", Category.Update, "TransPatchTipKey")]
+    [Entry("entry.update.harmonytranspilers", Category.Update, "entry.update.harmonytranspilers.tooltip")]
     public static class H_HarmonyTranspilers
     {
         public static bool Active = false;

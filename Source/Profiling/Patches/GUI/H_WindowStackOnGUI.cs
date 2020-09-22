@@ -5,7 +5,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("WindowStackOnGUI", Category.GUI, "WindowPatchTipKey")]
+    [Entry("entry.gui.windowstack", Category.GUI, "entry.gui.windowstack.tooltip")]
     internal class H_WindowStackOnGUI
     {
         public static bool Active = false;

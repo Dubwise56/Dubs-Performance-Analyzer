@@ -9,10 +9,13 @@ using Verse.AI;
 
 namespace Analyzer.Profiling
 {
-    [Entry("Pawn Tick", Category.Tick)]
+    [Entry("entry.tick.pawn", Category.Tick, "entry.tick.pawn.tooltip")]
     internal static class H_PawnTickProfile
     {
         public static bool Active = false;
+
+        // todo setting for byPawn
+        // use FieldRefAccess or somethin
 
         public static IEnumerable<MethodInfo> GetPatchMethods()
         {

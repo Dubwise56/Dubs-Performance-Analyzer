@@ -52,7 +52,7 @@ namespace Analyzer.Profiling
                         curStatus = CurrentlyResizing.Window;
                         resizeStart = new Rect(mousePosition.x, mousePosition.y, winRect.width, winRect.height);
                     }
-                    else if (GUIController.GetCurrentCategory != Category.Settings) // We need to be in a window with entries to show the graph
+                    else if (GUIController.CurrentCategory != Category.Settings) // We need to be in a window with entries to show the graph
                     {
                         if (Mouse.IsOver(graphRect))
                         {

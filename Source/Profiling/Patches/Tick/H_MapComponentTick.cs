@@ -11,14 +11,14 @@ using Verse.AI.Group;
 
 namespace Analyzer.Profiling
 {
-    [Entry("MapComponentTick", Category.Tick)]
+    [Entry("entry.tick.mapcomponent", Category.Tick, "entry.tick.mapcomponent.tooltip")]
     internal class H_MapComponentTick
     {
         public static bool Active = false;
 
         public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            foreach (var meth in typeof(MapComponent).AllSubclasses().Select(t => t.GetMethod("MapComponentTick")))
+            foreach (var meth in Utility.SubClassImplementationsOf(typeof(MapComponent), t => t.Name == "MapComponentTick"))
                 yield return meth;
 
             yield return AccessTools.Method(typeof(WildAnimalSpawner), nameof(WildAnimalSpawner.WildAnimalSpawnerTick));

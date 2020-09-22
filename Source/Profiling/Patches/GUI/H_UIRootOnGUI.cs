@@ -6,7 +6,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("UIRootOnGUI", Category.GUI)]
+    [Entry("entry.gui.uiroot", Category.GUI, "entry.gui.uiroot.tooltip")]
     internal class H_UIRootOnGUI
     {
         public static bool Active = false;

@@ -89,7 +89,7 @@ This will create a tab titled `tabName` which will profile all the methods in th
 This file should be placed in the root directory of your mod. If you wish to avoid cluttering the Analyzer for end users, remember to remove it before releasing to steam. However, you might also decide to keep it in to allow users to easily see how your mod performs, to pre-emptively counter complaints.
 
 ## Predicted Overhead
-The act of profiling obviously takes time. Let's look at how this *generally* works, noting that there are a few different techniques used to patch different methods, as sometimes it needs to be precise.
+The act of profiling obviously takes time. Let's look at how this *generally* works, noting that there are a few different techniques used to patch different methods, as sometimes it requires more fine grain control than what a generic transpiler can offer.
 
 For a given method `Foo`
 ```csharp

@@ -10,7 +10,7 @@ using Verse.AI.Group;
 
 namespace Analyzer.Profiling
 {
-    [Entry("MapComponentUpdate", Category.Update)]
+    [Entry("entry.update.mapcomponent", Category.Update, "entry.update.mapcomponent.tooltip")]
     internal class H_MapComponentUpdate
     {
         public static bool Active = false;

@@ -8,7 +8,6 @@ using Verse.AI;
 namespace Analyzer.Profiling
 {
     [StaticConstructorOnStartup]
-    [HarmonyPatch(typeof(PathFinder), nameof(PathFinder.FindPath), typeof(IntVec3), typeof(LocalTargetInfo), typeof(TraverseParms), typeof(PathEndMode))]
     internal class H_FindPath
     {
         public static bool Active = false;
@@ -17,7 +16,7 @@ namespace Analyzer.Profiling
 
         public static int NodeIndex = 0;
 
-        public static Entry p = Entry.Create("PathFinder", Category.Tick, null, typeof(H_FindPath), false);
+        public static Entry p = Entry.Create("entry.tick.pathfinder", Category.Tick, "entry.tick.pathfinder.tooltip", typeof(H_FindPath), false);
         public static void ProfilePatch()
         {
             HarmonyMethod go = new HarmonyMethod(typeof(H_FindPath), nameof(Start));

@@ -10,7 +10,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("InfoCard", Category.Update)]
+    [Entry("entry.update.infocard", Category.Update, "entry.update.infocard.tooltip")]
     internal class H_InfoCard
     {
         public static bool Active = false;

@@ -190,7 +190,7 @@ namespace Analyzer
 
             rect.AdjustHorizonallyBy(Panel_Tabs.width); // Shift the x and shrink the width by the width of the Tabs
 
-            if (GUIController.GetCurrentCategory == Category.Settings)
+            if (GUIController.CurrentCategory == Category.Settings)
             {
                 Panel_Settings.Draw(rect);
                 handleDrag();

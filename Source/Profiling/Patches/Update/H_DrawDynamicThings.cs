@@ -5,7 +5,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("DrawDynamicThings", Category.Update, "DrawDynThinTipKey")]
+    [Entry("entry.update.dynamicdraw", Category.Update, "entry.update.dynamicdraw.tooltip")]
     internal class H_DrawDynamicThings
     {
         public static bool Active = false;

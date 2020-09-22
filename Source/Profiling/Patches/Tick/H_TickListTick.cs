@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using RimWorld.QuestGen;
 using System;
 using Verse;
 
@@ -184,40 +185,17 @@ namespace Analyzer.Profiling
     //    }
     //}
 
-    [Entry("Selection", Category.Tick, "TickThingsSelectTipKey")]
-    internal class H_TickSelection
-    {
-        public static bool Active = false;
-
-        public static void ProfilePatch()
-        {
-            if (H_TickListTick.isPatched) return;
-
-            Modbase.Harmony.Patch(AccessTools.Method(typeof(TickList), nameof(TickList.Tick)), prefix: new HarmonyMethod(typeof(H_TickListTick), "Prefix"));
-            H_TickListTick.isPatched = true;
-        }
-    }
-
-    [Entry("TickDef", Category.Tick, "TickThingByDefTipKey")]
-    internal class H_TickDef
-    {
-        public static bool Active = false;
-
-        public static void ProfilePatch()
-        {
-            if (H_TickListTick.isPatched) return;
-
-            Modbase.Harmony.Patch(AccessTools.Method(typeof(TickList), nameof(TickList.Tick)), prefix: new HarmonyMethod(typeof(H_TickListTick), "Prefix"));
-            H_TickListTick.isPatched = true;
-        }
-    }
-
-
-    [Entry("TickThing", Category.Tick, "LogTipThingTickByClass")]
+    [Entry("entry.tick.things", Category.Tick, "entry.tick.things.tooltip")]
     internal class H_TickListTick
     {
         public static bool Active = false;
         public static bool isPatched = false;
+
+        [Setting("Tick Def", "Show entries by Def")]
+        public static bool byDef = false;
+
+        [Setting("Selection", "Show only things which are selected")]
+        public static bool bySelection = false;
 
         public static void ProfilePatch()
         {
@@ -230,7 +208,7 @@ namespace Analyzer.Profiling
         public static void LogMe(Thing sam, Action ac, string fix)
         {
             bool logme = false;
-            if (H_TickSelection.Active)
+            if (bySelection)
             {
                 if (Find.Selector.selected.Any(x => x == sam))
                 {
@@ -246,27 +224,25 @@ namespace Analyzer.Profiling
             {
                 string key = sam.GetType().Name;
 
-                if (H_TickDef.Active)
+                if (byDef)
                 {
                     key = sam.def.defName;
                 }
 
-                if (H_TickSelection.Active)
+                if (bySelection)
                 {
                     key = sam.ThingID;
                 }
 
                 string Namer()
                 {
-                    if (H_TickDef.Active)
+                    if (byDef)
                     {
                         return $"{sam.def.defName} - {sam?.def?.modContentPack?.Name} - {fix} ";
                     }
-
-                    if (H_TickSelection.Active)
+                    if (bySelection)
                     {
-                        return
-                            $"{sam.def.defName} - {sam.GetHashCode()} - {sam?.def?.modContentPack?.Name} - {fix}";
+                        return $"{sam.def.defName} - {sam.GetHashCode()} - {sam?.def?.modContentPack?.Name} - {fix}";
                     }
 
                     return $"{sam.GetType()} {fix}";
@@ -284,7 +260,7 @@ namespace Analyzer.Profiling
 
         private static bool Prefix(TickList __instance)
         {
-            if (!Active && !H_TickSelection.Active && !H_TickDef.Active)
+            if (!Active)
             {
                 return true;
             }

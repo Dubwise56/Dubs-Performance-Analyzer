@@ -22,7 +22,7 @@ namespace Analyzer.Profiling
 
         public static Profiler CurrentProfiler { get { return currentProfiler; } set { currentProfiler = value; } }
         public static Tab GetCurrentTab => currentTab;
-        public static Category GetCurrentCategory => currentCategory;
+        public static Category CurrentCategory => currentCategory;
         public static Entry CurrentEntry => currentEntry;
 
         public static IEnumerable<Tab> Tabs => tabs.Values;
@@ -117,7 +117,7 @@ namespace Analyzer.Profiling
             ThreadSafeLogger.Message($"Adding entry {name} into the category {category.ToString()}");
 #endif
 
-            GUIController.Tab(category).entries.Add(Entry.Create(myType.Name, category, null, myType, true), myType);
+            Tab(category).entries.Add(Entry.Create(myType.Name, category, "Dynamically created entry for the type " + myType.Name, myType, true, true), myType);
         }
 
         public static void RemoveEntry(string name)
