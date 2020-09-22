@@ -53,6 +53,7 @@
     <Compile Include="Profiling\GUI\Panel_Tabs.cs" />
     <Compile Include="Profiling\GUI\Panel_Graph.cs" />
     <Compile Include="Profiling\GUI\Panel_TopRow.cs" />
+    <Compile Include="Profiling\Patches\Update\H_Shooting.cs" />
     <Compile Include="Profiling\Utility\Patching Helpers\MethodTransplanting.cs" />
     <Compile Include="Profiling\Utility\Patching Helpers\TranspilerMethodUtility.cs" />
     <Compile Include="Profiling\Utility\Watch.cs" />

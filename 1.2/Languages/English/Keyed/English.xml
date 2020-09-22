@@ -179,6 +179,9 @@
 	<entry.update.sectionlayerthings>Section Layer Things</entry.update.sectionlayerthings>
 	<entry.update.sectionlayerthings.tooltip>More in-depth profiling of Section layers, including mesh creation and the TakePrintFrom function</entry.update.sectionlayerthings.tooltip>
 
+	<entry.update.shooting>Shooting and Combat</entry.update.shooting>
+	<entry.update.shooting.tooltip>Shows a variety of methods related to combat and shooting, including verbs, turrets, projectiles etc</entry.update.shooting.tooltip>
+
 	<entry.update.uiroot>UI Root Update</entry.update.uiroot>
 	<entry.update.uiroot.tooltip>A variety of update methods for GUI-related functionality, such as; AlertsReadout, Messages, Tutor</entry.update.uiroot.tooltip>
 
