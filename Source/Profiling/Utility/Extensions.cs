@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Analyzer.Profiling
 {
-    public static class ListExtensions
+    public static class Extensions
     {
         public static void InPlaceConcat<T>(this IEnumerable<T> instance, params IEnumerable<T>[] lists)
         {

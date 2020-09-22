@@ -54,6 +54,7 @@
     <Compile Include="Profiling\GUI\Panel_TopRow.cs" />
     <Compile Include="Profiling\Utility\Patching Helpers\MethodTransplanting.cs" />
     <Compile Include="Profiling\Utility\Patching Helpers\TranspilerMethodUtility.cs" />
+    <Compile Include="Profiling\Utility\Watch.cs" />
     <Compile Include="Window_Analyzer.cs" />
     <Compile Include="Profiling\GUI\Panel_Logs.cs" />
     <Compile Include="Panel_Settings.cs" />

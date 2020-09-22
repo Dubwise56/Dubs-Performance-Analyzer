@@ -40,6 +40,11 @@ namespace Analyzer.Profiling
 
         private static readonly HarmonyMethod transpiler = new HarmonyMethod(typeof(MethodTransplanting), nameof(MethodTransplanting.Transpiler));
         private static readonly MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(ProfileController), nameof(ProfileController.Start));
+        
+        // The issue; I need to get dynamic information about the methods which need to be patched 
+        // Possible solutions; 
+        //  Pass directly the method information into the patching function
+        //  Have a way to poll a refresh which checks whether a method needs to be patched
 
         public static void ClearCaches()
         {
@@ -58,8 +63,6 @@ namespace Analyzer.Profiling
 
         public static void UpdateMethods(Type type, IEnumerable<MethodInfo> meths)
         {
-            List<Task> tasks = new List<Task>();
-
             foreach (var meth in meths)
             {
                 if (patchedMeths.Contains(meth)) continue;
@@ -68,7 +71,7 @@ namespace Analyzer.Profiling
                 typeInfo.TryAdd(meth, type);
                 try
                 {
-                    tasks.Add(Task.Factory.StartNew(() => Modbase.Harmony.Patch(meth, transpiler: transpiler)));
+                    Task.Factory.StartNew(() => Modbase.Harmony.Patch(meth, transpiler: transpiler));
                 }
                 catch { }
             }

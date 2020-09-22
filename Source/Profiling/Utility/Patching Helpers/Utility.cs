@@ -161,6 +161,11 @@ namespace Analyzer.Profiling
             return true;
         }
 
+        public static bool IsNotAnalyzerPatch(string patchId)
+        {
+            return patchId != Modbase.Harmony.Id && patchId != Modbase.StaticHarmony.Id;
+        }
+
 
         public static IEnumerable<MethodInfo> GetTypeMethods(Type type)
         {
@@ -286,8 +291,7 @@ namespace Analyzer.Profiling
                 GUIController.AddEntry(mod.Name + "-prof", Category.Update);
                 GUIController.SwapToEntry(mod.Name + "-prof");
 
-                //patchAssemblyThread = new Thread(() => PatchAssemblyFull(mod.Name + "-prof", assembly.ToList()));
-                //patchAssemblyThread.Start();
+                Task.Factory.StartNew( () => PatchAssemblyFull(mod.Name + "-prof", assembly.ToList()));
             }
             else
             {
@@ -340,7 +344,6 @@ namespace Analyzer.Profiling
                         }
                     }
 
-
                     Notify($"Patched {assembly.FullName}");
                 }
                 catch (Exception e)
@@ -349,7 +352,7 @@ namespace Analyzer.Profiling
                 }
             }
 
-            DynamicTypeBuilder.methods[key] = meths;
+            MethodTransplanting.UpdateMethods(AccessTools.TypeByName(key), meths);
         }
 
     }

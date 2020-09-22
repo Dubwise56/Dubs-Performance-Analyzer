@@ -85,9 +85,7 @@ namespace Analyzer.Profiling
             if (currentEntry != null)
             {
                 currentEntry.SetActive(false);
-                ProfileController.Profiles.Clear();
-                Analyzer.RefreshLogCount();
-                currentProfiler = null;
+                ResetProfilers();
             }
 
             currentEntry = EntryByName(entryName);

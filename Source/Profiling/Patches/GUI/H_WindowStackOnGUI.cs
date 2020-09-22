@@ -6,10 +6,14 @@ using Verse;
 namespace Analyzer.Profiling
 {
     [Entry("WindowStackOnGUI", Category.GUI, "WindowPatchTipKey")]
-    [HarmonyPatch(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI))]
     internal class H_WindowStackOnGUI
     {
         public static bool Active = false;
+
+        public static void ProfilePatch()
+        {
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI)), prefix: new HarmonyMethod(typeof(H_WindowStackOnGUI), "Prefix"));
+        }
 
         public static bool Prefix(MethodBase __originalMethod, WindowStack __instance)
         {

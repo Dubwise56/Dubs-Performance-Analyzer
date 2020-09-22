@@ -25,7 +25,7 @@ namespace Analyzer.Profiling
                 Patches patchInfo = Harmony.GetPatchInfo(mode);
                 foreach (Patch fix in patchInfo.Prefixes)
                 {
-                    if (Modbase.Harmony.Id != fix.owner && Modbase.StaticHarmony.Id != fix.owner && !PatchedPres.Contains(fix))
+                    if (Utility.IsNotAnalyzerPatch(fix.owner) && !PatchedPres.Contains(fix))
                     {
                         PatchedPres.Add(fix);
                         yield return fix.PatchMethod;
@@ -35,7 +35,7 @@ namespace Analyzer.Profiling
                 foreach (Patch fix in patchInfo.Postfixes)
                 {
 
-                    if (Modbase.Harmony.Id != fix.owner && Modbase.StaticHarmony.Id != fix.owner && !PatchedPosts.Contains(fix))
+                    if (Utility.IsNotAnalyzerPatch(fix.owner) && !PatchedPosts.Contains(fix))
                     {
                         PatchedPosts.Add(fix);
                         yield return fix.PatchMethod;

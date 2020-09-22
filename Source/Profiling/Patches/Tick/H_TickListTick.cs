@@ -188,20 +188,44 @@ namespace Analyzer.Profiling
     internal class H_TickSelection
     {
         public static bool Active = false;
+
+        public static void ProfilePatch()
+        {
+            if (H_TickListTick.isPatched) return;
+
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(TickList), nameof(TickList.Tick)), prefix: new HarmonyMethod(typeof(H_TickListTick), "Prefix"));
+            H_TickListTick.isPatched = true;
+        }
     }
 
     [Entry("TickDef", Category.Tick, "TickThingByDefTipKey")]
     internal class H_TickDef
     {
         public static bool Active = false;
+
+        public static void ProfilePatch()
+        {
+            if (H_TickListTick.isPatched) return;
+
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(TickList), nameof(TickList.Tick)), prefix: new HarmonyMethod(typeof(H_TickListTick), "Prefix"));
+            H_TickListTick.isPatched = true;
+        }
     }
 
 
     [Entry("TickThing", Category.Tick, "LogTipThingTickByClass")]
-    [HarmonyPatch(typeof(TickList), nameof(TickList.Tick))]
     internal class H_TickListTick
     {
         public static bool Active = false;
+        public static bool isPatched = false;
+
+        public static void ProfilePatch()
+        {
+            if (isPatched) return;
+
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(TickList), nameof(TickList.Tick)), prefix: new HarmonyMethod(typeof(H_TickListTick), "Prefix"));
+            isPatched = true;
+        }
 
         public static void LogMe(Thing sam, Action ac, string fix)
         {

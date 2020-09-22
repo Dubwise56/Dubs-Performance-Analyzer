@@ -1,8 +1,11 @@
 ﻿using Analyzer;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using UnityEngine.Assertions;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -12,7 +15,9 @@ namespace Analyzer.Profiling
         public const int MAX_ADD_INFO_PER_FRAME = 250;
         public const int RECORDS_HELD = 2000;
 
-        private readonly Stopwatch stopwatch;
+        public static Stack<Profiler> profilerStack = new Stack<Profiler>();
+
+        private readonly Watch stopwatch;
         public Type type;
         public Def def;
         public Thing thing;
@@ -24,6 +29,7 @@ namespace Analyzer.Profiling
         public int hitCounter = 0;
 
         public readonly double[] times;
+        public readonly double[] adjs;
         public readonly int[] hits;
         public uint currentIndex = 0; // ring buffer tracking
 
@@ -34,9 +40,10 @@ namespace Analyzer.Profiling
             this.def = def;
             this.meth = meth;
             this.label = label;
-            this.stopwatch = new Stopwatch();
+            this.stopwatch = new Watch();
             this.type = type;
             this.times = new double[RECORDS_HELD];
+            this.adjs = new double[RECORDS_HELD];
             this.hits = new int[RECORDS_HELD];
         }
 
@@ -44,15 +51,26 @@ namespace Analyzer.Profiling
         public Profiler Start()
         {
             stopwatch.Start();
+            //profilerStack.Push(this);
             return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Stop()
         {
-            if (!Analyzer.CurrentlyProfiling) return;
+            var adj = stopwatch.Stop();
+//#if DEBUG
+//            if (profilerStack.Pop() != this)
+//            {
+//                ThreadSafeLogger.Error("The profiler on the top of the stack was not the one that was just popped, this likely means an exception was thrown. Expect wonky readings :-)");
+//            }
+//#else
+//            profilerStack.Pop();
+//#endif
 
-            stopwatch.Stop();
+//            if (profilerStack.Count != 0)
+//                profilerStack.Peek().adjs[currentIndex] += adj;
+
             hitCounter++;
         }
 
@@ -106,7 +124,7 @@ namespace Analyzer.Profiling
                 {
                     max = time;
                 }
-                if(call > maxCalls)
+                if (call > maxCalls)
                 {
                     maxCalls = call;
                 }

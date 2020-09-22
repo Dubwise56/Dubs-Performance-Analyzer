@@ -19,7 +19,7 @@ namespace Analyzer.Profiling
 
         public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            return typeof(Need).AllSubclasses().Select(n => n.GetMethod("NeedInterval"));
+            return Utility.SubClassImplementationsOf(typeof(Need), (MethodInfo m) => m.Name == "NeedInterval");
         }
 
         public static string GetName(Need __instance)
