@@ -12,6 +12,7 @@ using Verse;
 
 namespace Analyzer
 {
+    using Analyzer.Performance;
     using Profiling;
 
     public static class Panel_Settings
@@ -52,6 +53,8 @@ namespace Analyzer
             listing.GapLine();
 
             DrawDevOptions();
+
+            PerformancePatches.Draw(ref listing);
 
             listing.End();
             GUI.EndGroup();

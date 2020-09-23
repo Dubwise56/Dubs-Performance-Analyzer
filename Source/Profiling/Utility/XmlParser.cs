@@ -57,7 +57,7 @@ namespace Analyzer.Profiling
 
                 Type myType = DynamicTypeBuilder.CreateType(node.Name, meths);
 
-                GUIController.Tab(Category.Modder).entries.Add(Entry.Create(myType.Name, Category.Modder, null, myType, false), myType);
+                GUIController.Tab(Category.Modder).entries.Add(Entry.Create(myType.Name, Category.Modder, null, myType, false, true), myType);
             }
         }
 

@@ -59,7 +59,7 @@ namespace Analyzer.Profiling
 
             if (entry != null) return entry;
 
-            entry = new Entry(name, category, tip);
+            entry = new Entry(name, category, tip, dynGen);
             // get rid of the untranslated garbage
             if (dynGen)
             {
@@ -73,11 +73,14 @@ namespace Analyzer.Profiling
             return entry;
         }
 
-        public Entry(string name, Category category, string tip = null)
+        public Entry(string name, Category category, string tip = null, bool dyGen = false)
         {
-            this.name = name?.TranslateSimple();
             this.category = category;
-            this.tip = tip?.TranslateSimple();
+            if (!dyGen)
+            {
+                this.name = name?.TranslateSimple();
+                this.tip = tip?.TranslateSimple();
+            }
         }
 
         public Profiler Start(string key, MethodBase info)

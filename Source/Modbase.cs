@@ -1,4 +1,6 @@
-﻿using HarmonyLib;
+﻿using Analyzer.Performance;
+using Analyzer.Profiling;
+using HarmonyLib;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -29,21 +31,32 @@ namespace Analyzer
             { // Profiling
                 ModInfoCache.PopulateCache(Content.Name);
 
-                Profiling.GUIController.InitialiseTabs();
+                GUIController.InitialiseTabs();
 
                 // GUI needs to be initialised before xml (the tabs need to exist for entries to be inserted into them)
-                Profiling.XmlParser.CollectXmlData();
+                XmlParser.CollectXmlData();
             }
 
             { // Always Running
-                StaticHarmony.Patch(AccessTools.Method(typeof(GlobalControlsUtility), nameof(GlobalControlsUtility.DoTimespeedControls)), 
+                StaticHarmony.Patch(AccessTools.Method(typeof(GlobalControlsUtility), nameof(GlobalControlsUtility.DoTimespeedControls)),
                     prefix: new HarmonyMethod(typeof(GUIElement_TPS), nameof(GUIElement_TPS.Prefix)));
+            }
+
+            { // Performance Patches
+                PerformancePatches.InitialisePatches();
             }
         }
 
         public override void DoSettingsWindowContents(Rect inRect)
         {
             Settings.DoSettings(inRect);
+        }
+
+        public override void WriteSettings()
+        {
+            base.WriteSettings();
+            // Any patches we had pending closing are now going to get closed
+            PerformancePatches.ClosePatches();
         }
 
         public override string SettingsCategory()

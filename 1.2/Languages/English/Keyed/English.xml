@@ -197,5 +197,29 @@
 	<entry.tick.custom>Custom Tick</entry.tick.custom>
 	<entry.tick.custom.tooltip>Custom Profiled methods in the tick category</entry.tick.custom.tooltip>
 
+	<!-- Performance Patches -->
+
+	<performance.sectionlayersnow>Improve the speed of rendering for snow</performance.sectionlayersnow>
+	<performance.sectionlayersnow.tooltip>Replaces a Mathf.Lerp with byte multiplication in the calculation for snow colour</performance.sectionlayersnow.tooltip>
+
+	<performance.lordnotifydamage>Remove some stutters for raids</performance.lordnotifydamage>
+	<performance.lordnotifydamage.tooltip>Removes a redundant damage-notification check from the Lord toils 'LordToil_AssaultColony' and 'LordToil_AssaultColonySappers'</performance.lordnotifydamage.tooltip>
+
+	<performance.killaudio>Remove in-game music</performance.killaudio>
+	<performance.killaudio.tooltip>Destructively prefixes the 'MusicManagerPlay:MusicUpdate' function</performance.killaudio.tooltip>
+
+	<performance.buildingrepair>Optimize the repair job</performance.buildingrepair>
+	<performance.buildingrepair.tooltip>Removes objects that are not repairable or do not have hitpoints (which the Type 'ListerBuildingsRepairable' does not filter out)</performance.buildingrepair.tooltip>
+
+	<performance.roof>Optimize roof jobgiver</performance.roof>
+	<performance.roof.tooltip>Caches when roofs are removed / need replacing, and preventing the jobgiver from running when no state has changed</performance.roof.tooltip>
+
+	<performance.wallsnconduits>Optimize rendering for walls and conduits</performance.wallsnconduits>
+	<performance.wallsnconduits.tooltip>Set the mesh draw type for walls and conduits to 'MapMeshOnly'</performance.wallsnconduits.tooltip>
+
+	<performance.compdeepdrill>Optimize deep drills</performance.compdeepdrill>
+	<performance.compdeepdrill.tooltip>Skips a check for the 'correct' stone under a drill, improves performance of drills when using pawns with high mining</performance.compdeepdrill.tooltip>
+
+
 
 </LanguageData>

@@ -43,7 +43,23 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="KeyBindings.cs" />
     <Compile Include="Modbase.cs" />
+    <Compile Include="Performance\Patches\Alerts\AlertInfo.cs" />
+    <Compile Include="Performance\Patches\Alerts\H_AlertsReadoutUpdate.cs" />
+    <Compile Include="Performance\Patches\Alerts\H_Alert_Clothing.cs" />
+    <Compile Include="Performance\Patches\H_ComfortableTemperatureRange.cs" />
+    <Compile Include="Performance\Patches\H_CompDeepDrill.cs" />
+    <Compile Include="Performance\Patches\H_DrawInspectGizmoGridFor.cs" />
+    <Compile Include="Performance\Patches\H_Faction.cs" />
+    <Compile Include="Performance\Patches\H_FixWallsNConduits.cs" />
+    <Compile Include="Performance\Patches\H_JobDriver_BuildRoof.cs" />
+    <Compile Include="Performance\Patches\H_ListerBuildingsRepairable.cs" />
+    <Compile Include="Performance\Patches\H_MusicUpdate.cs" />
+    <Compile Include="Performance\Patches\H_Notify_PawnDamaged.cs" />
+    <Compile Include="Performance\Patches\H_SectionLayer_Snow.cs" />
+    <Compile Include="Performance\PerfPatch.cs" />
+    <Compile Include="Performance\PerformancePatches.cs" />
     <Compile Include="Profiling\Patches\Custom\CustomTick.cs" />
     <Compile Include="Profiling\Patches\Update\H_HarmonyTranspilers.cs" />
     <Compile Include="Profiling\Analyzer.cs" />
@@ -61,7 +77,6 @@
     <Compile Include="Profiling\GUI\Panel_Logs.cs" />
     <Compile Include="Panel_Settings.cs" />
     <Compile Include="Profiling\GUI\Panel_SideInfo.cs" />
-    <Compile Include="Profiling\GUI\Window_ColorPicker.cs" />
     <Compile Include="ModInfoCache.cs" />
     <Compile Include="Profiling\GUI\DubGUI.cs" />
     <Compile Include="Profiling\Statistics\ProfileController.cs" />
