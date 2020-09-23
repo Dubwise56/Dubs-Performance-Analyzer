@@ -202,7 +202,7 @@
 	<performance.sectionlayersnow>Improve the speed of rendering for snow</performance.sectionlayersnow>
 	<performance.sectionlayersnow.tooltip>Replaces a Mathf.Lerp with byte multiplication in the calculation for snow colour</performance.sectionlayersnow.tooltip>
 
-	<performance.lordnotifydamage>Remove some stutters for raids</performance.lordnotifydamage>
+	<performance.lordnotifydamage>Remove some stutters for raid AI</performance.lordnotifydamage>
 	<performance.lordnotifydamage.tooltip>Removes a redundant damage-notification check from the Lord toils 'LordToil_AssaultColony' and 'LordToil_AssaultColonySappers'</performance.lordnotifydamage.tooltip>
 
 	<performance.killaudio>Remove in-game music</performance.killaudio>
@@ -220,6 +220,8 @@
 	<performance.compdeepdrill>Optimize deep drills</performance.compdeepdrill>
 	<performance.compdeepdrill.tooltip>Skips a check for the 'correct' stone under a drill, improves performance of drills when using pawns with high mining</performance.compdeepdrill.tooltip>
 
+	<performance.tempcache>Remove some stutters on raid generation</performance.tempcache>
+	<performance.tempcache.tooltip>Caches temperature lookups in the same tick, removing some overhead from raid generation</performance.tempcache.tooltip>
 
 
 </LanguageData>

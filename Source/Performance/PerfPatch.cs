@@ -28,7 +28,7 @@ namespace Analyzer.Performance
         public void Initialise(Type subType)
         {
             EnabledRefAccess = AccessTools.StaticFieldRefAccess<bool>(subType.GetField("Enabled", BindingFlags.Public | BindingFlags.Static));
-            if(EnabledRefAccess == null)
+            if (EnabledRefAccess == null)
             {
                 Log.Error("Add an 'Enabled' field you bloody muppet");
             }
@@ -42,28 +42,32 @@ namespace Analyzer.Performance
             var height = Mathf.CeilToInt(name.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight;
             var rect = listing.GetRect(height);
 
-            if(DubGUI.Checkbox(rect, name, ref EnabledRefAccess()))
+            if (DubGUI.Checkbox(rect, name, ref EnabledRefAccess()))
             {
-                if(EnabledRefAccess())
+                if (EnabledRefAccess())
                 {
-                    if(PerformancePatches.ondisabled.ContainsKey(Name))
+                    if (PerformancePatches.ondisabled.ContainsKey(Name))
                     {
                         PerformancePatches.ondisabled.Remove(Name);
                     }
                     OnEnabled(Modbase.StaticHarmony);
-                } else
+                }
+                else
                 {
                     PerformancePatches.ondisabled.Add(Name, () => OnDisabled());
                 }
 
-            } 
+            }
             TooltipHandler.TipRegion(rect, tooltip);
         }
 
         public virtual void OnEnabled(Harmony harmony) { }
 
         // The Disabled execution will not be immediate. It will be called when the window is closed, this is to prevent users spamming change and lagging if the intent is unpatching
-        public virtual void OnDisabled() { }
+        public virtual void OnDisabled()
+        {
+            isPatched = false; // probably :-)
+        }
 
         public virtual void ExposeData()
         {

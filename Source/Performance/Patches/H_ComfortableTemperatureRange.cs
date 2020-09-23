@@ -1,74 +1,53 @@
-﻿//using System.Collections.Generic;
-//using HarmonyLib;
-//using Verse;
+﻿using System.Collections.Generic;
+using HarmonyLib;
+using Verse;
 
-//namespace Analyzer.Performance
-//{
-//    [PerfPatch]
-//    static class H_ComfortableTemperatureRange
-//    {
-//        public static void PerformancePatch(Harmony harmony)
-//        {
-//            var jiff = AccessTools.Method(typeof(GenTemperature), nameof(GenTemperature.ComfortableTemperatureRange), new[] { typeof(Pawn) });
-//            var pre = new HarmonyMethod(typeof(H_ComfortableTemperatureRange), nameof(Prefix));
-//            var post = new HarmonyMethod(typeof(H_ComfortableTemperatureRange), nameof(Postfix));
-//           harmony.Patch(jiff, pre, post);
-//        }
+namespace Analyzer.Performance
+{
+    internal class H_ComfortableTemperatureRange : PerfPatch
+    {
+        public static bool Enabled = false;
+        public static Dictionary<int, FloatRange> tempCache = new Dictionary<int, FloatRange>();
+        public static int LastTick = 0;
 
-//        public static Dictionary<int, FloatRange> tempCache = new Dictionary<int, FloatRange>();
-//        public static int LastTick = 0;
-//        public static bool Prefix(Pawn p, ref FloatRange __result)
-//        {
-//            if (!Analyzer.Settings.FixGame)
-//            {
-//                return true;
-//            }
+        public override string Name => "performance.tempcache";
 
-//            //if (TryIssueJobPackage.giver == null)
-//            //{
-//            //    return true;
-//            //}
+        public override void OnEnabled(Harmony harmony)
+        {
+            var jiff = AccessTools.Method(typeof(GenTemperature), nameof(GenTemperature.ComfortableTemperatureRange), new[] { typeof(Pawn) });
+            var pre = new HarmonyMethod(typeof(H_ComfortableTemperatureRange), nameof(Prefix));
+            var post = new HarmonyMethod(typeof(H_ComfortableTemperatureRange), nameof(Postfix));
+            harmony.Patch(jiff, pre, post);
+        }
 
-//            //__state = TryIssueJobPackage.key + ": SafeTemperatureRange";
-//            //Analyzer.Start(__state);
 
-//            if (LastTick == Find.TickManager.TicksGame)
-//            {
-//              //  Log.Warning("cleared", true);
-//               // tempCache.Clear();
-                
-//            }
-//            else
-//            {
-//                LastTick = Find.TickManager.TicksGame;
-//                tempCache.Clear();
-//            }
+        public static bool Prefix(Pawn p, ref FloatRange __result)
+        {
+            if (!Enabled) return true;
 
-//            if (tempCache.ContainsKey(p.thingIDNumber))
-//            {
-//              //  Log.Warning("cached temp used", true);
-//                __result = tempCache[p.thingIDNumber];
-//                return false;
-//            }
+            if (LastTick != Find.TickManager.TicksGame)
+            {
+                LastTick = Find.TickManager.TicksGame;
+                tempCache.Clear();
+            }
 
-//            return true;
-//        }
+            if (tempCache.TryGetValue(p.thingIDNumber, out var result))
+            {
+                __result = result;
+                return false;
+            }
 
-//        public static void Postfix(Pawn p, FloatRange __result)
-//        {
-//            if (!Analyzer.Settings.FixGame)
-//            {
-//                return;
-//            }
+            return true;
+        }
 
-//            if (!tempCache.ContainsKey(p.thingIDNumber))
-//            {
-//                tempCache.Add(p.thingIDNumber, __result);
-//            }
-//            //if (!string.IsNullOrEmpty(__state))
-//            //{
-//            //    Analyzer.Stop(__state);
-//            //}
-//        }
-//    }
-//}
+        public static void Postfix(Pawn p, FloatRange __result)
+        {
+            if (!Enabled) return;
+
+            if (!tempCache.ContainsKey(p.thingIDNumber))
+            {
+                tempCache.Add(p.thingIDNumber, __result);
+            }
+        }
+    }
+}

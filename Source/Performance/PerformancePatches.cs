@@ -50,6 +50,8 @@ namespace Analyzer.Performance
         {
             foreach(var disabled in ondisabled.Values)
                 disabled();
+
+            ondisabled.Clear();
         }
 
         public static void ExposeData()
