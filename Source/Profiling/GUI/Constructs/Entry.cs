@@ -36,6 +36,7 @@ namespace Analyzer.Profiling
         public MethodInfo onMouseOver;
         public MethodInfo onSelect;
         public MethodInfo onClick;
+        public MethodInfo checkBox;
 
         public bool isActive = false;
         public bool isLoading = false;

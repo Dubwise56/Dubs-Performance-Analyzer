@@ -54,7 +54,7 @@ namespace Analyzer.Performance
                 }
                 else
                 {
-                    PerformancePatches.ondisabled.Add(Name, () => OnDisabled());
+                    PerformancePatches.ondisabled.Add(Name, () => OnDisabled(Modbase.StaticHarmony));
                 }
 
             }
@@ -64,7 +64,7 @@ namespace Analyzer.Performance
         public virtual void OnEnabled(Harmony harmony) { }
 
         // The Disabled execution will not be immediate. It will be called when the window is closed, this is to prevent users spamming change and lagging if the intent is unpatching
-        public virtual void OnDisabled()
+        public virtual void OnDisabled(Harmony harmony)
         {
             isPatched = false; // probably :-)
         }

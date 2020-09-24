@@ -184,7 +184,7 @@ namespace Analyzer
                             MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetMethodsPatchingType(AccessTools.TypeByName(currentInput)));
                             break;
                         case CurrentInput.InternalMethod:
-                            Utility.PatchInternalMethod(currentInput);
+                            Utility.PatchInternalMethod(currentInput, Category.Tick);
                             return;
                         case CurrentInput.Assembly:
                             Utility.PatchAssembly(currentInput, Category.Tick);
@@ -209,7 +209,7 @@ namespace Analyzer
                             MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetMethodsPatchingType(AccessTools.TypeByName(currentInput)));
                             break;
                         case CurrentInput.InternalMethod:
-                            Utility.PatchInternalMethod(currentInput);
+                            Utility.PatchInternalMethod(currentInput, Category.Update);
                             return;
                         case CurrentInput.Assembly:
                             Utility.PatchAssembly(currentInput, Category.Update);

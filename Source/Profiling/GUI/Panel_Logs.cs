@@ -61,7 +61,7 @@ namespace Analyzer.Profiling
                 Text.Anchor = TextAnchor.MiddleCenter;
                 Text.Font = GameFont.Tiny;
 
-                DrawColumns(listing.GetRect(BOX_HEIGHT));   
+                DrawColumns(listing.GetRect(BOX_HEIGHT));
                 float currentListHeight = BOX_HEIGHT;
 
                 Text.Anchor = TextAnchor.MiddleLeft;
@@ -159,6 +159,26 @@ namespace Analyzer.Profiling
 
             Profiler profile = ProfileController.Profiles[log.key];
 
+            bool on = true;
+
+            // Is this entry currently 'active'?
+            if (GUIController.CurrentEntry.onSelect != null)
+            {
+                on = (bool)GUIController.CurrentEntry.onSelect.Invoke(null, new object[] { profile, log });
+            }
+
+            // Show a button to toggle whether an entry is 'active'
+            if (GUIController.CurrentEntry.checkBox != null)
+            {
+                var checkboxRect = new Rect(visible.x, visible.y, 25f, visible.height);
+                visible.x += 25f;
+                if (DubGUI.Checkbox(checkboxRect, "", ref on))
+                {
+                    GUIController.CurrentEntry.checkBox.Invoke(null, new object[] { log });
+                    Modbase.Settings.Write();
+                }
+            }
+
             Widgets.DrawHighlightIfMouseover(visible);
 
             if (GUIController.CurrentProfiler?.key == profile.key)
@@ -186,6 +206,7 @@ namespace Analyzer.Profiling
             DrawColumnContents(ref visible, $" {log.average:0.000}ms ", SortBy.Average);
             DrawColumnContents(ref visible, $" {log.percent * 100:0.0}% ", SortBy.Percent);
             DrawColumnContents(ref visible, $" {log.total:0.000}ms ", SortBy.Total);
+
             if (GUIController.CurrentEntry.name != "HarmonyTranspilers")
                 DrawColumnContents(ref visible, $" {log.calls.ToString("N0", CultureInfo.InvariantCulture)} ", SortBy.Calls);
 
@@ -281,7 +302,7 @@ namespace Analyzer.Profiling
                 yield return new FloatMenuOption("Unpatch Method", () => Utility.UnpatchMethod(meth));
 
             yield return new FloatMenuOption("Unpatch methods that patch", () => Utility.UnpatchMethodsOnMethod(meth));
-            yield return new FloatMenuOption("Profile the internal methods of", () => Utility.PatchInternalMethod(meth));
+            yield return new FloatMenuOption("Profile the internal methods of", () => Utility.PatchInternalMethod(meth, GUIController.CurrentCategory));
         }
     }
 }

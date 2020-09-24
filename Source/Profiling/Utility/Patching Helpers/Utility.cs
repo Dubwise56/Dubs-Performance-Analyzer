@@ -266,7 +266,7 @@ namespace Analyzer.Profiling
          * Internal Method Patching
          */
 
-        public static void PatchInternalMethod(string name)
+        public static void PatchInternalMethod(string name, Category category)
         {
             MethodInfo method = null;
             try
@@ -278,27 +278,34 @@ namespace Analyzer.Profiling
                 Error($"Failed to locate method {name}, errored with the message {e.Message}");
                 return;
             }
-            PatchInternalMethod(method);
+            PatchInternalMethod(method, category);
         }
-        public static void PatchInternalMethod(MethodInfo method)
+        public static void PatchInternalMethod(MethodInfo method, Category category)
         {
             if (InternalMethodUtility.PatchedInternals.Contains(method))
             {
                 Warn("Trying to re-transpile an already profiled internal method");
                 return;
             }
-            PatchInternalMethodFull(method);
+            PatchInternalMethodFull(method, category);
         }
-        private static void PatchInternalMethodFull(MethodInfo method)
+        private static void PatchInternalMethodFull(MethodInfo method, Category category)
         {
             try
             {
-                GUIController.AddEntry(method.Name + "-int", GUIController.CurrentCategory);
+                GUIController.AddEntry(method.Name + "-int", category);
                 GUIController.SwapToEntry(method.Name + "-int");
 
                 InternalMethodUtility.PatchedInternals.Add(method);
 
-                Task.Factory.StartNew(() => Modbase.Harmony.Patch(method, transpiler: InternalMethodUtility.InternalProfiler));
+                Task.Factory.StartNew(() =>
+                {
+                    try
+                    {
+                        Modbase.Harmony.Patch(method, transpiler: InternalMethodUtility.InternalProfiler);
+                    }
+                    catch (Exception e) { ThreadSafeLogger.Error("Failed to internal patch method, failed with the exep " + e.Message); }
+                });
             }
             catch (Exception e)
             {

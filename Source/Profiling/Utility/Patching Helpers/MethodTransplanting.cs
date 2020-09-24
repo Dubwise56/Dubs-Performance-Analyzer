@@ -40,7 +40,7 @@ namespace Analyzer.Profiling
 
         private static readonly HarmonyMethod transpiler = new HarmonyMethod(typeof(MethodTransplanting), nameof(MethodTransplanting.Transpiler));
         private static readonly MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(ProfileController), nameof(ProfileController.Start));
-        
+
         // The issue; I need to get dynamic information about the methods which need to be patched 
         // Possible solutions; 
         //  Pass directly the method information into the patching function
@@ -87,10 +87,12 @@ namespace Analyzer.Profiling
             var curType = typeInfo[__originalMethod];
             var curLabelMeth = curType.GetMethod("GetLabel", BindingFlags.Public | BindingFlags.Static);
             var curNamerMeth = curType.GetMethod("GetName", BindingFlags.Public | BindingFlags.Static);
+            var curTypeMeth = curType.GetMethod("GetType", BindingFlags.Public | BindingFlags.Static);
 
 
             var labelIndices = new List<int>();
             var namerIndices = new List<int>();
+            var typeIndices = new List<int>();
             var paramNames = __originalMethod.GetParameters().ToArray();
 
             string key;
@@ -116,6 +118,15 @@ namespace Analyzer.Profiling
                 {
                     if (param.Name == "__instance") namerIndices.Add(0);
                     else namerIndices.Add(paramNames.FirstIndexOf(p => p.Name == param.Name && p.ParameterType == param.ParameterType));
+                }
+            }
+
+            if (curTypeMeth != null && curTypeMeth.GetParameters().Count() != 0)
+            {
+                foreach (var param in curTypeMeth.GetParameters())
+                {
+                    if (param.Name == "__instance") typeIndices.Add(0);
+                    else typeIndices.Add(paramNames.FirstIndexOf(p => p.Name == param.Name && p.ParameterType == param.ParameterType));
                 }
             }
 
@@ -173,8 +184,18 @@ namespace Analyzer.Profiling
                         yield return new CodeInstruction(OpCodes.Dup); // duplicate the key on the stack so the key is both the key and the label in ProfileController.Start
                     }
                 }
+                { // Custom Typing
+                    if (curLabelMeth != null)
+                    {
+                        foreach (var index in typeIndices) yield return new CodeInstruction(OpCodes.Ldarg, index);
+                        yield return new CodeInstruction(OpCodes.Call, curTypeMeth);
+                    }
+                    else
+                    {
+                        yield return new CodeInstruction(OpCodes.Ldnull); // duplicate the key on the stack so the key is both the key and the label in ProfileController.Start
+                    }
+                }
 
-                yield return new CodeInstruction(OpCodes.Ldnull);
                 yield return new CodeInstruction(OpCodes.Ldnull);
                 yield return new CodeInstruction(OpCodes.Ldnull);
 
@@ -236,6 +257,7 @@ namespace Analyzer.Profiling
 
             Type[] parameters = null;
 
+
             if (method.Attributes.HasFlag(MethodAttributes.Static)) // If we have a static method, we don't need to grab the instance
                 parameters = method.GetParameters().Select(param => param.ParameterType).ToArray();
             else if (method.DeclaringType.IsValueType) // if we have a struct, we need to make the struct a ref, otherwise you resort to black magic
@@ -262,10 +284,10 @@ namespace Analyzer.Profiling
             InsertStartIL(type, gen, key, localProfiler, dictFieldInfo);
 
             // dynamically add our parameters, as many as they are, into our method
-            for (int i = 0; i < parameters.Count(); i++)
-                gen.Emit(OpCodes.Ldarg_S, i);
+            for (int i = 0; i < parameters.Length; i++)
+                gen.Emit(OpCodes.Ldarg, i);
 
-            gen.EmitCall(inst.opcode, method, parameters); // call our original method, as per our arguments, etc.
+            gen.Emit(inst.opcode, method); // call our original method, as per our arguments, etc.
 
             InsertRetIL(type, gen, localProfiler); // wrap our function up, return a value if required
 

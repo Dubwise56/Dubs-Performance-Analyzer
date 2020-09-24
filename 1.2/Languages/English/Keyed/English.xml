@@ -126,6 +126,9 @@
 	<entry.tick.needs>Needs</entry.tick.needs>
 	<entry.tick.needs.tooltip>Shows a variety of methods which are used in Needs calculations</entry.tick.needs.tooltip>
 
+	<entry.tick.pawngen>Pawn Generation</entry.tick.pawngen>
+	<entry.tick.pawngen.tooltip>Shows methods around PawnGen and generation of pawns for raids </entry.tick.pawngen.tooltip>
+
 	<entry.tick.pawn>Pawn Tick</entry.tick.pawn>
 	<entry.tick.pawn.tooltip>The variety of methods which are called on Pawn:Tick, including a variety of trackers</entry.tick.pawn.tooltip>
 
@@ -148,6 +151,9 @@
 	<entry.tick.world.tooltip>Tick methods for various world entries, such as; WorldPawns, Factions, Caravans</entry.tick.world.tooltip>
 
 	<!-- Update  -->
+
+	<entry.update.alert>Alerts</entry.update.alert>
+	<entry.update.alert.tooltip>The recalculate and draw methos for Alerts</entry.update.alert.tooltip>
 
 	<entry.update.dynamicdraw>Draw Dynamic Things</entry.update.dynamicdraw>
 	<entry.update.dynamicdraw.tooltip>The draw method for things which are drawn via the DynamicDrawManager</entry.update.dynamicdraw.tooltip>
@@ -199,6 +205,12 @@
 
 	<!-- Performance Patches -->
 
+	<performance.alertsoverride>Override Alerts</performance.alertsoverride>
+	<performance.alertsoverride.tooltip>Choose to disable expensive alerts</performance.alertsoverride.tooltip>
+
+	<performance.alertsdisable>Disable Alerts</performance.alertsdisable>
+	<performance.alertsdisable.tooltip>Disable all alerts</performance.alertsdisable.tooltip>
+
 	<performance.sectionlayersnow>Improve the speed of rendering for snow</performance.sectionlayersnow>
 	<performance.sectionlayersnow.tooltip>Replaces a Mathf.Lerp with byte multiplication in the calculation for snow colour</performance.sectionlayersnow.tooltip>
 
@@ -223,5 +235,8 @@
 	<performance.tempcache>Remove some stutters on raid generation</performance.tempcache>
 	<performance.tempcache.tooltip>Caches temperature lookups in the same tick, removing some overhead from raid generation</performance.tempcache.tooltip>
 
+	<!-- Temporary -->
+	<temp.section>Optimize Map Loading</temp.section>
+	<temp.section.tooltip>.</temp.section.tooltip>
 
 </LanguageData>

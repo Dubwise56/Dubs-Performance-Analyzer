@@ -29,35 +29,44 @@ namespace Analyzer.Profiling
 
         private static IEnumerable<CodeInstruction> Transpiler(MethodBase __originalMethod, IEnumerable<CodeInstruction> codeInstructions)
         {
-            List<CodeInstruction> instructions = new List<CodeInstruction>(codeInstructions);
-
-            for (int i = 0; i < instructions.Count(); i++)
+            try
             {
-                if (IsFunctionCall(instructions[i].opcode))
+                List<CodeInstruction> instructions = new List<CodeInstruction>(codeInstructions);
+
+                for (int i = 0; i < instructions.Count(); i++)
                 {
-                    if (i == 0 || instructions[i - 1].opcode != OpCodes.Constrained)
+
+                    if (IsFunctionCall(instructions[i].opcode))
                     {
-                        MethodInfo meth = null;
-                        try { meth = instructions[i].operand as MethodInfo; } catch { }
-                        if(meth == null) continue;
+                        if (i == 0 || instructions[i - 1].opcode != OpCodes.Constrained)
+                        {
+                            MethodInfo meth = null;
+                            try { meth = instructions[i].operand as MethodInfo; } catch { }
+                            if (meth == null) continue;
 
-                        var key = meth.DeclaringType.FullName + "." + meth.Name;
+                            var key = meth.DeclaringType.FullName + "." + meth.Name;
 
-                        if(!transpiledMethods.ContainsKey(key))
-                            transpiledMethods.Add(key, meth);
-                        
-                        CodeInstruction inst = MethodTransplanting.ReplaceMethodInstruction(
-                            instructions[i],
-                            key,
-                            AccessTools.TypeByName(__originalMethod.Name + "-int"),
-                            AccessTools.Field(typeof(InternalMethodUtility), "transpiledMethods"));
+                            if (!transpiledMethods.ContainsKey(key))
+                                transpiledMethods.Add(key, meth);
 
-                        if (inst != instructions[i]) instructions[i] = inst;
+                            CodeInstruction inst = MethodTransplanting.ReplaceMethodInstruction(
+                                instructions[i],
+                                key,
+                                AccessTools.TypeByName(__originalMethod.Name + "-int"),
+                                AccessTools.Field(typeof(InternalMethodUtility), "transpiledMethods"));
+
+                            if (inst != instructions[i]) instructions[i] = inst;
+                        }
                     }
                 }
-            }
 
-            return instructions;
+                return instructions;
+            }
+            catch (Exception e)
+            {
+                ThreadSafeLogger.Error("Failed to patch internal method, failed with the error " + e.Message);
+                return codeInstructions;
+            }
         }
 
 
