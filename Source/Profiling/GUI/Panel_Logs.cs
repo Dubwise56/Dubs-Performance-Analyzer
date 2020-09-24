@@ -159,24 +159,15 @@ namespace Analyzer.Profiling
 
             Profiler profile = ProfileController.Profiles[log.key];
 
-            bool on = true;
 
             // Is this entry currently 'active'?
             if (GUIController.CurrentEntry.onSelect != null)
             {
-                on = (bool)GUIController.CurrentEntry.onSelect.Invoke(null, new object[] { profile, log });
-            }
+                OnSelect(log, profile, out var active);
 
-            // Show a button to toggle whether an entry is 'active'
-            if (GUIController.CurrentEntry.checkBox != null)
-            {
-                var checkboxRect = new Rect(visible.x, visible.y, 25f, visible.height);
-                visible.x += 25f;
-                if (DubGUI.Checkbox(checkboxRect, "", ref on))
-                {
-                    GUIController.CurrentEntry.checkBox.Invoke(null, new object[] { log });
-                    Modbase.Settings.Write();
-                }
+                // Show a button to toggle whether an entry is 'active'
+                if (GUIController.CurrentEntry.checkBox != null)
+                    Checkbox(ref visible, log, profile, ref active);
             }
 
             Widgets.DrawHighlightIfMouseover(visible);
@@ -293,6 +284,23 @@ namespace Analyzer.Profiling
                 Find.WindowStack.Add(new FloatMenu(options));
             }
         }
+
+        public static void OnSelect(ProfileLog log, Profiler profile, out bool active)
+        {
+            active = (bool)GUIController.CurrentEntry.onSelect.Invoke(null, new object[] { profile, log });
+        }
+
+        public static void Checkbox(ref Rect rect, ProfileLog log, Profiler profile, ref bool active)
+        {
+            var checkboxRect = new Rect(rect.x, rect.y, 25f, rect.height);
+            rect.x += 25f;
+            if (DubGUI.Checkbox(checkboxRect, "", ref active))
+            {
+                GUIController.CurrentEntry.checkBox.Invoke(null, new object[] { log });
+                Modbase.Settings.Write();
+            }
+        }
+
 
         private static IEnumerable<FloatMenuOption> RightClickDropDown(ProfileLog log)
         {
