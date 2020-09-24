@@ -11,6 +11,7 @@ namespace Analyzer.Profiling
 {
     public class CodeInstMethEqual : EqualityComparer<CodeInstruction>
     {
+        // Functions primarily to check if two function call CodeInstructions are the same. 
         public override bool Equals(CodeInstruction b1, CodeInstruction b2)
         {
             if (b1.opcode != b2.opcode) return false;
@@ -42,11 +43,23 @@ namespace Analyzer.Profiling
         public static Dictionary<string, MethodInfo> transpiledMethods = new Dictionary<string, MethodInfo>();
         public static CodeInstMethEqual methComparer = new CodeInstMethEqual();
 
+        // Clear the caches which prevent double patching
         public static void ClearCaches()
         {
             PatchedMeths.Clear();
             transpiledMethods.Clear();
+
+#if DEBUG
+            ThreadSafeLogger.Message("[Analyzer] Cleaned up the transpiler methods caches");
+#endif
         }
+
+        /* This method takes a method, and computes the different in CodeInstructions,
+         * from this difference, it then looks at all 'added' instructions that are either
+         * `Call` or `CallVirt` instructions, and attempts to swap the MethodInfo which
+         * is called from the instruction, the method it gets switched to is created at 
+         * runtime in `MethodTransplating.ReplaceMethodInstruction`
+         */
 
         [HarmonyPriority(Priority.Last)]
         private static IEnumerable<CodeInstruction> Transpiler(MethodBase __originalMethod, IEnumerable<CodeInstruction> instructions)
@@ -61,15 +74,18 @@ namespace Analyzer.Profiling
 
             foreach (var thing in insts.changeSet)
             {
+                // We only want added methods
                 if (thing.change != ChangeType.Added) continue;
                 if (!InternalMethodUtility.IsFunctionCall(thing.value.opcode)) continue;
 
+                // swap our instruction
                 var replaceInstruction = MethodTransplanting.ReplaceMethodInstruction(
                     thing.value,
                     __originalMethod.DeclaringType.FullName + "." + __originalMethod.Name,
                     typeof(H_HarmonyTranspilers),
                     AccessTools.Field(typeof(TranspilerMethodUtility), "transpiledMethods"));
 
+                // Find the place it was in our method, and replace the instruction (Optimisation Opportunity to improve this)
                 for (int i = 0; i < modInstList.Count; i++)
                 {
                     var instruction = modInstList[i];

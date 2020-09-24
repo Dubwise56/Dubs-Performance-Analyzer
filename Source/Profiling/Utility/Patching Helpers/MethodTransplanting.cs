@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using RimWorld.BaseGen;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -41,11 +42,6 @@ namespace Analyzer.Profiling
         private static readonly HarmonyMethod transpiler = new HarmonyMethod(typeof(MethodTransplanting), nameof(MethodTransplanting.Transpiler));
         private static readonly MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(ProfileController), nameof(ProfileController.Start));
 
-        // The issue; I need to get dynamic information about the methods which need to be patched 
-        // Possible solutions; 
-        //  Pass directly the method information into the patching function
-        //  Have a way to poll a refresh which checks whether a method needs to be patched
-
         public static void ClearCaches()
         {
             methods.Clear();
@@ -77,11 +73,14 @@ namespace Analyzer.Profiling
             }
         }
 
+
+        // This transpiler basically replicates ProfileController.Start, but in IL, and inside the method it is patching, to reduce as much overhead as
+        // possible, its quite simple, just long and hard to read.
         public static IEnumerable<CodeInstruction> Transpiler(MethodBase __originalMethod, IEnumerable<CodeInstruction> instructions, ILGenerator ilGen)
         {
             var profLocal = ilGen.DeclareLocal(typeof(Profiler));
-            var beginLabel = ilGen.DefineLabel();
             var keyLocal = ilGen.DeclareLocal(typeof(string));
+            var beginLabel = ilGen.DefineLabel();
             var noProfLabel = ilGen.DefineLabel();
 
             var curType = typeInfo[__originalMethod];
@@ -90,45 +89,14 @@ namespace Analyzer.Profiling
             var curTypeMeth = curType.GetMethod("GetType", BindingFlags.Public | BindingFlags.Static);
 
 
-            var labelIndices = new List<int>();
-            var namerIndices = new List<int>();
-            var typeIndices = new List<int>();
-            var paramNames = __originalMethod.GetParameters().ToArray();
-
             string key;
             if (__originalMethod.ReflectedType != null) key = __originalMethod.ReflectedType.FullName + ":" + __originalMethod.Name;
             else key = __originalMethod.DeclaringType.FullName + ":" + __originalMethod.Name;
 
+            // Build our dictionary of string -> MethodInfo
+            // This will be accessed at runtime when a Profiler is first created
             if (!methods.ContainsKey(key))
                 methods.Add(key, __originalMethod as MethodInfo);
-
-
-            if (curLabelMeth != null && curLabelMeth.GetParameters().Count() != 0)
-            {
-                foreach (var param in curLabelMeth.GetParameters())
-                {
-                    if (param.Name == "__instance") labelIndices.Add(0);
-                    else labelIndices.Add(paramNames.FirstIndexOf(p => p.Name == param.Name && p.ParameterType == param.ParameterType));
-                }
-            }
-
-            if (curNamerMeth != null && curNamerMeth.GetParameters().Count() != 0)
-            {
-                foreach (var param in curNamerMeth.GetParameters())
-                {
-                    if (param.Name == "__instance") namerIndices.Add(0);
-                    else namerIndices.Add(paramNames.FirstIndexOf(p => p.Name == param.Name && p.ParameterType == param.ParameterType));
-                }
-            }
-
-            if (curTypeMeth != null && curTypeMeth.GetParameters().Count() != 0)
-            {
-                foreach (var param in curTypeMeth.GetParameters())
-                {
-                    if (param.Name == "__instance") typeIndices.Add(0);
-                    else typeIndices.Add(paramNames.FirstIndexOf(p => p.Name == param.Name && p.ParameterType == param.ParameterType));
-                }
-            }
 
             // Active Check
             {
@@ -136,7 +104,7 @@ namespace Analyzer.Profiling
                 yield return new CodeInstruction(OpCodes.Ldsfld, curType.GetField("Active", BindingFlags.Public | BindingFlags.Static));
                 yield return new CodeInstruction(OpCodes.Brfalse_S, beginLabel);
 
-                // if(!Analyzer.CurrentlyPaused)
+                // if(Analyzer.CurrentlyProfiling)
                 yield return new CodeInstruction(OpCodes.Call, Analyzer_CurrentlyProfiling);
                 yield return new CodeInstruction(OpCodes.Brfalse_S, beginLabel);
             }
@@ -145,7 +113,9 @@ namespace Analyzer.Profiling
             { // Custom Namer
                 if (curNamerMeth != null)
                 {
-                    foreach (var index in namerIndices) yield return new CodeInstruction(OpCodes.Ldarg, index);
+                    foreach (var codeInst in GetLoadArgsForMethodParams(__originalMethod as MethodInfo, curNamerMeth.GetParameters()))
+                        yield return codeInst;
+
                     yield return new CodeInstruction(OpCodes.Call, curNamerMeth);
                 }
                 else
@@ -166,7 +136,7 @@ namespace Analyzer.Profiling
             { // If we found a profiler - Start it, and skip to the start of execution of the method
                 yield return new CodeInstruction(OpCodes.Ldloc, profLocal);
                 yield return new CodeInstruction(OpCodes.Call, ProfilerStart);
-                yield return new CodeInstruction(OpCodes.Pop);
+                yield return new CodeInstruction(OpCodes.Pop); // Profiler.Start returns itself so we pop it off the stack
                 yield return new CodeInstruction(OpCodes.Br, beginLabel);
             }
 
@@ -176,7 +146,9 @@ namespace Analyzer.Profiling
                 { // Custom Labelling
                     if (curLabelMeth != null)
                     {
-                        foreach (var index in labelIndices) yield return new CodeInstruction(OpCodes.Ldarg, index);
+                        foreach (var codeInst in GetLoadArgsForMethodParams(__originalMethod as MethodInfo, curLabelMeth.GetParameters()))
+                            yield return codeInst;
+
                         yield return new CodeInstruction(OpCodes.Call, curLabelMeth);
                     }
                     else
@@ -185,9 +157,11 @@ namespace Analyzer.Profiling
                     }
                 }
                 { // Custom Typing
-                    if (curLabelMeth != null)
+                    if (curTypeMeth != null)
                     {
-                        foreach (var index in typeIndices) yield return new CodeInstruction(OpCodes.Ldarg, index);
+                        foreach (var codeInst in GetLoadArgsForMethodParams(__originalMethod as MethodInfo, curTypeMeth.GetParameters()))
+                            yield return codeInst;
+
                         yield return new CodeInstruction(OpCodes.Call, curTypeMeth);
                     }
                     else
@@ -200,8 +174,10 @@ namespace Analyzer.Profiling
                 yield return new CodeInstruction(OpCodes.Ldnull);
 
                 { // get our methodinfo from the dict
+                    // I swear there is a way to do this with LdToken but I can't get it to work
+                    // and this should only be called the first time it is found, so not a big deal
                     yield return new CodeInstruction(OpCodes.Ldsfld, MethodTransplanting_Methods);
-                    yield return new CodeInstruction(OpCodes.Ldstr, __originalMethod.DeclaringType.FullName + ":" + __originalMethod.Name); // idc about custom names here
+                    yield return new CodeInstruction(OpCodes.Ldstr, key); // idc about custom names here
                     yield return new CodeInstruction(OpCodes.Callvirt, Dict_Get_Value);
                 }
 
@@ -222,18 +198,20 @@ namespace Analyzer.Profiling
 
             instructions.ElementAt(0).WithLabels(beginLabel);
 
-            // For each instruction which exits this function, append our finishing touches
+            // For each instruction which exits this function, append our finishing touches (I.e.)
+            // if(profiler != null)
+            // {
+            //      profiler.Stop();
+            // }
+            // return; // any labels here are moved to the start of the `if`
             foreach (var inst in instructions)
             {
                 if (inst.opcode == OpCodes.Ret)
                 {
                     Label endLabel = ilGen.DefineLabel();
 
-                    var ldloc = new CodeInstruction(OpCodes.Ldloc, profLocal);
-                    inst.MoveLabelsTo(ldloc);
-
                     // localProf?.Stop();
-                    yield return ldloc;
+                    yield return new CodeInstruction(OpCodes.Ldloc, profLocal).MoveLabelsFrom(inst);
                     yield return new CodeInstruction(OpCodes.Brfalse_S, endLabel);
 
                     yield return new CodeInstruction(OpCodes.Ldloc, profLocal);
@@ -248,8 +226,51 @@ namespace Analyzer.Profiling
             }
         }
 
-        // Utility for internal && transpiler profiling.
+        // Emulates Harmonys '__instance' '___fieldName' and parameter sniping.
+        // todo optimisation opportunity (reduce readability for less looping)
+        private static List<CodeInstruction> GetLoadArgsForMethodParams(MethodInfo originalMethod, ParameterInfo[] methodparams)
+        {
+            var origParams = originalMethod.GetParameters();
+            var origType = originalMethod.GetType();
+            var insts = new List<CodeInstruction>();
 
+            foreach (var param in methodparams)
+            {
+                if (param.Name == "__instance") // Trying to get the instance of the object (assumed to be non static)
+                {
+                    insts.Add(new CodeInstruction(OpCodes.Ldarg_0)); // Push the instance of the object on the stack (up to the user to get this right)
+                }
+                else if (param.Name.StartsWith("___")) // Trying to get a field from the object (static or non static)
+                {
+                    var fieldName = param.Name.Remove(0, 3);
+
+                    var fieldInfo = AccessTools.Field(origType, fieldName);
+
+                    if (fieldInfo.IsStatic)
+                    {
+                        insts.Add(new CodeInstruction(OpCodes.Ldsfld, fieldInfo));
+                    }
+                    else
+                    {
+                        insts.Add(new CodeInstruction(OpCodes.Ldarg_0)); // push the instance onto the stack, then grab the field from the instance.
+                        insts.Add(new CodeInstruction(OpCodes.Ldfld, fieldInfo));
+                    }
+                }
+                else // Trying to intercept a param from the original method
+                {
+                    insts.Add(new CodeInstruction(OpCodes.Ldarg, origParams.FirstIndexOf(p => p.Name == param.Name && p.ParameterType == param.ParameterType)));
+                }
+            }
+            return insts;
+        }
+
+        // Utility for internal && transpiler profiling.
+        // This method takes a codeinstruction (of type Call or CallVirt), a key, a type, and a fieldinfo of a dictionary
+        // and will return a new codeinstruction, which the same opcode as the instruction passed to it, and the method
+        // will be a new dynamic method, which duplicates the functionality of the original method, while adding proiling to it.
+        // 
+        // The key is used for keying into the dictionary field you give, which will be expected to return a MethodInfo
+        // this will be then used in the call to ProfileController.Start
         public static CodeInstruction ReplaceMethodInstruction(CodeInstruction inst, string key, Type type, FieldInfo dictFieldInfo)
         {
             MethodInfo method = null;
@@ -283,18 +304,18 @@ namespace Analyzer.Profiling
 
             InsertStartIL(type, gen, key, localProfiler, dictFieldInfo);
 
-            // dynamically add our parameters, as many as they are, into our method
+            // dynamically add our parameters, as many as they are, onto the stack for our original method
             for (int i = 0; i < parameters.Length; i++)
                 gen.Emit(OpCodes.Ldarg, i);
 
-            gen.Emit(inst.opcode, method); // call our original method, as per our arguments, etc.
+            gen.Emit(inst.opcode, method); // call our original method, (all parameters are on the stack)
 
             InsertRetIL(type, gen, localProfiler); // wrap our function up, return a value if required
 
             return new CodeInstruction(inst)
             {
                 opcode = OpCodes.Call,
-                operand = meth
+                operand = meth // our created dynamic method
             };
         }
 
@@ -334,12 +355,14 @@ namespace Analyzer.Profiling
         public static void InsertRetIL(Type type, ILGenerator ilGen, LocalBuilder profiler)
         {
             Label skipLabel = ilGen.DefineLabel();
+            // if(profiler != null)
+            // {
             ilGen.Emit(OpCodes.Ldloc, profiler);
             ilGen.Emit(OpCodes.Brfalse_S, skipLabel);
-
+            // profiler.Stop();
             ilGen.Emit(OpCodes.Ldloc, profiler.LocalIndex);
             ilGen.Emit(OpCodes.Call, ProfilerEnd);
-
+            // }
             ilGen.MarkLabel(skipLabel);
 
             ilGen.Emit(OpCodes.Ret);

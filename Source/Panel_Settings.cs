@@ -35,14 +35,14 @@ namespace Analyzer
             Rect rec = listing.GetRect(24f);
             Rect lrec = rec.LeftHalf();
             rec = rec.RightHalf();
-            Widgets.DrawTextureFitted(lrec.LeftPartPixels(40f), Gfx.Support, 1f);
+            Widgets.DrawTextureFitted(lrec.LeftPartPixels(40f), ResourceCache.GUI.Support, 1f);
             lrec.x += 40;
             if (Widgets.ButtonText(lrec.LeftPartPixels(ResourceCache.Strings.settings_wiki.GetWidthCached()), ResourceCache.Strings.settings_wiki, false, true))
             {
                 Application.OpenURL("https://github.com/Dubwise56/Dubs-Performance-Analyzer/wiki");
             }
 
-            Widgets.DrawTextureFitted(rec.RightPartPixels(40f), Gfx.disco, 1f);
+            Widgets.DrawTextureFitted(rec.RightPartPixels(40f), ResourceCache.GUI.disco, 1f);
             rec.width -= 40;
             if (Widgets.ButtonText(rec.RightPartPixels(ResourceCache.Strings.settings_discord.GetWidthCached()), ResourceCache.Strings.settings_discord, false, true))
             {

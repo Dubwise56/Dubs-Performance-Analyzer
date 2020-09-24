@@ -22,6 +22,14 @@ namespace Analyzer.Profiling
 
         public static Dictionary<string, HashSet<MethodInfo>> methods = new Dictionary<string, HashSet<MethodInfo>>();
 
+
+        /* CreateType creates a type at runtime which inherits from 'Entry', it creates a type with one field and two methods
+         * Field: 'Active' signifying whether the entry is currently active or not 
+         * Ctor: Sets 'Active' to false.
+         * Method: 'GetPatchMethods' given a string, finds a list of methods in a dictionary which represent the methods this type is profiling
+         * they are stored in the `methods` dictionary, and added to in the CreateType method. 
+         */
+
         public static Type CreateType(string name, HashSet<MethodInfo> methods)
         {
             TypeBuilder tb = ModuleBuilder.DefineType(name, staticAtt, typeof(Entry));
@@ -57,6 +65,7 @@ namespace Analyzer.Profiling
             generator.Emit(OpCodes.Ret);
         }
 
+        // Does the one off work in a method, not bothered for performance so keeping it simple.
         public static IEnumerable<MethodInfo> PatchAll(string name)
         {
             if (methods.TryGetValue(name, out var meths))

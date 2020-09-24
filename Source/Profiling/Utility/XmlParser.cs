@@ -32,6 +32,8 @@ namespace Analyzer.Profiling
             }
 
         }
+
+        // Iterates through each child element in the document and attempts to extract method(s) from the strings inside the children
         private static void Parse(XmlDocument doc)
         {
             foreach (XmlNode node in doc.DocumentElement.ChildNodes) // entries should be 
@@ -65,6 +67,7 @@ namespace Analyzer.Profiling
         {
             return AccessTools.Method(str);
         }
+
         private static IEnumerable<MethodInfo> ParseTypeMethods(string str)
         {
             return Utility.GetTypeMethods(AccessTools.TypeByName(str));

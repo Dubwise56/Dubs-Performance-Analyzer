@@ -11,6 +11,7 @@ namespace Analyzer
 {
     public static class ResourceCache
     {
+        [StaticConstructorOnStartup]
         public static class GUI
         {
             public static readonly Texture2D black = SolidColorMaterials.NewSolidColorTexture(Color.black);
@@ -25,7 +26,9 @@ namespace Analyzer
             public static Texture2D MintSearch = ContentFinder<Texture2D>.Get("DPA/UI/MintSearch", false);
             public static Texture2D DropDown = ContentFinder<Texture2D>.Get("DPA/UI/dropdown", false);
             public static Texture2D FoldUp = ContentFinder<Texture2D>.Get("DPA/UI/foldup", false);
-            public static Texture2D sav = ContentFinder<Texture2D>.Get("DPA/UI/sav", false);
+            public static Texture2D sav = ContentFinder<Texture2D>.Get("DPA/UI/sav", false); 
+            public static Texture2D disco = ContentFinder<Texture2D>.Get("DPA/UI/discord", false);
+            public static Texture2D Support = ContentFinder<Texture2D>.Get("DPA/UI/Support", false);
         }
 
         public static class Strings // May want to disable Code Lens for the formatting here...

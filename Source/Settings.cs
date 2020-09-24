@@ -10,13 +10,6 @@ using Verse;
 
 namespace Analyzer
 {
-    [StaticConstructorOnStartup]
-    public class Gfx
-    {
-        public static Texture2D disco = ContentFinder<Texture2D>.Get("DPA/UI/discord", false);
-        public static Texture2D Support = ContentFinder<Texture2D>.Get("DPA/UI/Support", false);
-    }
-
     public class Settings : ModSettings
     {
 
