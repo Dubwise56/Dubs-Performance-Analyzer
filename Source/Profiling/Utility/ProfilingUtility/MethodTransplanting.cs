@@ -17,6 +17,7 @@ namespace Analyzer.Profiling
     public static class MethodTransplanting
     {
         public static HashSet<MethodInfo> patchedMeths = new HashSet<MethodInfo>();
+        public static Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
         public static ConcurrentDictionary<MethodBase, Type> typeInfo = new ConcurrentDictionary<MethodBase, Type>();
 
         private static readonly HarmonyMethod transpiler = new HarmonyMethod(typeof(MethodTransplanting), nameof(MethodTransplanting.Transpiler));
@@ -36,13 +37,14 @@ namespace Analyzer.Profiling
         private static readonly MethodInfo Dict_Add = AccessTools.Method(typeof(Dictionary<string, Profiler>), "Add");
 
         // dictionary fields
+        private static readonly FieldInfo MethodTransplanting_Methods = AccessTools.Field(typeof(MethodTransplanting), "methods");
         private static readonly FieldInfo ProfilerController_Profiles = AccessTools.Field(typeof(ProfileController), "profiles");
 
-        private static readonly MethodInfo MethodBase_GetMethodFromHandle = AccessTools.Method(typeof(MethodBase), nameof(MethodBase.GetMethodFromHandle), new Type[] { typeof(RuntimeMethodHandle) });
         private static readonly MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(ProfileController), nameof(ProfileController.Start));
 
         public static void ClearCaches()
         {
+            methods.Clear();
             typeInfo.Clear();
         }
 
@@ -105,8 +107,8 @@ namespace Analyzer.Profiling
 
             // Build our dictionary of string -> MethodInfo
             // This will be accessed at runtime when a Profiler is first created
-            //if (!methods.ContainsKey(key))
-            //    methods.Add(key, __originalMethod as MethodInfo);
+            if (!methods.ContainsKey(key))
+                methods.Add(key, __originalMethod as MethodInfo);
 
             // Active Check
             {
@@ -184,9 +186,9 @@ namespace Analyzer.Profiling
                 yield return new CodeInstruction(OpCodes.Ldnull);
 
                 { // get our methodinfo from the metadata
-                    yield return new CodeInstruction(OpCodes.Ldtoken, __originalMethod);
-                    yield return new CodeInstruction(OpCodes.Call, MethodBase_GetMethodFromHandle);
-                    yield return new CodeInstruction(OpCodes.Castclass, typeof(MethodInfo));
+                    yield return new CodeInstruction(OpCodes.Ldsfld, MethodTransplanting_Methods);
+                    yield return new CodeInstruction(OpCodes.Ldstr, key); // idc about custom names here
+                    yield return new CodeInstruction(OpCodes.Callvirt, Dict_Get_Value);
                 }
 
                 yield return new CodeInstruction(OpCodes.Newobj, ProfilerCtor); // ProfileController.Start();
