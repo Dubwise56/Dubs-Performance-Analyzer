@@ -41,6 +41,11 @@ Pawn Tick is the 'tick' method for Pawns, it is responsible for all updates spec
 
 ThinkNodes are the AI behind the pawn, they control the decisions a Pawn makes. They are relatively high level, thus, when viewing times from them, understand that a lot of methods from other categories are included in the times you view, For example, JobGivers are a 'type' of ThinkNode, and are directly called from ThinkNodes, as part of a Pawns reasoning process in choosing a job.
 
+
+#### WorkGivers
+
+WorkGivers are how pawns find jobs to do, a common example could be, looking through the entire map for some buildings which may offer a job. For example, re-arming turrets, filling brewing barrels etc. They are quite often implemented in mods, and are easy to get wrong - Sometimes there is the suffix 'Very Bad' on WorkGivers, if you see this, it means the WorkGiver is doing a broad search on all Artificial Buildings on the map.
+
 ## Error when Attempting to open the Analyzer Window
 If you see the error *[Analyzer] Analyzer is currently in the process of cleaning up ...* and cannot open the window. Just wait a few seconds, this occurs because after you are finished using the Analyzer, it removes all of the profiling and hooks it has, in order to reduce the overhead it incurs on your game. This happens on a seperate thread, and does not effect gameplay at all, however depending on how many methods where profiled, the GC which is manually called after the cleanup can take a substantial amount of time. (This cleanup process does not effect the Performance patches at all).
 
@@ -81,7 +86,7 @@ You can patch:
 # For Modders
 
 ## Exceptions
-When exceptions are thrown in a method that is being profiled, The timer will be completely ***incorrect***. This is because the Stopwatch's `Stop()` function will never be called. This could hypothetically be remedied by using a Finalizer (or a raw try-catch), but this will incur a large amount of overhead, likely slowing the game to a crawl in categories with large amounts of methods. 
+When exceptions are thrown in a method that is being profiled, The timer will be completely ***incorrect***. This is because the Stopwatch's `Stop()` function will never be called. This could hypothetically be remedied by using a Finalizer (or a raw try-catch), but this will incur a large amount of overhead, likely slowing the game to a crawl in entries with large amounts of methods. 
 
 There is the potential of in the future making a switch which would enable you to profile while including a try-catch for specific methods. However it is more work than it is worth currently, if it is a feature you would like, you are free to implement it yourself [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L79-L227)
 
@@ -201,7 +206,12 @@ public static void Foo_runtimeReplacement(int param2, int local2)
     Stopwatch.Start();
     Foo(param2, local2);
     Stopwatch.End();
-    return; // The value which is currently on the stack will be returned if applicable
+    return; 
+    /* 
+    The value which is currently on the stack will be returned applicable 
+    (Stopwatch.End() is stack neutral) - cannot be expressed very well in
+    C# 
+    */ 
 }
 ```
 The `Stopwatch.Start();` above is simplified because the process here is specific to how Analyzer collects data on methods, and thus is unimportant to the example.
@@ -215,7 +225,7 @@ For each of the added IL instructions that are of the type `Call` or `CallVirt`,
 
 The ***sum*** of these added calls is considered the 'added' weight by the transpiler(s). This can not handle methods which throw exceptions. The added weight of a try-catch bracket for each profiler is not worth it. (As explained prior).
 
-This will also collate all transpilers on a given method, as there is only the IL after all the methods have been applied. Doing specialisation like, calculating the assembly an added method on is likely to be misleading, as one could insert a call to a vanilla method in a transpiler, which would lead the viewer to believe 'Core' transpiled its own method.
+This will also collate all transpilers on a given method, as there is only the IL after all the methods have been applied. Doing specialisation like, calculating the assembly an added method is implemented in is likely to be misleading, as one could insert a call to a vanilla method in a transpiler, which would lead the viewer to believe 'Core' transpiled its own method in.
 
 This does not handle all cases. Mods which add branching, or exception blocks via transpilers will not be profiled, and would likely given misleading results if an attempt was made. Similarly, mods which just add / swap a single instruction, or add a `mul` or `sub` opcode are very unlikely to add any overhead, so it is not worth profiling (You would be more likely to see overhead from the stopwatch, than the actual effect of the instruction).
 

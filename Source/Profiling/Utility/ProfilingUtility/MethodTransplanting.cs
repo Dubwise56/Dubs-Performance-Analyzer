@@ -17,8 +17,9 @@ namespace Analyzer.Profiling
     public static class MethodTransplanting
     {
         public static HashSet<MethodInfo> patchedMeths = new HashSet<MethodInfo>();
-        public static Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
         public static ConcurrentDictionary<MethodBase, Type> typeInfo = new ConcurrentDictionary<MethodBase, Type>();
+
+        private static readonly HarmonyMethod transpiler = new HarmonyMethod(typeof(MethodTransplanting), nameof(MethodTransplanting.Transpiler));
 
         // profiler
         private static readonly MethodInfo ProfilerStart = AccessTools.Method(typeof(Profiler), nameof(Profiler.Start));
@@ -35,16 +36,13 @@ namespace Analyzer.Profiling
         private static readonly MethodInfo Dict_Add = AccessTools.Method(typeof(Dictionary<string, Profiler>), "Add");
 
         // dictionary fields
-        private static readonly FieldInfo MethodTransplanting_Methods = AccessTools.Field(typeof(MethodTransplanting), "methods");
         private static readonly FieldInfo ProfilerController_Profiles = AccessTools.Field(typeof(ProfileController), "profiles");
 
-
-        private static readonly HarmonyMethod transpiler = new HarmonyMethod(typeof(MethodTransplanting), nameof(MethodTransplanting.Transpiler));
+        private static readonly MethodInfo MethodBase_GetMethodFromHandle = AccessTools.Method(typeof(MethodBase), nameof(MethodBase.GetMethodFromHandle), new Type[] { typeof(RuntimeMethodHandle) });
         private static readonly MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(ProfileController), nameof(ProfileController.Start));
 
         public static void ClearCaches()
         {
-            methods.Clear();
             typeInfo.Clear();
         }
 
@@ -65,11 +63,23 @@ namespace Analyzer.Profiling
 
                 patchedMeths.Add(meth);
                 typeInfo.TryAdd(meth, type);
-                try
+
+                Task.Factory.StartNew(delegate
                 {
-                    Task.Factory.StartNew(() => Modbase.Harmony.Patch(meth, transpiler: transpiler));
-                }
-                catch { }
+                    try
+                    {
+                        Modbase.Harmony.Patch(meth, transpiler: transpiler);
+                    }
+                    catch (Exception e)
+                    {
+#if DEBUG
+                            ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.Name} failed with the error {e.Message}");
+#else
+                        if (Settings.verboseLogging)
+                            ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.Name} failed with the error {e.Message}");
+#endif
+                    }
+                });
             }
         }
 
@@ -95,8 +105,8 @@ namespace Analyzer.Profiling
 
             // Build our dictionary of string -> MethodInfo
             // This will be accessed at runtime when a Profiler is first created
-            if (!methods.ContainsKey(key))
-                methods.Add(key, __originalMethod as MethodInfo);
+            //if (!methods.ContainsKey(key))
+            //    methods.Add(key, __originalMethod as MethodInfo);
 
             // Active Check
             {
@@ -173,12 +183,10 @@ namespace Analyzer.Profiling
                 yield return new CodeInstruction(OpCodes.Ldnull);
                 yield return new CodeInstruction(OpCodes.Ldnull);
 
-                { // get our methodinfo from the dict
-                    // I swear there is a way to do this with LdToken but I can't get it to work
-                    // and this should only be called the first time it is found, so not a big deal
-                    yield return new CodeInstruction(OpCodes.Ldsfld, MethodTransplanting_Methods);
-                    yield return new CodeInstruction(OpCodes.Ldstr, key); // idc about custom names here
-                    yield return new CodeInstruction(OpCodes.Callvirt, Dict_Get_Value);
+                { // get our methodinfo from the metadata
+                    yield return new CodeInstruction(OpCodes.Ldtoken, __originalMethod);
+                    yield return new CodeInstruction(OpCodes.Call, MethodBase_GetMethodFromHandle);
+                    yield return new CodeInstruction(OpCodes.Castclass, typeof(MethodInfo));
                 }
 
                 yield return new CodeInstruction(OpCodes.Newobj, ProfilerCtor); // ProfileController.Start();
@@ -226,8 +234,7 @@ namespace Analyzer.Profiling
             }
         }
 
-        // Emulates Harmonys '__instance' '___fieldName' and parameter sniping.
-        // todo optimisation opportunity (reduce readability for less looping)
+        // Emulates Harmonys '__instance' & '___fieldName' & parameter sniping.
         private static List<CodeInstruction> GetLoadArgsForMethodParams(MethodInfo originalMethod, ParameterInfo[] methodparams)
         {
             var origParams = originalMethod.GetParameters();
