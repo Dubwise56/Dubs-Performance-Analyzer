@@ -80,6 +80,11 @@ You can patch:
 
 # For Modders
 
+## Exceptions
+When exceptions are thrown in a method that is being profiled, The timer will be completely ***incorrect***. This is because the Stopwatch's `Stop()` function will never be called. This could hypothetically be remedied by using a Finalizer (or a raw try-catch), but this will incur a large amount of overhead, likely slowing the game to a crawl in categories with large amounts of methods. 
+
+There is the potential of in the future making a switch which would enable you to profile while including a try-catch for specific methods. However it is more work than it is worth currently, if it is a feature you would like, you are free to implement it yourself [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L79-L227)
+
 ## Using the Analyzer.xml
 You can create a tab in the Analyzer specifically for your mod ahead of time by creating an XML file. This saves you the work of having to repatch the same methods to profile your mod during development. The file should be formatted as follows:
 ```xml
@@ -201,14 +206,18 @@ public static void Foo_runtimeReplacement(int param2, int local2)
 ```
 The `Stopwatch.Start();` above is simplified because the process here is specific to how Analyzer collects data on methods, and thus is unimportant to the example.
 
-The implementation of this is [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L274-370)
+The implementation of this is [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L274-L370)
 
 ### Transpiler Profiling
-Transpiler profiling is done using a relatively simple approach. The IL of the original method is compared to the current IL (after all transpilers have been applied) and a diff algorithm is applied. 
+Transpiler profiling is done using a relatively simple approach. The IL of the original method is compared to the current IL (after all transpilers have been applied) and a diff algorithm is applied. This profiling hinges on the fact that the diff algorithm is correct (which it may not always be!), I'd greatly appreciate examples where the algorithm *incorrectly* attributes an 'Added' method when no such method was added. Or improvements to the diff algorithm itself [here](Source/Profiling/Utility/Myers.cs)
 
 For each of the added IL instructions that are of the type `Call` or `CallVirt`, the method it calls is swapped out with a *profiling method* (as described above). 
 
-The ***sum*** of these calls is considered the 'added' weight by the transpiler(s). This obviously does not handle all case; i.e. adding for loops / while loops using branches, inserting instructions in for loops etc. This will also collate all transpilers on a method, so if you are trying to get accurate measurements on individual transpilers separately as a modder, I'd suggest only running the mod which adds it, or looking at the source code using a decompiler like dnSpy. 
+The ***sum*** of these added calls is considered the 'added' weight by the transpiler(s). This can not handle methods which throw exceptions. The added weight of a try-catch bracket for each profiler is not worth it. (As explained prior).
+
+This will also collate all transpilers on a given method, as there is only the IL after all the methods have been applied. Doing specialisation like, calculating the assembly an added method on is likely to be misleading, as one could insert a call to a vanilla method in a transpiler, which would lead the viewer to believe 'Core' transpiled its own method.
+
+This does not handle all cases. Mods which add branching, or exception blocks via transpilers will not be profiled, and would likely given misleading results if an attempt was made. Similarly, mods which just add / swap a single instruction, or add a `mul` or `sub` opcode are very unlikely to add any overhead, so it is not worth profiling (You would be more likely to see overhead from the stopwatch, than the actual effect of the instruction).
 
 ### Internal Method Profiling
 Internal method profiling is done by iterating through the IL of a method. For each of the `Call` or `CallVirt` instructions, the operand method is swapped out as described above.
