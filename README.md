@@ -32,8 +32,18 @@ This will (if possible) show you the mod, and the assembly that the method is at
 
 ## Common Offenders
 
-- Pawn.Tick
-- etc
+#### Pawn.Tick
+
+Pawn Tick is the 'tick' method for Pawns, it is responsible for all updates specific to the pawn. For example, pawns finding jobs, pathfinding etc. The individual methods which are called within Pawn:Tick are profiled in the entry 'Pawn Tick'. You can also right click the log, and press 'Profile the Internal Methods of', which will show you the methods which are called within Pawn:Tick
+
+
+#### ThinkNodes (Priority, Subtree, etc)
+
+ThinkNodes are the AI behind the pawn, they control the decisions a Pawn makes. They are relatively high level, thus, when viewing times from them, understand that a lot of methods from other categories are included in the times you view, For example, JobGivers are a 'type' of ThinkNode, and are directly called from ThinkNodes, as part of a Pawns reasoning process in choosing a job.
+
+## Error when Attempting to open the Analyzer Window
+If you see the error *[Analyzer] Analyzer is currently in the process of cleaning up ...* and cannot open the window. Just wait a few seconds, this occurs because after you are finished using the Analyzer, it removes all of the profiling and hooks it has, in order to reduce the overhead it incurs on your game. This happens on a seperate thread, and does not effect gameplay at all, however depending on how many methods where profiled, the GC which is manually called after the cleanup can take a substantial amount of time. (This cleanup process does not effect the Performance patches at all).
+
 
 # Advanced Usage
 
@@ -141,9 +151,7 @@ The stack will, after the transpiler, look like
 011 ret 
 ```
 
-The implementation for this is here:
-- [Initial Injection](Source/Profiling/Utility/MethodTransplanting.cs#L102-158)
-- [Final Injection(s)](Source/Profiling/Utility/MethodTransplanting.cs#L163-185)
+The implementation for this is [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L79-L227)
 
 
 
@@ -164,11 +172,11 @@ This process looks roughly like this:
 public static int MyTargetMethod(int param1, bool param2)
 {
     // ...
-    CallFoo(param1, local2);
+    Foo(param1, local2);
     // ...
 }
 
-public static void CallFoo(int param2, int local2)
+public static void Foo(int param2, int local2)
 {
     // ...
 }
@@ -179,21 +187,21 @@ After the method has been transformed:
 public static int MyTargetMethod(int param1, bool param2)
 {
     // ...
-    CallFoo_runtimeReplacement(param1, local2);
+    Foo_runtimeReplacement(param1, local2);
     // ...
 }
 
-public static void CallFoo_runtimeReplacement(int param2, int local2)
+public static void Foo_runtimeReplacement(int param2, int local2)
 {
     Stopwatch.Start();
-    CallFoo(param2, local2);
+    Foo(param2, local2);
     Stopwatch.End();
     return; // The value which is currently on the stack will be returned if applicable
 }
 ```
 The `Stopwatch.Start();` above is simplified because the process here is specific to how Analyzer collects data on methods, and thus is unimportant to the example.
 
-The implementation used for internal method profiling is [here](Source/Profiling/Utility/InternalMethodUtility.cs)
+The implementation of this is [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L274-370)
 
 ### Transpiler Profiling
 Transpiler profiling is done using a relatively simple approach. The IL of the original method is compared to the current IL (after all transpilers have been applied) and a diff algorithm is applied. 
@@ -210,4 +218,4 @@ This swaps out the instruction, which means that instead of replacing the method
 ## Edge Cases
 
 ### IEnumerable
-If you are seeing spikes from relatively simple Postfixes which deal with IEnumerables, keep in mind how IEnumerables work. This section is only relevant when the IEnumerable is being frontloaded. If you are doing a Postfix where a parameter you are checking is an IEnumerable, and you are doing a call like `.Any()` or `.Select`, your Postfix will force the calculation for the IEnumerables. The time this takes will be attributed to your Postfix. Additionally, each IEnumerator generated from the IEnumerable will have to repeat the calculation. This is something you can avoid.
+If you are seeing spikes from relatively simple Postfixes which deal with IEnumerables, keep in mind how IEnumerables work. This section is only relevant when the IEnumerable is being frontloaded. If you are doing a Postfix where a parameter you are checking is an IEnumerable, and you are doing a call like `.Any()` or `.Select`, your Postfix will force the calculation for the IEnumerables. The time this takes will be attributed to your Postfix. Additionally, each IEnumerator generated from the IEnumerable will have to repeat the calculation. This is something you should attempt to avoid - even if it seems misleading at first.
