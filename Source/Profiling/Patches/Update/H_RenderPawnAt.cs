@@ -19,6 +19,5 @@ namespace Analyzer.Profiling
         }
         public static string GetLabel(PawnRenderer __instance) => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}";
         public static string GetName(PawnRenderer __instance) => __instance.pawn.GetHashCode().ToString();
-
     }
 }

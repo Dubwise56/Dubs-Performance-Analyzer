@@ -51,8 +51,12 @@ namespace Analyzer.Profiling
                         case "type":
                             foreach (XmlNode type in child.ChildNodes)
                                 meths.AddRange(ParseTypeMethods(type.InnerText)); break;
+                        case "nestedtype":
+                        case "nestedtypes":
+                            foreach (XmlNode type in child.ChildNodes)
+                                meths.AddRange(ParseSubTypeTypeMethods(type.InnerText)); break;
                         default:
-                            Log.Error($"[Analyzer] Attempting to read unknown value from an Analyzer.xml, the given input was {child.Name}, it should have been either '(M/m)ethods' or '(T/t)ypes'");
+                            ThreadSafeLogger.Error($"[Analyzer] Attempting to read unknown value from an Analyzer.xml, the given input was {child.Name}, it should have been either '(M/m)ethods', '(T/t)ypes' '(N/n)estedTypes");
                             break;
                     }
                 }
@@ -71,6 +75,15 @@ namespace Analyzer.Profiling
         private static IEnumerable<MethodInfo> ParseTypeMethods(string str)
         {
             return Utility.GetTypeMethods(AccessTools.TypeByName(str));
+        }
+
+        private static IEnumerable<MethodInfo> ParseSubTypeTypeMethods(string str)
+        {
+            var type = AccessTools.TypeByName(str);
+
+            foreach(var subType in type.GetNestedTypes())
+                foreach(var method in Utility.GetTypeMethods(subType))
+                    yield return method;
         }
     }
 }

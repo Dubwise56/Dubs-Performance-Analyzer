@@ -14,12 +14,14 @@ namespace Analyzer.Profiling
         public static HarmonyMethod InternalProfiler = new HarmonyMethod(typeof(InternalMethodUtility), nameof(InternalMethodUtility.Transpiler));
 
         public static HashSet<MethodInfo> PatchedInternals = new HashSet<MethodInfo>();
-        public static Dictionary<string, MethodInfo> transpiledMethods = new Dictionary<string, MethodInfo>();
 
         public static void ClearCaches()
         {
             PatchedInternals.Clear();
-            transpiledMethods.Clear();
+
+#if DEBUG
+            ThreadSafeLogger.Message("[Analyzer] Cleaned up the internal method caches");
+#endif
         }
 
         public static bool IsFunctionCall(OpCode instruction)
@@ -45,15 +47,14 @@ namespace Analyzer.Profiling
                             if (meth == null) continue;
 
                             var key = meth.DeclaringType.FullName + "." + meth.Name;
+                            var index = MethodInfoCache.AddMethod(key, meth);
 
-                            if (!transpiledMethods.ContainsKey(key))
-                                transpiledMethods.Add(key, meth);
 
                             CodeInstruction inst = MethodTransplanting.ReplaceMethodInstruction(
                                 instructions[i],
                                 key,
-                                AccessTools.TypeByName(__originalMethod.Name + "-int"),
-                                AccessTools.Field(typeof(InternalMethodUtility), "transpiledMethods"));
+                                GUIController.types[__originalMethod.Name + "-int"],
+                                index);
 
                             if (inst != instructions[i]) instructions[i] = inst;
                         }

@@ -30,12 +30,6 @@ namespace Analyzer.Performance
             harmony.Patch(orig, dirt);
         }
 
-        public override void ExposeData()
-        {
-            base.ExposeData();
-            Scribe_Collections.Look(ref RoofDirty, "RoofDirty");
-        }
-
         public static void SetDirty(object __instance)
         {
             int id = 0;
@@ -72,12 +66,14 @@ namespace Analyzer.Performance
             if (!Enabled) return true;
 
             if (RoofDirty.TryGetValue(pawn.Map.uniqueID, out var value))
+            {
                 if (value) CheckDirty(pawn.Map);
                 else
                 {
                     __result = Enumerable.Empty<IntVec3>();
                     return false;
                 }
+            }
             else RoofDirty.Add(pawn.Map.uniqueID, true);
 
             return true;

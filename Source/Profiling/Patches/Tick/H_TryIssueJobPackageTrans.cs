@@ -28,11 +28,10 @@ namespace Analyzer.Profiling
 
         public static void ProfilePatch()
         {
-            Log.Message("Patching workgiver");
             HarmonyMethod pre = new HarmonyMethod(typeof(H_TryIssueJobPackageTrans), nameof(Prefix));
             HarmonyMethod post = new HarmonyMethod(typeof(H_TryIssueJobPackageTrans), nameof(Postfix));
             HarmonyMethod t = new HarmonyMethod(typeof(H_TryIssueJobPackageTrans), nameof(piler));
-            System.Reflection.MethodInfo o = AccessTools.Method(typeof(JobGiver_Work), nameof(JobGiver_Work.TryIssueJobPackage));
+            MethodInfo o = AccessTools.Method(typeof(JobGiver_Work), nameof(JobGiver_Work.TryIssueJobPackage));
             Modbase.Harmony.Patch(o, pre, post, t);
         }
 

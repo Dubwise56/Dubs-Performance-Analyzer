@@ -43,6 +43,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="GameComponent_Analyzer.cs" />
     <Compile Include="KeyBindings.cs" />
     <Compile Include="Modbase.cs" />
     <Compile Include="Performance\Patches\Alerts\AlertInfo.cs" />
@@ -73,6 +74,7 @@
     <Compile Include="Profiling\GUI\Panel_TopRow.cs" />
     <Compile Include="Profiling\Patches\Update\H_Shooting.cs" />
     <Compile Include="Profiling\Utility\ProfilingUtility\InternalMethodUtility.cs" />
+    <Compile Include="Profiling\Utility\MethodInfoCache.cs" />
     <Compile Include="Profiling\Utility\ProfilingUtility\MethodTransplanting.cs" />
     <Compile Include="Profiling\Utility\ProfilingUtility\TranspilerMethodUtility.cs" />
     <Compile Include="Profiling\Utility\ProfilingUtility\Utility.cs" />

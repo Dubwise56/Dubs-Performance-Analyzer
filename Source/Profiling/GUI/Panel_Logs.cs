@@ -311,6 +311,23 @@ namespace Analyzer.Profiling
 
             yield return new FloatMenuOption("Unpatch methods that patch", () => Utility.UnpatchMethodsOnMethod(meth));
             yield return new FloatMenuOption("Profile the internal methods of", () => Utility.PatchInternalMethod(meth, GUIController.CurrentCategory));
+
+            // This part is WIP - it would require the ability to change the tab a method is active in on the fly
+            // which is possible (with a transpiler to the current transpiler) but it would likely end up being
+            // quite ugly, and I'd rather give a little more thought to the problem
+            //yield return new FloatMenuOption("Profile in Custom Tab", () =>
+            //{
+            //    if (GUIController.CurrentCategory == Category.Tick)
+            //    {
+            //        MethodTransplanting.UpdateMethod(typeof(CustomProfilersTick), meth);
+            //        GUIController.SwapToEntry("Custom Tick");
+            //    }
+            //    else
+            //    {
+            //        MethodTransplanting.UpdateMethod(typeof(CustomProfilersUpdate), meth);
+            //        GUIController.SwapToEntry("Custom Update");
+            //    }
+            //});
         }
     }
 }

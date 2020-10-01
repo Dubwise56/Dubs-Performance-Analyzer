@@ -3,8 +3,10 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -32,6 +34,8 @@ namespace Analyzer.Profiling
 
         public static Type CreateType(string name, HashSet<MethodInfo> methods)
         {
+            name = string.Concat(name.Where(x => char.IsLetter(x) && !char.IsSymbol(x) && !char.IsWhiteSpace(x)));;
+            ThreadSafeLogger.Message(name);
             TypeBuilder tb = ModuleBuilder.DefineType(name, staticAtt, typeof(Entry));
 
             FieldBuilder active = tb.DefineField("Active", typeof(bool), FieldAttributes.Public | FieldAttributes.Static);

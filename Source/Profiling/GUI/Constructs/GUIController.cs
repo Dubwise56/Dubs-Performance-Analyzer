@@ -18,7 +18,7 @@ namespace Analyzer.Profiling
         private static Category currentCategory = Category.Settings;
 
         private static Dictionary<Category, Tab> tabs;
-        public static HashSet<string> types = new HashSet<string>();
+        public static Dictionary<string, Type> types = new Dictionary<string, Type>();
 
         public static Profiler CurrentProfiler { get { return currentProfiler; } set { currentProfiler = value; } }
         public static Tab GetCurrentTab => currentTab;
@@ -103,21 +103,29 @@ namespace Analyzer.Profiling
         public static void AddEntry(string name, Category category)
         {
             Type myType = null;
-            if (types.Contains(name))
+            if (types.ContainsKey(name))
             {
-                myType = AccessTools.TypeByName(name);
+                myType = types[name];
             }
             else
             {
                 myType = DynamicTypeBuilder.CreateType(name, null);
-                types.Add(name);
+                types.Add(name, myType);
             }
 
 #if DEBUG
-            ThreadSafeLogger.Message($"Adding entry {name} into the category {category.ToString()}");
+            ThreadSafeLogger.Message($"Adding entry {name} into the category {category}");
 #endif
+            var entry = Entry.Create(name, category, "Dynamically created entry for the type " + myType.Name, myType, true, true);
 
-            Tab(category).entries.Add(Entry.Create(myType.Name, category, "Dynamically created entry for the type " + myType.Name, myType, true, true), myType);
+            if (Tab(category).entries.ContainsKey(entry))
+            {
+                ThreadSafeLogger.Error($"Attempting to re-add entry {name} into the category {category}");
+            }
+            else
+            {
+                Tab(category).entries.Add(entry, myType);
+            }
         }
 
         public static void RemoveEntry(string name)

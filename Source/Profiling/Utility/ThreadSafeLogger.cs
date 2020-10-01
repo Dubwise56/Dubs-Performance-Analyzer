@@ -25,9 +25,6 @@ namespace Analyzer.Profiling
         }
     }
 
-    // It should be noted this only works when the analyzer window is open
-    // it serves no function when the window is closed, so I see no reason
-    // to make another patch for it to be constantly running.
     public static class ThreadSafeLogger
     {
         private static ConcurrentQueue<PendingMessage> messages = new ConcurrentQueue<PendingMessage>();

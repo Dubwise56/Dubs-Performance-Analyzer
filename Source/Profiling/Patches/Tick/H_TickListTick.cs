@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using RimWorld.QuestGen;
 using System;
+using System.Reflection;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -248,7 +249,7 @@ namespace Analyzer.Profiling
                     return $"{sam.GetType()} {fix}";
                 }
 
-                Profiler prof = ProfileController.Start(key, Namer, sam.GetType(), sam.def);
+                Profiler prof = ProfileController.Start(key, Namer, sam.GetType(), sam.def, sam, ac.GetMethodInfo());
                 ac();
                 prof.Stop();
             }

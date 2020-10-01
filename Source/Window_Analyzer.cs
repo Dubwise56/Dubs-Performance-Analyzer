@@ -185,9 +185,6 @@ namespace Analyzer
 
             rect = rect.ContractedBy(18f); // Adjust by our (removed) margin
 
-            // Display our logged messages that we may have recieved from other threads.
-            ThreadSafeLogger.DisplayLogs();
-
             Panel_Tabs.Draw(rect, GUIController.Tabs);
 
             rect.AdjustHorizonallyBy(Panel_Tabs.width); // Shift the x and shrink the width by the width of the Tabs

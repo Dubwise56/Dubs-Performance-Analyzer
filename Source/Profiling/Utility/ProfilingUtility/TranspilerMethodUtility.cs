@@ -40,15 +40,12 @@ namespace Analyzer.Profiling
         public static HarmonyMethod TranspilerProfiler = new HarmonyMethod(typeof(TranspilerMethodUtility), nameof(TranspilerMethodUtility.Transpiler));
 
         public static List<MethodBase> PatchedMeths = new List<MethodBase>();
-        public static Dictionary<string, MethodInfo> transpiledMethods = new Dictionary<string, MethodInfo>();
         public static CodeInstMethEqual methComparer = new CodeInstMethEqual();
 
         // Clear the caches which prevent double patching
         public static void ClearCaches()
         {
             PatchedMeths.Clear();
-            transpiledMethods.Clear();
-
 #if DEBUG
             ThreadSafeLogger.Message("[Analyzer] Cleaned up the transpiler methods caches");
 #endif
@@ -70,7 +67,8 @@ namespace Analyzer.Profiling
             Myers<CodeInstruction> insts = new Myers<CodeInstruction>(inst.ToArray(), modInstList.ToArray(), methComparer);
             insts.Compute();
 
-            transpiledMethods.Add(__originalMethod.DeclaringType.FullName + "." + __originalMethod.Name, __originalMethod as MethodInfo);
+            var key = __originalMethod.DeclaringType.FullName + ":" + __originalMethod.Name;
+            var index = MethodInfoCache.AddMethod(key, __originalMethod as MethodInfo);
 
             foreach (var thing in insts.changeSet)
             {
@@ -81,9 +79,9 @@ namespace Analyzer.Profiling
                 // swap our instruction
                 var replaceInstruction = MethodTransplanting.ReplaceMethodInstruction(
                     thing.value,
-                    __originalMethod.DeclaringType.FullName + "." + __originalMethod.Name,
+                    key,
                     typeof(H_HarmonyTranspilers),
-                    AccessTools.Field(typeof(TranspilerMethodUtility), "transpiledMethods"));
+                    index);
 
                 // Find the place it was in our method, and replace the instruction (Optimisation Opportunity to improve this)
                 for (int i = 0; i < modInstList.Count; i++)

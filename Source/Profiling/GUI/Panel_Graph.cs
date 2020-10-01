@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -110,6 +111,8 @@ namespace Analyzer.Profiling
                 Vector2 last = new Vector2();
                 //Vector2 lastHits = new Vector2();
 
+                //List<Vector2> points = new List<Vector2>();
+
                 while (counter > 0)
                 {
                     var adjIndex = entries - counter;
@@ -141,12 +144,13 @@ namespace Analyzer.Profiling
 
 
                     last = screenPoint;
+                    //points.Add(screenPoint);
                     //lastHits = hitsPoint;
 
                     counter--;
                     profIndex = (profIndex - 1) % Profiler.RECORDS_HELD;
                 }
-
+    
                 //var averageY = (float)(position.height + (diff) * (av / WindowMax));
 
                 //var start = new Vector2(position.x, averageY);

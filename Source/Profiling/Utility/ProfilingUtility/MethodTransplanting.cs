@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using RimWorld;
 using RimWorld.BaseGen;
 using System;
 using System.Collections.Concurrent;
@@ -9,6 +10,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.TestTools;
 using Verse;
 
@@ -17,7 +19,6 @@ namespace Analyzer.Profiling
     public static class MethodTransplanting
     {
         public static HashSet<MethodInfo> patchedMeths = new HashSet<MethodInfo>();
-        public static Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
         public static ConcurrentDictionary<MethodBase, Type> typeInfo = new ConcurrentDictionary<MethodBase, Type>();
 
         private static readonly HarmonyMethod transpiler = new HarmonyMethod(typeof(MethodTransplanting), nameof(MethodTransplanting.Transpiler));
@@ -37,14 +38,13 @@ namespace Analyzer.Profiling
         private static readonly MethodInfo Dict_Add = AccessTools.Method(typeof(Dictionary<string, Profiler>), "Add");
 
         // dictionary fields
-        private static readonly FieldInfo MethodTransplanting_Methods = AccessTools.Field(typeof(MethodTransplanting), "methods");
         private static readonly FieldInfo ProfilerController_Profiles = AccessTools.Field(typeof(ProfileController), "profiles");
 
         private static readonly MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(ProfileController), nameof(ProfileController.Start));
 
         public static void ClearCaches()
         {
-            methods.Clear();
+            patchedMeths.Clear();
             typeInfo.Clear();
         }
 
@@ -61,28 +61,42 @@ namespace Analyzer.Profiling
         {
             foreach (var meth in meths)
             {
-                if (patchedMeths.Contains(meth)) continue;
+                UpdateMethod(type, meth);
+            }
+        }
 
-                patchedMeths.Add(meth);
-                typeInfo.TryAdd(meth, type);
+        internal static void UpdateMethod(Type type, MethodInfo meth)
+        {
+            if (patchedMeths.Contains(meth))
+            {
+#if DEBUG
+                ThreadSafeLogger.Warning($"[Analyzer] Already patched method {meth.Name}");
+#else
+                if (Settings.verboseLogging)
+                    ThreadSafeLogger.Warning($"[Analyzer] Already patched method {meth.Name}");
+#endif
+                return;
+            }
 
-                Task.Factory.StartNew(delegate
+            patchedMeths.Add(meth);
+            typeInfo.TryAdd(meth, type);
+
+            Task.Factory.StartNew(delegate
+            {
+                try
                 {
-                    try
-                    {
-                        Modbase.Harmony.Patch(meth, transpiler: transpiler);
-                    }
-                    catch (Exception e)
-                    {
+                    Modbase.Harmony.Patch(meth, transpiler: transpiler);
+                }
+                catch (Exception e)
+                {
 #if DEBUG
                             ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.Name} failed with the error {e.Message}");
 #else
-                        if (Settings.verboseLogging)
-                            ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.Name} failed with the error {e.Message}");
+                    if (Settings.verboseLogging)
+                        ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.Name} failed with the error {e.Message}");
 #endif
-                    }
-                });
-            }
+                }
+            });
         }
 
 
@@ -93,7 +107,7 @@ namespace Analyzer.Profiling
             var profLocal = ilGen.DeclareLocal(typeof(Profiler));
             var keyLocal = ilGen.DeclareLocal(typeof(string));
             var beginLabel = ilGen.DefineLabel();
-            var noProfLabel = ilGen.DefineLabel();
+            var noProfLabel = ilGen.DefineLabel();  
 
             var curType = typeInfo[__originalMethod];
             var curLabelMeth = curType.GetMethod("GetLabel", BindingFlags.Public | BindingFlags.Static);
@@ -105,19 +119,16 @@ namespace Analyzer.Profiling
             if (__originalMethod.ReflectedType != null) key = __originalMethod.ReflectedType.FullName + ":" + __originalMethod.Name;
             else key = __originalMethod.DeclaringType.FullName + ":" + __originalMethod.Name;
 
-            // Build our dictionary of string -> MethodInfo
-            // This will be accessed at runtime when a Profiler is first created
-            if (!methods.ContainsKey(key))
-                methods.Add(key, __originalMethod as MethodInfo);
+            var methodKey = MethodInfoCache.AddMethod(key, __originalMethod as MethodInfo);
+
 
             // Active Check
             {
-                // if(active)
+                // if(active && Analyzer.CurrentlyProfiling)
                 yield return new CodeInstruction(OpCodes.Ldsfld, curType.GetField("Active", BindingFlags.Public | BindingFlags.Static));
-                yield return new CodeInstruction(OpCodes.Brfalse_S, beginLabel);
-
-                // if(Analyzer.CurrentlyProfiling)
                 yield return new CodeInstruction(OpCodes.Call, Analyzer_CurrentlyProfiling);
+
+                yield return new CodeInstruction(OpCodes.And);
                 yield return new CodeInstruction(OpCodes.Brfalse_S, beginLabel);
             }
 
@@ -186,9 +197,8 @@ namespace Analyzer.Profiling
                 yield return new CodeInstruction(OpCodes.Ldnull);
 
                 { // get our methodinfo from the metadata
-                    yield return new CodeInstruction(OpCodes.Ldsfld, MethodTransplanting_Methods);
-                    yield return new CodeInstruction(OpCodes.Ldstr, key); // idc about custom names here
-                    yield return new CodeInstruction(OpCodes.Callvirt, Dict_Get_Value);
+                    foreach (var inst in MethodInfoCache.GetInlineIL(methodKey))
+                        yield return inst;
                 }
 
                 yield return new CodeInstruction(OpCodes.Newobj, ProfilerCtor); // ProfileController.Start();
@@ -273,6 +283,7 @@ namespace Analyzer.Profiling
             return insts;
         }
 
+
         // Utility for internal && transpiler profiling.
         // This method takes a codeinstruction (of type Call or CallVirt), a key, a type, and a fieldinfo of a dictionary
         // and will return a new codeinstruction, which the same opcode as the instruction passed to it, and the method
@@ -280,7 +291,7 @@ namespace Analyzer.Profiling
         // 
         // The key is used for keying into the dictionary field you give, which will be expected to return a MethodInfo
         // this will be then used in the call to ProfileController.Start
-        public static CodeInstruction ReplaceMethodInstruction(CodeInstruction inst, string key, Type type, FieldInfo dictFieldInfo)
+        public static CodeInstruction ReplaceMethodInstruction(CodeInstruction inst, string key, Type type, int index)
         {
             MethodInfo method = null;
             try { method = (MethodInfo)inst.operand; } catch (Exception) { return inst; }
@@ -294,7 +305,6 @@ namespace Analyzer.Profiling
                 parameters = method.GetParameters().Select(param => param.ParameterType).Prepend(method.DeclaringType.MakeByRefType()).ToArray();
             else // otherwise, we have an instance-nonstruct class, lets all our instance, and our parameter types
                 parameters = method.GetParameters().Select(param => param.ParameterType).Prepend(method.DeclaringType).ToArray();
-
 
             DynamicMethod meth = new DynamicMethod(
                 method.Name + "_runtimeReplacement",
@@ -311,7 +321,7 @@ namespace Analyzer.Profiling
             // local variable for profiler
             LocalBuilder localProfiler = gen.DeclareLocal(typeof(Profiler));
 
-            InsertStartIL(type, gen, key, localProfiler, dictFieldInfo);
+            InsertStartIL(type, gen, key, localProfiler, index);
 
             // dynamically add our parameters, as many as they are, onto the stack for our original method
             for (int i = 0; i < parameters.Length; i++)
@@ -329,7 +339,7 @@ namespace Analyzer.Profiling
         }
 
         // Utility for IL insertion
-        public static void InsertStartIL(Type type, ILGenerator ilGen, string key, LocalBuilder profiler, FieldInfo dict)
+        public static void InsertStartIL(Type type, ILGenerator ilGen, string key, LocalBuilder profiler, int index)
         {
             // if(Active && AnalyzerState.CurrentlyRunning)
             // { 
@@ -350,9 +360,15 @@ namespace Analyzer.Profiling
             ilGen.Emit(OpCodes.Ldnull);
             // load our null variables
 
-            ilGen.Emit(OpCodes.Ldsfld, dict); // KeyMethods
-            ilGen.Emit(OpCodes.Ldstr, key);
-            ilGen.Emit(OpCodes.Call, Dict_Get_Value); // KeyMethods[key]
+            ilGen.Emit(OpCodes.Ldsfld, MethodInfoCache.internalArray);
+            ilGen.Emit(OpCodes.Ldc_I4, index);
+            ilGen.Emit(OpCodes.Ldc_I4_7);
+            ilGen.Emit(OpCodes.Shr);
+            ilGen.Emit(OpCodes.Callvirt, MethodInfoCache.accessList);
+            ilGen.Emit(OpCodes.Ldc_I4, index);
+            ilGen.Emit(OpCodes.Ldc_I4, 127);
+            ilGen.Emit(OpCodes.And);
+            ilGen.Emit(OpCodes.Ldelem_Ref);
 
             ilGen.Emit(OpCodes.Call, AnalyzerStartMeth);
             ilGen.Emit(OpCodes.Stloc, profiler.LocalIndex);

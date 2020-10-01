@@ -36,11 +36,9 @@ This will (if possible) show you the mod, and the assembly that the method is at
 
 Pawn Tick is the 'tick' method for Pawns, it is responsible for all updates specific to the pawn. For example, pawns finding jobs, pathfinding etc. The individual methods which are called within Pawn:Tick are profiled in the entry 'Pawn Tick'. You can also right click the log, and press 'Profile the Internal Methods of', which will show you the methods which are called within Pawn:Tick
 
-
 #### ThinkNodes (Priority, Subtree, etc)
 
 ThinkNodes are the AI behind the pawn, they control the decisions a Pawn makes. They are relatively high level, thus, when viewing times from them, understand that a lot of methods from other categories are included in the times you view, For example, JobGivers are a 'type' of ThinkNode, and are directly called from ThinkNodes, as part of a Pawns reasoning process in choosing a job.
-
 
 #### WorkGivers
 
@@ -49,13 +47,12 @@ WorkGivers are how pawns find jobs to do, a common example could be, looking thr
 ## Error when Attempting to open the Analyzer Window
 If you see the error *[Analyzer] Analyzer is currently in the process of cleaning up ...* and cannot open the window. Just wait a few seconds, this occurs because after you are finished using the Analyzer, it removes all of the profiling and hooks it has, in order to reduce the overhead it incurs on your game. This happens on a seperate thread, and does not effect gameplay at all, however depending on how many methods where profiled, the GC which is manually called after the cleanup can take a substantial amount of time. (This cleanup process does not effect the Performance patches at all).
 
-
 # Advanced Usage
 
 ## Linking Analyzer to Dnspy
 In the analyzer settings there is checkbox that, when enabled, will 'link' dnSpy to the Analyzer. This will allow you to directly open methods from inside the Analyzer from any mod within dnSpy.
 
-Provide the absolute path to (and including) the dnSpy.exe. This allows it to be accessed via command line.
+Provide the absolute path to (and including) the dnSpy.exe. This allows it to be accessed via command line from in game by the Analyzer.
 
 ![Open in Dnspy](About/OpenInDnspy.png)
 
@@ -68,7 +65,6 @@ You can right-click the logs themselves to internal profile the method. This wil
 
 ![Close Entry](About/CloseEntry.png)
 
-
 ## Custom Profiling
 While using the Analyzer, there are a variety of ways by which methods can be profiled. These are displayed on the main dev page.
 
@@ -80,8 +76,7 @@ You can patch:
 - Method Internals (Internal method profiling on a given method)
 - Mod/Assembly (Patch all the methods implemented in an assembly)
 
-![Modders Patching](About/Patching.png)
-
+![Modders Patching](About/PatchingPage.png)
 
 # For Modders
 
@@ -101,10 +96,13 @@ You can create a tab in the Analyzer specifically for your mod ahead of time by 
         <Methods>
             <li>Verse.Thing:Tick</li>
         </Methods>
+        <NestedTypes>
+            <li>Verse.ThreadLocalDeepProfiler</li> 
+        </NestedTypes>
     </tabName>
 </Analyzer>
 ```
-This will create a tab titled `tabName` which will profile all the methods in the type `Verse.Pawn` and the method `Verse.Thing:Tick`.
+This will create a tab titled `tabName` which will profile all the methods in the type `Verse.Pawn` and the method `Verse.Thing:Tick`. It will also profile all methods implemented in the nested types of `Verse.ThreadLocalDeepProfiler`. Primary use-case for the nested classes being nested harmony-patch classes.
 
 This file should be placed in the root directory of your mod. If you wish to avoid cluttering the Analyzer for end users, remember to remove it before releasing to steam. However, you might also decide to keep it in to allow users to easily see how your mod performs, to pre-emptively counter complaints.
 
@@ -162,8 +160,6 @@ The stack will, after the transpiler, look like
 ```
 
 The implementation for this is [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L79-L227)
-
-
 
 ## Technical Explanations
 

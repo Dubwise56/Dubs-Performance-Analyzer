@@ -33,6 +33,12 @@ namespace Analyzer.Profiling
             InternalMethodUtility.ClearCaches();
             MethodTransplanting.ClearCaches();
             TranspilerMethodUtility.ClearCaches();
+
+            MethodInfoCache.ClearCache();
+
+#if DEBUG
+            ThreadSafeLogger.Message("[Analyzer] Cleared all caches");
+#endif
         }
 
         /*
@@ -52,8 +58,10 @@ namespace Analyzer.Profiling
                     foreach (string ret in GetSplitString(str))
                         yield return ret;
                 }
+
                 yield break;
             }
+
             if (name.Contains(';'))
             {
                 string[] range = name.Split(';');
@@ -63,6 +71,7 @@ namespace Analyzer.Profiling
                     foreach (string ret in GetSplitString(str))
                         yield return ret;
                 }
+
                 yield break;
             }
 
@@ -84,7 +93,8 @@ namespace Analyzer.Profiling
                     }
                     else // type.method -> type:method
                     {
-                        yield return name.Replace(".", ":").Trim();
+                        yield return name.Replace(".", ":")
+                            .Trim();
                         yield break;
                     }
                 }
@@ -99,7 +109,9 @@ namespace Analyzer.Profiling
                     {
                         // namespace.type.method
                         int ind = name.LastIndexOf('.');
-                        yield return name.Remove(ind, 1).Insert(ind, ":").Trim();
+                        yield return name.Remove(ind, 1)
+                            .Insert(ind, ":")
+                            .Trim();
                         yield break;
                     }
                 }
@@ -116,6 +128,7 @@ namespace Analyzer.Profiling
             ThreadSafeLogger.Message($"[Analyzer] Patching notification: {message}");
 #endif
         }
+
         private static void Warn(string message)
         {
 #if DEBUG
@@ -126,6 +139,7 @@ namespace Analyzer.Profiling
             ThreadSafeLogger.Warning($"[Analyzer] Patching notification: {message}");
 #endif
         }
+
         private static void Error(string message)
         {
 #if DEBUG
@@ -157,6 +171,14 @@ namespace Analyzer.Profiling
                 Error("Can not currently patch generic methods");
                 return false;
             }
+
+            if (patchedMethods.Contains((method.Name)))
+            {
+                Warn("Method has already been patched");
+                return false;
+            }
+
+            patchedMethods.Add(method.Name);
 
             return true;
         }
@@ -199,38 +221,40 @@ namespace Analyzer.Profiling
         }
 
 
-
         public static IEnumerable<MethodInfo> GetTypeMethods(Type type)
         {
             foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
-                if (ValidMethod(method)) yield return method;
+                if (ValidMethod(method))
+                    yield return method;
         }
 
         public static IEnumerable<MethodInfo> SubClassImplementationsOf(Type baseType, Func<MethodInfo, bool> predicate)
         {
             return baseType.AllSubclasses()
-                    .SelectMany(t => GetTypeMethods(t).Where(m => predicate(m)));
+                .SelectMany(t => GetTypeMethods(t)
+                    .Where(m => predicate(m)));
         }
 
         public static IEnumerable<MethodInfo> SubClassNonAbstractImplementationsOf(Type baseType, Func<MethodInfo, bool> predicate)
         {
             return baseType.AllSubclassesNonAbstract()
-                    .SelectMany(t => GetTypeMethods(t).Where(m => predicate(m)));
+                .SelectMany(t => GetTypeMethods(t)
+                    .Where(m => predicate(m)));
         }
 
         public static IEnumerable<MethodInfo> GetAssemblyMethods(Assembly assembly)
         {
             foreach (Type type in assembly.GetTypes())
                 if (type.GetCustomAttribute<CompilerGeneratedAttribute>() == null)
-                    foreach (var m in GetTypeMethods(type)) yield return m;
+                    foreach (var m in GetTypeMethods(type))
+                        yield return m;
         }
-
-
 
 
         // Unpatching
 
         public static void UnpatchMethod(string name) => UnpatchMethod(AccessTools.Method(name));
+
         public static void UnpatchMethod(MethodInfo method)
         {
             foreach (MethodBase methodBase in Harmony.GetAllPatchedMethods())
@@ -248,6 +272,7 @@ namespace Analyzer.Profiling
                     }
                 }
             }
+
             Warn("Failed to locate method to unpatch");
         }
 
@@ -255,6 +280,7 @@ namespace Analyzer.Profiling
         public static void UnpatchMethodsOnMethod(MethodInfo method) => Modbase.Harmony.Unpatch(method, HarmonyPatchType.All);
 
         public static void UnPatchTypePatches(string name) => UnPatchTypePatches(AccessTools.TypeByName(name));
+
         public static void UnPatchTypePatches(Type type)
         {
             foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
@@ -278,8 +304,10 @@ namespace Analyzer.Profiling
                 Error($"Failed to locate method {name}, errored with the message {e.Message}");
                 return;
             }
+
             PatchInternalMethod(method, category);
         }
+
         public static void PatchInternalMethod(MethodInfo method, Category category)
         {
             if (InternalMethodUtility.PatchedInternals.Contains(method))
@@ -287,8 +315,10 @@ namespace Analyzer.Profiling
                 Warn("Trying to re-transpile an already profiled internal method");
                 return;
             }
+
             PatchInternalMethodFull(method, category);
         }
+
         private static void PatchInternalMethodFull(MethodInfo method, Category category)
         {
             try
@@ -304,7 +334,10 @@ namespace Analyzer.Profiling
                     {
                         Modbase.Harmony.Patch(method, transpiler: InternalMethodUtility.InternalProfiler);
                     }
-                    catch (Exception e) { ThreadSafeLogger.Error("Failed to internal patch method, failed with the exep " + e.Message); }
+                    catch (Exception e)
+                    {
+                        Error("Failed to internal patch method, failed with the exep " + e.Message);
+                    }
                 });
             }
             catch (Exception e)
@@ -314,32 +347,42 @@ namespace Analyzer.Profiling
             }
         }
 
+        private static bool ValidAssembly(Assembly assembly)
+        {
+            if (assembly.FullName.Contains("0Harmony")) return false;
+            if (assembly.FullName.Contains("Cecil")) return false;
+            if (assembly.FullName.Contains("Multiplayer")) return false;
+            if (assembly.FullName.Contains("UnityEngine")) return false;
+
+            return true;
+        }
+
         public static void PatchAssembly(string name, Category type)
         {
-            ModContentPack mod = LoadedModManager.RunningMods.FirstOrDefault(m => m.Name == name || m.PackageId == name.ToLower());
-
-            if (mod != null)
+            var mod = LoadedModManager.RunningMods.FirstOrDefault(m => m.Name == name || m.PackageId == name.ToLower());
+            if (mod == null)
             {
-                Notify($"Assembly count: { mod.assemblies?.loadedAssemblies?.Count ?? 0}");
-                foreach (Assembly ass in mod.assemblies?.loadedAssemblies)
-                    Notify($"Assembly named: {ass.FullName}, located at {ass.Location}");
+                Error($"Failed to locate the mod {name}");
+                return;
             }
+            
+            Notify($"Assembly count: {mod.assemblies?.loadedAssemblies?.Count ?? 0}");
+            var assemblies = mod?.assemblies?.loadedAssemblies?.Where(ValidAssembly).ToList();
+            Notify($"Assembly count after removing Harmony/Cecil/Multiplayer/UnityEngine: {assemblies?.Count}");
 
-
-            IEnumerable<Assembly> assembly = mod?.assemblies?.loadedAssemblies?.Where(w => !w.FullName.Contains("Harmony") && !w.FullName.Contains("0MultiplayerAPI"));
-
-            if (assembly != null && assembly.Count() != 0)
+            if (assemblies != null && assemblies.Count() != 0)
             {
                 GUIController.AddEntry(mod.Name + "-prof", type);
                 GUIController.SwapToEntry(mod.Name + "-prof");
 
-                Task.Factory.StartNew(() => PatchAssemblyFull(mod.Name + "-prof", assembly.ToList()));
+                Task.Factory.StartNew(() => PatchAssemblyFull(mod.Name + "-prof", assemblies.ToList()));
             }
             else
             {
-                Error($"Failed to patch {name}");
+                Error($"Failed to patch {name} - There are no assemblies");
             }
         }
+
         private static void PatchAssemblyFull(string key, List<Assembly> assemblies)
         {
             var meths = new HashSet<MethodInfo>();
@@ -353,35 +396,30 @@ namespace Analyzer.Profiling
                         Warn($"patching {assembly.FullName} failed, already patched");
                         return;
                     }
+
                     patchedAssemblies.Add(assembly.FullName);
 
-                    foreach (Type type in assembly.GetTypes())
+                    foreach (var type in assembly.GetTypes())
                     {
-                        if (type.GetCustomAttribute<CompilerGeneratedAttribute>() == null)
+                        if (type.GetCustomAttribute<CompilerGeneratedAttribute>() != null) continue;
+                        if (patchedTypes.Contains(type.FullName))
                         {
-                            if (patchedTypes.Contains(type.FullName))
+                            Warn($"patching {type.FullName} failed, already patched");
+                            continue;
+                        }
+
+                        patchedTypes.Add(type.FullName);
+
+                        foreach (var method in AccessTools.GetDeclaredMethods(type).Where(method => !patchedMethods.Contains(method.Name) && method.DeclaringType == type))
+                        {
+                            try
                             {
-                                Warn($"patching {type.FullName} failed, already patched");
-                                return;
+                                if (ValidMethod(method))
+                                    meths.Add(method);
                             }
-                            patchedTypes.Add(type.FullName);
-
-                            foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
+                            catch (Exception e)
                             {
-
-                                if (!patchedMethods.Contains(method.Name) && method.DeclaringType == type)
-                                {
-                                    try
-                                    {
-                                        if (ValidMethod(method))
-                                            meths.Add(method);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Warn($"Failed to log method {method.Name} errored with the message {e.Message}");
-                                    }
-                                    patchedMethods.Add(method.Name);
-                                }
+                                Warn($"Failed to log method {method.Name} errored with the message {e.Message}");
                             }
                         }
                     }
@@ -394,8 +432,7 @@ namespace Analyzer.Profiling
                 }
             }
 
-            MethodTransplanting.UpdateMethods(AccessTools.TypeByName(key), meths);
+            MethodTransplanting.UpdateMethods(GUIController.types[key], meths);
         }
-
     }
 }
