@@ -10,8 +10,15 @@ namespace Analyzer
     [StaticConstructorOnStartup]
     internal static class H_KeyPresses
     {
-        public static KeyBindingDef key = KeyBindingDef.Named("DubsOptimizerKey");
-        public static KeyBindingDef restartkey = KeyBindingDef.Named("DubsOptimizerRestartKey");
+        public static KeyBindingDef key;
+        public static KeyBindingDef restartkey;
+
+        static H_KeyPresses()
+        {
+            key = KeyBindingDef.Named("DubsOptimizerKey");
+            restartkey = KeyBindingDef.Named("DubsOptimizerRestartKey");
+            PatchMe(Modbase.StaticHarmony);
+        }
 
         public static void PatchMe(Harmony harmony)
         {
