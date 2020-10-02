@@ -200,12 +200,22 @@ namespace Analyzer.Profiling
                 }
             }
 
-            TextAnchor anchor = Text.Anchor;
+            var anchor = Text.Anchor;
             Text.Anchor = TextAnchor.MiddleLeft;
-            //Widgets.CheckboxDraw(rect.x, rect.y, checkOn, false, 15f);
 
-            Widgets.DrawTextureFitted(rect.LeftPartPixels(30f), checkOn ? Widgets.CheckboxOnTex : Widgets.CheckboxOffTex, 0.5f);
+            var lineHeight = Text.LineHeight;
+            var textureRect = rect.LeftPartPixels(30f);
+            var height = rect.height;
+
+            if (height > lineHeight)
+            {
+                textureRect = textureRect.TopPartPixels(lineHeight);
+                textureRect.y += (height - lineHeight)/2;
+            }
+
+            Widgets.DrawTextureFitted(textureRect, checkOn ? Widgets.CheckboxOnTex : Widgets.CheckboxOffTex, 0.5f);
             rect.x += 30;
+            rect.width -= 30;
             Widgets.Label(rect, s);
             Text.Anchor = anchor;
             if (checkOn != br)
@@ -285,6 +295,13 @@ namespace Analyzer.Profiling
         {
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.UpperLeft;
+        }
+
+        public static bool HeadingCheckBox(Listing_Standard listing, string label, ref bool active)
+        {
+            var rect = listing.GetRect(30f);
+            Heading(rect.LeftPartPixels(rect.width - 30f), label);
+            return Checkbox(rect.RightPartPixels(30f), "", ref active);
         }
 
         public static void Heading(Listing_Standard listing, string label)

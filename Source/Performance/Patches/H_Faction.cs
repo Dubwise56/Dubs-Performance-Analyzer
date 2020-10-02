@@ -9,10 +9,14 @@
 
 //namespace Analyzer.Performance
 //{
-//    [PerfPatch]
-//    internal class H_FactionManager
+//    internal class H_FactionManager : PerfPatch
 //    {
-//        public static void PerformancePatch(Harmony harmony)
+//        public static bool Active = false;
+
+//        public override string Name => "performance.compdeepdrill";
+
+
+//        public override void OnDisabled(Harmony harmony)
 //        {
 //            harmony.Patch(AccessTools.Method(typeof(FactionManager), nameof(FactionManager.RecacheFactions)),
 //                new HarmonyMethod(typeof(H_FactionManager), nameof(Prefix)));
@@ -21,19 +25,21 @@
 //                new HarmonyMethod(typeof(H_FactionManager), nameof(PrefixWorldObj)));
 //        }
 
+
 //        public static void Prefix(FactionManager __instance)
 //        {
 //            if (Analyzer.Settings.FactionRemovalMode)
 //            {
 //                for (var i = 0; i < __instance.allFactions.Count; i++)
 //                {
-//                    if (__instance.allFactions[i].def == null)
+//                    if (__instance.allFactions[i]
+//                        .def == null)
 //                    {
-//                        __instance.allFactions[i].def = FactionDef.Named("OutlanderCivil");
+//                        __instance.allFactions[i]
+//                            .def = FactionDef.Named("OutlanderCivil");
 //                    }
 //                }
 //            }
-
 //        }
 
 //        public static void PrefixWorldObj(WorldObject __instance)

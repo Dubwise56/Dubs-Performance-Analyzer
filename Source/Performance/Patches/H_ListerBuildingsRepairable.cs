@@ -8,6 +8,8 @@ namespace Analyzer.Performance
     {
         public static bool Enabled = false;
         public override string Name => "performance.buildingrepair";
+        public override PerformanceCategory Category => PerformanceCategory.Optimizes;
+
 
         public override void OnEnabled(Harmony harmony)
         {

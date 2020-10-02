@@ -60,8 +60,10 @@
     <Compile Include="Performance\Patches\H_PawnGeneration.cs" />
     <Compile Include="Performance\Patches\H_SectionCtor.cs" />
     <Compile Include="Performance\Patches\H_SectionLayer_Snow.cs" />
+    <Compile Include="Performance\Patches\H_ZoomThrottle.cs" />
     <Compile Include="Performance\PerfPatch.cs" />
     <Compile Include="Performance\PerformancePatches.cs" />
+    <Compile Include="Profiling\GUI\Panel_DevOptions.cs" />
     <Compile Include="Profiling\Patches\Custom\CustomTick.cs" />
     <Compile Include="Profiling\Patches\Tick\H_PawnGeneration.cs" />
     <Compile Include="Profiling\Patches\Update\H_HarmonyTranspilers.cs" />

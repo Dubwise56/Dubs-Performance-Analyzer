@@ -14,6 +14,8 @@ namespace Analyzer.Performance
     internal class H_AlertsReadoutUpdate : PerfPatch
     {
         public static bool Enabled = true;
+
+        public override PerformanceCategory Category => PerformanceCategory.Removes;
         // need this so it doesn't error when searching
         // and so that the `OnEnabled` function is called.
 
@@ -35,7 +37,7 @@ namespace Analyzer.Performance
             var name = "performance.alertsoverride".TranslateSimple();
             var tooltip = ("performance.alertsoverride" + ".tooltip").TranslateSimple();
 
-            var height = Mathf.CeilToInt(name.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight;
+            var height = Mathf.CeilToInt((name.GetWidthCached() + 30) / listing.ColumnWidth) * Text.LineHeight;
             var rect = listing.GetRect(height);
 
             DubGUI.Checkbox(rect, name, ref OverrideAlerts);
@@ -43,7 +45,7 @@ namespace Analyzer.Performance
 
             name = "performance.alertsdisable".TranslateSimple();
             tooltip = ("performance.alertsdisable" + ".tooltip").TranslateSimple();
-            height = Mathf.CeilToInt(name.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight;
+            height = Mathf.CeilToInt((name.GetWidthCached() + 30) / listing.ColumnWidth) * Text.LineHeight;
             rect = listing.GetRect(height);
 
             DubGUI.Checkbox(rect, name, ref DisableAlerts);
@@ -60,7 +62,7 @@ namespace Analyzer.Performance
             harmony.Patch(skiff2, new HarmonyMethod(typeof(H_AlertsReadoutUpdate), nameof(AlertsReadoutOnGUI)));
         }
 
-        [Entry("entry.update.alert", Category.Update, "entry.update.alert.tooltip")]
+        [Entry("entry.update.alert", Profiling.Category.Update, "entry.update.alert.tooltip")]
         public class AlertRecalculate
         {
             public static bool Active = true;

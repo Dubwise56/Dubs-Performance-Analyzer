@@ -160,25 +160,27 @@ namespace Analyzer.Profiling
                 return false;
             }
 
+            var mKey = method?.DeclaringType?.FullName + ":" + method.Name;
+
             if (!method.HasMethodBody())
             {
-                Error("Does not have a methodbody");
+                Error($"Does not have a methodbody - {mKey}");
                 return false;
             }
 
             if (method.IsGenericMethod || method.ContainsGenericParameters)
             {
-                Error("Can not currently patch generic methods");
+                Error($"Can not currently patch generic methods - {mKey}");
                 return false;
             }
 
-            if (patchedMethods.Contains((method.Name)))
+            if (patchedMethods.Contains(mKey))
             {
-                Warn("Method has already been patched");
+                Warn($"Method has already been patched - {mKey}");
                 return false;
             }
 
-            patchedMethods.Add(method.Name);
+            patchedMethods.Add(mKey);
 
             return true;
         }
@@ -230,16 +232,24 @@ namespace Analyzer.Profiling
 
         public static IEnumerable<MethodInfo> SubClassImplementationsOf(Type baseType, Func<MethodInfo, bool> predicate)
         {
-            return baseType.AllSubclasses()
-                .SelectMany(t => GetTypeMethods(t)
-                    .Where(m => predicate(m)));
+            List<MethodInfo> meths = new List<MethodInfo>();
+            foreach (var t in baseType.AllSubclasses())
+            {
+                meths.AddRange(GetTypeMethods(t).Where(predicate));
+            }
+
+            return meths;
         }
 
         public static IEnumerable<MethodInfo> SubClassNonAbstractImplementationsOf(Type baseType, Func<MethodInfo, bool> predicate)
         {
-            return baseType.AllSubclassesNonAbstract()
-                .SelectMany(t => GetTypeMethods(t)
-                    .Where(m => predicate(m)));
+            List<MethodInfo> meths = new List<MethodInfo>();
+            foreach (var t in baseType.AllSubclassesNonAbstract())
+            {
+                meths.AddRange(GetTypeMethods(t).Where(predicate));
+            }
+
+            return meths;
         }
 
         public static IEnumerable<MethodInfo> GetAssemblyMethods(Assembly assembly)

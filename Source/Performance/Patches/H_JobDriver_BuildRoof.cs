@@ -10,6 +10,8 @@ namespace Analyzer.Performance
     internal class H_JobDriver_BuildRoof : PerfPatch
     {
         public override string Name => "performance.roof";
+        public override PerformanceCategory Category => PerformanceCategory.Overrides;
+
         public static bool Enabled = false;
         public static Dictionary<int, bool> RoofDirty = new Dictionary<int, bool>();
 

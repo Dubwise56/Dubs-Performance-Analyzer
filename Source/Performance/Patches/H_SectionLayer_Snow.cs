@@ -8,6 +8,7 @@ namespace Analyzer.Performance
     internal class H_SectionLayer_Snow : PerfPatch
     {
         public override string Name => "performance.sectionlayersnow";
+        public override PerformanceCategory Category => PerformanceCategory.Optimizes;
 
         public static bool Enabled = false;
 

@@ -55,6 +55,15 @@ namespace Analyzer
             public static string settings_logging => "settings.logging".TranslateSimple();
             public static string settings_side_panel => "settings.side.panel".TranslateSimple();
 
+            // Dev Options
+            public static string devoptions_input_method => "devoptions.input.method".TranslateSimple();
+            public static string devoptions_input_methodinternal => "devoptions.input.methodinternal".TranslateSimple();
+            public static string devoptions_input_methodharmony => "devoptions.input.methodharmony".TranslateSimple();
+            public static string devoptions_input_type => "devoptions.input.type".TranslateSimple();
+            public static string devoptions_input_subclasses => "devoptions.input.subclasses".TranslateSimple();
+            public static string devoptions_input_typeharmony => "devoptions.input.typeharmony".TranslateSimple();
+            public static string devoptions_input_assembly => "devoptions.input.assembly".TranslateSimple();
+
             // Top Row
             public static string top_pause_analyzer => "top.pause.analyzer".TranslateSimple();
             public static string top_search => "top.search".TranslateSimple();

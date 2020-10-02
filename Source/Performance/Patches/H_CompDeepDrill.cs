@@ -6,6 +6,8 @@ namespace Analyzer.Performance
     internal class H_CompDeepDrill : PerfPatch
     {
         public static bool Enabled = false;
+        public override PerformanceCategory Category => PerformanceCategory.Overrides;
+
         public override string Name => "performance.compdeepdrill";
 
         public override void OnEnabled(Harmony harmony)

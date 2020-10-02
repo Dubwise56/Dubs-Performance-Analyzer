@@ -16,46 +16,29 @@
 	<tab.modder.desc>Methods which have been added by modders via Analyzer.xml</tab.modder.desc>
 
 	<!--Settings-->
+	<settings.performance>Performance Options</settings.performance>
+	<settings.developer>Developer Options</settings.developer>
+
 	<settings.wiki>Analyzer Wiki</settings.wiki>
 	<settings.discord>Dubs Discord</settings.discord>
-	<settings>Settings</settings>
 	<settings.dnspy>Path to Dnspy (Including the Exe)</settings.dnspy>
 	<settings.ups>Stat updates per second</settings.ups>
 	<settings.logging>Verbose Logging</settings.logging>
 	<settings.side.panel>Enable Side Panel</settings.side.panel>
 
-	<ProfilePatchMethod>Profile</ProfilePatchMethod>
-	<input.method>Method</input.method>
-	<input.type>Methods in Type</input.type>
-	<input.methodharmony>Patches on a Method</input.methodharmony>
-	<input.typeharmony>Patches on a Type</input.typeharmony>
-	<input.methodinternal>Method Internals</input.methodinternal>
-	<input.assembly>Assembly</input.assembly>
-	<patch.type.tick>Tick</patch.type.tick>
-	<patch.type.update>Update</patch.type.update>
-	<patch>Patch!</patch>
+	<!-- Dev Options -->
+	<devoptions.heading>Profile</devoptions.heading>
 
-	<!-- Unpatching -->
-	<UnProfilePatchMethod>Remove Profiling (Unpatching)</UnProfilePatchMethod>
-	<input.unpatchmethod>Method</input.unpatchmethod>
-	<input.unpatchmethodsonmethod>Patches on a Method</input.unpatchmethodsonmethod>
-	<input.unpatchtype>Patches on a Type</input.unpatchtype>
-	<input.unpatchinternalmethod>Patches inside a Method</input.unpatchinternalmethod>
-	<input.unpatchall>All</input.unpatchall>
+	<devoptions.input.method>Method</devoptions.input.method>
+	<devoptions.input.methodinternal>Method Internals</devoptions.input.methodinternal>
+	<devoptions.input.methodharmony>Method Harmony</devoptions.input.methodharmony>
+	<devoptions.input.type>Type</devoptions.input.type>
+	<devoptions.input.subclasses>Subclass of Type</devoptions.input.subclasses>
+	<devoptions.input.typeharmony>Type Harmony</devoptions.input.typeharmony>
+	<devoptions.input.assembly>Assembly</devoptions.input.assembly>
 
-	<unpatch>UnPatch!</unpatch>
-	<CustoMethProfPatch>Profile a method e.g. ResourceReadout:ResourceReadoutOnGUI</CustoMethProfPatch>
-	<CustoTickPatch>Custom Tick</CustoTickPatch>
-	<CustoUpdatePatch>Custom Update</CustoUpdatePatch>
-	<inputMethod>Profile a method</inputMethod>
-	<inputType>Profile all the methods in a type</inputType>
-	<inputMethodHarmony>Profile all the harmony patches of a method</inputMethodHarmony>
-	<inputTypeHarmony>Profile all the harmony patches effecting a type</inputTypeHarmony>
-	<TryCustoPatch>Try patch</TryCustoPatch>
-	<TryCustoUnPatch>Try unpatch</TryCustoUnPatch>
-	<CustoUnPatchMeth>Unpatch a Method</CustoUnPatchMeth>
-	<CustoUnPatchAllOnMeth>Unpatch the patches on a method</CustoUnPatchAllOnMeth>
-	<CustoUnPatchAll>Unpatch all profiler patches</CustoUnPatchAll>
+	<devoptions.patchtype.tick>Tick</devoptions.patchtype.tick>
+	<devoptions.patchtype.update>Update</devoptions.patchtype.update>
 
 	<!--Top Row-->
 	<top.pause.analyzer>Pause/Unpause profiling that the analyzer is done, this is not equivalent to unpatching</top.pause.analyzer>
@@ -205,10 +188,10 @@
 
 	<!-- Performance Patches -->
 
-	<performance.alertsoverride>Override Alerts</performance.alertsoverride>
+	<performance.alertsoverride>Disable Alerts individually</performance.alertsoverride>
 	<performance.alertsoverride.tooltip>Choose to disable expensive alerts</performance.alertsoverride.tooltip>
 
-	<performance.alertsdisable>Disable Alerts</performance.alertsdisable>
+	<performance.alertsdisable>Disable all Alerts</performance.alertsdisable>
 	<performance.alertsdisable.tooltip>Disable all alerts</performance.alertsdisable.tooltip>
 
 	<performance.sectionlayersnow>Improve the speed of rendering for snow</performance.sectionlayersnow>
@@ -235,8 +218,11 @@
 	<performance.tempcache>Remove some stutters on raid generation</performance.tempcache>
 	<performance.tempcache.tooltip>Caches temperature lookups in the same tick, removing some overhead from raid generation</performance.tempcache.tooltip>
 
+	<performance.zoom>Reduce stutters while zooming</performance.zoom>
+	<performance.zoom.tooltip>Lowers the target tps when zooming in order to stabilize fps</performance.zoom.tooltip>
+
 	<!-- Temporary -->
 	<temp.section>Optimize Map Loading</temp.section>
-	<temp.section.tooltip>.</temp.section.tooltip>
+	<temp.section.tooltip>Caches types in the constructor for 'Section' - this should be fixed in a future rw update</temp.section.tooltip>
 
 </LanguageData>

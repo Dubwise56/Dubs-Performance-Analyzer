@@ -57,7 +57,7 @@ namespace Analyzer
         {
             if (Event.current.type == EventType.Layout) return;
 
-            Panel_Settings.Draw(canvas);
+            Panel_Settings.Draw(canvas, true);
         }
     }
 }

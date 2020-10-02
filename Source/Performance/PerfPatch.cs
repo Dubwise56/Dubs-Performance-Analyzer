@@ -13,15 +13,15 @@ namespace Analyzer.Performance
 {
     public enum PerformanceCategory
     {
-        Optimisation,
-        ReplacesFunctionality,
-        RemovesFunctionality
+        Optimizes,
+        Overrides,
+        Removes
     }
 
     public class PerfPatch
     {
         public virtual string Name => "";
-        public virtual PerformanceCategory category => PerformanceCategory.Optimisation;
+        public virtual PerformanceCategory Category => PerformanceCategory.Optimizes;
         public AccessTools.FieldRef<bool> EnabledRefAccess;
         public bool isPatched = false;
 
@@ -39,26 +39,34 @@ namespace Analyzer.Performance
             var name = Name.TranslateSimple();
             var tooltip = (Name + ".tooltip").TranslateSimple();
 
-            var height = Mathf.CeilToInt(name.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight;
+            var height = Mathf.CeilToInt((name.GetWidthCached() + 30) / (listing.ColumnWidth)) * Text.LineHeight;
             var rect = listing.GetRect(height);
 
             if (DubGUI.Checkbox(rect, name, ref EnabledRefAccess()))
             {
-                if (EnabledRefAccess())
-                {
-                    if (PerformancePatches.ondisabled.ContainsKey(Name))
-                    {
-                        PerformancePatches.ondisabled.Remove(Name);
-                    }
-                    OnEnabled(Modbase.StaticHarmony);
-                }
-                else
-                {
-                    PerformancePatches.ondisabled.Add(Name, () => OnDisabled(Modbase.StaticHarmony));
-                }
-
+                CheckState();
             }
             TooltipHandler.TipRegion(rect, tooltip);
+        }
+
+        public void CheckState()
+        {
+            if (EnabledRefAccess())
+            {
+                if (PerformancePatches.onDisabled.ContainsKey(Name))
+                {
+                    PerformancePatches.onDisabled.Remove(Name);
+                }
+                OnEnabled(Modbase.StaticHarmony);
+            }
+            else
+            {
+                // this can happen if an item is disabled 
+                if (!PerformancePatches.onDisabled.ContainsKey(Name))
+                {
+                    PerformancePatches.onDisabled.Add(Name, () => OnDisabled(Modbase.StaticHarmony));
+                }
+            }
         }
 
         public virtual void OnEnabled(Harmony harmony) { }

@@ -13,6 +13,8 @@ namespace Analyzer.Performance
         public static bool Enabled = true;
         public static List<Type> sections = new List<Type>();
         public override string Name => "temp.section";
+        public override PerformanceCategory Category => PerformanceCategory.Optimizes;
+
 
         public override void OnEnabled(Harmony harmony)
         {

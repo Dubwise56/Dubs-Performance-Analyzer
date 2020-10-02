@@ -7,6 +7,8 @@ namespace Analyzer.Performance
     internal class H_ComfortableTemperatureRange : PerfPatch
     {
         public static bool Enabled = false;
+        public override PerformanceCategory Category => PerformanceCategory.Optimizes;
+
         public static Dictionary<int, FloatRange> tempCache = new Dictionary<int, FloatRange>();
         public static int LastTick = 0;
 
