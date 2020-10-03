@@ -44,6 +44,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Modbase.cs" />
+    <Compile Include="Profiling\GUI\Panel_Details.cs" />
     <Compile Include="Profiling\Patches\Update\H_HarmonyTranspilers.cs" />
     <Compile Include="Profiling\Analyzer.cs" />
     <Compile Include="Profiling\GUI\Constructs\Entry.cs" />
@@ -117,8 +118,8 @@
     <Reference Include="0Harmony">
       <HintPath>..\..\..\..\..\workshop\content\294100\2009463077\Current\Assemblies\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp_prepatched_public">
-      <HintPath>..\..\..\RimWorldWin64_Data\Managed\Assembly-CSharp_prepatched_public.dll</HintPath>
+    <Reference Include="Assembly-CSharp_publicized">
+      <HintPath>..\..\..\RimWorldWin64_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />

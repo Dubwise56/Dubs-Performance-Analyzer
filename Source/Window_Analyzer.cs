@@ -138,62 +138,95 @@ namespace Analyzer
             drawShadow = true;
             preventCameraMotion = false;
             onlyOneOfTypeAllowed = true;
-            resizeable = false;
+            resizeable = true;
             closeOnCancel = false;
             closeOnAccept = false;
             draggable = false;
         }
 
-        public void HandleWindowMovement()
-        {
-            if (Event.current.type != EventType.Repaint)
-            {
-                Rect lhs = WindowUtility.ResizeAnalyzerWindow(windowRect);
-                if (lhs != windowRect)
-                {
-                    resizeLater = true;
-                    resizeLaterRect = lhs;
-                }
-            }
+        //public void HandleWindowMovement()
+        //{
+        //    if (Event.current.type != EventType.Repaint)
+        //    {
+        //        Rect lhs = WindowUtility.ResizeAnalyzerWindow(windowRect);
+        //        if (lhs != windowRect)
+        //        {
+        //            resizeLater = true;
+        //            resizeLaterRect = lhs;
+        //        }
+        //    }
 
-            if (Event.current.type == EventType.Repaint)
-            {
-                WindowUtility.ResizeAnalyzerWindow(windowRect);
-            }
+        //    if (Event.current.type == EventType.Repaint)
+        //    {
+        //        WindowUtility.ResizeAnalyzerWindow(windowRect);
+        //    }
+        //}
+
+        //public override void WindowOnGUI()
+        //{
+        //    if (resizeLater)
+        //    {
+        //        windowRect = resizeLaterRect;
+        //        resizeLater = false;
+        //    }
+
+        //    base.WindowOnGUI();
+        //}
+
+        public void DoDragQueens(Rect rect)
+        {
+            var DragRect = new Rect(rect.x, rect.y, rect.width - 50f, 18f);
+            GUI.DragWindow(DragRect);
+
+            DragRect = new Rect(rect.x, rect.y, 18f, rect.height);
+            GUI.DragWindow(DragRect);
+
+            DragRect = new Rect(rect.width - 18f, rect.y, 18f, rect.height);
+            GUI.DragWindow(DragRect);
+
+            DragRect = new Rect(rect.x, rect.y + rect.height - 18f, rect.width, 18f);
+            GUI.DragWindow(DragRect);
         }
 
-        public override void WindowOnGUI()
-        {
-            if (resizeLater)
-            {
-                windowRect = resizeLaterRect;
-                resizeLater = false;
-            }
 
-            base.WindowOnGUI();
-        }
+        public bool DetailsPan = true;
+        public bool DragGraph = false;
 
-
-        public override void DoWindowContents(Rect rect)
+        public override void DoWindowContents(Rect InRect)
         {
             // Do Window Resizing
-            HandleWindowMovement();
+            //  HandleWindowMovement();
 
-            Action handleDrag = () => GUI.DragWindow(rect);
+            DoDragQueens(InRect);
 
-            rect = rect.ContractedBy(18f); // Adjust by our (removed) margin
+            // Action handleDrag = () => GUI.DragWindow(rect);
+
+            var rect = InRect.ContractedBy(18f); // Adjust by our (removed) margin
 
             // Display our logged messages that we may have recieved from other threads.
             ThreadSafeLogger.DisplayLogs();
 
-            Panel_Tabs.Draw(rect, GUIController.Tabs);
+
+            var profilersRect = rect;
+            if (DetailsPan && GUIController.CurrentProfiler != null)
+            {
+                var StatRect = profilersRect.BottomPartPixels(180f).LeftPartPixels(Panel_Tabs.width-10);
+                profilersRect.height -= 180f;
+                StatRect.AdjustVerticallyBy(10);
+                Widgets.DrawMenuSection(StatRect);
+                Panel_Details.DrawStats(StatRect.ContractedBy(6f));
+            }
+
+            Panel_Tabs.Draw(profilersRect, GUIController.Tabs);
+
+            
 
             rect.AdjustHorizonallyBy(Panel_Tabs.width); // Shift the x and shrink the width by the width of the Tabs
 
             if (GUIController.GetCurrentCategory == Category.Settings)
             {
                 Panel_Settings.Draw(rect);
-                handleDrag();
+                //   handleDrag();
 
                 return;
             }
@@ -211,6 +244,8 @@ namespace Analyzer
                 rect.width -= SidePanelWidth;
             }
 
+
+
             Panel_TopRow.Draw(rect.TopPartPixels(TOP_ROW_HEIGHT));
 
             rect.AdjustVerticallyBy(TOP_ROW_HEIGHT);
@@ -218,21 +253,43 @@ namespace Analyzer
             if (GUIController.CurrentProfiler == null)
             {
                 Panel_Logs.DrawLogs(rect);
-                handleDrag();
+                //   handleDrag();
 
                 return;
             }
 
             // If there is a current profiler, we need to adjust the height of the logs 
-            rect.height -= (GraphHeight + DRAGGABLE_RECT_DIM);
+            rect.height -= GraphHeight + DRAGGABLE_RECT_DIM;
+
+            Widgets.DrawMenuSection(rect);
             Panel_Logs.DrawLogs(rect);
 
-            // Move our rect down to just below the Logs 
-            rect.y += GraphHeight;
-            rect.height += DRAGGABLE_RECT_DIM;
-            rect = rect.BottomPartPixels(GraphHeight + DRAGGABLE_RECT_DIM);
+            // Move our rect down to just below the Logs
+            rect.y = rect.yMax;
+            rect.height = GraphHeight + DRAGGABLE_RECT_DIM;
 
-            Widgets.DrawHighlightIfMouseover(rect.TopPartPixels(DRAGGABLE_RECT_DIM));
+            var barry = rect.TopPartPixels(DRAGGABLE_RECT_DIM);
+            Widgets.DrawHighlightIfMouseover(barry);
+            Widgets.DrawLine(new Vector2(barry.x, barry.y + barry.height * 0.5f), new Vector2(barry.xMax, barry.y + barry.height * 0.5f), Color.gray, 1f);
+
+
+            if (Input.GetMouseButtonDown(0) && Mouse.IsOver(barry) && DragGraph == false)
+            {
+                DragGraph = true;
+            }
+
+            if (DragGraph)
+            {
+                GraphHeight = rect.height - ((Event.current.mousePosition.y - rect.y) + 5);
+            }
+
+            GraphHeight = Mathf.Clamp(GraphHeight, 50f, InRect.height - 100f);
+
+            if (Input.GetMouseButtonUp(0))
+            {
+                DragGraph = false;
+            }
+
 
             rect.AdjustVerticallyBy(DRAGGABLE_RECT_DIM);
             Panel_Graph.Draw(rect);
@@ -243,7 +300,7 @@ namespace Analyzer
                 Panel_SideInfo.Draw(sidePanelRect);
             }
 
-            handleDrag();
+            //  handleDrag();
         }
     }
 }
