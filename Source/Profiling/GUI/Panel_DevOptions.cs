@@ -27,7 +27,6 @@ namespace Analyzer.Profiling
 
         public static CurrentInput input = CurrentInput.Method;
         public static Category patchType = Category.Update;
-
         public static string currentInput = null;
 
         public static void Draw(Listing_Standard listing, float winHeight)

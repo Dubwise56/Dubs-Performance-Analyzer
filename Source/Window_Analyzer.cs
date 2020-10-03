@@ -103,6 +103,8 @@ namespace Analyzer
                     entry.onMouseOver = AccessTools.Method(entryType, "MouseOver");
                     entry.onClick = AccessTools.Method(entryType, "Clicked");
                     entry.onSelect = AccessTools.Method(entryType, "Selected");
+                    entry.checkBox = AccessTools.Method(entryType, "Checkbox");
+
                     entry.type = entryType;
 
                     // Find and append Entry to the correct Tab

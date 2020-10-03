@@ -275,10 +275,9 @@ namespace Analyzer.Profiling
             listing.Gap(listing.verticalSpacing);
         }
 
-
         public static bool Checkbox(Rect rect, string s, ref bool checkOn)
         {
-            var br = checkOn;
+            bool br = checkOn;
             if (Widgets.ButtonInvisible(rect))
             {
                 checkOn = !checkOn;
@@ -293,19 +292,25 @@ namespace Analyzer.Profiling
             }
 
             var anchor = Text.Anchor;
+            var font = Text.Font;
             Text.Anchor = TextAnchor.MiddleLeft;
-            var lineHeight = Text.LineHeight;	            
-            var textureRect = rect.LeftPartPixels(30f);	                
-            var height = rect.height;	
 
-            if (height > lineHeight)	
-            {	
-                textureRect = textureRect.TopPartPixels(lineHeight);	
-                textureRect.y += (height - lineHeight)/2;	
-            }	
 
-            Widgets.DrawTextureFitted(textureRect, checkOn ? Widgets.CheckboxOnTex : Widgets.CheckboxOffTex, 0.5f);	
+            Text.Font = GameFont.Medium;
+            var lineHeight = Text.LineHeight;
+            Text.Font = font;
+            var textureRect = rect.LeftPartPixels(30f);
+            var height = rect.height;
+
+            if (height > lineHeight)
+            {
+                textureRect = textureRect.TopPartPixels(lineHeight);
+                textureRect.y += (height - lineHeight)/2;
+            }
+
+            Widgets.DrawTextureFitted(textureRect, checkOn ? Widgets.CheckboxOnTex : Widgets.CheckboxOffTex, 0.5f);
             rect.x += 30;
+            rect.width -= 30;
             Widgets.Label(rect, s);
             Text.Anchor = anchor;
             if (checkOn != br)
@@ -316,17 +321,17 @@ namespace Analyzer.Profiling
             return false;
         }
 
+        public static bool Checkbox(string s, Listing_Standard listing, ref bool checkOn)
+        {
+            Rect rect = listing.GetRect(Mathf.CeilToInt(s.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight);
+            return Checkbox(rect, s, ref checkOn);
+        }
+
         public static bool HeadingCheckBox(Listing_Standard listing, string label, ref bool active)	
         {	
             var rect = listing.GetRect(30f);	
             Heading(rect.LeftPartPixels(rect.width - 30f), label);	
             return Checkbox(rect.RightPartPixels(30f), "", ref active);	
-        }
-
-        public static bool Checkbox(string s, Listing_Standard listing, ref bool checkOn)
-        {
-            var rect = listing.GetRect(Mathf.CeilToInt(s.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight);
-            return Checkbox(rect, s, ref checkOn);
         }
 
         public static bool Contains(this string source, string toCheck, StringComparison comp)
