@@ -160,19 +160,22 @@ namespace Analyzer.Profiling
             lock (CurrentLogStats.sync)
             {
                 var st = CurrentLogStats.stats;
-                var sb = new StringBuilder();
-                sb.AppendLine($"Total Entries: {st.Entries}");
-                sb.AppendLine($"Total Calls: {st.TotalCalls}");
-                sb.AppendLine($"Total Time: {st.TotalTime:0.000}ms");
-                sb.AppendLine($"Avg Time/Call: {st.MeanTimePerCall:0.000}ms");
-                sb.AppendLine($"Avg Calls/Update: {st.MeanCallsPerUpdateCycle:0.00}");
-                sb.AppendLine($"Avg Time/Update: {st.MeanTimePerUpdateCycle:0.000}ms");
-                sb.AppendLine($"Median Calls: {st.MedianCalls}");
-                sb.AppendLine($"Median Time: {st.MedianTime}");
-                sb.AppendLine($"Max Time: {st.HighestTime:0.000}ms");
-                sb.AppendLine($"Max Calls/Frame: {st.HighestCalls}");
+                if (st != null)
+                {
+                    var sb = new StringBuilder();
+                    sb.AppendLine($"Total Entries: {st.Entries}");
+                    sb.AppendLine($"Total Calls: {st.TotalCalls}");
+                    sb.AppendLine($"Total Time: {st.TotalTime:0.000}ms");
+                    sb.AppendLine($"Avg Time/Call: {st.MeanTimePerCall:0.000}ms");
+                    sb.AppendLine($"Avg Calls/Update: {st.MeanCallsPerUpdateCycle:0.00}");
+                    sb.AppendLine($"Avg Time/Update: {st.MeanTimePerUpdateCycle:0.000}ms");
+                    sb.AppendLine($"Median Calls: {st.MedianCalls}");
+                    sb.AppendLine($"Median Time: {st.MedianTime}");
+                    sb.AppendLine($"Max Time: {st.HighestTime:0.000}ms");
+                    sb.AppendLine($"Max Calls/Frame: {st.HighestCalls}");
 
-                Widgets.Label(inrect, sb.ToString().TrimEndNewlines());
+                    Widgets.Label(inrect, sb.ToString().TrimEndNewlines());
+                }
             }
 
             DubGUI.ResetFont();
