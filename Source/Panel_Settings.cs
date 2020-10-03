@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Fixes;
 using UnityEngine;
 using Verse;
 
@@ -80,6 +81,7 @@ namespace Analyzer
             {
                 case 0:
                     PerformancePatches.Draw(ref listing);
+                    FixPatches.Draw(listing);
                     break;
                 case 1:
                     DrawDevOptions(rect.height);

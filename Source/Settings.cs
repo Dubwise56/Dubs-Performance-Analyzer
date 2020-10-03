@@ -12,21 +12,14 @@ namespace Analyzer
 {
     public class Settings : ModSettings
     {
-
-        public static string methToPatch = string.Empty;
-
-        public static List<MethodInfo> GotMeth = new List<MethodInfo>();
         public Color LineCol = new Color32(79, 147, 191, 255);
         public Color GraphCol = new Color32(17, 17, 17, 255);
-        public static string MethSearch = string.Empty;
-        public static string TypeSearch = string.Empty;
 
         // Developer settings
         public static string @PathToDnspy = "";
         public static float updatesPerSecond = 2;
         public static bool verboseLogging = false;
         public static bool sidePanel = false;
-
 
         // Debug settings
 #if DEBUG

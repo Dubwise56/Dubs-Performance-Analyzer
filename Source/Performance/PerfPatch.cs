@@ -30,7 +30,7 @@ namespace Analyzer.Performance
             EnabledRefAccess = AccessTools.StaticFieldRefAccess<bool>(subType.GetField("Enabled", BindingFlags.Public | BindingFlags.Static));
             if (EnabledRefAccess == null)
             {
-                Log.Error("Add an 'Enabled' field you bloody muppet");
+                ThreadSafeLogger.Error("Add an 'Enabled' field you bloody muppet");
             }
         }
 

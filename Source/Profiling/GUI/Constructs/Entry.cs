@@ -77,11 +77,9 @@ namespace Analyzer.Profiling
         public Entry(string name, Category category, string tip = null, bool dyGen = false)
         {
             this.category = category;
-            if (!dyGen)
-            {
-                this.name = name?.TranslateSimple();
-                this.tip = tip?.TranslateSimple();
-            }
+            if (dyGen) return;
+            this.name = name?.TranslateSimple();
+            this.tip = tip?.TranslateSimple();
         }
 
         public Profiler Start(string key, MethodBase info)

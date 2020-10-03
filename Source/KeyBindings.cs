@@ -1,4 +1,5 @@
 ﻿using System;
+using Analyzer.Profiling;
 using HarmonyLib;
 using RimWorld;
 using UnityEngine;
@@ -6,12 +7,11 @@ using Verse;
 
 namespace Analyzer
 {
-
     [StaticConstructorOnStartup]
     internal static class H_KeyPresses
     {
-        public static KeyBindingDef key;
-        public static KeyBindingDef restartkey;
+        private static KeyBindingDef key;
+        private static KeyBindingDef restartkey;
 
         static H_KeyPresses()
         {
@@ -22,12 +22,8 @@ namespace Analyzer
 
         public static void PatchMe(Harmony harmony)
         {
-            var biff = new HarmonyMethod(typeof(H_KeyPresses).GetMethod(nameof(pertwee)));
-            var skiff = typeof(MapInterface).GetMethod(nameof(MapInterface.MapInterfaceOnGUI_BeforeMainTabs));
-            harmony.Patch(skiff, biff);
-
-            biff = new HarmonyMethod(typeof(H_KeyPresses).GetMethod(nameof(OnGUI)));
-            skiff = typeof(UIRoot_Entry).GetMethod(nameof(UIRoot_Entry.UIRootOnGUI));
+            var biff = new HarmonyMethod(typeof(H_KeyPresses).GetMethod(nameof(OnGUI)));
+            var skiff = typeof(UIRoot_Entry).GetMethod(nameof(UIRoot_Entry.UIRootOnGUI));
             harmony.Patch(skiff, biff);
 
             skiff = typeof(UIRoot_Play).GetMethod(nameof(UIRoot_Play.UIRootOnGUI));
@@ -57,13 +53,8 @@ namespace Analyzer
             }
             catch (Exception e)
             {
-                Log.Error(e.ToString());
+                ThreadSafeLogger.Error(e.ToString());
             }
-        }
-
-        public static void pertwee()
-        {
-
         }
     }
 }

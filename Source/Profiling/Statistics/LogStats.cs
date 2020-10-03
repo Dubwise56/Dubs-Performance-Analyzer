@@ -82,7 +82,7 @@ namespace Analyzer.Profiling
                 // Mean
                 logic.MeanTimePerCall = logic.TotalTime / logic.TotalCalls;
                 logic.MeanTimePerUpdateCycle = logic.TotalTime / currentLogCount;
-                logic.MeanCallsPerUpdateCycle = logic.TotalCalls / currentLogCount;
+                logic.MeanCallsPerUpdateCycle = logic.TotalCalls / (float)currentLogCount;
 
                 // Medians
                 logic.MedianTime = LocalTimes[currentLogCount / 2];
@@ -104,11 +104,10 @@ namespace Analyzer.Profiling
             {
 #if DEBUG
                 ThreadSafeLogger.Error($"[Analyzer] Failed while calculating stats for profiler, errored with the message {e.Message}");
+#else
+                if(Settings.verboseLogging)
+                    ThreadSafeLogger.Error($"[Analyzer] Failed while calculating stats for profiler, errored with the message {e.Message}");
 #endif
-                #if NDEBUG
-                    if(Settings.verboseLogging)
-                        ThreadSafeLogger.Error($"[Analyzer] Failed while calculating stats for profiler, errored with the message {e.Message}");
-                #endif
             }
         }
     }

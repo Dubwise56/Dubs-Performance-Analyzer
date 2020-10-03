@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using RimWorld;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -24,11 +25,7 @@ namespace Analyzer.Profiling
 
         public static string GetName(PawnGenerationRequest request)
         {
-            if (ByFaction)
-            {
-                return $"Request for {request.Faction.Name}";
-            }
-            return $"Request for {request.KindDef.label}";
+            return ByFaction ? $"Request for {request.Faction.Name}" : $"Request for {request.KindDef.label}";
         }
     }
 }

@@ -50,25 +50,31 @@ namespace Analyzer.Performance
             standard.Begin(rect);
             standard.ColumnWidth = (standard.ColumnWidth - 18) / 3;
 
-            Widgets.DrawLineVertical(standard.curX + (standard.ColumnWidth + 9) * 3, standard.curY, 999f);
-
-            DrawCategory(ref standard, PerformanceCategory.Optimizes);
-            DrawCategory(ref standard, PerformanceCategory.Overrides);
-            DrawCategory(ref standard, PerformanceCategory.Removes);
+            float maxHeight = DrawCategory(ref standard, PerformanceCategory.Optimizes);
+            maxHeight = Mathf.Max(maxHeight, DrawCategory(ref standard, PerformanceCategory.Overrides));
+            maxHeight = Mathf.Max(maxHeight, DrawCategory(ref standard, PerformanceCategory.Removes));
 
             // make sure the horizontal line looks exactly like gapline, and covers the entire table
             var color = GUI.color;
             GUI.color = color * new Color(1f, 1f, 1f, 0.4f);
+
             Widgets.DrawLineHorizontal(listing.curX, standard.curY + 33, (standard.ColumnWidth + 34) * 3);
+            Widgets.DrawLineHorizontal(listing.curX, maxHeight, (standard.ColumnWidth + 34) * 3);
+            Widgets.DrawLineVertical(listing.curX + (standard.ColumnWidth + 18) * 2 , standard.curY, maxHeight);
+            Widgets.DrawLineVertical(listing.curX + (standard.ColumnWidth + 18) * 1, standard.curY, maxHeight);
+
             GUI.color = color;
 
             standard.End();
             GUI.EndGroup();
+
+
+
+            listing.curY += maxHeight;
         }
 
-        private static void DrawCategory(ref Listing_Standard standard, PerformanceCategory category)
+        private static float DrawCategory(ref Listing_Standard standard, PerformanceCategory category)
         {
-            Widgets.DrawLineVertical(standard.curX + standard.columnWidthInt, standard.curY, 999f);
             var stateChange = false;
             var enableAll = allEnabled[(int) category];
             var stringifiedCat = category.ToString();
@@ -110,7 +116,10 @@ namespace Analyzer.Performance
                 p.Draw(standard);
             }
 
+            float height = standard.curY;
             standard.NewColumn();
+
+            return height;
         }
 
         public static void ActivateEnabledPatches()

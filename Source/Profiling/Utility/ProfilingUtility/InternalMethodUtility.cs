@@ -56,7 +56,7 @@ namespace Analyzer.Profiling
                                 GUIController.types[__originalMethod.Name + "-int"],
                                 index);
 
-                            if (inst != instructions[i]) instructions[i] = inst;
+                            instructions[i] = inst;
                         }
                     }
                 }

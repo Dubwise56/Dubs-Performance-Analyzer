@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -18,12 +19,10 @@ namespace Analyzer.Profiling
 
         public static void Add(StackTrace trace)
         {
-            string key = trace.ToString();
+            var key = trace.ToString();
 
-            if(traces.TryGetValue(key, out var value))
-                value.Count++;
-            else
-                traces.Add(key, new StackTraceInformation(trace));
+            if(traces.TryGetValue(key, out var value))  value.Count++;
+            else traces.Add(key, new StackTraceInformation(trace));
         }
 
         public static void Reset()
@@ -31,7 +30,7 @@ namespace Analyzer.Profiling
             traces = new Dictionary<string, StackTraceInformation>();
         }
 
-        public static string StackTrace(StackTrace stackTrace)
+        public static string ExtractStackTraceInformation(StackTrace stackTrace)
         {
             // this is from `UnityEngine.StackTraceUtility:ExtractFormattedStackTrace`
             StringBuilder stringBuilder = new StringBuilder(255);
@@ -75,46 +74,9 @@ namespace Analyzer.Profiling
             return stringBuilder.ToString();
         }
 
-        public static string MethToString(MethodBase method)
-        {
-            StringBuilder stringBuilder = new StringBuilder(255);
-            if (method == null) return "";
-            Type declaringType = method.DeclaringType;
-            if (declaringType == null) return "";
-
-            string @namespace = declaringType.Namespace;
-
-            if (@namespace != null && @namespace.Length != 0)
-            {
-                stringBuilder.Append(@namespace);
-                stringBuilder.Append(".");
-            }
-            stringBuilder.Append(declaringType.Name);
-            stringBuilder.Append(":");
-            stringBuilder.Append(method.Name);
-            stringBuilder.Append("(");
-            ParameterInfo[] parameters = method.GetParameters();
-            bool flag = true;
-            for (int j = 0; j < parameters.Length; j++)
-            {
-                if (!flag)
-                {
-                    stringBuilder.Append(", ");
-                }
-                else
-                {
-                    flag = false;
-                }
-                stringBuilder.Append(parameters[j].ParameterType.Name);
-            }
-            stringBuilder.Append(")");
-
-            return ProcessString(stringBuilder.ToString());
-        }
         public static string ProcessString(string str)
         {
-            string retStr = Regex.Replace(str, "#", "\n");
-            retStr = myRegex.Replace(retStr, @"");
+            string retStr = myRegex.Replace(str, @"");
 
             return retStr;
         }
@@ -123,88 +85,45 @@ namespace Analyzer.Profiling
 
     public class StackTraceInformation
     {
-        public class HarmonyPatch
-        {
-            public HarmonyPatch(MethodInfo patch, HarmonyPatchType type, string id, int index, int priority = -1)
-            {
-                this.patch = patch; this.type = type; this.id = id; this.index = index; this.priority = priority;
-            }
-            public MethodInfo patch;
-            public HarmonyPatchType type;
-            public string id;
-            public int index;
-            public int priority;
-        }
+        public int Count { get; set; } = 1;
+        public List<Tuple<MethodInfo, List<Patch>>> methods = new List<Tuple<MethodInfo, List<Patch>>>();
+        private string[] translatedStringArr = null;
+        public string[] TranslatedArr() => translatedStringArr;
 
-        public StackTraceInformation(StackTrace input)
-        {
-            ProccessInput(input);
-        }
+        public StackTraceInformation(StackTrace input) => ProcessInput(input);
 
-        private void ProccessInput(StackTrace stackTrace)
+        private void ProcessInput(StackTrace stackTrace)
         {
             // Translate our input into the strings we will want to show the user
-            string rawString = StackTraceRegex.StackTrace(stackTrace);
-            string processedString = StackTraceRegex.ProcessString(rawString);
+            var processedString = StackTraceRegex.ProcessString(StackTraceRegex.ExtractStackTraceInformation(stackTrace));
 
-            translatedString = processedString;
-            translatedStringArr = processedString.Split('\n');
+            translatedStringArr = processedString.Split('#');
 
-            // Lets get the relevant methods that will be required for interactivity
+            // Get patch methods for any methods in the stack trace
             for (int i = 0; i < stackTrace.FrameCount; i++)
             {
-                StackFrame frame = stackTrace.GetFrame(i);
-                MethodBase frameMethod = frame.GetMethod();
+                var frameMethod = stackTrace.GetFrame(i).GetMethod();
+                var baseMeth = GetBaseMeth(frameMethod as MethodInfo);
+                var patches = Harmony.GetPatchInfo(baseMeth);
 
-                MethodInfo baseMeth = GetBaseMeth(frameMethod as MethodInfo);
+                methods.Insert(i, new Tuple<MethodInfo, List<Patch>>(baseMeth, new List<Patch>()));
+                if (patches == null) continue;
 
-                Patches frameMethodPatches = Harmony.GetPatchInfo(baseMeth);
-                methods.Insert(i, new Tuple<MethodInfo, List<HarmonyPatch>>(baseMeth, new List<HarmonyPatch>()));
-                if (frameMethodPatches != null) // add relevant patch information
-                {
-                    foreach (Patch patch in frameMethodPatches.Prefixes) methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Prefix, patch.owner, patch.index, patch.priority));
-                    foreach (Patch patch in frameMethodPatches.Postfixes) methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Postfix, patch.owner, patch.index, patch.priority));
-                    foreach (Patch patch in frameMethodPatches.Transpilers) methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Transpiler, patch.owner, patch.index, patch.priority));
-                    foreach (Patch patch in frameMethodPatches.Finalizers) methods[i].Item2.Add(new HarmonyPatch(patch.PatchMethod, HarmonyPatchType.Finalizer, patch.owner, patch.index, patch.priority));
-                }
+                foreach (var patch in patches.Prefixes.Concat(patches.Postfixes, patches.Transpilers, patches.Transpilers )) 
+                    methods[i].Item2.Add(patch);
             }
         }
 
-        private MethodInfo GetBaseMeth(MethodInfo info)
+        private static MethodInfo GetBaseMeth(MethodInfo info)
         {
-            foreach (MethodBase methodBase in Harmony.GetAllPatchedMethods())
+            foreach (var m in Harmony.GetAllPatchedMethods())
             {
-                Patches infos = Harmony.GetPatchInfo(methodBase);
-                foreach (Patch infosPrefix in infos.Prefixes) if (infosPrefix.PatchMethod == info) return methodBase as MethodInfo;
-                foreach (Patch infosPrefix in infos.Postfixes) if (infosPrefix.PatchMethod == info) return methodBase as MethodInfo;
-                foreach (Patch infosPrefix in infos.Transpilers) if (infosPrefix.PatchMethod == info) return methodBase as MethodInfo;
-                foreach (Patch infosPrefix in infos.Finalizers) if (infosPrefix.PatchMethod == info) return methodBase as MethodInfo;
+                var infos = Harmony.GetPatchInfo(m);
+
+                if (infos.Prefixes.Concat(infos.Postfixes, infos.Transpilers, infos.Transpilers ).Any(patch => patch.PatchMethod == info))
+                    return m as MethodInfo;
             }
             return null;
-        }
-
-        public int Count { get; set; } = 1;
-
-        // Each method, has a list of the 
-        public List<Tuple<MethodInfo, List<HarmonyPatch>>> methods = new List<Tuple<MethodInfo, List<HarmonyPatch>>>();
-        public string translatedString = null;
-        public string[] translatedStringArr = null;
-        public string firstUnique = null;
-        public int idx = 0;
-
-        public string TranslatedForm()
-        {
-            return translatedString;
-        }
-
-        public string FirstUnqiue()
-        {
-            return firstUnique;
-        }
-
-        public string[] TranslatedArr()
-        {
-            return translatedStringArr;
         }
     }
 

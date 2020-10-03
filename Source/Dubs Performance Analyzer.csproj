@@ -43,6 +43,8 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Fixes\Fix.cs" />
+    <Compile Include="Fixes\FixPatches.cs" />
     <Compile Include="GameComponent_Analyzer.cs" />
     <Compile Include="KeyBindings.cs" />
     <Compile Include="Modbase.cs" />
@@ -51,7 +53,7 @@
     <Compile Include="Performance\Patches\Alerts\H_Alert_Clothing.cs" />
     <Compile Include="Performance\Patches\H_ComfortableTemperatureRange.cs" />
     <Compile Include="Performance\Patches\H_CompDeepDrill.cs" />
-    <Compile Include="Performance\Patches\H_Faction.cs" />
+    <Compile Include="Fixes\Patches\H_Faction.cs" />
     <Compile Include="Performance\Patches\H_FixWallsNConduits.cs" />
     <Compile Include="Performance\Patches\H_JobDriver_BuildRoof.cs" />
     <Compile Include="Performance\Patches\H_ListerBuildingsRepairable.cs" />

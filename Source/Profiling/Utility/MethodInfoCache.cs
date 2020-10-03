@@ -67,7 +67,7 @@ namespace Analyzer.Profiling
                 {
                     internalArrays.Add(new MethodInfo[0x80]);
 #if DEBUG
-                    ThreadSafeLogger.Error("[Analyzer] Adding new internal array to the MethodInfoCache");
+                    ThreadSafeLogger.Message("[Analyzer] Adding new internal array to the MethodInfoCache");
 #endif
                 }
 

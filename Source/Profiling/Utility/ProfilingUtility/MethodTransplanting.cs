@@ -23,9 +23,13 @@ namespace Analyzer.Profiling
 
         private static readonly HarmonyMethod transpiler = new HarmonyMethod(typeof(MethodTransplanting), nameof(MethodTransplanting.Transpiler));
 
+        // profile controller
+        private static readonly MethodInfo ProfileController_Start = AccessTools.Method(typeof(ProfileController), nameof(ProfileController.Start));
+        private static readonly FieldInfo ProfilerController_Profiles = AccessTools.Field(typeof(ProfileController), "profiles");
+
         // profiler
-        private static readonly MethodInfo ProfilerStart = AccessTools.Method(typeof(Profiler), nameof(Profiler.Start));
-        private static readonly MethodInfo ProfilerEnd = AccessTools.Method(typeof(Profiler), nameof(Profiler.Stop));
+        private static readonly MethodInfo Profiler_Start = AccessTools.Method(typeof(Profiler), nameof(Profiler.Start));
+        private static readonly MethodInfo Profiler_Stop = AccessTools.Method(typeof(Profiler), nameof(Profiler.Stop));
         private static readonly ConstructorInfo ProfilerCtor = AccessTools.Constructor(typeof(Profiler), new Type[] { typeof(string), typeof(string), typeof(Type), typeof(Def), typeof(Thing), typeof(MethodBase) });
 
         // analyzer
@@ -37,10 +41,6 @@ namespace Analyzer.Profiling
         private static readonly MethodInfo Dict_TryGetValue = AccessTools.Method(typeof(Dictionary<string, Profiler>), "TryGetValue");
         private static readonly MethodInfo Dict_Add = AccessTools.Method(typeof(Dictionary<string, Profiler>), "Add");
 
-        // dictionary fields
-        private static readonly FieldInfo ProfilerController_Profiles = AccessTools.Field(typeof(ProfileController), "profiles");
-
-        private static readonly MethodInfo AnalyzerStartMeth = AccessTools.Method(typeof(ProfileController), nameof(ProfileController.Start));
 
         public static void ClearCaches()
         {
@@ -59,12 +59,9 @@ namespace Analyzer.Profiling
 
         public static void UpdateMethods(Type type, IEnumerable<MethodInfo> meths)
         {
-            foreach (var meth in meths)
-            {
-                UpdateMethod(type, meth);
-            }
+            foreach (var meth in meths) UpdateMethod(type, meth);
         }
-
+            
         internal static void UpdateMethod(Type type, MethodInfo meth)
         {
             if (patchedMeths.Contains(meth))
@@ -98,7 +95,6 @@ namespace Analyzer.Profiling
                 }
             });
         }
-
 
         // This transpiler basically replicates ProfileController.Start, but in IL, and inside the method it is patching, to reduce as much overhead as
         // possible, its quite simple, just long and hard to read.
@@ -158,7 +154,7 @@ namespace Analyzer.Profiling
 
             { // If we found a profiler - Start it, and skip to the start of execution of the method
                 yield return new CodeInstruction(OpCodes.Ldloc, profLocal);
-                yield return new CodeInstruction(OpCodes.Call, ProfilerStart);
+                yield return new CodeInstruction(OpCodes.Call, Profiler_Start);
                 yield return new CodeInstruction(OpCodes.Pop); // Profiler.Start returns itself so we pop it off the stack
                 yield return new CodeInstruction(OpCodes.Br, beginLabel);
             }
@@ -206,7 +202,7 @@ namespace Analyzer.Profiling
                 yield return new CodeInstruction(OpCodes.Stloc, profLocal);
             }
 
-            yield return new CodeInstruction(OpCodes.Call, ProfilerStart);
+            yield return new CodeInstruction(OpCodes.Call, Profiler_Start);
             yield return new CodeInstruction(OpCodes.Pop);
 
             { // Add to the Profilers dictionary, so we cache creation.
@@ -235,7 +231,7 @@ namespace Analyzer.Profiling
                     yield return new CodeInstruction(OpCodes.Brfalse_S, endLabel);
 
                     yield return new CodeInstruction(OpCodes.Ldloc, profLocal);
-                    yield return new CodeInstruction(OpCodes.Call, ProfilerEnd);
+                    yield return new CodeInstruction(OpCodes.Call, Profiler_Stop);
 
                     yield return inst.WithLabels(endLabel);
                 }
@@ -370,7 +366,7 @@ namespace Analyzer.Profiling
             ilGen.Emit(OpCodes.And);
             ilGen.Emit(OpCodes.Ldelem_Ref);
 
-            ilGen.Emit(OpCodes.Call, AnalyzerStartMeth);
+            ilGen.Emit(OpCodes.Call, ProfileController_Start);
             ilGen.Emit(OpCodes.Stloc, profiler.LocalIndex);
             // localProfiler = ProfileController.Start(key, null, null, null, null, KeyMethods[key]);
 
@@ -386,7 +382,7 @@ namespace Analyzer.Profiling
             ilGen.Emit(OpCodes.Brfalse_S, skipLabel);
             // profiler.Stop();
             ilGen.Emit(OpCodes.Ldloc, profiler.LocalIndex);
-            ilGen.Emit(OpCodes.Call, ProfilerEnd);
+            ilGen.Emit(OpCodes.Call, Profiler_Stop);
             // }
             ilGen.MarkLabel(skipLabel);
 

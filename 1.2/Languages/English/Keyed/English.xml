@@ -225,4 +225,9 @@
 	<temp.section>Optimize Map Loading</temp.section>
 	<temp.section.tooltip>Caches types in the constructor for 'Section' - this should be fixed in a future rw update</temp.section.tooltip>
 
+
+	<!-- Fixes -->
+	<fix.faction>Cleans up factions from removed mods</fix.faction>
+	<fix.faction.tooltip>Removes all references to deleted factions in world objects. This will solve issues when removing factions mid-save</fix.faction.tooltip>
+
 </LanguageData>

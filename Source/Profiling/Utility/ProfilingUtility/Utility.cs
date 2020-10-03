@@ -27,9 +27,6 @@ namespace Analyzer.Profiling
             patchedTypes.Clear();
             patchedMethods.Clear();
 
-            H_HarmonyPatches.PatchedPres.Clear();
-            H_HarmonyPatches.PatchedPosts.Clear();
-
             InternalMethodUtility.ClearCaches();
             MethodTransplanting.ClearCaches();
             TranspilerMethodUtility.ClearCaches();
@@ -132,22 +129,22 @@ namespace Analyzer.Profiling
         private static void Warn(string message)
         {
 #if DEBUG
-            ThreadSafeLogger.Error($"[Analyzer] Patching warning occured: {message}");
+            ThreadSafeLogger.Error($"[Analyzer] Patching warning: {message}");
 #endif
 #if NDEBUG
             if (!displayMessages) return;
-            ThreadSafeLogger.Warning($"[Analyzer] Patching notification: {message}");
+            ThreadSafeLogger.Warning($"[Analyzer] Patching warning: {message}");
 #endif
         }
 
         private static void Error(string message)
         {
 #if DEBUG
-            ThreadSafeLogger.Error($"[Analyzer] Patching error occured: {message}");
+            ThreadSafeLogger.Error($"[Analyzer] Patching error: {message}");
 #endif
 #if NDEBUG
             if (!displayMessages) return;
-            ThreadSafeLogger.Error($"[Analyzer] Patching error occured: {message}");
+            ThreadSafeLogger.Error($"[Analyzer] Patching error: {message}");
 #endif
         }
 
@@ -200,12 +197,10 @@ namespace Analyzer.Profiling
         {
             foreach (var meth in GetMethods(str))
             {
-                var patches = Harmony.GetPatchInfo(meth);
+                var p = Harmony.GetPatchInfo(meth);
 
-                foreach (Patch patch in patches.Prefixes) yield return patch.PatchMethod;
-                foreach (Patch patch in patches.Postfixes) yield return patch.PatchMethod;
-                foreach (Patch patch in patches.Transpilers) yield return patch.PatchMethod;
-                foreach (Patch patch in patches.Finalizers) yield return patch.PatchMethod;
+                foreach (var patch in p.Prefixes.Concat(p.Postfixes, p.Transpilers, p.Finalizers))
+                    yield return patch.PatchMethod;
             }
         }
 
@@ -213,26 +208,23 @@ namespace Analyzer.Profiling
         {
             foreach (var meth in GetTypeMethods(type))
             {
-                var patches = Harmony.GetPatchInfo(meth);
+                var p = Harmony.GetPatchInfo(meth);
 
-                foreach (Patch patch in patches.Prefixes) yield return patch.PatchMethod;
-                foreach (Patch patch in patches.Postfixes) yield return patch.PatchMethod;
-                foreach (Patch patch in patches.Transpilers) yield return patch.PatchMethod;
-                foreach (Patch patch in patches.Finalizers) yield return patch.PatchMethod;
+                foreach (var patch in p.Prefixes.Concat(p.Postfixes, p.Transpilers, p.Finalizers))
+                    yield return patch.PatchMethod;
             }
         }
 
 
         public static IEnumerable<MethodInfo> GetTypeMethods(Type type)
         {
-            foreach (MethodInfo method in AccessTools.GetDeclaredMethods(type))
-                if (ValidMethod(method))
-                    yield return method;
+            foreach (var method in AccessTools.GetDeclaredMethods(type).Where(ValidMethod))
+                yield return method;
         }
 
         public static IEnumerable<MethodInfo> SubClassImplementationsOf(Type baseType, Func<MethodInfo, bool> predicate)
         {
-            List<MethodInfo> meths = new List<MethodInfo>();
+            var meths = new List<MethodInfo>();
             foreach (var t in baseType.AllSubclasses())
             {
                 meths.AddRange(GetTypeMethods(t).Where(predicate));
@@ -243,7 +235,7 @@ namespace Analyzer.Profiling
 
         public static IEnumerable<MethodInfo> SubClassNonAbstractImplementationsOf(Type baseType, Func<MethodInfo, bool> predicate)
         {
-            List<MethodInfo> meths = new List<MethodInfo>();
+            var meths = new List<MethodInfo>();
             foreach (var t in baseType.AllSubclassesNonAbstract())
             {
                 meths.AddRange(GetTypeMethods(t).Where(predicate));
@@ -254,8 +246,7 @@ namespace Analyzer.Profiling
 
         public static IEnumerable<MethodInfo> GetAssemblyMethods(Assembly assembly)
         {
-            foreach (Type type in assembly.GetTypes())
-                if (type.GetCustomAttribute<CompilerGeneratedAttribute>() == null)
+            foreach (var type in assembly.GetTypes().Where(t => t.GetCustomAttribute<CompilerGeneratedAttribute>() == null))
                     foreach (var m in GetTypeMethods(type))
                         yield return m;
         }
@@ -273,14 +264,10 @@ namespace Analyzer.Profiling
 
                 var allPatches = infos.Prefixes.Concat(infos.Postfixes, infos.Transpilers, infos.Finalizers);
 
-                foreach (var patch in allPatches)
-                {
-                    if (patch.PatchMethod == method)
-                    {
-                        Modbase.Harmony.Unpatch(methodBase, method);
-                        return;
-                    }
-                }
+                if (!allPatches.Any(patch => patch.PatchMethod == method)) continue;
+
+                Modbase.Harmony.Unpatch(methodBase, method);
+                return;
             }
 
             Warn("Failed to locate method to unpatch");
@@ -375,7 +362,7 @@ namespace Analyzer.Profiling
                 Error($"Failed to locate the mod {name}");
                 return;
             }
-            
+
             Notify($"Assembly count: {mod.assemblies?.loadedAssemblies?.Count ?? 0}");
             var assemblies = mod?.assemblies?.loadedAssemblies?.Where(ValidAssembly).ToList();
             Notify($"Assembly count after removing Harmony/Cecil/Multiplayer/UnityEngine: {assemblies?.Count}");
@@ -397,7 +384,7 @@ namespace Analyzer.Profiling
         {
             var meths = new HashSet<MethodInfo>();
 
-            foreach (Assembly assembly in assemblies)
+            foreach (var assembly in assemblies)
             {
                 try
                 {
@@ -411,26 +398,10 @@ namespace Analyzer.Profiling
 
                     foreach (var type in assembly.GetTypes())
                     {
-                        if (type.GetCustomAttribute<CompilerGeneratedAttribute>() != null) continue;
-                        if (patchedTypes.Contains(type.FullName))
+                        foreach (var method in AccessTools.GetDeclaredMethods(type).Where(m => ValidMethod(m) && m.DeclaringType == type))
                         {
-                            Warn($"patching {type.FullName} failed, already patched");
-                            continue;
-                        }
-
-                        patchedTypes.Add(type.FullName);
-
-                        foreach (var method in AccessTools.GetDeclaredMethods(type).Where(method => !patchedMethods.Contains(method.Name) && method.DeclaringType == type))
-                        {
-                            try
-                            {
-                                if (ValidMethod(method))
-                                    meths.Add(method);
-                            }
-                            catch (Exception e)
-                            {
-                                Warn($"Failed to log method {method.Name} errored with the message {e.Message}");
-                            }
+                            if(!meths.Contains(method))
+                                meths.Add(method);
                         }
                     }
 
@@ -438,7 +409,8 @@ namespace Analyzer.Profiling
                 }
                 catch (Exception e)
                 {
-                    Error($"catch. patching {assembly.FullName} failed, {e.Message}");
+                    Error($"Patching {assembly.FullName} failed, {e.Message}");
+                    return;
                 }
             }
 

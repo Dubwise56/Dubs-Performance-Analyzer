@@ -17,41 +17,25 @@ namespace Analyzer.Profiling
 
         public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            List<MethodBase> patches = Harmony.GetAllPatchedMethods().ToList();
-
-            foreach (MethodBase mode in patches)
+            foreach (MethodBase mode in Harmony.GetAllPatchedMethods())
             {
                 Patches patchInfo = Harmony.GetPatchInfo(mode);
-                foreach (Patch fix in patchInfo.Prefixes)
+                foreach (var fix in patchInfo.Prefixes.Concat(patchInfo.Postfixes).Where(f => Utility.IsNotAnalyzerPatch(f.owner)))
                 {
-                    if (Utility.IsNotAnalyzerPatch(fix.owner) && !PatchedPres.Contains(fix))
-                    {
-                        PatchedPres.Add(fix);
-                        yield return fix.PatchMethod;
-                    }
-                }
-
-                foreach (Patch fix in patchInfo.Postfixes)
-                {
-
-                    if (Utility.IsNotAnalyzerPatch(fix.owner) && !PatchedPosts.Contains(fix))
-                    {
-                        PatchedPosts.Add(fix);
-                        yield return fix.PatchMethod;
-                    }
+                    yield return fix.PatchMethod;
                 }
             }
         }
 
-        public static List<Patch> PatchedPres = new List<Patch>();
-        public static List<Patch> PatchedPosts = new List<Patch>();
         public static void ProfilePatch()
         {
             try
             {
                 MethodTransplanting.PatchMethods(typeof(H_HarmonyPatches));
             }
-            catch { }
+            catch
+            {
+            }
         }
     }
 }

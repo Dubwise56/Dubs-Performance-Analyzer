@@ -113,7 +113,7 @@ namespace Analyzer
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e.ToString());
+                    ThreadSafeLogger.Error(e.ToString());
                 }
             }
 
