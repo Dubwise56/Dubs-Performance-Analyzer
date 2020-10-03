@@ -72,8 +72,7 @@ namespace Analyzer.Profiling
             times[currentIndex] = stopwatch.Elapsed.TotalMilliseconds;
             hits[currentIndex] = hitCounter;
 
-            currentIndex++;
-            currentIndex %= RECORDS_HELD; // ring buffer
+            currentIndex = (currentIndex + 1) % RECORDS_HELD; // ring buffer
 
             stopwatch.Reset();
             hitCounter = 0;
@@ -102,7 +101,8 @@ namespace Analyzer.Profiling
                 if (call > maxCalls) maxCalls = call;
 
                 i--;
-                arrayIndex = (arrayIndex - 1) % RECORDS_HELD;
+                arrayIndex = arrayIndex - 1;
+                if (arrayIndex > RECORDS_HELD) arrayIndex = RECORDS_HELD - 1;
             }
 
             average = total / (float) entries;

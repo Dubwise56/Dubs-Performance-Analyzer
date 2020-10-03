@@ -85,7 +85,6 @@ namespace Analyzer.Profiling
 
             int entries = Mathf.Min(Analyzer.GetCurrentLogCount, entryCount);
 
-
             var TopBox = position.TopPartPixels(60f).ContractedBy(2f);
             Panel_Details.DrawMethDeets(TopBox);
             DrawSettings(TopBox);
@@ -118,38 +117,24 @@ namespace Analyzer.Profiling
                 var av = log.average;
 
                 Vector2 last = new Vector2();
-                //Vector2 lastHits = new Vector2();
-
-                //Material mat = Widgets.LineMat;
-                //Widgets.LineTexAA.filterMode = FilterMode.Trilinear;
-                //GL.PushMatrix();
-
-                //mat.SetPass(0);
-                //GL.LoadPixelMatrix();
-
-                //GL.Begin(GL.LINES);
-
-                //GL.Color(Color.red);
 
                 showTime = false;
-                while (counter > 0)
+
+                uint arrayIndex = prof.currentIndex;
+                int i = entries;
+
+                while (i > 0)
                 {
-                    var adjIndex = entries - counter;
-                    var timeEntry = (float)prof.times[profIndex];
-                    var hitsEntry = prof.hits[profIndex];
+                    var adjIndex = entries - i;
+                    var timeEntry = (float)prof.times[arrayIndex];
+                    var hitsEntry = prof.hits[arrayIndex];
 
                     var y = position.height + (diff) * (timeEntry / WindowMax);
-                    //var callsY = position.height + (diff) * (hitsEntry / maxCalls);
-
                     Vector2 screenPoint = new Vector2(position.xMax - (gap * adjIndex), y);
-                    //Vector2 hitsPoint = new Vector2(position.xMax - (gap * adjIndex), callsY);
 
                     if (adjIndex != 0)
                     {
                         DubGUI.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f);
-                        DubGUI.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f);
-                        //Widgets.DrawLine(lastHits, hitsPoint, Color.yellow, 1f);
-
                         Rect relevantArea = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
                         
                         if (Mouse.IsOver(relevantArea))
@@ -158,56 +143,19 @@ namespace Analyzer.Profiling
                             if (adjIndex != hoverVal)
                             {
                                 hoverVal = adjIndex;
-                                if (hitsEntry == 1)
-                                {
-                                    hoverValStr = $"{timeEntry:0.00000}ms {hitsEntry} call";
-                                }
-                                else
-                                {
-                                    hoverValStr = $"{timeEntry:0.00000}ms {hitsEntry} calls";
-                                }
+                                hoverValStr = $"{timeEntry:0.00000}ms {hitsEntry} call";
+                                if (hitsEntry != 1) hoverValStr += "s";
                             }
                             SimpleCurveDrawer.DrawPoint(screenPoint);
-                            //var flotrec = new Rect(0, 0, 300, 30);
-                            //Vector2 vector = UI.MousePositionOnUIInverted + new Vector2(0f, -30f);
-                            //if (vector.x + flotrec.width > (float)UI.screenWidth)
-                            //{
-                            //    vector.x = (float)UI.screenWidth - flotrec.width;
-                            //}
-                            //if (vector.y + flotrec.height > (float)UI.screenHeight)
-                            //{
-                            //    vector.y = (float)UI.screenHeight - flotrec.height;
-                            //}
-
-                            //flotrec.position = vector;
-
-                            //flotrec.x -= flotrec.width / 2f;
-
-                            //void plonkit()
-                            //{
-                            //    var r1 = flotrec.AtZero();
-                            //    Text.Anchor = TextAnchor.MiddleCenter;
-                            //    Widgets.Label(r1, hoverValStr);
-                            //    Text.Anchor = TextAnchor.UpperLeft;
-                            //}
-                            //Find.WindowStack.ImmediateWindow(172457, flotrec, WindowLayer.Super, plonkit, false, false, 1f);
                         }
                     }
 
-
                     last = screenPoint;
-                    //lastHits = hitsPoint;
 
-                    counter--;
-                    profIndex = (profIndex - 1) % Profiler.RECORDS_HELD;
+                    i--;
+                    arrayIndex = (arrayIndex - 1);
+                    if (arrayIndex > Profiler.RECORDS_HELD) arrayIndex = Profiler.RECORDS_HELD - 1;
                 }
-
-                //var averageY = (float)(position.height + (diff) * (av / WindowMax));
-
-                //var start = new Vector2(position.x, averageY);
-                //var end = new Vector2(position.x + position.width, averageY);
-
-                //Widgets.DrawLine(start, end, Color.yellow, 1f);
 
                 if (LastMax != max) MaxStr = $" Max: {max:0.0000}ms";
 
