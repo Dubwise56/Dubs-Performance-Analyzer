@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading;
 using UnityEngine;
 using Verse;
 
@@ -17,13 +18,13 @@ namespace Analyzer.Profiling
 
         public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            foreach (MethodBase mode in Harmony.GetAllPatchedMethods())
+            foreach (MethodBase mode in Harmony.GetAllPatchedMethods().ToList())
             {
                 Patches patchInfo = Harmony.GetPatchInfo(mode);
                 foreach (var fix in patchInfo.Prefixes.Concat(patchInfo.Postfixes).Where(f => Utility.IsNotAnalyzerPatch(f.owner)))
                 {
                     yield return fix.PatchMethod;
-                }
+                }  
             }
         }
 
@@ -33,8 +34,9 @@ namespace Analyzer.Profiling
             {
                 MethodTransplanting.PatchMethods(typeof(H_HarmonyPatches));
             }
-            catch
+            catch(Exception e)
             {
+                ThreadSafeLogger.Error("Patching HarmonyPatches failed, errored with the message" + e.Message);
             }
         }
     }

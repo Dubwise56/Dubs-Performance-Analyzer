@@ -87,7 +87,7 @@ namespace Analyzer.Profiling
                 catch (Exception e)
                 {
 #if DEBUG
-                            ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.Name} failed with the error {e.Message}");
+                    ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.Name} failed with the error {e.Message}");
 #else
                     if (Settings.verboseLogging)
                         ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.Name} failed with the error {e.Message}");

@@ -135,6 +135,8 @@ namespace Analyzer.Profiling
                     if (adjIndex != 0)
                     {
                         DubGUI.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f);
+                        DubGUI.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f);
+
                         Rect relevantArea = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
                         
                         if (Mouse.IsOver(relevantArea))

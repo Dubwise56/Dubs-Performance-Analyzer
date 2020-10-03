@@ -27,7 +27,7 @@ namespace Analyzer.Profiling
 
         public static CurrentInput input = CurrentInput.Method;
         public static Category patchType = Category.Update;
-        public static string currentInput = null;
+        public static string currentInput = "";
 
         public static void Draw(Listing_Standard listing, float winHeight)
         {
@@ -244,8 +244,11 @@ namespace Analyzer.Profiling
 
                 foreach (Type type in GenTypes.AllTypes)
                 {
-                    if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null && !type.FullName.Contains("Analyzer"))
+                    if (type.Namespace.Contains("Cecil") || type.Namespace.Contains("Analyzer")) continue;
+
+                    if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null)
                     {
+
                         foreach (MethodInfo meth in type.GetMethods())
                         {
                             if (meth.DeclaringType == type && !meth.IsSpecialName && !meth.IsAssembly && meth.HasMethodBody())
