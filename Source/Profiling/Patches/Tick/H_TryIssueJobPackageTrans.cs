@@ -3,13 +3,14 @@ using RimWorld;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using Verse;
 using Verse.AI;
 
 namespace Analyzer.Profiling
 {
-    [Entry("JobGiver_Work", Category.Tick, "JobGiveTipKey")]
+    [Entry("entry.tick.jobgiver", Category.Tick, "entry.tick.jobgiver.tooltip")]
     public static class H_TryIssueJobPackageTrans
     {
 
@@ -20,17 +21,17 @@ namespace Analyzer.Profiling
         [Setting("Per Pawn")] public static bool PerPawn = false;
 
         public static bool Active = false;
+        public static Dictionary<WorkGiver, MethodInfo> meths = new Dictionary<WorkGiver, MethodInfo>();
 
         private static string pawnname;
         private static WorkGiver wg;
 
         public static void ProfilePatch()
         {
-            Log.Message("Patching workgiver");
             HarmonyMethod pre = new HarmonyMethod(typeof(H_TryIssueJobPackageTrans), nameof(Prefix));
             HarmonyMethod post = new HarmonyMethod(typeof(H_TryIssueJobPackageTrans), nameof(Postfix));
             HarmonyMethod t = new HarmonyMethod(typeof(H_TryIssueJobPackageTrans), nameof(piler));
-            System.Reflection.MethodInfo o = AccessTools.Method(typeof(JobGiver_Work), nameof(JobGiver_Work.TryIssueJobPackage));
+            MethodInfo o = AccessTools.Method(typeof(JobGiver_Work), nameof(JobGiver_Work.TryIssueJobPackage));
             Modbase.Harmony.Patch(o, pre, post, t);
         }
 
@@ -94,7 +95,22 @@ namespace Analyzer.Profiling
                 CurrentKey = string.Intern(CurrentKey + pawnname);
             }
 
-            return ProfileController.Start(CurrentKey, namer);
+            if (!meths.TryGetValue(giver, out var meth))
+            {
+                if (giver is WorkGiver_Scanner)
+                {
+                    if (giver.def.scanThings) meth = AccessTools.Method(giver.GetType(), "PotentialWorkThingsGlobal");
+                    else meth = AccessTools.Method(giver.GetType(), "PotentialWorkCellsGlobal");
+                }
+                else
+                {
+                    meth = AccessTools.Method(giver.GetType(), "NonScanJob");
+                }
+                meths.Add(giver, meth);
+            }
+
+
+            return ProfileController.Start(CurrentKey, namer, null, null, null, meth);
         }
 
         public static void Stop(Profiler profiler)
@@ -162,7 +178,7 @@ namespace Analyzer.Profiling
     }
 
 
-    [Entry("JobGiver_Work(Detoured)", Category.Tick, "DetourWorkTipKey")]
+    [Entry("entry.tick.jobgiverd", Category.Tick, "entry.tick.jobgiverd")]
     internal class H_TryIssueJobPackage
     {
         [Setting("By Work Type")] public static bool ByWorkType = false;
@@ -196,7 +212,6 @@ namespace Analyzer.Profiling
         private static ThinkResult Detour(JobGiver_Work __instance, Pawn pawn)
         {
             if (__instance.emergency && pawn.mindState.priorityWork.IsPrioritized)
-
             {
                 List<WorkGiverDef> workGiversByPriority = pawn.mindState.priorityWork.WorkGiver.workType.workGiversByPriority;
                 for (int i = 0; i < workGiversByPriority.Count; i++)
@@ -226,6 +241,20 @@ namespace Analyzer.Profiling
             {
                 WorkGiver workGiver = list[j];
 
+                if (!H_TryIssueJobPackageTrans.meths.TryGetValue(workGiver, out var meth))
+                {
+                    if (workGiver is WorkGiver_Scanner)
+                    {
+                        if (workGiver.def.scanThings) meth = AccessTools.Method(workGiver.GetType(), "PotentialWorkThingsGlobal");
+                        else meth = AccessTools.Method(workGiver.GetType(), "PotentialWorkCellsGlobal");
+                    }
+                    else
+                    {
+                        meth = AccessTools.Method(workGiver.GetType(), "NonScanJob");
+                    }
+                    H_TryIssueJobPackageTrans.meths.Add(workGiver, meth);
+                }
+
                 string namer()
                 {
                     string daffy = string.Empty;
@@ -237,11 +266,6 @@ namespace Analyzer.Profiling
                     {
                         daffy = $"{workGiver.def?.defName} - {workGiver.def?.workType.defName} - {workGiver.def?.modContentPack?.Name}";
                     }
-
-                    //if (true)
-                    //{
-                    //    daffy += $" - { TraverseParms.For(pawn, scanner.MaxPathDanger(pawn)).ToString()} - {pawn.Name.ToStringShort}";
-                    //}
 
                     if (RequestTypes && workGiver is WorkGiver_Scanner scan)
                     {
@@ -299,7 +323,7 @@ namespace Analyzer.Profiling
                                 {
                                     return !t.IsForbidden(pawn) && scanner.HasJobOnThing(pawn, t);
                                 }
-                                prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
+                                prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn, meth);
                                 IEnumerable<Thing> enumerable = scanner.PotentialWorkThingsGlobal(pawn)?.Where(x => scanner.HasJobOnThing(pawn, x));
 
                                 //if (scanner is WorkGiver_Repair repair)
@@ -371,7 +395,7 @@ namespace Analyzer.Profiling
 
                             if (scanner.def.scanCells)
                             {
-                                prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
+                                prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn, meth);
                                 float closestDistSquared = 99999f;
                                 float bestPriority = float.MinValue;
                                 bool prioritized = scanner.Prioritized;
@@ -430,7 +454,7 @@ namespace Analyzer.Profiling
                     if (bestTargetOfLastPriority.IsValid)
                     {
                         //  pawn.mindState.lastGivenWorkType = workGiver.def.workType;
-                        prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn);
+                        prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn, meth);
                         Job job3;
                         if (bestTargetOfLastPriority.HasThing)
                         {

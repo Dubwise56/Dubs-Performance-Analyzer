@@ -7,7 +7,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("Single Tick", Category.Tick)]
+    [Entry("entry.tick.single", Category.Tick, "entry.tick.single.tooltip")]
     internal class H_DoSingleTick
     {
         public static bool Active = false;

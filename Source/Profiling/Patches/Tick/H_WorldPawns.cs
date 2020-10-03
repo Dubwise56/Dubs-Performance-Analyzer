@@ -10,7 +10,7 @@ using Verse;
 namespace Analyzer.Profiling
 {
 
-    [Entry("World Tick", Category.Tick)]
+    [Entry("entry.tick.world", Category.Tick, "entry.tick.world.tooltip")]
     public static class H_WorldPawns
     {
         public static bool Active = false;
@@ -24,6 +24,7 @@ namespace Analyzer.Profiling
             yield return AccessTools.Method(typeof(FactionManager), nameof(FactionManager.FactionManagerTick));
             yield return AccessTools.Method(typeof(WorldObjectsHolder), nameof(WorldObjectsHolder.WorldObjectsHolderTick));
             yield return AccessTools.Method(typeof(WorldPathGrid), nameof(WorldPathGrid.WorldPathGridTick));
+            yield return AccessTools.Method(typeof(Caravan), nameof(Caravan.Tick));
         }
     }
 }

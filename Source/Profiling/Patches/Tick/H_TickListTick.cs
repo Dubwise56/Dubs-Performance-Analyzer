@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
+using RimWorld.QuestGen;
 using System;
+using System.Reflection;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -184,29 +186,30 @@ namespace Analyzer.Profiling
     //    }
     //}
 
-    [Entry("Selection", Category.Tick, "TickThingsSelectTipKey")]
-    internal class H_TickSelection
-    {
-        public static bool Active = false;
-    }
-
-    [Entry("TickDef", Category.Tick, "TickThingByDefTipKey")]
-    internal class H_TickDef
-    {
-        public static bool Active = false;
-    }
-
-
-    [Entry("TickThing", Category.Tick, "LogTipThingTickByClass")]
-    [HarmonyPatch(typeof(TickList), nameof(TickList.Tick))]
+    [Entry("entry.tick.things", Category.Tick, "entry.tick.things.tooltip")]
     internal class H_TickListTick
     {
         public static bool Active = false;
+        public static bool isPatched = false;
+
+        [Setting("Tick Def", "Show entries by Def")]
+        public static bool byDef = false;
+
+        [Setting("Selection", "Show only things which are selected")]
+        public static bool bySelection = false;
+
+        public static void ProfilePatch()
+        {
+            if (isPatched) return;
+
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(TickList), nameof(TickList.Tick)), prefix: new HarmonyMethod(typeof(H_TickListTick), "Prefix"));
+            isPatched = true;
+        }
 
         public static void LogMe(Thing sam, Action ac, string fix)
         {
             bool logme = false;
-            if (H_TickSelection.Active)
+            if (bySelection)
             {
                 if (Find.Selector.selected.Any(x => x == sam))
                 {
@@ -222,33 +225,31 @@ namespace Analyzer.Profiling
             {
                 string key = sam.GetType().Name;
 
-                if (H_TickDef.Active)
+                if (byDef)
                 {
                     key = sam.def.defName;
                 }
 
-                if (H_TickSelection.Active)
+                if (bySelection)
                 {
                     key = sam.ThingID;
                 }
 
                 string Namer()
                 {
-                    if (H_TickDef.Active)
+                    if (byDef)
                     {
                         return $"{sam.def.defName} - {sam?.def?.modContentPack?.Name} - {fix} ";
                     }
-
-                    if (H_TickSelection.Active)
+                    if (bySelection)
                     {
-                        return
-                            $"{sam.def.defName} - {sam.GetHashCode()} - {sam?.def?.modContentPack?.Name} - {fix}";
+                        return $"{sam.def.defName} - {sam.GetHashCode()} - {sam?.def?.modContentPack?.Name} - {fix}";
                     }
 
                     return $"{sam.GetType()} {fix}";
                 }
 
-                Profiler prof = ProfileController.Start(key, Namer, sam.GetType(), sam.def);
+                Profiler prof = ProfileController.Start(key, Namer, sam.GetType(), sam.def, sam, ac.GetMethodInfo());
                 ac();
                 prof.Stop();
             }
@@ -260,7 +261,7 @@ namespace Analyzer.Profiling
 
         private static bool Prefix(TickList __instance)
         {
-            if (!Active && !H_TickSelection.Active && !H_TickDef.Active)
+            if (!Active)
             {
                 return true;
             }

@@ -10,7 +10,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("InfoCard", Category.Update)]
+    [Entry("entry.update.infocard", Category.Update, "entry.update.infocard.tooltip")]
     internal class H_InfoCard
     {
         public static bool Active = false;
@@ -71,7 +71,6 @@ namespace Analyzer.Profiling
 
             Modbase.Harmony.Patch( AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(Thing) }),
                 new HarmonyMethod(typeof(H_InfoCard), nameof(FUUUCK)));
-
         }
     }
 }

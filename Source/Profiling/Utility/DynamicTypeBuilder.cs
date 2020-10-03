@@ -3,8 +3,10 @@ using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Text.RegularExpressions;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -22,8 +24,18 @@ namespace Analyzer.Profiling
 
         public static Dictionary<string, HashSet<MethodInfo>> methods = new Dictionary<string, HashSet<MethodInfo>>();
 
+
+        /* CreateType creates a type at runtime which inherits from 'Entry', it creates a type with one field and two methods
+         * Field: 'Active' signifying whether the entry is currently active or not 
+         * Ctor: Sets 'Active' to false.
+         * Method: 'GetPatchMethods' given a string, finds a list of methods in a dictionary which represent the methods this type is profiling
+         * they are stored in the `methods` dictionary, and added to in the CreateType method. 
+         */
+
         public static Type CreateType(string name, HashSet<MethodInfo> methods)
         {
+            name = string.Concat(name.Where(x => char.IsLetter(x) && !char.IsSymbol(x) && !char.IsWhiteSpace(x)));;
+            ThreadSafeLogger.Message(name);
             TypeBuilder tb = ModuleBuilder.DefineType(name, staticAtt, typeof(Entry));
 
             FieldBuilder active = tb.DefineField("Active", typeof(bool), FieldAttributes.Public | FieldAttributes.Static);
@@ -57,6 +69,7 @@ namespace Analyzer.Profiling
             generator.Emit(OpCodes.Ret);
         }
 
+        // Does the one off work in a method, not bothered for performance so keeping it simple.
         public static IEnumerable<MethodInfo> PatchAll(string name)
         {
             if (methods.TryGetValue(name, out var meths))

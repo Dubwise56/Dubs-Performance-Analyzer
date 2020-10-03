@@ -18,11 +18,11 @@ namespace Analyzer.Profiling
         private static Category currentCategory = Category.Settings;
 
         private static Dictionary<Category, Tab> tabs;
-        public static HashSet<string> types = new HashSet<string>();
+        public static Dictionary<string, Type> types = new Dictionary<string, Type>();
 
         public static Profiler CurrentProfiler { get { return currentProfiler; } set { currentProfiler = value; } }
         public static Tab GetCurrentTab => currentTab;
-        public static Category GetCurrentCategory => currentCategory;
+        public static Category CurrentCategory => currentCategory;
         public static Entry CurrentEntry => currentEntry;
 
         public static IEnumerable<Tab> Tabs => tabs.Values;
@@ -66,14 +66,18 @@ namespace Analyzer.Profiling
             if (currentEntry != null)
             {
                 currentEntry.SetActive(false);
-                ProfileController.Profiles.Clear();
-                Analyzer.RefreshLogCount();
-                currentProfiler = null;
-                currentEntry = null;
+                ResetProfilers();
             }
 
             currentTab = Tab(Category.Settings);
             currentCategory = Category.Settings;
+        }
+
+        public static void ResetProfilers()
+        {
+            ProfileController.Profiles.Clear();
+            Analyzer.RefreshLogCount();
+            currentProfiler = null;
         }
 
         public static void SwapToEntry(string entryName)
@@ -81,9 +85,7 @@ namespace Analyzer.Profiling
             if (currentEntry != null)
             {
                 currentEntry.SetActive(false);
-                ProfileController.Profiles.Clear();
-                Analyzer.RefreshLogCount();
-                currentProfiler = null;
+                ResetProfilers();
             }
 
             currentEntry = EntryByName(entryName);
@@ -101,21 +103,29 @@ namespace Analyzer.Profiling
         public static void AddEntry(string name, Category category)
         {
             Type myType = null;
-            if (types.Contains(name))
+            if (types.ContainsKey(name))
             {
-                myType = AccessTools.TypeByName(name);
+                myType = types[name];
             }
             else
             {
                 myType = DynamicTypeBuilder.CreateType(name, null);
-                types.Add(name);
+                types.Add(name, myType);
             }
 
 #if DEBUG
-            ThreadSafeLogger.Message($"Adding entry {name} into the category {category.ToString()}");
+            ThreadSafeLogger.Message($"Adding entry {name} into the category {category}");
 #endif
+            var entry = Entry.Create(name, category, "Dynamically created entry for the type " + myType.Name, myType, true, true);
 
-            GUIController.Tab(category).entries.Add(Entry.Create(myType.Name, category, null, myType, true), myType);
+            if (Tab(category).entries.ContainsKey(entry))
+            {
+                ThreadSafeLogger.Error($"Attempting to re-add entry {name} into the category {category}");
+            }
+            else
+            {
+                Tab(category).entries.Add(entry, myType);
+            }
         }
 
         public static void RemoveEntry(string name)

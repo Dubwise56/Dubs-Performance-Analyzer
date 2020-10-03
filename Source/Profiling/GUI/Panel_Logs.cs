@@ -61,7 +61,7 @@ namespace Analyzer.Profiling
                 Text.Anchor = TextAnchor.MiddleCenter;
                 Text.Font = GameFont.Tiny;
 
-                DrawColumns(listing.GetRect(BOX_HEIGHT));   
+                DrawColumns(listing.GetRect(BOX_HEIGHT));
                 float currentListHeight = BOX_HEIGHT;
 
                 Text.Anchor = TextAnchor.MiddleLeft;
@@ -159,6 +159,17 @@ namespace Analyzer.Profiling
 
             Profiler profile = ProfileController.Profiles[log.key];
 
+
+            // Is this entry currently 'active'?
+            if (GUIController.CurrentEntry.onSelect != null)
+            {
+                OnSelect(log, profile, out var active);
+
+                // Show a button to toggle whether an entry is 'active'
+                if (GUIController.CurrentEntry.checkBox != null)
+                    Checkbox(ref visible, log, profile, ref active);
+            }
+
             Widgets.DrawHighlightIfMouseover(visible);
 
             if (GUIController.CurrentProfiler?.key == profile.key)
@@ -186,6 +197,7 @@ namespace Analyzer.Profiling
             DrawColumnContents(ref visible, $" {log.average:0.000}ms ", SortBy.Average);
             DrawColumnContents(ref visible, $" {log.percent * 100:0.0}% ", SortBy.Percent);
             DrawColumnContents(ref visible, $" {log.total:0.000}ms ", SortBy.Total);
+
             if (GUIController.CurrentEntry.name != "HarmonyTranspilers")
                 DrawColumnContents(ref visible, $" {log.calls.ToString("N0", CultureInfo.InvariantCulture)} ", SortBy.Calls);
 
@@ -231,7 +243,7 @@ namespace Analyzer.Profiling
 
                         void GetString(string type, Patch patch)
                         {
-                            if (patch.owner != Modbase.Harmony.Id)
+                            if (Utility.IsNotAnalyzerPatch(patch.owner))
                             {
                                 string ass = patch.PatchMethod.DeclaringType.Assembly.FullName;
                                 string modName = ModInfoCache.AssemblyToModname[ass];
@@ -273,6 +285,23 @@ namespace Analyzer.Profiling
             }
         }
 
+        public static void OnSelect(ProfileLog log, Profiler profile, out bool active)
+        {
+            active = (bool)GUIController.CurrentEntry.onSelect.Invoke(null, new object[] { profile, log });
+        }
+
+        public static void Checkbox(ref Rect rect, ProfileLog log, Profiler profile, ref bool active)
+        {
+            var checkboxRect = new Rect(rect.x, rect.y, 25f, rect.height);
+            rect.x += 25f;
+            if (DubGUI.Checkbox(checkboxRect, "", ref active))
+            {
+                GUIController.CurrentEntry.checkBox.Invoke(null, new object[] { log });
+                Modbase.Settings.Write();
+            }
+        }
+
+
         private static IEnumerable<FloatMenuOption> RightClickDropDown(ProfileLog log)
         {
             var meth = log.meth as MethodInfo;
@@ -281,7 +310,24 @@ namespace Analyzer.Profiling
                 yield return new FloatMenuOption("Unpatch Method", () => Utility.UnpatchMethod(meth));
 
             yield return new FloatMenuOption("Unpatch methods that patch", () => Utility.UnpatchMethodsOnMethod(meth));
-            yield return new FloatMenuOption("Profile the internal methods of", () => Utility.PatchInternalMethod(meth));
+            yield return new FloatMenuOption("Profile the internal methods of", () => Utility.PatchInternalMethod(meth, GUIController.CurrentCategory));
+
+            // This part is WIP - it would require the ability to change the tab a method is active in on the fly
+            // which is possible (with a transpiler to the current transpiler) but it would likely end up being
+            // quite ugly, and I'd rather give a little more thought to the problem
+            //yield return new FloatMenuOption("Profile in Custom Tab", () =>
+            //{
+            //    if (GUIController.CurrentCategory == Category.Tick)
+            //    {
+            //        MethodTransplanting.UpdateMethod(typeof(CustomProfilersTick), meth);
+            //        GUIController.SwapToEntry("Custom Tick");
+            //    }
+            //    else
+            //    {
+            //        MethodTransplanting.UpdateMethod(typeof(CustomProfilersUpdate), meth);
+            //        GUIController.SwapToEntry("Custom Update");
+            //    }
+            //});
         }
     }
 }

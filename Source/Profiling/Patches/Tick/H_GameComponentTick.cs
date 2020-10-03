@@ -7,7 +7,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("Game Component", Category.Tick)]
+    [Entry("entry.tick.gamecomponent", Category.Tick, "entry.tick.gamecomponent.tooltip")]
     public static class H_GameComponent
     {
         public static bool Active = false;

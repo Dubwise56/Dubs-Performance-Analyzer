@@ -15,7 +15,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("HarmonyTranspilers", Category.Update, "TransPatchTipKey")]
+    [Entry("entry.update.harmonytranspilers", Category.Update, "entry.update.harmonytranspilers.tooltip")]
     public static class H_HarmonyTranspilers
     {
         public static bool Active = false;
@@ -25,7 +25,7 @@ namespace Analyzer.Profiling
             var patches = Harmony.GetAllPatchedMethods().ToList();
 
             var filteredTranspilers = patches
-                .Where(m => Harmony.GetPatchInfo(m).Transpilers.Any(p => p.owner != Modbase.Harmony.Id && p.owner != Modbase.StaticHarmony.Id && !TranspilerMethodUtility.PatchedMeths.Contains(m)))
+                .Where(m => Harmony.GetPatchInfo(m).Transpilers.Any(p => Utility.IsNotAnalyzerPatch(p.owner) && !TranspilerMethodUtility.PatchedMeths.Contains(m)))
                 .ToList();
 
             TranspilerMethodUtility.PatchedMeths.AddRange(filteredTranspilers);

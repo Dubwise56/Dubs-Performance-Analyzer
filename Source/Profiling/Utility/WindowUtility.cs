@@ -52,7 +52,7 @@ namespace Analyzer.Profiling
                         curStatus = CurrentlyResizing.Window;
                         resizeStart = new Rect(mousePosition.x, mousePosition.y, winRect.width, winRect.height);
                     }
-                    else if (GUIController.GetCurrentCategory != Category.Settings) // We need to be in a window with entries to show the graph
+                    else if (GUIController.CurrentCategory != Category.Settings) // We need to be in a window with entries to show the graph
                     {
                         if (Mouse.IsOver(graphRect))
                         {
@@ -101,7 +101,6 @@ namespace Analyzer.Profiling
             }
 
             Widgets.ButtonImage(windowResizeRect, TexUI.WinExpandWidget);
-            Widgets.ButtonImage(new Rect(graphRect.x + (graphRect.width / 2) - 12f, graphRect.y, 24f, 24f), TexUI.WinExpandWidget);
 
             return new Rect(winRect.x, winRect.y, (int)winRect.width, (int)winRect.height);
         }

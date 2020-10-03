@@ -5,11 +5,16 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("SectionLayer_Things", Category.Update)]
-    [HarmonyPatch(typeof(SectionLayer_Things), "Regenerate")]
+    [Entry("entry.update.sectionlayerthings", Category.Update, "entry.update.sectionlayerthings.tooltip")]
     internal class H_SectionLayer_Things
     {
         public static bool Active = false;
+
+        public static void ProfilePatch()
+        {
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(SectionLayer_Things), nameof(SectionLayer_Things.Regenerate)),
+                new HarmonyMethod(typeof(H_SectionLayer_Things), nameof(Prefix)));
+        }
 
         public static bool Prefix(MethodBase __originalMethod, SectionLayer_Things __instance, ref string __state)
         {

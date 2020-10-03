@@ -1,18 +1,20 @@
 ﻿using Analyzer;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using UnityEngine.Assertions;
 using Verse;
 
 namespace Analyzer.Profiling
 {
     public class Profiler
     {
-        public const int MAX_ADD_INFO_PER_FRAME = 250;
         public const int RECORDS_HELD = 2000;
 
-        private readonly Stopwatch stopwatch;
+        private readonly Watch stopwatch;
         public Type type;
         public Def def;
         public Thing thing;
@@ -34,7 +36,7 @@ namespace Analyzer.Profiling
             this.def = def;
             this.meth = meth;
             this.label = label;
-            this.stopwatch = new Stopwatch();
+            this.stopwatch = new Watch();
             this.type = type;
             this.times = new double[RECORDS_HELD];
             this.hits = new int[RECORDS_HELD];
@@ -50,22 +52,16 @@ namespace Analyzer.Profiling
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Stop()
         {
-            if (!Analyzer.CurrentlyProfiling) return;
-
-            stopwatch.Stop();
+            var adj = stopwatch.Stop();
             hitCounter++;
         }
 
-        // This function will be added via transpiler to the end of `Stop()` when the option is toggled.
-        // Hopefully this can be injected as IL, not an xtra method call.
-        // Something.GetMethodIL();
+        // This will be added as a Postfix to the method which we want to gather stack trace information for
+        // it will only effect one method, so we can skip the check, and it will not slow down other profilers
+        // because it will only be patched onto one method. There can be extra checks and flexibility in how
+        // many frames are grabbed p/s etc. These are to be done when the GUI decisions have been made.
 
-        public static void StopFrameInfo(Profiler prof)
-        {
-            if (prof == GUIController.CurrentProfiler)
-                if (prof.hitCounter < MAX_ADD_INFO_PER_FRAME)
-                    StackTraceRegex.Add(new StackTrace(2, false));
-        }
+        public static void StopFrameInfo() => StackTraceRegex.Add(new StackTrace(2, false));
 
         public void RecordMeasurement()
         {
@@ -102,20 +98,14 @@ namespace Analyzer.Profiling
 
                 calls += call;
                 total += time;
-                if (time > max)
-                {
-                    max = time;
-                }
-                if(call > maxCalls)
-                {
-                    maxCalls = call;
-                }
+                if (time > max) max = time;
+                if (call > maxCalls) maxCalls = call;
 
                 i--;
                 arrayIndex = (arrayIndex - 1) % RECORDS_HELD;
             }
 
-            average = total / (float)entries;
+            average = total / (float) entries;
         }
     }
 }

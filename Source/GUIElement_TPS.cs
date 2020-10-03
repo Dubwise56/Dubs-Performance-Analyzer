@@ -36,10 +36,10 @@ namespace Analyzer
             }
             else
             {
-                DateTime CurrTime = DateTime.Now;
-                if (CurrTime.Second != prevTime.Second)
+                var currTime = DateTime.Now;
+                if (currTime.Second != prevTime.Second)
                 {
-                    prevTime = CurrTime;
+                    prevTime = currTime;
                     tpsActual = GenTicks.TicksAbs - prevTicks;
                     prevTicks = GenTicks.TicksAbs;
                     fpsActual = prevFrames;

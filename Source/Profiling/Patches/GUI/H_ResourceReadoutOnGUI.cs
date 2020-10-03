@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Analyzer.Profiling
 {
-    [Entry("ResourceReadoutOnGUI", Category.GUI)]
+    [Entry("entry.gui.resourcereadout", Category.GUI, "entry.gui.resourcereadout.tooltip")]
     internal class H_ResourceReadoutOnGUI
     {
         public static bool Active = false;

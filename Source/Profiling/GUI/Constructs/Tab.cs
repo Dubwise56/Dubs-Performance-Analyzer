@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Analyzer.Profiling
 {
-    public enum UpdateMode { Update, Tick }
     public class Tab
     {
         public Action onClick;

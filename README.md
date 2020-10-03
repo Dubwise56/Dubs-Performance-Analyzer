@@ -32,15 +32,27 @@ This will (if possible) show you the mod, and the assembly that the method is at
 
 ## Common Offenders
 
-- Pawn.Tick
-- etc
+#### Pawn.Tick
+
+Pawn Tick is the 'tick' method for Pawns, it is responsible for all updates specific to the pawn. For example, pawns finding jobs, pathfinding etc. The individual methods which are called within Pawn:Tick are profiled in the entry 'Pawn Tick'. You can also right click the log, and press 'Profile the Internal Methods of', which will show you the methods which are called within Pawn:Tick
+
+#### ThinkNodes (Priority, Subtree, etc)
+
+ThinkNodes are the AI behind the pawn, they control the decisions a Pawn makes. They are relatively high level, thus, when viewing times from them, understand that a lot of methods from other categories are included in the times you view, For example, JobGivers are a 'type' of ThinkNode, and are directly called from ThinkNodes, as part of a Pawns reasoning process in choosing a job.
+
+#### WorkGivers
+
+WorkGivers are how pawns find jobs to do, a common example could be, looking through the entire map for some buildings which may offer a job. For example, re-arming turrets, filling brewing barrels etc. They are quite often implemented in mods, and are easy to get wrong - Sometimes there is the suffix 'Very Bad' on WorkGivers, if you see this, it means the WorkGiver is doing a broad search on all Artificial Buildings on the map.
+
+## Error when Attempting to open the Analyzer Window
+If you see the error *[Analyzer] Analyzer is currently in the process of cleaning up ...* and cannot open the window. Just wait a few seconds, this occurs because after you are finished using the Analyzer, it removes all of the profiling and hooks it has, in order to reduce the overhead it incurs on your game. This happens on a seperate thread, and does not effect gameplay at all, however depending on how many methods where profiled, the GC which is manually called after the cleanup can take a substantial amount of time. (This cleanup process does not effect the Performance patches at all).
 
 # Advanced Usage
 
 ## Linking Analyzer to Dnspy
 In the analyzer settings there is checkbox that, when enabled, will 'link' dnSpy to the Analyzer. This will allow you to directly open methods from inside the Analyzer from any mod within dnSpy.
 
-Provide the absolute path to (and including) the dnSpy.exe. This allows it to be accessed via command line.
+Provide the absolute path to (and including) the dnSpy.exe. This allows it to be accessed via command line from in game by the Analyzer.
 
 ![Open in Dnspy](About/OpenInDnspy.png)
 
@@ -53,7 +65,6 @@ You can right-click the logs themselves to internal profile the method. This wil
 
 ![Close Entry](About/CloseEntry.png)
 
-
 ## Custom Profiling
 While using the Analyzer, there are a variety of ways by which methods can be profiled. These are displayed on the main dev page.
 
@@ -65,10 +76,14 @@ You can patch:
 - Method Internals (Internal method profiling on a given method)
 - Mod/Assembly (Patch all the methods implemented in an assembly)
 
-![Modders Patching](About/Patching.png)
-
+![Modders Patching](About/PatchingPage.png)
 
 # For Modders
+
+## Exceptions
+When exceptions are thrown in a method that is being profiled, The timer will be completely ***incorrect***. This is because the Stopwatch's `Stop()` function will never be called. This could hypothetically be remedied by using a Finalizer (or a raw try-catch), but this will incur a large amount of overhead, likely slowing the game to a crawl in entries with large amounts of methods. 
+
+There is the potential of in the future making a switch which would enable you to profile while including a try-catch for specific methods. However it is more work than it is worth currently, if it is a feature you would like, you are free to implement it yourself [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L79-L227)
 
 ## Using the Analyzer.xml
 You can create a tab in the Analyzer specifically for your mod ahead of time by creating an XML file. This saves you the work of having to repatch the same methods to profile your mod during development. The file should be formatted as follows:
@@ -81,15 +96,18 @@ You can create a tab in the Analyzer specifically for your mod ahead of time by 
         <Methods>
             <li>Verse.Thing:Tick</li>
         </Methods>
+        <NestedTypes>
+            <li>Verse.ThreadLocalDeepProfiler</li> 
+        </NestedTypes>
     </tabName>
 </Analyzer>
 ```
-This will create a tab titled `tabName` which will profile all the methods in the type `Verse.Pawn` and the method `Verse.Thing:Tick`.
+This will create a tab titled `tabName` which will profile all the methods in the type `Verse.Pawn` and the method `Verse.Thing:Tick`. It will also profile all methods implemented in the nested types of `Verse.ThreadLocalDeepProfiler`. Primary use-case for the nested classes being nested harmony-patch classes.
 
 This file should be placed in the root directory of your mod. If you wish to avoid cluttering the Analyzer for end users, remember to remove it before releasing to steam. However, you might also decide to keep it in to allow users to easily see how your mod performs, to pre-emptively counter complaints.
 
 ## Predicted Overhead
-The act of profiling obviously takes time. Let's look at how this *generally* works, noting that there are a few different techniques used to patch different methods, as sometimes it needs to be precise.
+The act of profiling obviously takes time. Let's look at how this *generally* works, noting that there are a few different techniques used to patch different methods, as sometimes it requires more fine grain control than what a generic transpiler can offer.
 
 For a given method `Foo`
 ```csharp
@@ -141,11 +159,7 @@ The stack will, after the transpiler, look like
 011 ret 
 ```
 
-The implementation for this is here:
-- [Initial Injection](Source/Profiling/Utility/MethodTransplanting.cs#L102-158)
-- [Final Injection(s)](Source/Profiling/Utility/MethodTransplanting.cs#L163-185)
-
-
+The implementation for this is [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L79-L227)
 
 ## Technical Explanations
 
@@ -164,11 +178,11 @@ This process looks roughly like this:
 public static int MyTargetMethod(int param1, bool param2)
 {
     // ...
-    CallFoo(param1, local2);
+    Foo(param1, local2);
     // ...
 }
 
-public static void CallFoo(int param2, int local2)
+public static void Foo(int param2, int local2)
 {
     // ...
 }
@@ -179,28 +193,37 @@ After the method has been transformed:
 public static int MyTargetMethod(int param1, bool param2)
 {
     // ...
-    CallFoo_runtimeReplacement(param1, local2);
+    Foo_runtimeReplacement(param1, local2);
     // ...
 }
 
-public static void CallFoo_runtimeReplacement(int param2, int local2)
+public static void Foo_runtimeReplacement(int param2, int local2)
 {
     Stopwatch.Start();
-    CallFoo(param2, local2);
+    Foo(param2, local2);
     Stopwatch.End();
-    return; // The value which is currently on the stack will be returned if applicable
+    return; 
+    /* 
+    The value which is currently on the stack will be returned applicable 
+    (Stopwatch.End() is stack neutral) - cannot be expressed very well in
+    C# 
+    */ 
 }
 ```
 The `Stopwatch.Start();` above is simplified because the process here is specific to how Analyzer collects data on methods, and thus is unimportant to the example.
 
-The implementation used for internal method profiling is [here](Source/Profiling/Utility/InternalMethodUtility.cs)
+The implementation of this is [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L274-L370)
 
 ### Transpiler Profiling
-Transpiler profiling is done using a relatively simple approach. The IL of the original method is compared to the current IL (after all transpilers have been applied) and a diff algorithm is applied. 
+Transpiler profiling is done using a relatively simple approach. The IL of the original method is compared to the current IL (after all transpilers have been applied) and a diff algorithm is applied. This profiling hinges on the fact that the diff algorithm is correct (which it may not always be!), I'd greatly appreciate examples where the algorithm *incorrectly* attributes an 'Added' method when no such method was added. Or improvements to the diff algorithm itself [here](Source/Profiling/Utility/Myers.cs)
 
 For each of the added IL instructions that are of the type `Call` or `CallVirt`, the method it calls is swapped out with a *profiling method* (as described above). 
 
-The ***sum*** of these calls is considered the 'added' weight by the transpiler(s). This obviously does not handle all case; i.e. adding for loops / while loops using branches, inserting instructions in for loops etc. This will also collate all transpilers on a method, so if you are trying to get accurate measurements on individual transpilers separately as a modder, I'd suggest only running the mod which adds it, or looking at the source code using a decompiler like dnSpy. 
+The ***sum*** of these added calls is considered the 'added' weight by the transpiler(s). This can not handle methods which throw exceptions. The added weight of a try-catch bracket for each profiler is not worth it. (As explained prior).
+
+This will also collate all transpilers on a given method, as there is only the IL after all the methods have been applied. Doing specialisation like, calculating the assembly an added method is implemented in is likely to be misleading, as one could insert a call to a vanilla method in a transpiler, which would lead the viewer to believe 'Core' transpiled its own method in.
+
+This does not handle all cases. Mods which add branching, or exception blocks via transpilers will not be profiled, and would likely given misleading results if an attempt was made. Similarly, mods which just add / swap a single instruction, or add a `mul` or `sub` opcode are very unlikely to add any overhead, so it is not worth profiling (You would be more likely to see overhead from the stopwatch, than the actual effect of the instruction).
 
 ### Internal Method Profiling
 Internal method profiling is done by iterating through the IL of a method. For each of the `Call` or `CallVirt` instructions, the operand method is swapped out as described above.
@@ -210,4 +233,4 @@ This swaps out the instruction, which means that instead of replacing the method
 ## Edge Cases
 
 ### IEnumerable
-If you are seeing spikes from relatively simple Postfixes which deal with IEnumerables, keep in mind how IEnumerables work. This section is only relevant when the IEnumerable is being frontloaded. If you are doing a Postfix where a parameter you are checking is an IEnumerable, and you are doing a call like `.Any()` or `.Select`, your Postfix will force the calculation for the IEnumerables. The time this takes will be attributed to your Postfix. Additionally, each IEnumerator generated from the IEnumerable will have to repeat the calculation. This is something you can avoid.
+If you are seeing spikes from relatively simple Postfixes which deal with IEnumerables, keep in mind how IEnumerables work. This section is only relevant when the IEnumerable is being frontloaded. If you are doing a Postfix where a parameter you are checking is an IEnumerable, and you are doing a call like `.Any()` or `.Select`, your Postfix will force the calculation for the IEnumerables. The time this takes will be attributed to your Postfix. Additionally, each IEnumerator generated from the IEnumerable will have to repeat the calculation. This is something you should attempt to avoid - even if it seems misleading at first.

@@ -9,7 +9,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("NeedsTracker", Category.Tick)]
+    [Entry("entry.tick.needs", Category.Tick, "entry.tick.needs.tooltip")]
     internal static class H_NeedsTrackerTick
     {
         public static bool Active = false;
@@ -19,7 +19,7 @@ namespace Analyzer.Profiling
 
         public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            return typeof(Need).AllSubclasses().Select(n => n.GetMethod("NeedInterval"));
+            return Utility.SubClassImplementationsOf(typeof(Need), (MethodInfo m) => m.Name == "NeedInterval");
         }
 
         public static string GetName(Need __instance)

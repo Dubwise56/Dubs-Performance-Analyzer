@@ -8,7 +8,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("PawnRenderer", Category.Update)]
+    [Entry("entry.update.pawnrenderer", Category.Update, "entry.update.pawnrenderer.tooltip")]
     internal class H_RenderPawnAt
     {
         public static bool Active = false;
@@ -19,6 +19,5 @@ namespace Analyzer.Profiling
         }
         public static string GetLabel(PawnRenderer __instance) => $"{__instance.pawn.Label} - {__instance.pawn.ThingID}";
         public static string GetName(PawnRenderer __instance) => __instance.pawn.GetHashCode().ToString();
-
     }
 }

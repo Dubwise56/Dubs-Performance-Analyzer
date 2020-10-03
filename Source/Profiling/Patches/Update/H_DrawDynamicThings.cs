@@ -5,15 +5,19 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("DrawDynamicThings", Category.Update, "DrawDynThinTipKey")]
-    [HarmonyPatch(typeof(DynamicDrawManager), nameof(DynamicDrawManager.DrawDynamicThings))]
+    [Entry("entry.update.dynamicdraw", Category.Update, "entry.update.dynamicdraw.tooltip")]
     internal class H_DrawDynamicThings
     {
+        public static bool Active = false;
 
         [Setting("By Def")]
         public static bool ByDef = false;
 
-        public static bool Active = false;
+        public static void ProfilePatch()
+        {
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(DynamicDrawManager), nameof(DynamicDrawManager.DrawDynamicThings)), prefix: new HarmonyMethod(typeof(H_DrawDynamicThings), "Prefix"));
+        }
+
         public static bool Prefix(MethodBase __originalMethod, DynamicDrawManager __instance)
         {
             if (!Active)
