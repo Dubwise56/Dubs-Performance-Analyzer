@@ -309,7 +309,7 @@ namespace Analyzer.Profiling
         {
             if (InternalMethodUtility.PatchedInternals.Contains(method))
             {
-                Warn("Trying to re-transpile an already profiled internal method");
+                Warn($"Trying to re-transpile an already profiled internal method - {method.DeclaringType.FullName}:{method.Name}");
                 return;
             }
 
@@ -333,7 +333,7 @@ namespace Analyzer.Profiling
                     }
                     catch (Exception e)
                     {
-                        Error("Failed to internal patch method, failed with the exep " + e.Message);
+                        Error($"Failed to internal patch method {method.DeclaringType.FullName}:{method.Name}, failed with the exep " + e.Message);
                     }
                 });
             }

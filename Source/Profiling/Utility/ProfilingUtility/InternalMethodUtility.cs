@@ -65,7 +65,7 @@ namespace Analyzer.Profiling
             }
             catch (Exception e)
             {
-                ThreadSafeLogger.Error("Failed to patch internal method, failed with the error " + e.Message);
+                ThreadSafeLogger.Error($"Failed to patch the internal method {__originalMethod.DeclaringType.FullName}:{__originalMethod.Name}, failed with the error " + e.Message);
                 return codeInstructions;
             }
         }

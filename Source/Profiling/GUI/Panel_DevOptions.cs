@@ -38,13 +38,10 @@ namespace Analyzer.Profiling
             DrawButtons(listing);
             var inputBarOffset = DisplayInputField(listing, winHeight);
             DisplaySelectionOptions(listing);
+
             SearchBar.PopulateSearch(currentInput, input);
-
             var searchBarRect = new Rect(listing.curX + inputBarOffset, listing.curY - Text.LineHeight, listing.ColumnWidth - inputBarOffset, (winHeight - listing.curY) - 18f);
-
             SearchBar.DrawSearchBar(searchBarRect);
-
-            listing.End();
         }
 
         public static void DrawButtons(Listing_Standard listing)
@@ -140,18 +137,16 @@ namespace Analyzer.Profiling
             DubGUI.OptionalBox(tickBox, "devoptions.patchtype.tick".TranslateSimple(), () => patchType = Category.Tick, patchType == Category.Tick);
             DubGUI.OptionalBox(updateBox, "devoptions.patchtype.update".TranslateSimple(), () => patchType = Category.Update, patchType == Category.Update);
 
-            if (Widgets.ButtonText(box, "Patch"))
-            {
-                if (!string.IsNullOrEmpty(currentInput)) ExecutePatch();
-                return;
-            }
-
             // Enter will also patch the method
-            var curEvent = Event.current;
-            if (curEvent.type == EventType.KeyDown && curEvent.keyCode == KeyCode.KeypadEnter)
+            if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.KeypadEnter)
             {
                 if (!string.IsNullOrEmpty(currentInput)) ExecutePatch();
                 Event.current.Use();
+            }
+
+            if (Widgets.ButtonText(box, "Patch"))
+            {
+                if (!string.IsNullOrEmpty(currentInput)) ExecutePatch();
             }
         }
 
@@ -375,6 +370,8 @@ namespace Analyzer.Profiling
                                     currentInput = entry;
                                     Event.current.Use();
                                 }
+
+                                GUI.DrawTexture(r.RightPartPixels(r.height), ResourceCache.GUI.enter);    
                             }
 
                             r.width = 2000;
