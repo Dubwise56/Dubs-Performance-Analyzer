@@ -80,7 +80,8 @@ namespace Analyzer
             Modbase.Settings.Write();
 
             // Pend the cleaning up of all of our state.
-            Current.Game.GetComponent<GameComponent_Analyzer>().TimeTillCleanup = Modbase.TIME_SINCE_CLOSE_FOR_CLEANUP;
+            if(!Settings.disableCleanup)
+                Current.Game.GetComponent<GameComponent_Analyzer>().TimeTillCleanup = Modbase.TIME_SINCE_CLOSE_FOR_CLEANUP;
         }
 
         public static void LoadEntries()

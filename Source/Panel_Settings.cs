@@ -102,11 +102,11 @@ namespace Analyzer
             DubGUI.Checkbox(ResourceCache.Strings.settings_logging, listing, ref Settings.verboseLogging);
             DubGUI.Checkbox(ResourceCache.Strings.settings_side_panel, listing, ref Settings.sidePanel);
 
-#if DEBUG
-            listing.GapLine();
-
-            DubGUI.Checkbox("Enable Grappling-Box Visualisation", listing, ref Settings.showGrapplingBoxes);
-#endif
+            var s = ResourceCache.Strings.settings_disable_cleanup;
+            var size = Mathf.CeilToInt(s.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight;
+            var rect = listing.GetRect(size);
+            DubGUI.Checkbox(rect, s, ref Settings.disableCleanup);
+            TooltipHandler.TipRegion(rect, ResourceCache.Strings.settings_disable_cleanup_desc);
 
             listing.GapLine();
 

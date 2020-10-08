@@ -136,7 +136,6 @@
     <Compile Include="Profiling\Patches\GUI\H_WindowStackOnGUI.cs" />
     <Compile Include="Profiling\Patches\Tick\H_WorldPawns.cs" />
     <Compile Include="Profiling\GUI\colourPicker.cs" />
-    <Compile Include="Profiling\Utility\WindowUtility.cs" />
     <Compile Include="Profiling\Utility\XmlParser.cs" />
   </ItemGroup>
   <ItemGroup>
