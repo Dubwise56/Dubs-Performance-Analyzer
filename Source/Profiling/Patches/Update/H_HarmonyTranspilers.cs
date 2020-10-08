@@ -43,7 +43,7 @@ namespace Analyzer.Profiling
 #endif
 #if NDEBUG
                     if (Settings.verboseLogging)
-                        ThreadSafeLogger.Error($"[Analyzer] Failed to patch transpiler, failed with the message {e.Message}");
+                        ThreadSafeLogger.Error($"[Analyzer] Failed to patch transpiler {meth.DeclaringType.FullName + ":" + meth.Name}, failed with the message {e.Message}");
 #endif
                 }
             }

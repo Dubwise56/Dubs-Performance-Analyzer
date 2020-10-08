@@ -70,7 +70,7 @@ namespace Analyzer.Profiling
                 ThreadSafeLogger.Warning($"[Analyzer] Already patched method {meth.Name}");
 #else
                 if (Settings.verboseLogging)
-                    ThreadSafeLogger.Warning($"[Analyzer] Already patched method {meth.Name}");
+                    ThreadSafeLogger.Warning($"[Analyzer] Already patched method {meth.DeclaringType.FullName + ":" + meth.Name}");
 #endif
                 return;
             }
