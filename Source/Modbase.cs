@@ -16,6 +16,8 @@ namespace Analyzer
 {
     public class Modbase : Mod
     {
+        public const int TIME_SINCE_CLOSE_FOR_CLEANUP = 30;
+
         public static Settings Settings;
         private static Harmony harmony = null;
         public static Harmony Harmony => harmony ??= new Harmony("Dubwise.DubsProfiler");

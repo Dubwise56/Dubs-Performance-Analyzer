@@ -173,15 +173,6 @@ namespace Analyzer.Profiling
 
         private static void CleanupBackground()
         {
-            // idle for 10s chillin
-            for (int i = 0; i < 10; i++)
-            {
-                Thread.Sleep(1000);
-                // Reads and writes of the following data types are atomic: bool, char, byte, sbyte, short, ushort, uint, int, float, and reference types. as found in C# Language Spec.
-                if (currentlyProfiling) // atomic, doesn't need a lock
-                    return;
-            }
-
             CurrentlyCleaningUp = true;
 
             // unpatch all methods

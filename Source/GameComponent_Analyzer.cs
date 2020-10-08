@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine;
 using Verse;
 
 namespace Analyzer
@@ -13,6 +14,7 @@ namespace Analyzer
     public class GameComponent_Analyzer : GameComponent
     {
         private Game game = null;
+        public float TimeTillCleanup = -1;
 
         public GameComponent_Analyzer(Game game)
         {
@@ -33,6 +35,25 @@ namespace Analyzer
         {
             // Display our logged messages that we may have recieved from other threads.
             ThreadSafeLogger.DisplayLogs();
+
+            if (TimeTillCleanup == -1) return;
+
+            if (Profiling.Analyzer.CurrentlyProfiling)
+            {
+                TimeTillCleanup = -1;
+                return;
+            }
+
+#if DEBUG
+            ThreadSafeLogger.Message("Time Till Cleanup" + TimeTillCleanup);
+#endif
+            TimeTillCleanup -= Time.deltaTime;
+            if (TimeTillCleanup <= 0)
+            {
+                Profiling.Analyzer.Cleanup();
+                TimeTillCleanup = -1;
+            }
+            
         }
 
     }
