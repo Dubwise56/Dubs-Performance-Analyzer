@@ -26,8 +26,27 @@ namespace Analyzer
         public override float Margin => 0;
         public static bool firstOpen = true;
         public static float GraphHeight = 220f;
-        public static float SidePanelWidth = 0f;
 
+
+        public Window_Analyzer()
+        {
+            layer = WindowLayer.Super;
+            forcePause = false;
+            absorbInputAroundWindow = false;
+            closeOnCancel = false;
+            soundAppear = SoundDefOf.CommsWindow_Open;
+            soundClose = SoundDefOf.CommsWindow_Close;
+            doCloseButton = false;
+            doCloseX = true;
+            draggable = true;
+            drawShadow = true;
+            preventCameraMotion = false;
+            onlyOneOfTypeAllowed = true;
+            resizeable = true;
+            closeOnCancel = false;
+            closeOnAccept = false;
+            draggable = false;
+        }
 
         public override void SetInitialSizeAndPosition()
         {
@@ -127,56 +146,7 @@ namespace Analyzer
 
         }
 
-        public Window_Analyzer()
-        {
-            layer = WindowLayer.Super;
-            forcePause = false;
-            absorbInputAroundWindow = false;
-            closeOnCancel = false;
-            soundAppear = SoundDefOf.CommsWindow_Open;
-            soundClose = SoundDefOf.CommsWindow_Close;
-            doCloseButton = false;
-            doCloseX = true;
-            draggable = true;
-            drawShadow = true;
-            preventCameraMotion = false;
-            onlyOneOfTypeAllowed = true;
-            resizeable = true;
-            closeOnCancel = false;
-            closeOnAccept = false;
-            draggable = false;
-        }
-
-        //public void HandleWindowMovement()
-        //{
-        //    if (Event.current.type != EventType.Repaint)
-        //    {
-        //        Rect lhs = WindowUtility.ResizeAnalyzerWindow(windowRect);
-        //        if (lhs != windowRect)
-        //        {
-        //            resizeLater = true;
-        //            resizeLaterRect = lhs;
-        //        }
-        //    }
-
-        //    if (Event.current.type == EventType.Repaint)
-        //    {
-        //        WindowUtility.ResizeAnalyzerWindow(windowRect);
-        //    }
-        //}
-
-        //public override void WindowOnGUI()
-        //{
-        //    if (resizeLater)
-        //    {
-        //        windowRect = resizeLaterRect;
-        //        resizeLater = false;
-        //    }
-
-        //    base.WindowOnGUI();
-        //}
-
-        public void DoDragQueens(Rect rect)
+        public void HandleWindowDrag(Rect rect)
         {
             var DragRect = new Rect(rect.x, rect.y, rect.width - 50f, 18f);
             GUI.DragWindow(DragRect);
@@ -191,119 +161,54 @@ namespace Analyzer
             GUI.DragWindow(DragRect);
         }
 
-
-        public bool DetailsPan = true;
-        public bool DragGraph = false;
-
-        public override void DoWindowContents(Rect InRect)
+        public override void DoWindowContents(Rect inRect)
         {
-            // Do Window Resizing
-            //  HandleWindowMovement();
+            // Handle Window Resizing
+            HandleWindowDrag(inRect);
 
-            DoDragQueens(InRect);
-
-            // Action handleDrag = () => GUI.DragWindow(rect);
-
-            var rect = InRect.ContractedBy(18f); // Adjust by our (removed) margin
-
-            // Display our logged messages that we may have recieved from other threads.
-            ThreadSafeLogger.DisplayLogs();
-
+            var rect = inRect.ContractedBy(18f); // Adjust by our (removed) margin
 
             var profilersRect = rect;
-            if (DetailsPan && GUIController.CurrentProfiler != null)
-            {
-                var StatRect = profilersRect.BottomPartPixels(180f).LeftPartPixels(Panel_Tabs.width-10);
-                profilersRect.height -= 180f;
-                StatRect.AdjustVerticallyBy(10);
-                Widgets.DrawMenuSection(StatRect);
-                Panel_Details.DrawStats(StatRect.ContractedBy(6f));
-            }
-
-            Panel_Tabs.Draw(profilersRect, GUIController.Tabs);
-
-            
-
-            rect.AdjustHorizonallyBy(Panel_Tabs.width); // Shift the x and shrink the width by the width of the Tabs
-
-            if (GUIController.CurrentCategory == Category.Settings)
-            {
-                Panel_Settings.Draw(rect);
-                //   handleDrag();
-
-                return;
-            }
-
-            // We are in one of our entry-filled tabs. 
-            /*  - Conditionally Change our Rect size (for side panel)
-             *  - Draw our Top Row (always)
-             *  - Draw our active logs (always)
-             *  - Draw our graph (if there is a current profiler)
-             *  - Draw our side panel (if there is a current profile && the setting is enabled)
-             */
-
-            if (Settings.sidePanel && GUIController.CurrentProfiler != null)
-            {
-                rect.width -= SidePanelWidth;
-            }
-
-
-
-            Panel_TopRow.Draw(rect.TopPartPixels(TOP_ROW_HEIGHT));
-
-            rect.AdjustVerticallyBy(TOP_ROW_HEIGHT);
 
             if (GUIController.CurrentProfiler == null)
             {
+                Panel_Tabs.Draw(profilersRect, GUIController.Tabs);
+                rect.AdjustHorizonallyBy(Panel_Tabs.width);
+
+                if (GUIController.CurrentCategory == Category.Settings)
+                {
+                    Panel_Settings.Draw(rect);
+                    return;
+                }
+
+                Panel_TopRow.Draw(rect.TopPartPixels(TOP_ROW_HEIGHT));
+                rect.AdjustVerticallyBy(TOP_ROW_HEIGHT);
+
                 Panel_Logs.DrawLogs(rect);
-                //   handleDrag();
 
                 return;
             }
 
-            // If there is a current profiler, we need to adjust the height of the logs 
+            profilersRect.height -= GraphHeight + DRAGGABLE_RECT_DIM;
+
+            Panel_Tabs.Draw(profilersRect, GUIController.Tabs);
+            rect.AdjustHorizonallyBy(Panel_Tabs.width);
+            
+            Panel_TopRow.Draw(rect.TopPartPixels(TOP_ROW_HEIGHT));
+            rect.AdjustVerticallyBy(TOP_ROW_HEIGHT);
+
+            //// If there is a current profiler, we need to adjust the height of the logs 
             rect.height -= GraphHeight + DRAGGABLE_RECT_DIM;
 
-            Widgets.DrawMenuSection(rect);
             Panel_Logs.DrawLogs(rect);
 
-            // Move our rect down to just below the Logs
+            //// Move our rect down to just below the Logs
+            rect.x -= Panel_Tabs.width;
+            rect.width += Panel_Tabs.width;
             rect.y = rect.yMax;
             rect.height = GraphHeight + DRAGGABLE_RECT_DIM;
 
-            var barry = rect.TopPartPixels(DRAGGABLE_RECT_DIM);
-            Widgets.DrawHighlightIfMouseover(barry);
-            Widgets.DrawLine(new Vector2(barry.x, barry.y + barry.height * 0.5f), new Vector2(barry.xMax, barry.y + barry.height * 0.5f), Color.gray, 1f);
-
-
-            if (Input.GetMouseButtonDown(0) && Mouse.IsOver(barry) && DragGraph == false)
-            {
-                DragGraph = true;
-            }
-
-            if (DragGraph)
-            {
-                GraphHeight = rect.height - ((Event.current.mousePosition.y - rect.y) + 5);
-            }
-
-            GraphHeight = Mathf.Clamp(GraphHeight, 50f, InRect.height - 100f);
-
-            if (Input.GetMouseButtonUp(0))
-            {
-                DragGraph = false;
-            }
-
-
-            rect.AdjustVerticallyBy(DRAGGABLE_RECT_DIM);
-            Panel_Graph.Draw(rect);
-
-            if (Settings.sidePanel && SidePanelWidth >= 100)
-            {
-                var sidePanelRect = new Rect(rect.xMax, 20f, SidePanelWidth, windowRect.height - 20f);
-                Panel_SideInfo.Draw(sidePanelRect);
-            }
-
-            //  handleDrag();
+            Panel_BottomRow.Draw(rect, inRect);
         }
     }
 }

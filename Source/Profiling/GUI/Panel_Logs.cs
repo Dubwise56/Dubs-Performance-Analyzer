@@ -41,6 +41,8 @@ namespace Analyzer.Profiling
 
         public static void DrawLogs(Rect rect)
         {
+            Widgets.DrawMenuSection(rect);
+
             if (!GUIController.CurrentEntry?.isPatched ?? true)
             {
                 DubGUI.Heading(rect, $"Loading{GenText.MarchingEllipsis(0f)}");

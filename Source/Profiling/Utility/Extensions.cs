@@ -15,6 +15,7 @@ namespace Analyzer.Profiling
                 foreach (var inst in list)
                     instance.Append(inst);
         }
+
         public static IEnumerable<T> Concat<T>(this IEnumerable<T> instance, params IEnumerable<T>[] lists)
         {
             foreach (var list in lists)
@@ -25,38 +26,19 @@ namespace Analyzer.Profiling
                 yield return inst;
         }
 
-        public static void AdjustHorizonallyBy(this ref Rect rect, int width)
-        {
-            rect.x += width;
-            rect.width -= width;
-        }
-
         public static void AdjustHorizonallyBy(this ref Rect rect, float width)
         {
             rect.x += width;
             rect.width -= width;
         }
 
-        public static Rect RetAdjustHorizonallyBy(this Rect rect, int width)
-        {
-            rect.x += width;
-            rect.width -= width;
-
-            return rect;
-        }
-
         public static Rect RetAdjustHorizonallyBy(this Rect rect, float width)
         {
-            rect.x += width;
-            rect.width -= width;
+            var retRect = new Rect(rect);
+            retRect.x += width;
+            retRect.width -= width;
 
-            return rect;
-        }
-
-        public static void AdjustVerticallyBy(this ref Rect rect, int height)
-        {
-            rect.y += height;
-            rect.height -= height;
+            return retRect;
         }
 
         public static void AdjustVerticallyBy(this ref Rect rect, float height)
@@ -65,20 +47,13 @@ namespace Analyzer.Profiling
             rect.height -= height;
         }
 
-        public static Rect RetAdjustVerticallyBy(this Rect rect, int height)
-        {
-            rect.y += height;
-            rect.height -= height;
-
-            return rect;
-        }
-
         public static Rect RetAdjustVerticallyBy(this Rect rect, float height)
         {
-            rect.y += height;
-            rect.height -= height;
+            var retRect = new Rect(rect);
+            retRect.y += height;
+            retRect.height -= height;
 
-            return rect;
+            return retRect;
         }
     }
 

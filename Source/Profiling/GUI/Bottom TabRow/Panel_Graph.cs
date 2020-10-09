@@ -85,8 +85,7 @@ namespace Analyzer.Profiling
 
             int entries = Mathf.Min(Analyzer.GetCurrentLogCount, entryCount);
 
-            var TopBox = position.TopPartPixels(60f).ContractedBy(2f);
-            Panel_Details.DrawMethDeets(TopBox);
+            var TopBox = position.TopPartPixels(32f).ContractedBy(2f);
             DrawSettings(TopBox);
             position = position.BottomPartPixels(position.height - TopBox.height);
 

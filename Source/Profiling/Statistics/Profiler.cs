@@ -56,13 +56,6 @@ namespace Analyzer.Profiling
             hitCounter++;
         }
 
-        // This will be added as a Postfix to the method which we want to gather stack trace information for
-        // it will only effect one method, so we can skip the check, and it will not slow down other profilers
-        // because it will only be patched onto one method. There can be extra checks and flexibility in how
-        // many frames are grabbed p/s etc. These are to be done when the GUI decisions have been made.
-
-        public static void StopFrameInfo() => StackTraceRegex.Add(new StackTrace(2, false));
-
         public void RecordMeasurement()
         {
 #if DEBUG

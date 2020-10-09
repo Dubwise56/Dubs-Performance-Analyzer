@@ -21,7 +21,7 @@ namespace Analyzer.Profiling
         {
             var key = trace.ToString();
 
-            if(traces.TryGetValue(key, out var value))  value.Count++;
+            if(traces.TryGetValue(key, out var value)) value.Count++;
             else traces.Add(key, new StackTraceInformation(trace));
         }
 
@@ -53,22 +53,22 @@ namespace Analyzer.Profiling
                 stringBuilder.Append(declaringType.Name);
                 stringBuilder.Append(":");
                 stringBuilder.Append(method.Name);
-                stringBuilder.Append("(");
-                ParameterInfo[] parameters = method.GetParameters();
-                bool flag = true;
-                for (int j = 0; j < parameters.Length; j++)
-                {
-                    if (!flag)
-                    {
-                        stringBuilder.Append(", ");
-                    }
-                    else
-                    {
-                        flag = false;
-                    }
-                    stringBuilder.Append(parameters[j].ParameterType.Name);
-                }
-                stringBuilder.Append(")#");
+                //stringBuilder.Append("(");
+                //ParameterInfo[] parameters = method.GetParameters();
+                //bool flag = true;
+                //for (int j = 0; j < parameters.Length; j++)
+                //{
+                //    if (!flag)
+                //    {
+                //        stringBuilder.Append(", ");
+                //    }
+                //    else
+                //    {
+                //        flag = false;
+                //    }
+                //    stringBuilder.Append(parameters[j].ParameterType.Name);
+                //}
+                stringBuilder.Append("#");
 
             }
             return stringBuilder.ToString();
@@ -102,28 +102,9 @@ namespace Analyzer.Profiling
             // Get patch methods for any methods in the stack trace
             for (int i = 0; i < stackTrace.FrameCount; i++)
             {
-                var frameMethod = stackTrace.GetFrame(i).GetMethod();
-                var baseMeth = GetBaseMeth(frameMethod as MethodInfo);
-                var patches = Harmony.GetPatchInfo(baseMeth);
-
-                methods.Insert(i, new Tuple<MethodInfo, List<Patch>>(baseMeth, new List<Patch>()));
-                if (patches == null) continue;
-
-                foreach (var patch in patches.Prefixes.Concat(patches.Postfixes, patches.Transpilers, patches.Transpilers )) 
-                    methods[i].Item2.Add(patch);
+                var frameMethod = stackTrace.GetFrame(i).GetMethod();                   
+                methods.Insert(i, new Tuple<MethodInfo, List<Patch>>(frameMethod as MethodInfo, new List<Patch>()));
             }
-        }
-
-        private static MethodInfo GetBaseMeth(MethodInfo info)
-        {
-            foreach (var m in Harmony.GetAllPatchedMethods())
-            {
-                var infos = Harmony.GetPatchInfo(m);
-
-                if (infos.Prefixes.Concat(infos.Postfixes, infos.Transpilers, infos.Transpilers ).Any(patch => patch.PatchMethod == info))
-                    return m as MethodInfo;
-            }
-            return null;
         }
     }
 

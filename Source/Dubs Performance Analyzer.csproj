@@ -65,7 +65,10 @@
     <Compile Include="Performance\Patches\H_ZoomThrottle.cs" />
     <Compile Include="Performance\PerfPatch.cs" />
     <Compile Include="Performance\PerformancePatches.cs" />
-    <Compile Include="Profiling\GUI\Panel_Details.cs" />
+    <Compile Include="Profiling\GUI\Bottom TabRow\Panel_StackTraces.cs" />
+    <Compile Include="Profiling\GUI\Bottom TabRow\Panel_Stats.cs" />
+    <Compile Include="Profiling\GUI\Bottom TabRow\Panel_Patches.cs" />
+    <Compile Include="Profiling\GUI\Panel_BottomRow.cs" />
     <Compile Include="Profiling\GUI\Panel_DevOptions.cs" />
     <Compile Include="Profiling\Patches\Custom\CustomTick.cs" />
     <Compile Include="Profiling\Patches\Tick\H_PawnGeneration.cs" />
@@ -75,14 +78,13 @@
     <Compile Include="Profiling\GUI\Constructs\GUIController.cs" />
     <Compile Include="GUIElement_TPS.cs" />
     <Compile Include="Profiling\GUI\Panel_Tabs.cs" />
-    <Compile Include="Profiling\GUI\Panel_Graph.cs" />
+    <Compile Include="Profiling\GUI\Bottom TabRow\Panel_Graph.cs" />
     <Compile Include="Profiling\GUI\Panel_TopRow.cs" />
     <Compile Include="Window_Analyzer.cs" />
     <Compile Include="Profiling\GUI\Panel_Logs.cs" />
     <Compile Include="Panel_Settings.cs" />
-    <Compile Include="Profiling\GUI\Panel_SideInfo.cs" />
     <Compile Include="ModInfoCache.cs" />
-    <Compile Include="Profiling\GUI\DubGUI.cs" />
+    <Compile Include="Profiling\Utility\DubGUI.cs" />
     <Compile Include="Profiling\Statistics\ProfileController.cs" />
     <Compile Include="ResourceCache.cs" />
     <Compile Include="Profiling\Patches\GUI\H_GameComponentOnGUI.cs" />
@@ -135,7 +137,7 @@
     <Compile Include="Profiling\Patches\Update\H_UIRootUpdate.cs" />
     <Compile Include="Profiling\Patches\GUI\H_WindowStackOnGUI.cs" />
     <Compile Include="Profiling\Patches\Tick\H_WorldPawns.cs" />
-    <Compile Include="Profiling\GUI\colourPicker.cs" />
+    <Compile Include="Profiling\Utility\colourPicker.cs" />
     <Compile Include="Profiling\Utility\XmlParser.cs" />
   </ItemGroup>
   <ItemGroup>
