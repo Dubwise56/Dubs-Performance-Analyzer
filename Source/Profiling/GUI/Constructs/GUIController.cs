@@ -41,7 +41,18 @@ namespace Analyzer.Profiling
 
             void addTab(Func<string> name, Func<string> desc, Category cat)
             {
-                tabs.Add(cat, new Tab(name, () => currentCategory = cat, () => currentCategory == cat, cat, desc));
+                tabs.Add(cat, new Tab(name, 
+                    () =>
+                    {
+                        currentCategory = cat;
+                        if (currentEntry != null)
+                        {
+                            currentEntry.SetActive(false);
+                            currentEntry = null;
+                            ResetProfilers();
+                        }
+                    }, 
+                    () => currentCategory == cat, cat, desc));
             }
         }
 

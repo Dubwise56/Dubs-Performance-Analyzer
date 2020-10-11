@@ -37,7 +37,7 @@ namespace Analyzer.Profiling
 
         public static void Draw(Rect rect, Rect bigRect)
         {
-            if (currentProfilerInformation == null || currentProfilerInformation.Value.method != GUIController.CurrentProfiler.meth)
+            if (currentProfilerInformation == null || (GUIController.CurrentProfiler != null && currentProfilerInformation.Value.method != GUIController.CurrentProfiler.meth))
             {
                 GetGeneralSidePanelInformation();
             }

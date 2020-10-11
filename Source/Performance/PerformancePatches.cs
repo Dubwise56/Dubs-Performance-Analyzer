@@ -29,9 +29,8 @@ namespace Analyzer.Performance
 
         public static void InitialisePatches()
         {
-            var modes = typeof(PerfPatch).AllSubclasses()
-                .ToList();
-            perfPatches = new List<PerfPatch>(modes.Count());
+            var modes = typeof(PerfPatch).AllSubclasses().ToList();
+            perfPatches = new List<PerfPatch>();
 
             foreach (var mode in modes)
             {
@@ -68,8 +67,6 @@ namespace Analyzer.Performance
             standard.End();
             GUI.EndGroup();
 
-
-
             listing.curY += maxHeight;
         }
 
@@ -78,17 +75,7 @@ namespace Analyzer.Performance
             var stateChange = false;
             var enableAll = allEnabled[(int) category];
             var stringifiedCat = category.ToString();
-                
-            // FooABar -> Foo A Bar
-            for (int i = 0; i < stringifiedCat.Length; i++)
-            {
-                var c = stringifiedCat[i];
-                if (!char.IsUpper(c) || i == 0) continue;
-
-                stringifiedCat = stringifiedCat.Insert(i, " ");
-                i++;
-            }
-
+            
             if (category == PerformanceCategory.Removes)
             {
                 DubGUI.Heading(standard, stringifiedCat);
@@ -104,8 +91,7 @@ namespace Analyzer.Performance
 
             standard.curY += 6; // emulate the gapline we draw 
 
-            var patches = Patches.Where(p => p.Category == category);
-            foreach (var p in patches)
+            foreach (var p in Patches.Where(p => p.Category == category))
             {
                 if (stateChange)
                 {
