@@ -24,7 +24,6 @@ namespace Analyzer.Profiling
         private static bool showTime = false;
         private static double max;
         private static string MaxStr;
-        public static int Entries = 0;
 
         public static void DisplayColorPicker(Rect rect, bool LineCol)
         {
@@ -104,16 +103,11 @@ namespace Analyzer.Profiling
                 double LastMax = max;
                 var log = Analyzer.Logs.First(log => log.key == prof.key);
                 max = log.max;
-                var maxCalls = log.maxCalls;
 
                 if (max > WindowMax)
                     WindowMax = (float)max;
 
-                int counter = entries;
-                uint profIndex = prof.currentIndex;
-
                 var diff = position.y - position.height;
-                var av = log.average;
 
                 Vector2 last = new Vector2();
 
@@ -169,8 +163,6 @@ namespace Analyzer.Profiling
                 last = Vector2.zero;
             }
             GUI.EndGroup();
-
-            Entries = entries;
         }
     }
 }

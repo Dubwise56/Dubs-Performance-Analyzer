@@ -146,6 +146,7 @@ namespace Analyzer.Profiling
                 var avWidth = widthMinusGrabBars / (panels.Count + 1.0f);
 
                 var increment = avWidth / panels.Count;
+                increment = Mathf.Round(increment);
 
                 for(int i = 0; i < panels.Count; i++)
                 {
