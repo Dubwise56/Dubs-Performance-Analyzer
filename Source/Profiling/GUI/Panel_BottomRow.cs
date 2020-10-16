@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using HarmonyLib;
 using JetBrains.Annotations;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -22,17 +23,37 @@ namespace Analyzer.Profiling
         /*, ChildProfilers */
     };
 
+    public class BottomRowPanel
+    {
+        public BottomRowPanel(RowName row, float xStart, float width)
+        {
+            type = row;
+            this.width = width;
+            this.xStart = xStart;
+            dragging = false;
+        }
+
+        public RowName type;
+        public float xStart;
+        public float width;
+        public bool dragging;
+    }
+
+    /*
+     * ___________________________
+     * | Stats |X| | Graph     |X|
+     * |---------| |-------------|
+     * |         | |             |
+     * |         | |             |
+     * |         | |             |
+     * |         | |             |
+     * |_________|_|_____________|
+     */
+
     class Panel_BottomRow
     {
-        public static RowName currentRow = RowName.Graph;
         public static GeneralInformation? currentProfilerInformation;
-        public static bool draggingWindow = false;
-        public static bool windowSplit = false;
-        public static bool draggingWindowSplit = false;
-        public static bool currentlyDraggingRow = false;
-        public static float windowSplitX = 0;
-        public static RowName draggingRow = RowName.Graph;
-        public static RowName[] splitActiveRows = {RowName.Graph, RowName.Stats};
+        public static List<BottomRowPanel> panels = new List<BottomRowPanel>{ new BottomRowPanel(RowName.Graph, 0, 350) };
 
 
         public static void Draw(Rect rect, Rect bigRect)
@@ -42,138 +63,136 @@ namespace Analyzer.Profiling
                 GetGeneralSidePanelInformation();
             }
 
-            HandleDrag(ref rect, bigRect);
-            DrawButtonRow(ref rect);
+            rect.width -= Window_Analyzer.DRAGGABLE_RECT_DIM;
+            rect.AdjustVerticallyBy(10f);
 
+            panels[panels.Count - 1].width = 
+                (panels.Count <= 1) ? 
+                    rect.width : 
+                    rect.width - (panels[panels.Count - 2].xStart + panels[panels.Count - 2].width) - 18;
 
-            if (windowSplitX == 0)
+            var buttonColumn = rect.LeftPartPixels(" + ".GetWidthCached());
+            rect.AdjustHorizonallyBy(" + ".GetWidthCached());
+
+            DrawButtonColumn(buttonColumn, rect.width);
+
+            for(int i = panels.Count - 1; i >= 0; i--)
             {
-                windowSplitX = rect.center.x;
-            }
+                var panel = panels[i];
 
-            if (windowSplit)
-            {
-                var middleBar = new Rect(rect.x + windowSplitX, rect.y, Window_Analyzer.DRAGGABLE_RECT_DIM, rect.height);
-                Widgets.DrawBoxSolid(middleBar, Widgets.WindowBGFillColor);
-                Widgets.DrawHighlightIfMouseover(middleBar);
+                var panelRect = new Rect(rect.x + panel.xStart, rect.y, panel.width, rect.height);
 
-                rect.ContractedBy(2f);
+                if (i != 0) // Drag Rct
+                {
+                    var r = new Rect(rect.x + (panel.xStart - Window_Analyzer.DRAGGABLE_RECT_DIM), rect.y, Window_Analyzer.DRAGGABLE_RECT_DIM, rect.height);
+                   
+                    Widgets.DrawHighlightIfMouseover(r);
 
-                var leftSide = rect.LeftPartPixels(windowSplitX);
-                Widgets.DrawMenuSection(leftSide);
-                leftSide.ContractedBy(2f);
+                    if (Input.GetMouseButtonDown(0) && Mouse.IsOver(r) && !panel.dragging) panel.dragging = true;
 
-                var rightSide = rect.RetAdjustHorizonallyBy(windowSplitX + Window_Analyzer.DRAGGABLE_RECT_DIM);
-                Widgets.DrawMenuSection(rightSide);
-                rightSide.ContractedBy(2f);
+                    if (panel.dragging)
+                    {
+                        var newPos = Event.current.mousePosition.x - (rect.x - Window_Analyzer.DRAGGABLE_RECT_DIM / 2.0f);
+                        var delta = panel.xStart - newPos;
+                        panel.xStart = newPos;
+                        panel.width += delta;
+                        panels[i - 1].width -= delta;
+                    }
+
+                    if (Input.GetMouseButtonUp(0)) panel.dragging = false;
+                }
+
+                Widgets.DrawMenuSection(panelRect);
+                {
+                    var topRect = panelRect.TopPartPixels(Text.LineHeight);
+                    panelRect.AdjustVerticallyBy(Text.LineHeight);
+                    Widgets.DrawLineHorizontal(panelRect.x, panelRect.y, panelRect.width);
+
+                    panelRect = panelRect.ContractedBy(2f);
+
+                    var label = "  " + panel.type.ToString();
+
+                    var leftPartRect = topRect.LeftPartPixels(label.GetWidthCached());
+                    Widgets.Label(leftPartRect, label);
+
+                    if (Widgets.ButtonImage(topRect.RightPartPixels(Text.LineHeight), ResourceCache.GUI.Menu))
+                    {
+                        var enums = typeof(RowName).GetEnumValues();
+                        var list = (from object e in enums select new FloatMenuOption(((RowName) e).ToString(), () => panel.type = (RowName) e)).ToList();
+                        Find.WindowStack.Add(new FloatMenu(list));
+                    }
+
+
+                }
                 
-                if (Input.GetMouseButtonDown(0) && Mouse.IsOver(middleBar) && draggingWindowSplit == false) draggingWindowSplit = true;
+                panelRect.AdjustVerticallyBy(2f);
 
-                if (draggingWindowSplit) windowSplitX = (Event.current.mousePosition.x - ( rect.x + Window_Analyzer.DRAGGABLE_RECT_DIM/2.0f));
-
-                windowSplitX = Mathf.Clamp(windowSplitX, 80, rect.width - 80);
-
-                if (Input.GetMouseButtonUp(0)) draggingWindowSplit = false;
-
-                DrawActiveRow(splitActiveRows[0], leftSide);
-                DrawActiveRow(splitActiveRows[1], rightSide);
-
-                if (currentlyDraggingRow)
+                switch(panel.type)
                 {
-                    Widgets.Label(new Rect(Event.current.mousePosition, new Vector2(draggingRow.ToString().GetWidthCached(), Text.LineHeight)), draggingRow.ToString());
-                    var col = GUI.color;
-                    GUI.color = Color.red;
-
-                    if (Mouse.IsOver(rightSide.ExpandedBy(3f))) Widgets.DrawBox(rightSide.ExpandedBy(2f), 1);
-                    if (Mouse.IsOver(leftSide.ExpandedBy(3f))) Widgets.DrawBox(leftSide.ExpandedBy(2f), 1);
-
-                    GUI.color = col;
-                }
-            }
-            else
-            {
-                Widgets.DrawMenuSection(rect);
-                DrawActiveRow(currentRow, rect.ContractedBy(2f));
-            }
-
-            void DrawActiveRow(RowName row, Rect rect)
-            {
-                switch(row)
-                {
-                    case RowName.Graph: Panel_Graph.Draw(rect); break;
-                    case RowName.Stats: Panel_Stats.DrawStats(rect); break;
-                    case RowName.Patches: Panel_Patches.Draw(rect, currentProfilerInformation); break;
-                    case RowName.StackTrace: Panel_StackTraces.Draw(rect, currentProfilerInformation); break;
+                    case RowName.Graph: Panel_Graph.Draw(panelRect); break;
+                    case RowName.Stats: Panel_Stats.DrawStats(panelRect); break;
+                    case RowName.Patches: Panel_Patches.Draw(panelRect, currentProfilerInformation); break;
+                    case RowName.StackTrace: Panel_StackTraces.Draw(panelRect, currentProfilerInformation); break;
                 }
             }
 
         }
 
-        public static void HandleDrag(ref Rect rect, Rect bigRect)
+        private static void DrawButtonColumn(Rect rect, float availWidth)
         {
-            var graphDragRect = rect.TopPartPixels(Window_Analyzer.DRAGGABLE_RECT_DIM);
-            rect.AdjustVerticallyBy(Window_Analyzer.DRAGGABLE_RECT_DIM);
-            Widgets.DrawHighlightIfMouseover(graphDragRect);
-
-            if (Input.GetMouseButtonDown(0) && Mouse.IsOver(graphDragRect) && draggingWindow == false)
-                draggingWindow = true;
-
-            if (draggingWindow) Window_Analyzer.GraphHeight = rect.height - ((Event.current.mousePosition.y - rect.y) + 5);
-
-            Window_Analyzer.GraphHeight = Mathf.Clamp(Window_Analyzer.GraphHeight, 80, bigRect.height - 100f);
-
-            if (Input.GetMouseButtonUp(0)) draggingWindow = false;
-        }
-
-        public static void DrawButtonRow(ref Rect rect)
-        {
-            var buttonRect = rect.LeftPartPixels(" StackTrace ".GetWidthCached());
-            rect.AdjustHorizonallyBy(" StackTrace ".GetWidthCached());
-
-            var anchor = Text.Anchor;
-            Text.Anchor = TextAnchor.MiddleCenter;
-
-            foreach (var r in Enum.GetValues(typeof(RowName)).Cast<int>())
+            if (Widgets.ButtonText(rect.TopPartPixels(Text.LineHeight), " + "))
             {
-                var row = (RowName) r;
+                var widthMinusGrabBars = availWidth - (18 * panels.Count);
+                var avWidth = widthMinusGrabBars / (panels.Count + 1.0f);
 
-                var bRect = buttonRect.TopPartPixels(Text.LineHeight);
-                buttonRect.AdjustVerticallyBy(Text.LineHeight);
+                var increment = avWidth / panels.Count;
 
-                var rowString = row.ToString();
-                Widgets.Label(bRect, rowString);
-
-                if (Widgets.ButtonInvisible(bRect)) currentRow = row;
-                Widgets.DrawHighlightIfMouseover(bRect);
-
-                if (currentRow == row) Widgets.DrawHighlight(bRect);
-
-                Widgets.DrawLineHorizontal(buttonRect.x, buttonRect.y, bRect.width);
-
-                if (windowSplit)
+                for(int i = 0; i < panels.Count; i++)
                 {
-                    if (Input.GetMouseButtonDown(0) && Mouse.IsOver(bRect) && currentlyDraggingRow == false)
-                    {
-                        currentlyDraggingRow = true;
-                        draggingRow = row;
-                    }
+                    var panel = panels[i];
+                    panel.width -= increment;
+                    panel.xStart += increment * (panels.Count - i);
+                }
 
-                    if (Input.GetMouseButtonUp(0) && draggingRow == row && currentlyDraggingRow)
-                    {
-                        currentlyDraggingRow = false;
-
-                        var leftSide = rect.LeftPartPixels(windowSplitX);
-                        var rightSide = rect.RetAdjustHorizonallyBy(windowSplitX + Window_Analyzer.DRAGGABLE_RECT_DIM);
-                        if (Mouse.IsOver(leftSide)) splitActiveRows[0] = row;
-                        else if (Mouse.IsOver(rightSide)) splitActiveRows[1] = row;
-                    }
+                if (panels.Count >= 1)
+                {
+                    panels[0].xStart += 18;
+                    panels[0].width -= 18;
+                    panels.Insert(0, new BottomRowPanel(RowName.Graph, 0, panels[0].xStart - 18));
+                }
+                else
+                {
+                    panels.Add(new BottomRowPanel(RowName.Graph, 0, availWidth));
                 }
             }
+            rect.AdjustVerticallyBy(Text.LineHeight);
 
+            if (Widgets.ButtonText(rect.TopPartPixels(Text.LineHeight), " - "))
+            {
+                if (panels.Count == 0) return;
 
-            Text.Anchor = anchor;
-            var checkboxRect = buttonRect.BottomPartPixels(Text.LineHeight);
-            DubGUI.Checkbox(checkboxRect, "Split", ref windowSplit);
+                var delta = panels[0].width + 18;
+                var increment = delta / ( panels.Count - 1.0f );
+
+                for(int i = 0; i < panels.Count; i++)
+                {
+                    var panel = panels[i];
+                    panel.width += increment;
+                    panel.xStart -= (increment * (panels.Count - i));
+                }
+
+                if (panels.Count == 2)
+                {
+                    panels[1].xStart = 0;
+                    panels[1].width = availWidth;
+                } else if (panels.Count > 2)
+                {
+                    panels[1].xStart = 0;
+                    panels[1].width = panels[2].xStart - 18;
+                }
+
+                panels.RemoveAt(0);
+            }
         }
 
         private static void GetGeneralSidePanelInformation()

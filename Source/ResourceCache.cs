@@ -23,6 +23,7 @@ namespace Analyzer
             public static readonly Texture2D hueMark = ContentFinder<Texture2D>.Get("DPA/UI/hueMark");
             public static readonly Texture2D hsbMark = ContentFinder<Texture2D>.Get("DPA/UI/hsbMark");
 
+            public static Texture2D Menu = ContentFinder<Texture2D>.Get("DPA/UI/MenuSett", false);
             public static Texture2D MintSearch = ContentFinder<Texture2D>.Get("DPA/UI/MintSearch", false);
             public static Texture2D DropDown = ContentFinder<Texture2D>.Get("DPA/UI/dropdown", false);
             public static Texture2D FoldUp = ContentFinder<Texture2D>.Get("DPA/UI/foldup", false);
