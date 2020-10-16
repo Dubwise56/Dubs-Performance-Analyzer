@@ -75,7 +75,7 @@ namespace Analyzer.Performance
             var stateChange = false;
             var enableAll = allEnabled[(int) category];
             var stringifiedCat = category.ToString();
-            
+
             if (category == PerformanceCategory.Removes)
             {
                 DubGUI.Heading(standard, stringifiedCat);

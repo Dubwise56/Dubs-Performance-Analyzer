@@ -244,7 +244,7 @@ namespace Analyzer.Profiling
 
                 foreach (Type type in GenTypes.AllTypes)
                 {
-                    if (type.Namespace.Contains("Cecil") || type.Namespace.Contains("Analyzer")) continue;
+                    if (type.FullName.Contains("Cecil") || type.FullName.Contains("Analyzer")) continue;
 
                     if (type.GetCustomAttribute<System.Runtime.CompilerServices.CompilerGeneratedAttribute>() == null)
                     {
