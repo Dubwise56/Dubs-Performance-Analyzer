@@ -79,15 +79,6 @@ namespace Analyzer.Performance
             var enableAll = allEnabled[(int) category];
             var stringifiedCat = category.ToString();
                 
-            // FooABar -> Foo A Bar
-            for (int i = 0; i < stringifiedCat.Length; i++)
-            {
-                var c = stringifiedCat[i];
-                if (!char.IsUpper(c) || i == 0) continue;
-
-                stringifiedCat = stringifiedCat.Insert(i, " ");
-                i++;
-            }
 
             if (category == PerformanceCategory.Removes)
             {
