@@ -93,7 +93,7 @@ namespace Analyzer.Profiling
             DrawColumnHeader(ref rect, ResourceCache.Strings.logs_percent, ResourceCache.Strings.logs_percent_desc, SortBy.Percent, NUMERIC_WIDTH);
             DrawColumnHeader(ref rect, ResourceCache.Strings.logs_total, ResourceCache.Strings.logs_total_desc, SortBy.Total, NUMERIC_WIDTH);
 
-            if (GUIController.CurrentEntry.name != "HarmonyTranspilers")
+            if (GUIController.CurrentEntry.type != typeof(H_HarmonyTranspilers))
                 DrawColumnHeader(ref rect, ResourceCache.Strings.logs_calls, ResourceCache.Strings.logs_calls_desc, SortBy.Calls, NUMERIC_WIDTH);
             // give the name 'infinite' width so there is no wrapping
             // Set text anchor to middle left so we can see our text
@@ -198,7 +198,7 @@ namespace Analyzer.Profiling
             DrawColumnContents(ref visible, $" {log.percent * 100:0.0}% ", SortBy.Percent);
             DrawColumnContents(ref visible, $" {log.total:0.000}ms ", SortBy.Total);
 
-            if (GUIController.CurrentEntry.name != "HarmonyTranspilers")
+            if (GUIController.CurrentEntry.type != typeof(H_HarmonyTranspilers))
                 DrawColumnContents(ref visible, $" {log.calls.ToString("N0", CultureInfo.InvariantCulture)} ", SortBy.Calls);
 
 
