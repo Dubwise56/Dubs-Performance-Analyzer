@@ -229,7 +229,8 @@
 
 
 	<!-- Fixes -->
-	<fix.fixmodremoval>Fix mod removal, may prevent blank screen</fix.fixmodremoval>
+	<fix.fixmodremoval>Fix mod removal, may solve grey screen issue</fix.fixmodremoval>
+	<fix.fixmodremoval.tooltip>This fixes the area manager trying to loop through null area classes from missing mods</fix.fixmodremoval.tooltip>
 	<fix.faction>Cleans up factions from removed mods</fix.faction>
 	<fix.faction.tooltip>Removes all references to deleted factions in world objects. This will solve issues when removing factions mid-save</fix.faction.tooltip>
 
