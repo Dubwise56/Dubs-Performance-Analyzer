@@ -79,8 +79,9 @@ namespace Analyzer.Performance
 
         public virtual void ExposeData()
         {
-            string saveId = Name + "-isEnabled";
-            Scribe_Values.Look(ref EnabledRefAccess(), saveId);
+            // Prevent inability to access settings when prototyping
+            string saveId = Name + "-isEnabled".Replace(" ", "-");
+            Scribe_Values.Look(ref EnabledRefAccess(), saveId, false);
         }
     }
 }

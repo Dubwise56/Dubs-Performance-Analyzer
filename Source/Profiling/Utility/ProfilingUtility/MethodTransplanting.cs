@@ -90,7 +90,7 @@ namespace Analyzer.Profiling
                     ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.Name} failed with the error {e.Message}");
 #else
                     if (Settings.verboseLogging)
-                        ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.Name} failed with the error {e.Message}");
+                        ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.DeclaringType.FullName}:{meth.Name} failed with the error {e.Message}");
 #endif
                 }
             });
