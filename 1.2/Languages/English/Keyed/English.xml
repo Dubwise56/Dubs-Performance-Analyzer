@@ -229,6 +229,7 @@
 
 
 	<!-- Fixes -->
+	<fix.fixmodremoval>Fix mod removal, may prevent blank screen</fix.fixmodremoval>
 	<fix.faction>Cleans up factions from removed mods</fix.faction>
 	<fix.faction.tooltip>Removes all references to deleted factions in world objects. This will solve issues when removing factions mid-save</fix.faction.tooltip>
 

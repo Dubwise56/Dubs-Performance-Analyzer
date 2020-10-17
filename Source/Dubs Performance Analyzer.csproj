@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Fixes\Fix.cs" />
     <Compile Include="Fixes\FixPatches.cs" />
+    <Compile Include="Fixes\Patches\H_UpdateAllAreasLinks.cs" />
     <Compile Include="GameComponent_Analyzer.cs" />
     <Compile Include="KeyBindings.cs" />
     <Compile Include="Modbase.cs" />
@@ -182,7 +183,6 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
