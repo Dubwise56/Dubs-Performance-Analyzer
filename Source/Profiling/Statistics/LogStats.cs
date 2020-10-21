@@ -32,6 +32,7 @@ namespace Analyzer.Profiling
         public int HighestCalls = 0;
         public double HighestTime = 0f;
 
+
         // Mean
         public double MeanTimePerUpdateCycle = 0;
         public double MeanCallsPerUpdateCycle = 0;
@@ -40,7 +41,6 @@ namespace Analyzer.Profiling
         // Median
         public double MedianTime = 0;
         public int MedianCalls = 0;
-
 
         public void GenerateStats()
         {
@@ -51,16 +51,16 @@ namespace Analyzer.Profiling
             var curProf = GUIController.CurrentProfiler;
             uint currentIndex = curProf.currentIndex;
 
-            var lTimes = new double[logCount];
-            var lCalls = new int[logCount];
+            var lTimes = new double[Profiler.RECORDS_HELD];
+            var lCalls = new int[Profiler.RECORDS_HELD];
 
-            Array.Copy(curProf.times, lTimes, logCount);
-            Array.Copy(curProf.hits, lCalls, logCount);
+            Array.Copy(curProf.times, lTimes, Profiler.RECORDS_HELD);
+            Array.Copy(curProf.hits, lCalls, Profiler.RECORDS_HELD);
 
-            Task.Factory.StartNew(() => ExecuteWorker(this, lCalls, lTimes, logCount));
+            Task.Factory.StartNew(() => ExecuteWorker(this, lCalls, lTimes, logCount, currentIndex));
         }
 
-        private static void ExecuteWorker(LogStats logic, int[] LocalCalls, double[] LocalTimes, int currentLogCount)
+        private static void ExecuteWorker(LogStats logic, int[] LocalCalls, double[] LocalTimes, int currentLogCount, uint currentIndex)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace Analyzer.Profiling
                 Array.Sort(LocalTimes);
                     
 
-                for (int i = 0; i < currentLogCount; i++)
+                for (int i = 0; i < Profiler.RECORDS_HELD; i++)
                 {
                     logic.TotalCalls += LocalCalls[i];
                     logic.TotalTime += LocalTimes[i];
@@ -84,13 +84,15 @@ namespace Analyzer.Profiling
                 logic.MeanTimePerUpdateCycle = logic.TotalTime / currentLogCount;
                 logic.MeanCallsPerUpdateCycle = logic.TotalCalls / (float)currentLogCount;
 
+                var medianOffset = Profiler.RECORDS_HELD - currentLogCount;
+                var middle = currentLogCount / 2;
                 // Medians
-                logic.MedianTime = LocalTimes[currentLogCount / 2];
-                logic.MedianCalls = LocalCalls[currentLogCount / 2];
+                logic.MedianTime = LocalTimes[medianOffset + middle];
+                logic.MedianCalls = LocalCalls[medianOffset + middle];
 
                 // Max
-                logic.HighestTime = LocalTimes[currentLogCount - 1];
-                logic.HighestCalls = LocalCalls[currentLogCount - 1];
+                logic.HighestTime = LocalTimes[Profiler.RECORDS_HELD - 1];
+                logic.HighestCalls = LocalCalls[Profiler.RECORDS_HELD - 1];
 
                 // general
                 logic.Entries = currentLogCount;

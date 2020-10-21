@@ -197,7 +197,7 @@ namespace Analyzer.Profiling
                         yield return inst;
                 }
 
-                yield return new CodeInstruction(OpCodes.Newobj, ProfilerCtor); // ProfileController.Start();
+                yield return new CodeInstruction(OpCodes.Newobj, ProfilerCtor); // new Profiler();
                 yield return new CodeInstruction(OpCodes.Dup);
                 yield return new CodeInstruction(OpCodes.Stloc, profLocal);
             }

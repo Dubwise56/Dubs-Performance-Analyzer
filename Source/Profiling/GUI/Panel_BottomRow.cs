@@ -63,6 +63,11 @@ namespace Analyzer.Profiling
                 GetGeneralSidePanelInformation();
             }
 
+            var buttonColumn = rect.LeftPartPixels(" + ".GetWidthCached());
+            rect.AdjustHorizonallyBy(" + ".GetWidthCached());
+
+            DrawButtonColumn(buttonColumn, rect.width);
+
             rect.width -= Window_Analyzer.DRAGGABLE_RECT_DIM;
             rect.AdjustVerticallyBy(10f);
 
@@ -70,11 +75,6 @@ namespace Analyzer.Profiling
                 (panels.Count <= 1) ? 
                     rect.width : 
                     rect.width - (panels[panels.Count - 2].xStart + panels[panels.Count - 2].width) - 18;
-
-            var buttonColumn = rect.LeftPartPixels(" + ".GetWidthCached());
-            rect.AdjustHorizonallyBy(" + ".GetWidthCached());
-
-            DrawButtonColumn(buttonColumn, rect.width);
 
             for(int i = panels.Count - 1; i >= 0; i--)
             {
@@ -170,7 +170,7 @@ namespace Analyzer.Profiling
 
             if (Widgets.ButtonText(rect.TopPartPixels(Text.LineHeight), " - "))
             {
-                if (panels.Count == 0) return;
+                if (panels.Count == 1) return;
 
                 var delta = panels[0].width + 18;
                 var increment = delta / ( panels.Count - 1.0f );

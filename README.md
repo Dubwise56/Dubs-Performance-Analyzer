@@ -1,9 +1,9 @@
-# How to Use
+# Basic Understanding
 
 ## Lingo
 ![Lingo](About/Identification.png)
 
-## Some Basic Statistics
+## Some Simple Statistics
 Rimworld's update cycle is broken up into units called *ticks*. Ticks measure the speed at which things change within the game. When you adjust the game speed in the bottom right, you increase the amount of ticks the game tries to execute per second. At 1x, it tries to reach 60 *ticks per second* (tps); at 2x, 180tps; at 3x, 360tps; and the dev mode 4x (also accessible through the Smart Speed mod), 900tps. These numbers are doubled whenever all player-controlled pawns on a map are sleeping.
 
 Time for a little math. We can see that to reach 60fps, we need each rendered frame to take less than <img src="https://render.githubusercontent.com/render/math?math=16 {2\over3}ms"> per *update* to reach 60fps. This means to reach 60fps at 3x speed, each tick needs to be *on average* below <img src="https://render.githubusercontent.com/render/math?math=2 {7\over9}ms">. Any spikes in tick length will likely cause FPS to drop, though if the spikes are irregular, it may not significantly slow down gameplay.
@@ -11,6 +11,7 @@ Time for a little math. We can see that to reach 60fps, we need each rendered fr
 The game will always try to run at 60 updates per second. However, ticks are actually independent to updates; in other words, multiple ticks can be occur within a single frame. This is the true difference between the Tick category and the other categories. The entries which are shown in the Tick category can update more or less frequently, depending on your game speed. Keep in mind that if each tick takes too long, the game will automatically throttle your TPS to stabilize your FPS.
 
 When attempting to interpret the data provided by the Analyzer, it is important to recognize which Category a given readout is coming from. An average of ~2ms in the Tick category, when adjusted for higher speeds, is worse than an average of ~3ms in any other category. 
+
 
 ## Reading the Display
 If your issue is that your FPS is inconsistent but your TPS is relatively stable, you should be focusing on the **max** value for logs. This is because large spikes in TPS can affect your FPS without consistently slowing down your game.
@@ -21,6 +22,7 @@ When looking at logs in the Row format, the coloured bar indicates the percentag
 
 The graph which pops up when selecting a log displays the a realtime view of the collective time the method is taking for a given update period. If you are in an entry in the Tick category, this update period will be one tick, otherwise it will just be a frame. The graph is useful for discerning patterns in the information, which the average/max will be able to display.
 
+
 ## Finding the mod a method is from by using the side panel
 Finding slow logs (and the associated method) is all well and good, and useful for modders, but for a user it is not something which helps. In the settings, if you enable the `Side Panel` setting, you will be able to open a tab which looks like 
 
@@ -28,6 +30,7 @@ Finding slow logs (and the associated method) is all well and good, and useful f
 
 This will (if possible) show you the mod, and the assembly that the method is attributed to.
 
+---
 # Basic Troubleshooting
 
 ## Common Offenders
@@ -47,6 +50,7 @@ WorkGivers are how pawns find jobs to do, a common example could be, looking thr
 ## Error when Attempting to open the Analyzer Window
 If you see the error *[Analyzer] Analyzer is currently in the process of cleaning up ...* and cannot open the window. Just wait a few seconds, this occurs because after you are finished using the Analyzer, it removes all of the profiling and hooks it has, in order to reduce the overhead it incurs on your game. This happens on a seperate thread, and does not effect gameplay at all, however depending on how many methods where profiled, the GC which is manually called after the cleanup can take a substantial amount of time. (This cleanup process does not effect the Performance patches at all).
 
+---
 # Advanced Usage
 
 ## Linking Analyzer to Dnspy
@@ -78,6 +82,7 @@ You can patch:
 
 ![Modders Patching](About/PatchingPage.png)
 
+---
 # For Modders
 
 ## Exceptions
