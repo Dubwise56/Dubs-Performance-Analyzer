@@ -25,7 +25,7 @@ namespace Analyzer.Profiling
             Initialize();
         }
 
-        public static void DrawLine(Vector2 pointA, Vector2 pointB, Color color, float width)
+        public static void DrawLine(Vector2 pointA, Vector2 pointB, Color color, float width, bool drawDouble = false)
         {
             if (Prefs.UIScale > 1)
             {
@@ -56,7 +56,8 @@ namespace Analyzer.Profiling
 
             GL.PushMatrix();
             GL.MultMatrix(matrix);
-            Graphics.DrawTexture(lineRect, aaLineTex, lineRect, 0, 0, 0, 0, color, blendMaterial);
+            for (int i = 0; i < (drawDouble ? 2 : 1); i++)
+                Graphics.DrawTexture(lineRect, aaLineTex, lineRect, 0, 0, 0, 0, color, blendMaterial);
             GL.PopMatrix();
         }
 

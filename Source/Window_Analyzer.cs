@@ -26,6 +26,7 @@ namespace Analyzer
         public override float Margin => 0;
         public static bool firstOpen = true;
         public static float GraphHeight = 220f;
+        public static bool draggingGraph;
 
 
         public Window_Analyzer()
@@ -197,18 +198,45 @@ namespace Analyzer
             Panel_TopRow.Draw(rect.TopPartPixels(TOP_ROW_HEIGHT));
             rect.AdjustVerticallyBy(TOP_ROW_HEIGHT);
 
-            //// If there is a current profiler, we need to adjust the height of the logs 
+            // If there is a current profiler, we need to adjust the height of the logs 
             rect.height -= GraphHeight + DRAGGABLE_RECT_DIM;
 
             Panel_Logs.DrawLogs(rect);
 
-            //// Move our rect down to just below the Logs
+            // Move our rect down to just below the Logs
             rect.x -= Panel_Tabs.width;
             rect.width += Panel_Tabs.width;
             rect.y = rect.yMax;
             rect.height = GraphHeight + DRAGGABLE_RECT_DIM;
 
+            var barRect = rect.TopPartPixels(DRAGGABLE_RECT_DIM);
+            HandleGraphDrag(inRect, rect, barRect);
+
+            rect.AdjustVerticallyBy(DRAGGABLE_RECT_DIM);
+
             Panel_BottomRow.Draw(rect, inRect);
+        }
+
+        public void HandleGraphDrag(Rect bigRect, Rect rect, Rect graphRect)
+        {
+            Widgets.DrawHighlightIfMouseover(graphRect);
+
+            if (Input.GetMouseButtonDown(0) && Mouse.IsOver(graphRect) && draggingGraph == false)
+            {
+                draggingGraph = true;
+            }
+
+            if (draggingGraph)
+            {
+                GraphHeight = rect.height - ((Event.current.mousePosition.y - rect.y) + DRAGGABLE_RECT_DIM/2.0f);
+            }
+
+            GraphHeight = Mathf.Clamp(GraphHeight, 50f, bigRect.height - 100f);
+
+            if (Input.GetMouseButtonUp(0))
+            {
+                draggingGraph = false;
+            }
         }
     }
 }

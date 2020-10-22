@@ -26,8 +26,6 @@ namespace Analyzer.Profiling
 
     public static class Panel_Patches
     {
-        private static string[] strings = {"Patch Type", "Mod Name", "Patch Method", "Patch Priority"};
-
         public static void Draw(Rect inrect, GeneralInformation? currentInformation)
         {
             if (currentInformation == null || currentInformation.Value.patches.NullOrEmpty()) return;

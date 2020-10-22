@@ -90,10 +90,6 @@ namespace Analyzer.Profiling
 
             Widgets.DrawBoxSolid(position, Modbase.Settings.GraphCol);
 
-            GUI.color = Color.grey;
-            Widgets.DrawBox(position, 2);
-            GUI.color = Color.white;
-
             float gap = position.width / entries;
 
             GUI.BeginGroup(position);
@@ -120,15 +116,14 @@ namespace Analyzer.Profiling
                 {
                     var adjIndex = entries - i;
                     var timeEntry = (float)prof.times[arrayIndex];
-                    var hitsEntry = prof.hits[arrayIndex];
+                    var hitsEntry = GUIController.CurrentEntry.type == typeof(H_HarmonyTranspilers) ? 0 : prof.hits[arrayIndex];
 
                     var y = position.height + (diff) * (timeEntry / WindowMax);
                     Vector2 screenPoint = new Vector2(position.xMax - (gap * adjIndex), y);
 
                     if (adjIndex != 0)
                     {
-                        DubGUI.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f);
-                        DubGUI.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f);
+                        DubGUI.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f, true);
 
                         Rect relevantArea = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
                         

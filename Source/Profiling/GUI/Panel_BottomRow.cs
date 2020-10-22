@@ -53,7 +53,11 @@ namespace Analyzer.Profiling
     class Panel_BottomRow
     {
         public static GeneralInformation? currentProfilerInformation;
-        public static List<BottomRowPanel> panels = new List<BottomRowPanel>{ new BottomRowPanel(RowName.Graph, 0, 350) };
+        public static List<BottomRowPanel> panels = new List<BottomRowPanel>
+        {
+            new BottomRowPanel(RowName.Stats, 0, 250f),
+            new BottomRowPanel(RowName.Graph, 268, 900f)
+        };
 
 
         public static void Draw(Rect rect, Rect bigRect)
@@ -63,13 +67,11 @@ namespace Analyzer.Profiling
                 GetGeneralSidePanelInformation();
             }
 
+
             var buttonColumn = rect.LeftPartPixels(" + ".GetWidthCached());
             rect.AdjustHorizonallyBy(" + ".GetWidthCached());
 
             DrawButtonColumn(buttonColumn, rect.width);
-
-            rect.width -= Window_Analyzer.DRAGGABLE_RECT_DIM;
-            rect.AdjustVerticallyBy(10f);
 
             panels[panels.Count - 1].width = 
                 (panels.Count <= 1) ? 
@@ -130,7 +132,7 @@ namespace Analyzer.Profiling
                 switch(panel.type)
                 {
                     case RowName.Graph: Panel_Graph.Draw(panelRect); break;
-                    case RowName.Stats: Panel_Stats.DrawStats(panelRect); break;
+                    case RowName.Stats: Panel_Stats.DrawStats(panelRect, currentProfilerInformation); break;
                     case RowName.Patches: Panel_Patches.Draw(panelRect, currentProfilerInformation); break;
                     case RowName.StackTrace: Panel_StackTraces.Draw(panelRect, currentProfilerInformation); break;
                 }
@@ -203,8 +205,8 @@ namespace Analyzer.Profiling
             info.method = GUIController.CurrentProfiler.meth;
             info.methodName = info.method.Name;
             info.typeName = info.method.DeclaringType.FullName;
-            info.assname = info.method.DeclaringType.Assembly.FullName;
-            info.modName = GetModName(info);
+            info.assname = info.method.DeclaringType.Assembly.FullName.Split(',').First();
+            info.modName = GetModName(info.method.DeclaringType.Assembly.FullName);
             info.patchType = "";
             info.patches = new List<GeneralInformation>();
 
@@ -229,8 +231,8 @@ namespace Analyzer.Profiling
                 subPatch.method = patch.PatchMethod;
                 subPatch.typeName = patch.PatchMethod.DeclaringType.FullName;
                 subPatch.methodName = patch.PatchMethod.Name;
-                subPatch.assname = patch.PatchMethod.DeclaringType.Assembly.FullName;
-                subPatch.modName = GetModName(subPatch);
+                subPatch.assname = patch.PatchMethod.DeclaringType.Assembly.FullName.Split(',').First();
+                subPatch.modName = GetModName(patch.PatchMethod.DeclaringType.Assembly.FullName);
                 subPatch.patchType = type;
 
                 info.patches.Add(subPatch);
@@ -276,14 +278,14 @@ namespace Analyzer.Profiling
                 Process.Start(Settings.PathToDnspy, $"\"{path}\" --select 0x{token:X8}");
         }
 
-        private static string GetModName(GeneralInformation info)
+        private static string GetModName(string info)
         {
-            if (info.assname.Contains("Assembly-CSharp")) return "Rimworld - Core";
-            if (info.assname.Contains("UnityEngine")) return "Rimworld - Unity";
-            if (info.assname.Contains("System")) return "Rimworld - System";
+            if (info.Contains("Assembly-CSharp")) return "Rimworld - Core";
+            if (info.Contains("UnityEngine")) return "Rimworld - Unity";
+            if (info.Contains("System")) return "Rimworld - System";
             try
             {
-                return ModInfoCache.AssemblyToModname[info.assname];
+                return ModInfoCache.AssemblyToModname[info];
             }
             catch (Exception)
             {

@@ -101,6 +101,8 @@ namespace Analyzer.Profiling
                 {
                     CurrentLogStats.stats = logic;
                 }
+
+
             }
             catch (Exception e)
             {

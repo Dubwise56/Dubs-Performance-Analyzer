@@ -173,29 +173,36 @@ namespace Analyzer.Profiling
 
         private static void CleanupBackground()
         {
-            CurrentlyCleaningUp = true;
+            try
+            {
+                CurrentlyCleaningUp = true;
 
-            // unpatch all methods
-            Modbase.Harmony.UnpatchAll(Modbase.Harmony.Id);
+                // unpatch all methods
+                Modbase.Harmony.UnpatchAll(Modbase.Harmony.Id);
 
-            // atomic reads and writes.
-            Modbase.isPatched = false;
+                // atomic reads and writes.
+                Modbase.isPatched = false;
 
-            // clear all patches to prevent double patching
-            Utility.ClearPatchedCaches();
+                // clear all patches to prevent double patching
+                Utility.ClearPatchedCaches();
 
-            // clear all profiles
-            ProfileController.Profiles.Clear();
+                // clear all profiles
+                ProfileController.Profiles.Clear();
 
-            // clear all logs
-            Analyzer.Logs.Clear();
+                // clear all logs
+                Analyzer.Logs.Clear();
 
-            // clear all temp entries
-            GUIController.ClearEntries();
+                // clear all temp entries
+                GUIController.ClearEntries();
 
-            // call GC
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+                // call GC
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+            catch(Exception e)
+            {
+                ThreadSafeLogger.Error("Failed to cleanup analyzer, failed with the error " + e.Message);
+            }
 
 #if DEBUG 
             ThreadSafeLogger.Message($"Finished state cleanup");
