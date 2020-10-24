@@ -21,7 +21,7 @@ namespace Analyzer.Profiling
         public static bool displayMessages => Settings.verboseLogging;
 
 
-        public static void ClearPatchedCaches()
+        public static void ClearPatchCaches()
         {
             patchedAssemblies.Clear();
             patchedTypes.Clear();

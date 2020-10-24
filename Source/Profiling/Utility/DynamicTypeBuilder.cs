@@ -22,6 +22,7 @@ namespace Analyzer.Profiling
         private static ModuleBuilder moduleBuilder = null;
         private static ModuleBuilder ModuleBuilder => moduleBuilder ??= Assembly.DefineDynamicModule("DubsDynamicTypes", "DubsDynamicTypes.dll");
 
+        // Do NOT clear this cache, it holds information for all dynamically created types (including persistent ones!)
         public static Dictionary<string, HashSet<MethodInfo>> methods = new Dictionary<string, HashSet<MethodInfo>>();
 
 
@@ -32,16 +33,20 @@ namespace Analyzer.Profiling
          * they are stored in the `methods` dictionary, and added to in the CreateType method. 
          */
 
-        public static Type CreateType(string name, HashSet<MethodInfo> methods)
+        public static Type CreateType(string input, HashSet<MethodInfo> methods)
         {
-            name = string.Concat(name.Where(x => char.IsLetter(x) && !char.IsSymbol(x) && !char.IsWhiteSpace(x)));;
+            var name = string.Concat(input.Where(x => char.IsLetter(x) && !char.IsSymbol(x) && !char.IsWhiteSpace(x)));
+
+#if DEBUG
+            ThreadSafeLogger.Message($"[Analyzer] Converted the parameter called {input} into {name}, creating type);
+#endif
+
             ThreadSafeLogger.Message(name);
             TypeBuilder tb = ModuleBuilder.DefineType(name, staticAtt, typeof(Entry));
 
             FieldBuilder active = tb.DefineField("Active", typeof(bool), FieldAttributes.Public | FieldAttributes.Static);
 
-            if(methods != null) DynamicTypeBuilder.methods.Add(name, methods);
-            else DynamicTypeBuilder.methods.Add(name, new HashSet<MethodInfo>());
+            DynamicTypeBuilder.methods.Add(name, methods ?? new HashSet<MethodInfo>());
             ConstructorBuilder ivCtor = tb.DefineConstructor(MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, new Type[0]);
 
             // default initialise active to false.

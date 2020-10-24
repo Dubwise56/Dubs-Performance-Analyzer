@@ -180,21 +180,36 @@ namespace Analyzer.Profiling
                 // unpatch all methods
                 Modbase.Harmony.UnpatchAll(Modbase.Harmony.Id);
 
+#if DEBUG 
+                ThreadSafeLogger.Warning("Unpatched all profiling methods");
+#endif
                 // atomic reads and writes.
                 Modbase.isPatched = false;
 
                 // clear all patches to prevent double patching
-                Utility.ClearPatchedCaches();
+                Utility.ClearPatchCaches();
+#if DEBUG 
+                ThreadSafeLogger.Warning("Cleared Patch Caches");
+#endif
 
                 // clear all profiles
                 ProfileController.Profiles.Clear();
+#if DEBUG 
+                ThreadSafeLogger.Warning("Cleared Profiles");
+#endif
 
                 // clear all logs
                 Analyzer.Logs.Clear();
+#if DEBUG 
+                ThreadSafeLogger.Warning("Cleared Logs");
+#endif
 
                 // clear all temp entries
                 GUIController.ClearEntries();
 
+#if DEBUG 
+                ThreadSafeLogger.Warning("Cleared Entries");
+#endif
                 // call GC
                 GC.Collect();
                 GC.WaitForPendingFinalizers();

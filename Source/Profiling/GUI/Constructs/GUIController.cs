@@ -58,18 +58,15 @@ namespace Analyzer.Profiling
 
         public static void ClearEntries()
         {
-            foreach (var tab in tabs.Values)
+            var entriesToRemove = new List<string>();
+            foreach (var entry in tabs.Values.SelectMany(tab => tab.entries.Keys))
             {
-                foreach (var entry in tab.entries.Keys)
-                {
-                    if (entry.isClosable)
-                    {
-                        RemoveEntry(entry.name);
-                        continue; // already set to unpatched + inactive here
-                    }
-                    entry.isPatched = false;
-                }
+                if (entry.isClosable) entriesToRemove.Add(entry.name);
+                entry.isPatched = false;
             }
+
+            foreach(var entry in entriesToRemove)
+                RemoveEntry(entry);
         }
 
         public static void ResetToSettings()
