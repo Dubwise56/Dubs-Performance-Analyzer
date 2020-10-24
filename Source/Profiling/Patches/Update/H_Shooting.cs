@@ -27,9 +27,6 @@ namespace Analyzer.Profiling
 
             foreach (var m in Utility.GetTypeMethods(typeof(Building_Turret)))
                 yield return m;
-
-            foreach (var m in Utility.GetTypeMethods(typeof(Building_Turret)))
-                yield return m;
         }
     }
 }

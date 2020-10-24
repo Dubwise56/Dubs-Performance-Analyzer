@@ -161,13 +161,13 @@ namespace Analyzer.Profiling
 
             if (!method.HasMethodBody())
             {
-                Error($"Does not have a methodbody - {mKey}");
+                Warn($"Does not have a methodbody - {mKey}");
                 return false;
             }
 
             if (method.IsGenericMethod || method.ContainsGenericParameters)
             {
-                Error($"Can not currently patch generic methods - {mKey}");
+                Warn($"Can not currently patch generic methods - {mKey}");
                 return false;
             }
 
