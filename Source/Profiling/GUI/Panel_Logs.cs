@@ -54,7 +54,7 @@ namespace Analyzer.Profiling
             viewFrustum.y += ScrollPosition.y; // adjust our view frustum vertically based on the scroll position
 
             { // Begin scope for Scroll View
-                Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect, false);
+                Widgets.BeginScrollView(rect, ref ScrollPosition, innerRect, true);
                 GUI.BeginGroup(innerRect);
                 listing.Begin(innerRect);
 

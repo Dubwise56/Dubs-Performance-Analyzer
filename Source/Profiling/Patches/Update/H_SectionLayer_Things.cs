@@ -12,7 +12,8 @@ namespace Analyzer.Profiling
 
         public static void ProfilePatch()
         {
-            Modbase.Harmony.Patch(AccessTools.Method(typeof(SectionLayer_Things), nameof(SectionLayer_Things.Regenerate)),
+            Modbase.Harmony.Patch(
+                AccessTools.Method(typeof(SectionLayer_Things), nameof(SectionLayer_Things.Regenerate)),
                 new HarmonyMethod(typeof(H_SectionLayer_Things), nameof(Prefix)));
         }
 
@@ -20,7 +21,6 @@ namespace Analyzer.Profiling
         {
             if (Active)
             {
-
                 __instance.ClearSubMeshes(MeshParts.All);
                 Profiler prof = null;
                 foreach (IntVec3 intVec in __instance.section.CellRect)
@@ -51,7 +51,6 @@ namespace Analyzer.Profiling
                             __instance.TakePrintFrom(thing);
                             prof.Stop();
                         }
-
                     }
                 }
 
@@ -64,6 +63,5 @@ namespace Analyzer.Profiling
 
             return true;
         }
-
     }
 }

@@ -15,25 +15,39 @@ namespace Analyzer.Performance
 
         public static void Swapclasses()
         {
+            void felch(string s, DrawerType t)
+            {
+                var d = DefDatabase<ThingDef>.GetNamed(s, false);
+                if (d != null)
+                {
+                    d.drawerType = t;
+                }
+            }
+
             if (Enabled)
             {
-                DefDatabase<ThingDef>.GetNamed("PowerConduit").drawerType = DrawerType.MapMeshOnly;
-                DefDatabase<ThingDef>.GetNamed("WaterproofConduit").drawerType = DrawerType.MapMeshOnly;
-                DefDatabase<ThingDef>.GetNamed("Wall").drawerType = DrawerType.MapMeshOnly;
+                felch("PowerConduit", DrawerType.MapMeshOnly);
+                felch("WaterproofConduit", DrawerType.MapMeshOnly);
+                felch("Wall", DrawerType.MapMeshOnly);
             }
             else
             {
-                DefDatabase<ThingDef>.GetNamed("PowerConduit").drawerType = DrawerType.MapMeshAndRealTime;
-                DefDatabase<ThingDef>.GetNamed("WaterproofConduit").drawerType = DrawerType.MapMeshAndRealTime;
-                DefDatabase<ThingDef>.GetNamed("Wall").drawerType = DrawerType.MapMeshAndRealTime;
+                felch("PowerConduit", DrawerType.MapMeshAndRealTime);
+                felch("WaterproofConduit", DrawerType.MapMeshAndRealTime);
+                felch("Wall", DrawerType.MapMeshAndRealTime);
             }
 
             if (Find.Maps == null) return;
 
             foreach (var map in Find.Maps)
             {
-                void reg(ThingDef d)
+                void reg(string s)
                 {
+                    var d = DefDatabase<ThingDef>.GetNamed(s, false);
+                    if (d == null)
+                    {
+                        return;
+                    }
                     if (map.listerThings.listsByDef.ContainsKey(d))
                     {
                         foreach (var def in map.listerThings.listsByDef[d])
@@ -43,8 +57,13 @@ namespace Analyzer.Performance
                     }
                 }
 
-                void dereg(ThingDef d)
+                void dereg(string s)
                 {
+                    var d = DefDatabase<ThingDef>.GetNamed(s, false);
+                    if (d == null)
+                    {
+                        return;
+                    }
                     if (map.listerThings.listsByDef.ContainsKey(d))
                     {
                         foreach (var def in map.listerThings.listsByDef[d])
@@ -56,15 +75,15 @@ namespace Analyzer.Performance
 
                 if (Enabled)
                 {
-                    dereg(DefDatabase<ThingDef>.GetNamed("PowerConduit"));
-                    dereg(DefDatabase<ThingDef>.GetNamed("WaterproofConduit"));
-                    dereg(DefDatabase<ThingDef>.GetNamed("Wall"));
+                    dereg("PowerConduit");
+                    dereg("WaterproofConduit");
+                    dereg("Wall");
                 }
                 else
                 {
-                    reg(DefDatabase<ThingDef>.GetNamed("PowerConduit"));
-                    reg(DefDatabase<ThingDef>.GetNamed("WaterproofConduit"));
-                    reg(DefDatabase<ThingDef>.GetNamed("Wall"));
+                    reg("PowerConduit");
+                    reg("WaterproofConduit");
+                    reg("Wall");
                 }
             }
         }
