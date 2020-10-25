@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.gui.dotabs", Category.GUI, "entry.gui.dotabs.tooltip")]
+    [Entry("entry.gui.dotabs", Category.GUI)]
     internal class H_DoTabs
     {
         public static bool Active = false;

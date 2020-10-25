@@ -10,7 +10,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.tick.pawngen", Category.Tick, "entry.tick.pawngen.tooltip")]
+    [Entry("entry.tick.pawngen", Category.Tick)]
     public static class H_PawnGeneration
     {
         public static bool Active = false;

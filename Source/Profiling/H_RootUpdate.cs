@@ -5,7 +5,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.update.frametimes", Category.Update, "entry.update.frametimes.tooltip")]
+    [Entry("entry.update.frametimes", Category.Update)]
     public class H_RootUpdate
     {
         public static bool Active = false;

@@ -186,7 +186,7 @@ namespace Analyzer.Profiling
     //    }
     //}
 
-    [Entry("entry.tick.things", Category.Tick, "entry.tick.things.tooltip")]
+    [Entry("entry.tick.things", Category.Tick)]
     internal class H_TickListTick
     {
         public static bool Active = false;

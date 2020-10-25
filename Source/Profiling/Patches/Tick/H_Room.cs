@@ -7,7 +7,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.tick.room", Category.Tick, "entry.tick.room.tooltip")]
+    [Entry("entry.tick.room", Category.Tick)]
     internal class H_Room
     {
         public static bool Active = false;

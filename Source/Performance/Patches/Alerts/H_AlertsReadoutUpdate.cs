@@ -62,18 +62,15 @@ namespace Analyzer.Performance
             harmony.Patch(skiff2, new HarmonyMethod(typeof(H_AlertsReadoutUpdate), nameof(AlertsReadoutOnGUI)));
         }
 
-        [Entry("entry.update.alert", Profiling.Category.Update, "entry.update.alert.tooltip")]
+        [Entry("entry.update.alert", Profiling.Category.Update)]
         public class AlertRecalculate
         {
             public static bool Active = true;
+            public static MethodInfo recalculate = AccessTools.Method(typeof(Alert), nameof(Alert.Recalculate));
 
-            public static IEnumerable<MethodInfo> GetPatchMethods()
+            public static IEnumerable<MethodInfo> GetPatchMethods() 
             {
-                yield return AccessTools.Method(typeof(Alert), nameof(Alert.Recalculate));
-
-
-                foreach (var m in Utility.SubClassImplementationsOf(typeof(Alert), (MethodInfo m) => m.Name == "DrawAt"))
-                    yield return m;
+                yield return recalculate;
             }
 
             public static string GetName(Alert __instance) => __instance.GetType().Name;
@@ -93,19 +90,25 @@ namespace Analyzer.Performance
         public static bool CheckAddOrRemoveAlert(AlertsReadout __instance, Alert alert, bool forceRemove)
         {
             if (DisableAlerts) return false;
-
             if (!OverrideAlerts) return true;
 
             try
             {
                 var alertActive = false;
+                var alertType = alert.GetType();
 
-                if (AlertFilter.TryGetValue(alert.GetType(), out var active))
+                if (AlertFilter.TryGetValue(alertType, out var active))
                 {
                     if (!active)
                     {
                         alert.Recalculate();
                         alertActive = alert.Active;
+                    }
+                    else // We ensure alerts show up so you can re-enable disabled alerts.
+                    {
+                        var prof = ProfileController.Start(alertType.Name, () => alertType.FullName, alertType, null, null, AlertRecalculate.recalculate);
+
+                        prof.Stop();
                     }
                 }
                 else

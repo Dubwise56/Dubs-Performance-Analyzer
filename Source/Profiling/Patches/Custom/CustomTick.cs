@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.tick.custom", Category.Tick, "entry.tick.custom.tooltip")]
+    [Entry("entry.tick.custom", Category.Tick)]
     internal class CustomProfilersTick
     {
         public static bool Active = false;

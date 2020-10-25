@@ -12,7 +12,7 @@ namespace Analyzer.Fixes
         public static bool Enabled = false;
         public override PerformanceCategory Category => PerformanceCategory.Overrides;
         private static readonly Color hwite = new Color(1f, 1f, 1f, 1f);
-        public override string Name => "performance.DrawNamesFix";
+        public override string Name => "performance.drawlabelsfix";
 
         public override void OnEnabled(Harmony harmony)
         {

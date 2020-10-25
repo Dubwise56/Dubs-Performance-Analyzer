@@ -29,7 +29,7 @@ namespace Analyzer.Profiling
         {
             if (!Analyzer.CurrentlyProfiling) return null;
 
-            if (Profiles.TryGetValue(key, out Profiler prof)) return prof.Start();
+            if (Profiles.TryGetValue(key, out var prof)) return prof.Start();
             else
             {
                 Profiles[key] = GetLabel != null ? new Profiler(key, GetLabel(), type, def, thing, meth)

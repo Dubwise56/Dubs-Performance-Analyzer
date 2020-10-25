@@ -11,7 +11,7 @@ using Verse.AI.Group;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.tick.mapcomponent", Category.Tick, "entry.tick.mapcomponent.tooltip")]
+    [Entry("entry.tick.mapcomponent", Category.Tick)]
     internal class H_MapComponentTick
     {
         public static bool Active = false;

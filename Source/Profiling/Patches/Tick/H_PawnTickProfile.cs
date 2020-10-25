@@ -9,7 +9,7 @@ using Verse.AI;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.tick.pawn", Category.Tick, "entry.tick.pawn.tooltip")]
+    [Entry("entry.tick.pawn", Category.Tick)]
     internal static class H_PawnTickProfile
     {
         public static bool Active = false;

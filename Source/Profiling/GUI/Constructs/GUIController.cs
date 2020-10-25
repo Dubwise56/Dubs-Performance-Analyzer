@@ -124,7 +124,7 @@ namespace Analyzer.Profiling
 #if DEBUG
             ThreadSafeLogger.Message($"Adding entry {name} into the category {category}");
 #endif
-            var entry = Entry.Create(name, category, "Dynamically created entry for the type " + myType.Name, myType, true, true);
+            var entry = Entry.Create(name, category, myType, true, true);
 
             if (Tab(category).entries.ContainsKey(entry))
             {

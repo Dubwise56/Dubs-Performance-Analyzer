@@ -6,7 +6,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.tick.stats", Category.Tick, "entry.tick.stats.tooltip")]
+    [Entry("entry.tick.stats", Category.Tick)]
     internal class H_GetStatValue
     {
         public static bool Active = false;

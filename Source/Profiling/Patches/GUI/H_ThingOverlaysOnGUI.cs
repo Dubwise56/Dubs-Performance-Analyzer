@@ -5,7 +5,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.gui.ThingOverlaysOnGUI", Category.GUI, "entry.gui.ThingOverlaysOnGUI.tooltip")]
+    [Entry("entry.gui.thingoverlay.ongui", Category.GUI)]
     internal class H_ThingOverlaysOnGUI
     {
         public static bool Active = false;

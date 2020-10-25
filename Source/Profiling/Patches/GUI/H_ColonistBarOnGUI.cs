@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.gui.colonistbar", Category.GUI, "entry.gui.colonistbar.tooltip")]
+    [Entry("entry.gui.colonistbar", Category.GUI)]
     internal class H_ColonistBarOnGUI
     {
         public static bool Active = false;

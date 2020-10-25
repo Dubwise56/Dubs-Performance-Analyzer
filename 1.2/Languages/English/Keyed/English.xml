@@ -85,9 +85,12 @@
 	<entry.gui.windowstack>Window Stack OnGUI</entry.gui.windowstack>
 	<entry.gui.windowstack.tooltip>The OnGUI method for the window stack, should show profiling for all active windows</entry.gui.windowstack.tooltip>
 
+	<entry.gui.thingoverlay.ongui>ThingOverlayONGUI</entry.gui.thingoverlay.ongui>
+	<entry.gui.thingoverlay.ongui.tooltip>Thing overlay ONGUI </entry.gui.thingoverlay.ongui.tooltip>
+	
 	<!-- Tick -->
 
-  <entry.tick.single>Single Tick</entry.tick.single>
+  	<entry.tick.single>Single Tick</entry.tick.single>
 	<entry.tick.single.tooltip>A variety of tick methods, including; World, History, FilthMonitor, Storyteller</entry.tick.single.tooltip>
 
 	<entry.tick.pathfinder>Pathfinding</entry.tick.pathfinder>
@@ -158,8 +161,8 @@
 	<entry.update.mapcomponent>Map Component Update</entry.update.mapcomponent>
 	<entry.update.mapcomponent.tooltip>The Update method for Map Components</entry.update.mapcomponent.tooltip>
 
-  <entry.update.SectionLayer_ThingsDrawLayer>Draw Printed Things</entry.update.SectionLayer_ThingsDrawLayer>
-  <entry.update.SectionLayer_ThingsDrawLayer.tooltip>Profile how long each thing takes to print</entry.update.SectionLayer_ThingsDrawLayer.tooltip>
+	<entry.update.sectionlayer.thingsdrawlayer>Draw Printed Things</entry.update.sectionlayer.thingsdrawlayer>
+	<entry.update.sectionlayer.thingsdrawlayer.tooltip>Profile how long each thing takes to print</entry.update.sectionlayer.thingsdrawlayer.tooltip>
 
 	<entry.update.sections>Sections</entry.update.sections>
 	<entry.update.sections.tooltip>Shows the regenerate method for SectionLayers (sectionlayers are things like Snow, SunShadows, Zones)</entry.update.sections.tooltip>
@@ -173,8 +176,8 @@
 	<entry.update.sectionlayerthings>Section Layer Things</entry.update.sectionlayerthings>
 	<entry.update.sectionlayerthings.tooltip>More in-depth profiling of Section layers, including mesh creation and the TakePrintFrom function</entry.update.sectionlayerthings.tooltip>
 
-  <entry.update.mapdrawer>MapDrawer</entry.update.mapdrawer>
-  <entry.update.mapdrawer.tooltip>Draw method on each map section layer</entry.update.mapdrawer.tooltip>
+	<entry.update.mapdrawer>MapDrawer</entry.update.mapdrawer>
+	<entry.update.mapdrawer.tooltip>Draw method on each map section layer</entry.update.mapdrawer.tooltip>
 
 	<entry.update.shooting>Shooting and Combat</entry.update.shooting>
 	<entry.update.shooting.tooltip>Shows a variety of methods related to combat and shooting, including verbs, turrets, projectiles etc</entry.update.shooting.tooltip>
@@ -229,8 +232,8 @@
 	<performance.zoom>Reduce stutters while zooming</performance.zoom>
 	<performance.zoom.tooltip>Lowers the target tps when zooming in order to stabilize fps</performance.zoom.tooltip>
 
-  <performance.DrawNamesFix>Optimize pawn labels</performance.DrawNamesFix>
-  <performance.DrawNamesFix.tooltip>Optimize the drawing of pawn and animal names in-map</performance.DrawNamesFix.tooltip>
+	<performance.drawlabelsfix>Optimize pawn labels</performance.drawlabelsfix>
+	<performance.drawlabelsfix.tooltip>Optimize the drawing of pawn and animal names in-map</performance.drawlabelsfix.tooltip>
 
 	<!-- Temporary -->
 	<temp.section>Optimize Map Loading</temp.section>
@@ -241,6 +244,7 @@
 
 	<fix.fixmodremoval>Fix mod removal, may solve grey screen issue</fix.fixmodremoval>
 	<fix.fixmodremoval.tooltip>This fixes the area manager trying to loop through null area classes from missing mods</fix.fixmodremoval.tooltip>
+
 	<fix.faction>Cleans up factions from removed mods</fix.faction>
 	<fix.faction.tooltip>Removes all references to deleted factions in world objects. This will solve issues when removing factions mid-save</fix.faction.tooltip>
 

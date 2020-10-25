@@ -5,7 +5,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.update.sectionlayerthings", Category.Update, "entry.update.sectionlayerthings.tooltip")]
+    [Entry("entry.update.sectionlayerthings", Category.Update)]
     internal class H_SectionLayer_Things
     {
         public static bool Active = false;

@@ -8,7 +8,7 @@ using Verse.AI.Group;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.tick.lord", Category.Tick, "entry.tick.lord.tooltip")]
+    [Entry("entry.tick.lord", Category.Tick)]
     internal class H_GetLord
     {
         public static bool Active = false;

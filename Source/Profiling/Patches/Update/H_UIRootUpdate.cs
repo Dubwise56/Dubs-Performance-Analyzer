@@ -8,7 +8,7 @@ using Verse.Sound;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.update.uiroot", Category.Update, "entry.update.uiroot")]
+    [Entry("entry.update.uiroot", Category.Update)]
     internal static class H_UIRootUpdate
     {
         public static bool Active = false;

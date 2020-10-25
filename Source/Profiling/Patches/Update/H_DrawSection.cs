@@ -5,7 +5,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.update.mapdrawer", Category.Update, "entry.update.mapdrawer.tooltip")]
+    [Entry("entry.update.mapdrawer", Category.Update)]
     internal class H_DrawSection
     {
         public static bool Active = false;

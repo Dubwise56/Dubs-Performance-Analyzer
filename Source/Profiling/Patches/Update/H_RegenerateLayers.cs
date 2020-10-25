@@ -11,7 +11,7 @@ namespace Analyzer.Profiling
     [StaticConstructorOnStartup]
     internal class H_RegenerateLayers
     {
-        public static Entry p = Entry.Create("entry.update.sections", Category.Update, "entry.update.sections.tooltip", typeof(H_RegenerateLayers), false);
+        public static Entry p = Entry.Create("entry.update.sections", Category.Update, typeof(H_RegenerateLayers), false);
 
         public static bool Active = false;
 

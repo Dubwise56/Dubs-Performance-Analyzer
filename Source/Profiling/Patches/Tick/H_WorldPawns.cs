@@ -10,7 +10,7 @@ using Verse;
 namespace Analyzer.Profiling
 {
 
-    [Entry("entry.tick.world", Category.Tick, "entry.tick.world.tooltip")]
+    [Entry("entry.tick.world", Category.Tick)]
     public static class H_WorldPawns
     {
         public static bool Active = false;

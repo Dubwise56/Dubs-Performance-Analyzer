@@ -7,7 +7,7 @@ using Verse.AI;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.tick.thinknodes", Category.Tick, "entry.tick.thinknodes.tooltip")]
+    [Entry("entry.tick.thinknodes", Category.Tick)]
     internal static class H_ThinkNodes
     {
         public static bool Active = false;

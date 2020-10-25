@@ -16,7 +16,7 @@ namespace Analyzer.Profiling
 
         public static int NodeIndex = 0;
 
-        public static Entry p = Entry.Create("entry.tick.pathfinder", Category.Tick, "entry.tick.pathfinder.tooltip", typeof(H_FindPath), false);
+        public static Entry p = Entry.Create("entry.tick.pathfinder", Category.Tick, typeof(H_FindPath), false);
         public static void ProfilePatch()
         {
             HarmonyMethod go = new HarmonyMethod(typeof(H_FindPath), nameof(Start));
