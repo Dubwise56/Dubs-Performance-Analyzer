@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Fixes\Fix.cs" />
     <Compile Include="Fixes\FixPatches.cs" />
+    <Compile Include="Performance\Patches\H_DrawNamesFix.cs" />
     <Compile Include="Fixes\Patches\H_UpdateAllAreasLinks.cs" />
     <Compile Include="GameComponent_Analyzer.cs" />
     <Compile Include="KeyBindings.cs" />
@@ -72,7 +73,9 @@
     <Compile Include="Profiling\GUI\Panel_BottomRow.cs" />
     <Compile Include="Profiling\GUI\Panel_DevOptions.cs" />
     <Compile Include="Profiling\Patches\Custom\CustomTick.cs" />
+    <Compile Include="Profiling\Patches\GUI\H_ThingOverlaysOnGUI.cs" />
     <Compile Include="Profiling\Patches\Tick\H_PawnGeneration.cs" />
+    <Compile Include="Profiling\Patches\Update\H_DrawSection.cs" />
     <Compile Include="Profiling\Patches\Update\H_HarmonyTranspilers.cs" />
     <Compile Include="Profiling\Analyzer.cs" />
     <Compile Include="Profiling\GUI\Constructs\Entry.cs" />
@@ -81,6 +84,7 @@
     <Compile Include="Profiling\GUI\Panel_Tabs.cs" />
     <Compile Include="Profiling\GUI\Bottom TabRow\Panel_Graph.cs" />
     <Compile Include="Profiling\GUI\Panel_TopRow.cs" />
+    <Compile Include="Profiling\Patches\Update\H_SectionLayer_ThingsDrawLayer.cs" />
     <Compile Include="Window_Analyzer.cs" />
     <Compile Include="Profiling\GUI\Panel_Logs.cs" />
     <Compile Include="Panel_Settings.cs" />
@@ -156,8 +160,8 @@
       <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.CoreModule">
-      <HintPath>..\..\..\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    <Reference Include="UnityEngine.CoreModule_publicized">
+      <HintPath>..\..\..\RimWorldWin64_Data\Managed\publicized_assemblies\UnityEngine.CoreModule_publicized.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
