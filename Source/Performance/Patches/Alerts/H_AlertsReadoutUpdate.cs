@@ -106,9 +106,12 @@ namespace Analyzer.Performance
                     }
                     else // We ensure alerts show up so you can re-enable disabled alerts.
                     {
-                        var prof = ProfileController.Start(alertType.Name, () => alertType.FullName, alertType, null, null, AlertRecalculate.recalculate);
+                        if (AlertRecalculate.Active)
+                        {
+                            var prof = ProfileController.Start(alertType.Name, () => alertType.FullName, alertType, null, null, AlertRecalculate.recalculate);
 
-                        prof?.Stop();
+                            prof?.Stop();
+                        }
                     }
                 }
                 else
