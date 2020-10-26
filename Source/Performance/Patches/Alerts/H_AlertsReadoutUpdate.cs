@@ -65,7 +65,7 @@ namespace Analyzer.Performance
         [Entry("entry.update.alert", Profiling.Category.Update)]
         public class AlertRecalculate
         {
-            public static bool Active = true;
+            public static bool Active = false;
             public static MethodInfo recalculate = AccessTools.Method(typeof(Alert), nameof(Alert.Recalculate));
 
             public static IEnumerable<MethodInfo> GetPatchMethods() 

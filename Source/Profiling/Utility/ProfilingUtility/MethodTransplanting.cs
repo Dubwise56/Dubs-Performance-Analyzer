@@ -111,10 +111,7 @@ namespace Analyzer.Profiling
             var curTypeMeth = curType.GetMethod("GetType", BindingFlags.Public | BindingFlags.Static);
 
 
-            string key;
-            if (__originalMethod.ReflectedType != null) key = __originalMethod.ReflectedType.FullName + ":" + __originalMethod.Name;
-            else key = __originalMethod.DeclaringType.FullName + ":" + __originalMethod.Name;
-
+            var key = Utility.GetMethodKey(__originalMethod as MethodInfo);
             var methodKey = MethodInfoCache.AddMethod(key, __originalMethod as MethodInfo);
 
 

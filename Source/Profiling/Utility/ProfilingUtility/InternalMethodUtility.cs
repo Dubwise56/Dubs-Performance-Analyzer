@@ -46,7 +46,7 @@ namespace Analyzer.Profiling
                             try { meth = instructions[i].operand as MethodInfo; } catch { }
                             if (meth == null) continue;
 
-                            var key = meth.DeclaringType.FullName + "." + meth.Name;
+                            var key = Utility.GetMethodKey(meth);
                             var index = MethodInfoCache.AddMethod(key, meth);
 
 

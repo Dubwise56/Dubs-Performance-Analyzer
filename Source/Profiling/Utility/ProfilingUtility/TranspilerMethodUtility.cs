@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using Verse;
 
 namespace Analyzer.Profiling
 {
@@ -67,7 +68,7 @@ namespace Analyzer.Profiling
             Myers<CodeInstruction> insts = new Myers<CodeInstruction>(inst.ToArray(), modInstList.ToArray(), methComparer);
             insts.Compute();
 
-            var key = __originalMethod.DeclaringType.FullName + ":" + __originalMethod.Name;
+            var key = Utility.GetMethodKey(__originalMethod as MethodInfo);
             var index = MethodInfoCache.AddMethod(key, __originalMethod as MethodInfo);
 
             foreach (var thing in insts.changeSet)
