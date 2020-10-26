@@ -108,7 +108,7 @@ namespace Analyzer.Performance
                     {
                         var prof = ProfileController.Start(alertType.Name, () => alertType.FullName, alertType, null, null, AlertRecalculate.recalculate);
 
-                        prof.Stop();
+                        prof?.Stop();
                     }
                 }
                 else
