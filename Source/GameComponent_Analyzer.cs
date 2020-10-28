@@ -44,9 +44,6 @@ namespace Analyzer
                 return;
             }
 
-#if DEBUG
-            ThreadSafeLogger.Message("Time Till Cleanup" + TimeTillCleanup);
-#endif
             TimeTillCleanup -= Time.deltaTime;
             if (TimeTillCleanup <= 0)
             {

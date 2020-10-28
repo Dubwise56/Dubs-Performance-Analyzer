@@ -38,7 +38,7 @@ namespace Analyzer.Profiling
             var name = string.Concat(input.Where(x => char.IsLetter(x) && !char.IsSymbol(x) && !char.IsWhiteSpace(x)));
 
 #if DEBUG
-            ThreadSafeLogger.Message($"[Analyzer] Converted the parameter called {input} into {name}, creating type);
+            ThreadSafeLogger.Message($"[Analyzer] Converted the parameter called {input} into {name}, creating type");
 #endif
 
             ThreadSafeLogger.Message(name);

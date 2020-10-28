@@ -47,6 +47,12 @@ namespace Analyzer
             { // Performance Patches
                 PerformancePatches.InitialisePatches();
             }
+
+#if DEBUG
+            Log.Warning("==========================================================================");
+            Log.Warning("                   Analyzer Running In Debug Mode                         ");
+            Log.Warning("==========================================================================");
+#endif
         }
 
         public override void DoSettingsWindowContents(Rect inRect)

@@ -129,6 +129,8 @@ namespace Analyzer.Profiling
                 
                 panelRect.AdjustVerticallyBy(2f);
 
+                // ALL OF THESE FUNCTIONS MUST HANDLE THE CASE WHERE CURRENTPROFILERINFORMATION IS NULL.
+                
                 switch(panel.type)
                 {
                     case RowName.Graph: Panel_Graph.Draw(panelRect); break;
@@ -200,6 +202,9 @@ namespace Analyzer.Profiling
 
         private static void GetGeneralSidePanelInformation()
         {
+            currentProfilerInformation = null;
+            if (GUIController.CurrentProfiler.meth == null) return;
+
             var info = new GeneralInformation();
 
             info.method = GUIController.CurrentProfiler.meth;

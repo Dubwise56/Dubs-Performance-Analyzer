@@ -14,9 +14,6 @@ namespace Analyzer.Profiling
     {
         public static bool Active = false;
 
-        // todo setting for byPawn
-        // use FieldRefAccess or somethin
-
         public static IEnumerable<MethodInfo> GetPatchMethods()
         {
             yield return AccessTools.Method(typeof(Pawn_AgeTracker), nameof(Pawn_AgeTracker.AgeTick));

@@ -24,7 +24,7 @@ namespace Analyzer.Profiling
                 stats = CurrentLogStats.stats;
             }
 
-            if (stats == null || !currentInformation.HasValue) return;
+            if (stats == null) return;
 
 
             Listing_Standard listing = new Listing_Standard();
@@ -33,12 +33,16 @@ namespace Analyzer.Profiling
             Text.Font = GameFont.Tiny;
 
             var sb = new StringBuilder();
-            sb.AppendLine($" Method: {currentInformation.Value.methodName}, Mod: {currentInformation.Value.modName}");
-            sb.AppendLine($" Assembly: {currentInformation.Value.assname}, Patches: {currentInformation.Value.patches.Count}");
-            listing.Label(sb.ToString().TrimEndNewlines());
-            listing.GapLine(2f);
 
-            sb.Clear();
+            if (currentInformation.HasValue)
+            {
+                sb.AppendLine($" Method: {currentInformation.Value.methodName}, Mod: {currentInformation.Value.modName}");
+                sb.AppendLine($" Assembly: {currentInformation.Value.assname}, Patches: {currentInformation.Value.patches.Count}");
+                listing.Label(sb.ToString().TrimEndNewlines());
+                listing.GapLine(2f);
+
+                sb.Clear();
+            }
 
             sb.AppendLine($" Total Entries: {stats.Entries}");
             sb.AppendLine($" Total Calls: {stats.TotalCalls}");
