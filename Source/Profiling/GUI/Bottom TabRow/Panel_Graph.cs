@@ -5,159 +5,342 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using RimWorld;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Verse;
 
 namespace Analyzer.Profiling
 {
-
-
-    public static class Panel_Graph
+    public class Panel_Graph
     {
-        private static int entryCount = 300;
-        private static int hoverVal;
-        private static string hoverValStr = string.Empty;
-        private static int ResetRange;
+        private int entryCount = 300;
+        private bool showCalls = false;
+        private bool showTimes = true;
+        private string hoverString = string.Empty;
+        private int hoverIdx = -1;
 
-        private static float WindowMax;
-        private static bool showTime = false;
-        private static double max;
-        private static string MaxStr;
-
-        public static void DisplayColorPicker(Rect rect, bool LineCol)
+        // value = 0 - time, 1 - calls, 2 - background
+        public static void DisplayColorPicker(Rect rect, int value)
         {
-            Widgets.DrawBoxSolid(rect, (LineCol) ? Modbase.Settings.LineCol : Modbase.Settings.GraphCol);
-             
-            if (Widgets.ButtonInvisible(rect, true))
-            {
-                if (Find.WindowStack.WindowOfType<colourPicker>() != null) // if we already have a colour window open, close it
-                    Find.WindowStack.RemoveWindowsOfType(typeof(colourPicker));
+            Color32 col = new Color32();
+            if (value == 0) col = Modbase.Settings.timeColour;
+            else if (value == 1) col = Modbase.Settings.callsColour;
+            else col = Modbase.Settings.GraphCol;
 
+            Widgets.DrawBoxSolid(rect, col);
+
+            if (!Widgets.ButtonInvisible(rect, true)) return;
+
+            if (Find.WindowStack.WindowOfType<colourPicker>() != null)
+            {
+                Find.WindowStack.RemoveWindowsOfType(typeof(colourPicker));
+                return;
+            }
+
+            colourPicker cp = new colourPicker();
+            if (value == 0) cp.Setcol = () => Modbase.Settings.timeColour = colourPicker.CurrentCol;
+            else if (value == 1) cp.Setcol = () => Modbase.Settings.callsColour = colourPicker.CurrentCol;
+            else cp.Setcol = () => Modbase.Settings.GraphCol = colourPicker.CurrentCol;
+
+            cp.SetColor(col);
+
+            Find.WindowStack.Add(cp);
+        }
+
+        private static void DrawButton(Panel_Graph instance, Rect rect, string str, int idx)
+        {
+            var iconRect = rect.LeftPartPixels(20f);
+            iconRect.height = 10;
+            iconRect.x += 5;
+            iconRect.width -= 10;
+            iconRect.y += (rect.height / 2.0f) - 5f;
+            rect.AdjustHorizonallyBy(20f);
+
+            DisplayColorPicker(iconRect, idx);
+
+            if (idx == 0 && !instance.showTimes) GUI.color = Color.grey;
+            else if(idx == 1 && !instance.showCalls) GUI.color = Color.grey;
+            
+            Widgets.Label(rect, str);
+
+            GUI.color = Color.white;
+
+            if (idx == 2) return;
+
+            if (Widgets.ButtonInvisible(rect))
+            {
+                if (idx == 0)
+                {
+                    instance.showTimes = !instance.showTimes;
+                }
                 else
                 {
-                    colourPicker cp = new colourPicker();
-                    if (LineCol) cp.Setcol = () => Modbase.Settings.LineCol = colourPicker.CurrentCol;
-                    else cp.Setcol = () => Modbase.Settings.GraphCol = colourPicker.CurrentCol;
-
-                    cp.SetColor((LineCol) ? Modbase.Settings.LineCol : Modbase.Settings.GraphCol);
-
-                    Find.WindowStack.Add(cp);
+                    instance.showCalls = !instance.showCalls;
                 }
+
             }
+
+            Widgets.DrawHighlightIfMouseover(rect);
         }
 
-        public static void DrawSettings(Rect rect)
+        private static void DrawSettings(Panel_Graph instance, ref Rect position)
         {
-            Rect sliderRect = rect.RightPartPixels(200f).BottomPartPixels(30f);
-            sliderRect.x -= 15;
-            entryCount = (int)Widgets.HorizontalSlider(sliderRect, entryCount, 10, 2000, true, string.Intern($"{entryCount} Entries"));
-            sliderRect = new Rect(sliderRect.xMax + 5, sliderRect.y + 2, 10, 10);
+            // [ - Calls ] [ - Times ] [ Lines ] [ Entries ------ ] [ - Bg Col ]
 
-            DisplayColorPicker(sliderRect, true);
-            sliderRect.y += 12;
-            DisplayColorPicker(sliderRect, false);
+            var width = position.width;
+            var currentHeight = 32;
+            var currentSlice = position.TopPartPixels(currentHeight);
+            position.AdjustVerticallyBy(currentHeight);
 
-            if (showTime)
+            Text.Anchor = TextAnchor.MiddleCenter;
+
+            // [ - Times ]
+            var str = " Times ";
+            var contentWidth = 20 + str.GetWidthCached();
+            var rect = currentSlice.LeftPartPixels(contentWidth);
+            currentSlice.AdjustHorizonallyBy(contentWidth);
+
+            DrawButton(instance, rect, " Times ", 0);
+
+            // [ - Calls ]
+            str = " Calls ";
+            contentWidth = 20 + str.GetWidthCached();
+            rect = currentSlice.LeftPartPixels(contentWidth);
+            currentSlice.AdjustHorizonallyBy(contentWidth);
+            
+            DrawButton(instance, rect, " Calls ", 1);
+
+            // [ - Background ]
+            str = " Background ";
+            contentWidth = 20 + str.GetWidthCached();
+            rect = currentSlice.LeftPartPixels(contentWidth);
+            currentSlice.AdjustHorizonallyBy(contentWidth);
+            
+            DrawButton(instance, rect, " Background ", 2);
+
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            // [ - Entries ] 
+            contentWidth = 150;
+            if (currentSlice.width < contentWidth)
             {
-                rect.width -= 220;
-                Text.Anchor = TextAnchor.LowerRight;
-                Widgets.Label(rect, hoverValStr);
-                Text.Anchor = TextAnchor.UpperLeft;
+                currentSlice = position.TopPartPixels(currentHeight);
+                position.AdjustVerticallyBy(currentHeight);
             }
-        }
 
-        public static void Draw(Rect r)
-        {
-            var position = r;
-            ResetRange++;
-            if (ResetRange >= 500)
+            rect = currentSlice.LeftPartPixels(contentWidth);
+            instance.entryCount = (int)Widgets.HorizontalSlider(rect.BottomPartPixels(30f), instance.entryCount, 10, 2000, true, string.Intern($"{instance.entryCount} Entries  "));
+            currentSlice.AdjustHorizonallyBy(contentWidth);
+
+
+            Text.Font = GameFont.Tiny;
+            Text.Anchor = TextAnchor.MiddleCenter;
+            
+
+            // hits ... calls ... etc
+            if (instance.hoverString != "")
             {
-                ResetRange = 0;
-                WindowMax = 0;
+                str = instance.hoverString + "   ";
+                contentWidth = str.GetWidthCached();
+                if (currentSlice.width < contentWidth)
+                {
+                    currentSlice = position.TopPartPixels(currentHeight);
+                    position.AdjustVerticallyBy(currentHeight);
+                }
+
+                rect = currentSlice.LeftPartPixels(contentWidth);
+                Widgets.Label(rect, instance.hoverString);
             }
 
             Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.UpperLeft;
+        }
 
-            Profiler prof = GUIController.CurrentProfiler;
-            if (prof == null) return;
+        public void Draw(Rect rect)
+        {
+            DrawSettings(this, ref rect);
 
-            int entries = Mathf.Min(Analyzer.GetCurrentLogCount, entryCount);
+            if (Event.current.type != EventType.Repaint) return;
 
-            var TopBox = position.TopPartPixels(32f).ContractedBy(2f);
-            DrawSettings(TopBox);
-            position = position.BottomPartPixels(position.height - TopBox.height);
+            DrawGraph(rect);
+        }
 
-            Widgets.DrawBoxSolid(position, Modbase.Settings.GraphCol);
+        private void DrawGraph(Rect rect)
+        {
+            GUI.BeginGroup(rect);
+            rect = rect.AtZero();
 
-            float gap = position.width / entries;
+            Widgets.DrawBoxSolid(rect, Modbase.Settings.GraphCol);
 
-            GUI.BeginGroup(position);
+            var entries = Mathf.Min(Analyzer.GetCurrentLogCount, entryCount);
+
+            int i = entries;
+            var prof = GUIController.CurrentProfiler;
+            uint arrayIndex = prof.currentIndex;
+
+            var calls = new List<int>(entries);
+            var times = new List<float>(entries);
+
+            var callsMax = 0;
+            var timesMax = 0.0f;
+
+            while (i > 0)
             {
-                position = position.AtZero();
+                var timeEntry = (float)prof.times[arrayIndex];
+                var hitsEntry = GUIController.CurrentEntry.type == typeof(H_HarmonyTranspilers) ? 0 : prof.hits[arrayIndex];
 
-                double LastMax = max;
-                var log = Analyzer.Logs.First(log => log.key == prof.key);
-                max = log.max;
+                calls.Add(hitsEntry);
+                times.Add(timeEntry);
 
-                if (max > WindowMax)
-                    WindowMax = (float)max;
+                if (callsMax < hitsEntry) callsMax = hitsEntry;
+                if (timesMax < timeEntry) timesMax = timeEntry;
 
-                var diff = position.y - position.height;
+                i--;
+                arrayIndex--;
+                if (arrayIndex > Profiler.RECORDS_HELD) arrayIndex = Profiler.RECORDS_HELD - 1;
+            }
 
-                Vector2 last = new Vector2();
+            GraphDrawer.Draw(rect, timesMax, callsMax, entries, calls, times, showCalls, showTimes, ref hoverIdx, ref hoverString);
 
-                showTime = false;
+            GUI.EndGroup();
+        }
 
-                uint arrayIndex = prof.currentIndex;
-                int i = entries;
+        internal static class GraphDrawer
+        {
+            public static void Draw(Rect rect, float maxTime, int maxCalls, int entries, List<int> calls, List<float> times, bool showCalls, bool showTimes, ref int hoverIdx, ref string hoverStr)
+            {
+                var xIncrement = rect.width / (entries - 1.0f);
 
-                while (i > 0)
+                var timeCutoff = (maxTime / rect.height) / 5.0f; // if the difference between two times is worth less than .5, merge the points together
+                var callsCutoff = (maxCalls / rect.height) / 5.0f;
+
+                int i = 1, timesIndex = 0, callsIndex = 0;
+
+                for (; i < entries; i++)
                 {
-                    var adjIndex = entries - i;
-                    var timeEntry = (float)prof.times[arrayIndex];
-                    var hitsEntry = GUIController.CurrentEntry.type == typeof(H_HarmonyTranspilers) ? 0 : prof.hits[arrayIndex];
+                    var currentX = i * xIncrement;
 
-                    var y = position.height + (diff) * (timeEntry / WindowMax);
-                    Vector2 screenPoint = new Vector2(position.xMax - (gap * adjIndex), y);
-
-                    if (adjIndex != 0)
+                    if (showCalls)
                     {
-                        DubGUI.DrawLine(last, screenPoint, Modbase.Settings.LineCol, 1f, true);
-
-                        Rect relevantArea = new Rect(screenPoint.x - gap / 2f, position.y, gap, position.height);
-                        
-                        if (Mouse.IsOver(relevantArea))
+                        if (Mathf.Abs(calls[callsIndex] - calls[i]) > callsCutoff || i == entries - 1) // We need to draw a line, enough of a difference
                         {
-                            showTime = true;
-                            if (adjIndex != hoverVal)
+                            var prevY = GetAdjustedY(calls[callsIndex], (float) maxCalls);
+                            var nextY = GetAdjustedY(calls[i], (float) maxCalls);
+
+                            if (callsIndex != i - 1)
                             {
-                                hoverVal = adjIndex;
-                                hoverValStr = $"{timeEntry:0.00000}ms {hitsEntry} call";
-                                if (hitsEntry != 1) hoverValStr += "s";
+                                // The first line should be straight so, lets use the one with fewer draw calls
+                                Widgets.DrawLine(new Vector2(callsIndex * xIncrement, prevY), new Vector2((i - 1) * xIncrement, prevY), Modbase.Settings.callsColour, 1f);
+                                //DubGUI.DrawLine(new Vector2(callsIndex * xIncrement, prevY), new Vector2((i - 1) * xIncrement, prevY), Modbase.Settings.callsColour, 1f, true);
+                                DubGUI.DrawLine(new Vector2((i - 1) * xIncrement, prevY), new Vector2(currentX, nextY), Modbase.Settings.callsColour, 1f, true);
                             }
-                            SimpleCurveDrawer.DrawPoint(screenPoint);
+                            else 
+                            {
+                                DubGUI.DrawLine(new Vector2(callsIndex * xIncrement, prevY), new Vector2(currentX, nextY), Modbase.Settings.callsColour, 1f, true);
+                            }
+
+
+                            callsIndex = i;
+                        }
+                    }
+                    Text.Font = GameFont.Tiny;
+                    Text.Anchor = TextAnchor.MiddleCenter;
+
+                    if(showTimes)
+                    {
+                        if (Mathf.Abs(times[timesIndex] - times[i]) > timeCutoff || i == entries - 1)
+                        {
+                            var prevY = GetAdjustedY(times[timesIndex], maxTime); 
+                            var nextY = GetAdjustedY(times[i], maxTime);
+
+                            if (timesIndex != i - 1)
+                            {
+                                Widgets.DrawLine(new Vector2(timesIndex * xIncrement, prevY), new Vector2((i - 1) * xIncrement, prevY), Modbase.Settings.timeColour, 1f);
+                                //DubGUI.DrawLine(new Vector2(timesIndex * xIncrement, prevY), new Vector2(i - 1 * xIncrement, nextY), Modbase.Settings.timeColour, 1f, true);
+                                DubGUI.DrawLine(new Vector2((i - 1) * xIncrement, prevY), new Vector2(currentX, nextY), Modbase.Settings.timeColour, 1f, true);
+                            }
+                            else
+                            {
+                                DubGUI.DrawLine(new Vector2(timesIndex * xIncrement, prevY), new Vector2(currentX, nextY), Modbase.Settings.timeColour, 1f, true);
+                            }
+
+                            timesIndex = i;
                         }
                     }
 
-                    last = screenPoint;
+                    Rect relevantArea = new Rect(currentX - (xIncrement / 2f), 0, xIncrement, rect.height);
+                        
+                    if (Mouse.IsOver(relevantArea))
+                    {
+                        if (hoverIdx != i)
+                        {
+                            hoverStr = $"   {times[i]:0.00000}ms {calls[i]} call";
+                            if (calls[i] > 1) hoverStr += "s";
 
-                    i--;
-                    arrayIndex = (arrayIndex - 1);
-                    if (arrayIndex > Profiler.RECORDS_HELD) arrayIndex = Profiler.RECORDS_HELD - 1;
+                            hoverIdx = i;
+                        }
+
+                        SimpleCurveDrawer.DrawPoint(new Vector2( xIncrement * hoverIdx, 0));
+                    }
                 }
-
-                if (LastMax != max) MaxStr = $" Max: {max:0.0000}ms";
-
-                float LogMaxY = GenMath.LerpDoubleClamped(0, WindowMax, position.height, position.y, (float)max);
-                Rect crunt = position;
-                crunt.y = LogMaxY;
-                Widgets.Label(crunt, MaxStr); // $" Max Time: {max:0.0000}ms\nMax Calls: {maxCalls}");
-                Widgets.DrawLine(new Vector2(position.x, LogMaxY), new Vector2(position.xMax, LogMaxY), Color.red, 1f);
-
-                last = Vector2.zero;
+                
+                float GetAdjustedY(float y, float max)
+                {
+                    return rect.height - (rect.height * (y / max));
+                }
             }
-            GUI.EndGroup();
         }
     }
+
+
+
+    //public static class Panel_Graph
+    //{
+    //    private static int entryCount = 300;
+    //    private static string hoverValStr = string.Empty;
+
+
+
+    //    public static void DrawSettings(Rect rect)
+    //    {
+    //        var sliderRect = rect.RightPartPixels(200f).BottomPartPixels(30f);
+    //        sliderRect.x -= 15;
+    //        entryCount = (int) Widgets.HorizontalSlider(sliderRect, entryCount, 10, 2000, true, string.Intern($"{entryCount} Entries"));
+    //        sliderRect = new Rect(sliderRect.xMax + 5, sliderRect.y + 2, 10, 10);
+
+    //        DisplayColorPicker(sliderRect, true);
+    //        sliderRect.y += 12;
+    //        DisplayColorPicker(sliderRect, false);
+
+
+    //        rect.width -= 220;
+    //        Text.Anchor = TextAnchor.LowerRight;
+    //        Widgets.Label(rect, hoverValStr);
+    //        Text.Anchor = TextAnchor.UpperLeft;
+    //    }
+
+    //    public static void Draw(Rect position)
+    //    {
+    //        var prof = GUIController.CurrentProfiler;
+    //        if (prof == null) return;
+
+    //        Text.Font = GameFont.Small;
+
+    //        // Draw settings
+    //        var settingsBox = position.TopPartPixels(32f).ContractedBy(2f);
+    //        position = position.BottomPartPixels(position.height - settingsBox.height);
+    //        DrawSettings(settingsBox);
+
+    //        if(Event.current.type != EventType.Repaint) return;
+
+    //        // Draw Graph
+    //        DrawGraph(position);
+    //    }
+
+
+
+
+
+    //}
 }

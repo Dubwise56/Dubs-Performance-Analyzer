@@ -50,7 +50,7 @@ namespace Analyzer.Profiling
         public static void BeginUpdate()
         {
 #if DEBUG
-            if (!Analyzer.CurrentlyProfiling) return;
+            if (Analyzer.CurrentlyPaused) return;
 
             if (midUpdate) ThreadSafeLogger.Error("[Analyzer] Attempting to begin new update cycle when the previous update has not ended");
             midUpdate = true;

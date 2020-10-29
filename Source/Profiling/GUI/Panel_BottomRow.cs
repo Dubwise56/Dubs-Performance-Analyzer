@@ -31,12 +31,14 @@ namespace Analyzer.Profiling
             this.width = width;
             this.xStart = xStart;
             dragging = false;
+            if(row == RowName.Graph) graph = new Panel_Graph();
         }
 
         public RowName type;
         public float xStart;
         public float width;
         public bool dragging;
+        public Panel_Graph graph;
     }
 
     /*
@@ -120,7 +122,11 @@ namespace Analyzer.Profiling
                     if (Widgets.ButtonImage(topRect.RightPartPixels(Text.LineHeight), ResourceCache.GUI.Menu))
                     {
                         var enums = typeof(RowName).GetEnumValues();
-                        var list = (from object e in enums select new FloatMenuOption(((RowName) e).ToString(), () => panel.type = (RowName) e)).ToList();
+                        var list = (from object e in enums select new FloatMenuOption(((RowName) e).ToString(), () =>
+                        {
+                            panel.type = (RowName) e;
+                            panel.graph = panel.type == RowName.Graph ? new Panel_Graph() : null;
+                        })).ToList();
                         Find.WindowStack.Add(new FloatMenu(list));
                     }
 
@@ -133,7 +139,7 @@ namespace Analyzer.Profiling
                 
                 switch(panel.type)
                 {
-                    case RowName.Graph: Panel_Graph.Draw(panelRect); break;
+                    case RowName.Graph: panel.graph.Draw(panelRect); break;
                     case RowName.Stats: Panel_Stats.DrawStats(panelRect, currentProfilerInformation); break;
                     case RowName.Patches: Panel_Patches.Draw(panelRect, currentProfilerInformation); break;
                     case RowName.StackTrace: Panel_StackTraces.Draw(panelRect, currentProfilerInformation); break;
@@ -168,6 +174,7 @@ namespace Analyzer.Profiling
                 else
                 {
                     panels.Add(new BottomRowPanel(RowName.Graph, 0, availWidth));
+
                 }
             }
             rect.AdjustVerticallyBy(Text.LineHeight);
@@ -221,7 +228,6 @@ namespace Analyzer.Profiling
                 currentProfilerInformation = info;
                 return;
             }
-
 
             foreach (var patch in patches.Prefixes) CollectPatchInformation("Prefix", patch);
             foreach (var patch in patches.Postfixes) CollectPatchInformation("Postfix", patch);

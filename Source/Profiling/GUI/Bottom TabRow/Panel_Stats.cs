@@ -18,6 +18,7 @@ namespace Analyzer.Profiling
             var stats = new LogStats();
             stats.GenerateStats();
 
+            stats = null;
 
             lock (CurrentLogStats.sync)
             {
@@ -25,7 +26,6 @@ namespace Analyzer.Profiling
             }
 
             if (stats == null) return;
-
 
             Listing_Standard listing = new Listing_Standard();
             inrect.height = 9999.0f;

@@ -66,7 +66,7 @@ namespace Analyzer.Profiling
         }
 
         // Called a variadic amount depending on the user settings
-        // Calculates stats for all active profilers (not the currently selected one)
+        // Calculates stats for all active profilers (not only the currently selected one)
         internal static void FinishUpdateCycle()
         {
             if (ProfileController.Profiles.Count != 0)

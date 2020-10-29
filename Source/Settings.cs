@@ -12,7 +12,8 @@ namespace Analyzer
 {
     public class Settings : ModSettings
     {
-        public Color LineCol = new Color32(79, 147, 191, 255);
+        public Color timeColour = new Color32(79, 147, 191, 255);
+        public Color callsColour = new Color32(10, 10, 255, 255);
         public Color GraphCol = new Color32(17, 17, 17, 255);
 
         // Developer settings
@@ -28,7 +29,8 @@ namespace Analyzer
         {
             base.ExposeData();
 
-            Scribe_Values.Look(ref LineCol, "LineCol", new Color32(79, 147, 191, 255));
+            Scribe_Values.Look(ref timeColour, "timeColour", new Color32(79, 147, 191, 255));
+            Scribe_Values.Look(ref callsColour, "callsColour", new Color32(10, 10, 255, 255));
             Scribe_Values.Look(ref GraphCol, "GraphCol", new Color32(17, 17, 17, 255));
             Scribe_Values.Look(ref PathToDnspy, "dnspyPath");
             Scribe_Values.Look(ref updatesPerSecond, "updatesPerSecond", 2);

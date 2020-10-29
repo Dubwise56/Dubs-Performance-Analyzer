@@ -103,7 +103,7 @@ namespace Analyzer.Profiling
                 currentEntry.PatchMethods();
             }
 
-            currentEntry.SetActive(true);
+            currentEntry.SetActive(!Analyzer.CurrentlyPaused);
             currentCategory = currentEntry.category;
             currentTab = Tab(currentCategory);
         }
