@@ -62,18 +62,12 @@ namespace Analyzer.Profiling
             yOffset += 40f;
 
             Rect row = listing.GetRect(30f);
-
-            if (tab.Selected) Widgets.DrawOptionSelected(row);
-
             if (tab.category == Category.Settings)
             {
                 if (Widgets.ButtonInvisible(row)) tab.onClick();
             }
             else
             {
-                if (Widgets.ButtonInvisible(row.LeftPartPixels(row.width - row.height))) tab.onClick();
-
-
                 if (Widgets.ButtonImage(row.RightPartPixels(row.height), tab.collapsed ? DubGUI.DropDown : DubGUI.FoldUp)) tab.collapsed = !tab.collapsed;
             }
             row.x += 5f;
