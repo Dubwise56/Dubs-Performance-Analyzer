@@ -152,35 +152,70 @@ namespace Analyzer.Profiling
 
         public static void ExecutePatch()
         {
-            if (patchType == Category.Tick)
+            try
             {
-                switch (input)
+                if (patchType == Category.Tick)
                 {
-                    case CurrentInput.Method: MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetMethods(currentInput)); break;
-                    case CurrentInput.Type: MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetTypeMethods(AccessTools.TypeByName(currentInput))); break;
-                    case CurrentInput.MethodHarmony: MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetMethodsPatching(currentInput)); break;
-                    case CurrentInput.SubClasses: MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.SubClassImplementationsOf(AccessTools.TypeByName(currentInput), m => true)); break;
-                    case CurrentInput.TypeHarmony: MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetMethodsPatchingType(AccessTools.TypeByName(currentInput))); break;
-                    case CurrentInput.InternalMethod: Utility.PatchInternalMethod(currentInput, Category.Tick); return;
-                    case CurrentInput.Assembly: Utility.PatchAssembly(currentInput, Category.Tick); return;
-                }
+                    switch (input)
+                    {
+                        case CurrentInput.Method:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetMethods(currentInput));
+                            break;
+                        case CurrentInput.Type:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetTypeMethods(AccessTools.TypeByName(currentInput)));
+                            break;
+                        case CurrentInput.MethodHarmony:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetMethodsPatching(currentInput));
+                            break;
+                        case CurrentInput.SubClasses:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.SubClassImplementationsOf(AccessTools.TypeByName(currentInput), m => true));
+                            break;
+                        case CurrentInput.TypeHarmony:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersTick), Utility.GetMethodsPatchingType(AccessTools.TypeByName(currentInput)));
+                            break;
+                        case CurrentInput.InternalMethod:
+                            Utility.PatchInternalMethod(currentInput, Category.Tick);
+                            return;
+                        case CurrentInput.Assembly:
+                            Utility.PatchAssembly(currentInput, Category.Tick);
+                            return;
+                    }
 
-                GUIController.SwapToEntry("Custom Tick");
+                    GUIController.SwapToEntry("Custom Tick");
+                }
+                else
+                {
+                    switch (input)
+                    {
+                        case CurrentInput.Method:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetMethods(currentInput));
+                            break;
+                        case CurrentInput.Type:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetTypeMethods(AccessTools.TypeByName(currentInput)));
+                            break;
+                        case CurrentInput.MethodHarmony:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetMethodsPatching(currentInput));
+                            break;
+                        case CurrentInput.SubClasses:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.SubClassImplementationsOf(AccessTools.TypeByName(currentInput), m => true));
+                            break;
+                        case CurrentInput.TypeHarmony:
+                            MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetMethodsPatchingType(AccessTools.TypeByName(currentInput)));
+                            break;
+                        case CurrentInput.InternalMethod:
+                            Utility.PatchInternalMethod(currentInput, Category.Update);
+                            return;
+                        case CurrentInput.Assembly:
+                            Utility.PatchAssembly(currentInput, Category.Update);
+                            return;
+                    }
+
+                    GUIController.SwapToEntry("Custom Update");
+                }
             }
-            else
+            catch (Exception e)
             {
-                switch (input)
-                {
-                    case CurrentInput.Method: MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetMethods(currentInput)); break;
-                    case CurrentInput.Type: MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetTypeMethods(AccessTools.TypeByName(currentInput))); break;
-                    case CurrentInput.MethodHarmony: MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetMethodsPatching(currentInput)); break;
-                    case CurrentInput.SubClasses: MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.SubClassImplementationsOf(AccessTools.TypeByName(currentInput), m => true)); break;
-                    case CurrentInput.TypeHarmony: MethodTransplanting.UpdateMethods(typeof(CustomProfilersUpdate), Utility.GetMethodsPatchingType(AccessTools.TypeByName(currentInput))); break;
-                    case CurrentInput.InternalMethod: Utility.PatchInternalMethod(currentInput, Category.Update); return;
-                    case CurrentInput.Assembly: Utility.PatchAssembly(currentInput, Category.Update); return;
-                }
-
-                GUIController.SwapToEntry("Custom Update");
+                ThreadSafeLogger.Error($"Failed to process input, failed with the error {e.Message}");
             }
         }
 

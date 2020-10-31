@@ -122,12 +122,38 @@ namespace Analyzer.Profiling
             if (meth.ReflectedType != null) key = meth.ReflectedType.FullName + ":" + meth.Name;
             else key = meth.DeclaringType.FullName + ":" + meth.Name;
 
-            // Todo, I'd like to see generics as List<Type1, Type2>:Method, this'll require some regex.
-            if (key.Contains('`') && key.Contains(']')) // Gets rid of type & assembly info inside generic patches
+            if (!key.Contains('`') || !key.Contains(']')) return key;
+
+            // Format generics nicely.
+
+            var first = key.FirstIndexOf(c => c == '`');
+
+            var insertString = "<";
+
+            // sub string
+            var subString = key.Substring(first, (key.LastIndexOf(']') + 1) - first);
+            while (subString.Contains('['))
             {
-                var first = key.FirstIndexOf(c => c == '`');
-                key = key.Remove(first, (key.LastIndexOf(']') + 1) - first);
+                if (insertString.Length > 1) insertString += ", ";
+
+                var commaIndex = subString.FirstIndexOf(c => c == ',');
+
+                var cutOff = commaIndex;
+                while (subString[cutOff] != '.')
+                {
+                    cutOff--;
+                }
+
+                cutOff++;
+
+                insertString += subString.Substring(cutOff, commaIndex - cutOff);
+
+                subString = subString.Remove(0, subString.FirstIndexOf(c => c == ']') + 1);
             }
+            insertString += ">";
+
+            key = key.Remove(first, (key.LastIndexOf(']') + 1) - first);
+            key = key.Insert(first, insertString);
 
             return key;
         }

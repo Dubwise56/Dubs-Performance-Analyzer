@@ -31,17 +31,17 @@ namespace Analyzer.Profiling
 
         public static void Message(string message)
         {
-            if (!message.StartsWith("[Analyzer]")) message.Insert(0, "[Analyzer]");
+            if (!message.StartsWith("[Analyzer]")) message = message.Insert(0, "[Analyzer]");
             messages.Enqueue(new PendingMessage(message, new StackTrace(1, false), LogMessageType.Message));
         }
         public static void Warning(string message)
         {
-            if (!message.StartsWith("[Analyzer]")) message.Insert(0, "[Analyzer]");
+            if (!message.StartsWith("[Analyzer]")) message = message.Insert(0, "[Analyzer]");
             messages.Enqueue(new PendingMessage(message, new StackTrace(1, false), LogMessageType.Warning));
         }
         public static void Error(string message)
         {
-            if (!message.StartsWith("[Analyzer]")) message.Insert(0, "[Analyzer]");
+            if (!message.StartsWith("[Analyzer]")) message = message.Insert(0, "[Analyzer]");
             messages.Enqueue(new PendingMessage(message, new StackTrace(1, false), LogMessageType.Error));
         }
 

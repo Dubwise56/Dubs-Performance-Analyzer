@@ -294,14 +294,10 @@ namespace Analyzer.Profiling
             if (info.Contains("Assembly-CSharp")) return "Rimworld - Core";
             if (info.Contains("UnityEngine")) return "Rimworld - Unity";
             if (info.Contains("System")) return "Rimworld - System";
-            try
-            {
-                return ModInfoCache.AssemblyToModname[info];
-            }
-            catch (Exception)
-            {
-                return "Failed to locate assembly information";
-            }
+
+            if (ModInfoCache.AssemblyToModname.TryGetValue(info, out var value)) return value;
+            
+            return "Failed to locate assembly information";
         }
     }
 }
