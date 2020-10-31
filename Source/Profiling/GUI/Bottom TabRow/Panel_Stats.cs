@@ -38,7 +38,24 @@ namespace Analyzer.Profiling
             {
                 sb.AppendLine($" Method: {currentInformation.Value.methodName}, Mod: {currentInformation.Value.modName}");
                 sb.AppendLine($" Assembly: {currentInformation.Value.assname}, Patches: {currentInformation.Value.patches.Count}");
-                listing.Label(sb.ToString().TrimEndNewlines());
+
+                var modLabel = sb.ToString().TrimEndNewlines();
+                var rect = listing.GetRect(Text.CalcHeight(modLabel, listing.ColumnWidth));
+
+                Widgets.Label(rect, modLabel);
+                Widgets.DrawHighlightIfMouseover(rect);
+
+                if (Input.GetMouseButtonDown(1) && rect.Contains(Event.current.mousePosition)) // mouse button right
+                {
+                    var options = new List<FloatMenuOption>()
+                    {
+                        new FloatMenuOption("Open In Github", () => Panel_BottomRow.OpenGithub($"{currentInformation.Value.typeName}.{currentInformation.Value.methodName}")),
+                        new FloatMenuOption("Open In Dnspy (requires local path)", () => Panel_BottomRow.OpenDnspy(currentInformation.Value.method))
+                    };
+
+                    Find.WindowStack.Add(new FloatMenu(options));
+                }
+
                 listing.GapLine(2f);
 
                 sb.Clear();

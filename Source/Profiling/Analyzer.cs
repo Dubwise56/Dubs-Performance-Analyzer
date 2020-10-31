@@ -30,11 +30,13 @@ namespace Analyzer.Profiling
         private static object logicSync = new object();
 
         private static bool currentlyProfiling = false;
+        private static bool currentlyPaused = false;
 
         public static List<ProfileLog> Logs => logs;
         public static object LogicLock => logicSync;
 
-        public static bool CurrentlyPaused { get; set; } = false;
+
+        public static bool CurrentlyPaused { get => currentlyPaused; set => currentlyPaused = value; }
         public static bool CurrentlyProfiling => currentlyProfiling && !CurrentlyPaused;
 
         public static int GetCurrentLogCount => currentLogCount;

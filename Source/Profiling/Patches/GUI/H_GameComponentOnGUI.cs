@@ -12,7 +12,7 @@ namespace Analyzer.Profiling
     {
         public static bool Active = false;
 
-        public static IEnumerable<MethodInfo> GetPatchMethods() => typeof(GameComponent).AllSubclasses().Select(gc => gc.GetMethod("GameComponentOnGUI"));
+        public static IEnumerable<MethodInfo> GetPatchMethods() => Utility.SubClassNonAbstractImplementationsOf(typeof(GameComponent), t => t.Name == "GameComponentOnGUI");
         public static string GetLabel(GameComponent __instance) => __instance.GetType().Name;
     }
 }

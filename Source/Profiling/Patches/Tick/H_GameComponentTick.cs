@@ -12,20 +12,7 @@ namespace Analyzer.Profiling
     {
         public static bool Active = false;
 
-        public static IEnumerable<MethodInfo> GetPatchMethods()
-        {
-            var passedTypes = new List<Type>();
-            var types = typeof(GameComponent).AllSubclassesNonAbstract();
-
-            foreach (var type in types)
-            {
-                if(!passedTypes.Any(ty => type.IsAssignableFrom(ty)))
-                    passedTypes.Add(type);
-            }
-
-
-            return passedTypes.Select(gc => gc.GetMethod("GameComponentTick"));
-        }
+        public static IEnumerable<MethodInfo> GetPatchMethods() => Utility.SubClassNonAbstractImplementationsOf(typeof(GameComponent), t => t.Name == "GameComponentTick");
         public static string GetLabel(GameComponent __instance) => __instance.GetType().Name;
     }
 }

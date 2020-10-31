@@ -337,8 +337,9 @@ namespace Analyzer.Profiling
         {
             try
             {
-                GUIController.AddEntry(method.Name + "-int", category);
-                GUIController.SwapToEntry(method.Name + "-int");
+                var guiEntry = method.DeclaringType + ":" + method.Name + "-int";
+                GUIController.AddEntry(guiEntry, category);
+                GUIController.SwapToEntry(guiEntry);
 
                 InternalMethodUtility.PatchedInternals.Add(method);
 

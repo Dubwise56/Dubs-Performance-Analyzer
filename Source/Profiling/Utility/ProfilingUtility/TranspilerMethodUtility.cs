@@ -75,7 +75,7 @@ namespace Analyzer.Profiling
             {
                 // We only want added methods
                 if (thing.change != ChangeType.Added) continue;
-                if (!InternalMethodUtility.IsFunctionCall(thing.value.opcode) || !(thing.value.operand is MethodInfo)) continue;
+                if (!InternalMethodUtility.IsFunctionCall(thing.value.opcode) || !(thing.value.operand is MethodInfo meth)) continue;
 
                 // swap our instruction
                 var replaceInstruction = MethodTransplanting.ReplaceMethodInstruction(
@@ -85,19 +85,15 @@ namespace Analyzer.Profiling
                     index);
 
                 // Find the place it was in our method, and replace the instruction (Optimisation Opportunity to improve this)
-                var method = thing.value.operand as MethodInfo;
-
                 for (int i = 0; i < modInstList.Count; i++)
                 {
                     var instruction = modInstList[i];
-                    if (InternalMethodUtility.IsFunctionCall(instruction.opcode))
-                    {
-                        if(instruction.operand is MethodInfo info && info.Name == method.Name)
-                        {
-                            if (instruction != replaceInstruction) modInstList[i] = replaceInstruction;
-                            break;
-                        }
-                    }
+                    if (!InternalMethodUtility.IsFunctionCall(instruction.opcode)) continue;
+                    if (!(instruction.operand is MethodInfo info) || info.Name != meth.Name) continue;
+
+
+                    if (instruction != replaceInstruction) modInstList[i] = replaceInstruction;
+                    break;
                 }
             }
     

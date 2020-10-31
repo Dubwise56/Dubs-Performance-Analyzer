@@ -17,7 +17,7 @@ namespace Analyzer.Profiling
 
         public static IEnumerable<MethodInfo> GetPatchMethods()
         {
-            foreach(var meth in typeof(MapComponent).AllSubclasses().Select(mc => mc.GetMethod("MapComponentUpdate")))
+            foreach (var meth in Utility.SubClassNonAbstractImplementationsOf(typeof(MapComponent), t => t.Name == "MapComponentUpdate"))
                 yield return meth;
 
             yield return AccessTools.Method(typeof(SkyManager), nameof(SkyManager.SkyManagerUpdate));

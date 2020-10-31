@@ -289,58 +289,9 @@ namespace Analyzer.Profiling
                 {
                     return rect.height - (rect.height * (y / max));
                 }
+
+                Text.Anchor = TextAnchor.UpperLeft;
             }
         }
     }
-
-
-
-    //public static class Panel_Graph
-    //{
-    //    private static int entryCount = 300;
-    //    private static string hoverValStr = string.Empty;
-
-
-
-    //    public static void DrawSettings(Rect rect)
-    //    {
-    //        var sliderRect = rect.RightPartPixels(200f).BottomPartPixels(30f);
-    //        sliderRect.x -= 15;
-    //        entryCount = (int) Widgets.HorizontalSlider(sliderRect, entryCount, 10, 2000, true, string.Intern($"{entryCount} Entries"));
-    //        sliderRect = new Rect(sliderRect.xMax + 5, sliderRect.y + 2, 10, 10);
-
-    //        DisplayColorPicker(sliderRect, true);
-    //        sliderRect.y += 12;
-    //        DisplayColorPicker(sliderRect, false);
-
-
-    //        rect.width -= 220;
-    //        Text.Anchor = TextAnchor.LowerRight;
-    //        Widgets.Label(rect, hoverValStr);
-    //        Text.Anchor = TextAnchor.UpperLeft;
-    //    }
-
-    //    public static void Draw(Rect position)
-    //    {
-    //        var prof = GUIController.CurrentProfiler;
-    //        if (prof == null) return;
-
-    //        Text.Font = GameFont.Small;
-
-    //        // Draw settings
-    //        var settingsBox = position.TopPartPixels(32f).ContractedBy(2f);
-    //        position = position.BottomPartPixels(position.height - settingsBox.height);
-    //        DrawSettings(settingsBox);
-
-    //        if(Event.current.type != EventType.Repaint) return;
-
-    //        // Draw Graph
-    //        DrawGraph(position);
-    //    }
-
-
-
-
-
-    //}
 }

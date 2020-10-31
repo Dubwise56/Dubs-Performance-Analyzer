@@ -283,7 +283,8 @@ namespace Analyzer.Profiling
                 if (log.meth == null) return;
 
                 List<FloatMenuOption> options = RightClickDropDown(log).ToList();
-                Find.WindowStack.Add(new FloatMenu(options));
+
+                if(options.Count != 0) Find.WindowStack.Add(new FloatMenu(options));
             }
         }
 
@@ -308,11 +309,17 @@ namespace Analyzer.Profiling
         {
             var meth = log.meth as MethodInfo;
 
-            if (GUIController.CurrentEntry.name.Contains("Harmony")) // we can return an 'unpatch' for methods in a harmony tab
-                yield return new FloatMenuOption("Unpatch Method", () => Utility.UnpatchMethod(meth));
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
 
-            yield return new FloatMenuOption("Unpatch methods that patch", () => Utility.UnpatchMethodsOnMethod(meth));
-            yield return new FloatMenuOption("Profile the internal methods of", () => Utility.PatchInternalMethod(meth, GUIController.CurrentCategory));
+                if (GUIController.CurrentEntry.name.Contains("Harmony")) // we can return an 'unpatch' for methods in a harmony tab
+                    yield return new FloatMenuOption("Unpatch Method (Destructive)", () => Utility.UnpatchMethod(meth));
+
+                yield return new FloatMenuOption("Unpatch methods that patch (Destructive)", () => Utility.UnpatchMethodsOnMethod(meth));
+            }
+
+            if(GUIController.CurrentEntry.type != typeof(H_HarmonyTranspilers))
+                yield return new FloatMenuOption("Profile the internal methods of", () => Utility.PatchInternalMethod(meth, GUIController.CurrentCategory));
 
             // This part is WIP - it would require the ability to change the tab a method is active in on the fly
             // which is possible (with a transpiler to the current transpiler) but it would likely end up being
