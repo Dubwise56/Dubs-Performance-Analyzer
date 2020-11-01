@@ -23,7 +23,8 @@ namespace Analyzer.Fixes
         public static bool Prefix(PawnUIOverlay __instance)
         {
             if (!Enabled) return true;
-            if (!__instance.pawn.Spawned || __instance.pawn.Map.fogGrid.IsFogged(__instance.pawn.Position))
+
+            if (!__instance.pawn.Spawned)
             {
                 return false;
             }
@@ -57,7 +58,7 @@ namespace Analyzer.Fixes
 
 
             Text.Font = GameFont.Tiny;
-            var pawnLabel = pawn.LabelShortCap;
+            var pawnLabel =  pawn.Name.ToStringShort;
             var pawnLabelNameWidth = pawnLabel.GetWidthCached();
 
             var bgRect = new Rect(pos.x - pawnLabelNameWidth / 2f - 4f, pos.y, pawnLabelNameWidth + 8f, 12f);

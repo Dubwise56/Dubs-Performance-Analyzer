@@ -10,7 +10,7 @@ namespace Analyzer.Profiling
     {
         public static bool Active = false;
 
-        public static IEnumerable<MethodInfo> GetPatchMethods() { yield return AccessTools.Method(typeof(ThingOverlays), nameof(ThingOverlays.ThingOverlaysOnGUI)); }
+        public static IEnumerable<MethodInfo> GetPatchMethods() { yield return AccessTools.Method(typeof(Pawn), nameof(Pawn.DrawGUIOverlay)); }
         public static string GetLabel() => "ThingOverlaysOnGUI";
     }
 }
