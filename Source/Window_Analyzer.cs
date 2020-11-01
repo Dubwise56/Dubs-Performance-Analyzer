@@ -60,7 +60,7 @@ namespace Analyzer
             if (Analyzer.CurrentlyCleaningUp)
             {
                 Find.WindowStack.TryRemove(this);
-                Log.ErrorOnce("[Analyzer] Analyzer is currently in the process of cleaning up - This is unlikely to happen, and shouldn't take long. please attempt to re-open the window in a couple seconds", 0609040200);
+                ThreadSafeLogger.Error("[Analyzer] Analyzer is currently in the process of cleaning up - This is unlikely to happen, and shouldn't take long. please attempt to re-open the window in a couple seconds");
                 return;
             }
 
@@ -74,20 +74,21 @@ namespace Analyzer
 
             Analyzer.BeginProfiling();
 
-            if (!Modbase.isPatched)
-            {
-                Modbase.Harmony.Patch(AccessTools.Method(typeof(Root_Play), nameof(Root_Play.Update)),
-                    prefix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.Prefix)),
-                    postfix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.Postfix)));
+            if (Modbase.isPatched) return;
 
-                Modbase.Harmony.Patch(AccessTools.Method(typeof(TickManager), nameof(TickManager.DoSingleTick)),
+        
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(Root_Play), nameof(Root_Play.Update)),
+                prefix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.Prefix)),
+                postfix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.Postfix)));
+
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(TickManager), nameof(TickManager.DoSingleTick)),
 #if DEBUG
-                    prefix: new HarmonyMethod(typeof(H_DoSingleTickUpdate), nameof(H_DoSingleTickUpdate.Prefix)),
+            prefix: new HarmonyMethod(typeof(H_DoSingleTickUpdate), nameof(H_DoSingleTickUpdate.Prefix)),
 #endif
-                    postfix: new HarmonyMethod(typeof(H_DoSingleTickUpdate), nameof(H_DoSingleTickUpdate.Postfix)));
+            postfix: new HarmonyMethod(typeof(H_DoSingleTickUpdate), nameof(H_DoSingleTickUpdate.Postfix)));
 
-                Modbase.isPatched = true;
-            }
+            Modbase.isPatched = true;
+            
         }
 
         public override void PostClose()
@@ -134,7 +135,7 @@ namespace Analyzer
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e.ToString());
+                    ThreadSafeLogger.Error(e.ToString());
                 }
             }
 

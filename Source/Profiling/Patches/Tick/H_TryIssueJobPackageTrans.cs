@@ -193,7 +193,6 @@ namespace Analyzer.Profiling
 
         public static void ProfilePatch()
         {
-            Log.Message("Patching workgiver");
             HarmonyMethod pre = new HarmonyMethod(typeof(H_TryIssueJobPackage), nameof(Prefix));
             System.Reflection.MethodInfo o = AccessTools.Method(typeof(JobGiver_Work), "TryIssueJobPackage", new Type[] { typeof(Pawn), typeof(JobIssueParams) });
             Modbase.Harmony.Patch(o, pre);

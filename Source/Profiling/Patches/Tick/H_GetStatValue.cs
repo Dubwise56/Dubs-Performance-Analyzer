@@ -69,7 +69,7 @@ namespace Analyzer.Profiling
                 }
                 catch (Exception)
                 {
-                    Log.Error($"Analyzer: Failed to patch {allLeafSubclass} from {allLeafSubclass.Assembly.FullName} for profiling");
+                    ThreadSafeLogger.Error($"Failed to patch {allLeafSubclass} from {allLeafSubclass.Assembly.FullName} for profiling");
                 }
 
             }

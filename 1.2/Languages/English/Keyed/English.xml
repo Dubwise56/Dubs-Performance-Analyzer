@@ -24,7 +24,7 @@
 	<settings.dnspy>Path to Dnspy (Including the Exe)</settings.dnspy>
 	<settings.ups>Stat updates per second</settings.ups>
 	<settings.logging>Verbose Logging</settings.logging>
-	<settings.side.panel>Enable Side Panel</settings.side.panel>
+	<settings.disable.tps.counter>Disable FPS and TPS Counter</settings.disable.tps.counter>
 	<settings.disable.cleanup>Disable automatic cleanup</settings.disable.cleanup>
 	<settings.disable.cleanup.desc>Do NOT do this if you do not know what you are doing. This will prevent analyzer from cleaning up from after itself automatically. Analyzer can be forced to manually cleanup immediately by right clicking the menu tab button and selecting 'Cleanup'</settings.disable.cleanup.desc>
 

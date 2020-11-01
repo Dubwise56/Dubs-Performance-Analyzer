@@ -112,7 +112,7 @@ namespace Analyzer.Profiling
             var curTypeMeth = curType.GetMethod("GetType", BindingFlags.Public | BindingFlags.Static);
 
 
-            var key = Utility.GetMethodKey(__originalMethod as MethodInfo);
+            var key = Utility.GetMethodKey(__originalMethod as MethodInfo); // This translates our method into a human-legible key, I.e. Namespace.Type<Generic>:Method
             var methodKey = MethodInfoCache.AddMethod(key, __originalMethod as MethodInfo);
 
 
@@ -205,7 +205,7 @@ namespace Analyzer.Profiling
             }
 
             yield return new CodeInstruction(OpCodes.Call, Profiler_Start);
-            yield return new CodeInstruction(OpCodes.Pop);
+            yield return new CodeInstruction(OpCodes.Pop); // profiler.Start returns itself
 
             { // Add to the Profilers dictionary, so we cache creation.
                 yield return new CodeInstruction(OpCodes.Ldsfld, ProfilerController_Profiles);

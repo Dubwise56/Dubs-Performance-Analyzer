@@ -20,8 +20,8 @@ namespace Analyzer
         public static string @PathToDnspy = "";
         public static float updatesPerSecond = 2;
         public static bool verboseLogging = false;
-        public static bool sidePanel = false;
         public static bool disableCleanup = false;
+        public static bool disableTPSCounter = false;
 
         // Performance Settings are held in the type which implements the optimisation
 
@@ -35,8 +35,8 @@ namespace Analyzer
             Scribe_Values.Look(ref PathToDnspy, "dnspyPath");
             Scribe_Values.Look(ref updatesPerSecond, "updatesPerSecond", 2);
             Scribe_Values.Look(ref verboseLogging, "verboseLogging", false);
-            Scribe_Values.Look(ref sidePanel, "sidePanel", false);
             Scribe_Values.Look(ref disableCleanup, "disableCleanup", false);
+            Scribe_Values.Look(ref disableTPSCounter, "disableTPSCounter", false);
 
             // We save/load all performance-related settings here.
             PerformancePatches.ExposeData();

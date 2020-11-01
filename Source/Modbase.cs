@@ -49,9 +49,9 @@ namespace Analyzer
             }
 
 #if DEBUG
-            Log.Warning("==========================================================================");
-            Log.Warning("                   Analyzer Running In Debug Mode                         ");
-            Log.Warning("==========================================================================");
+            ThreadSafeLogger.Warning("==========================================================================");
+            ThreadSafeLogger.Warning("                   Analyzer Running In Debug Mode                         ");
+            ThreadSafeLogger.Warning("==========================================================================");
 #endif
         }
 

@@ -51,13 +51,12 @@ namespace Analyzer
             // Settings
             public static string settings_wiki => "settings.wiki".TranslateSimple();
             public static string settings_discord => "settings.discord".TranslateSimple();
-            public static string settings_heading => "settings".TranslateSimple();
             public static string settings_dnspy => "settings.dnspy".TranslateSimple();
             public static string settings_updates_per_second => "settings.ups".TranslateSimple();
             public static string settings_logging => "settings.logging".TranslateSimple();
-            public static string settings_side_panel => "settings.side.panel".TranslateSimple();
             public static string settings_disable_cleanup => "settings.disable.cleanup".TranslateSimple();
             public static string settings_disable_cleanup_desc => "settings.disable.cleanup.desc".TranslateSimple();
+            public static string settings_disable_tps_counter => "settings.disable.tps.counter".TranslateSimple();
 
             // Dev Options
             public static string devoptions_input_method => "devoptions.input.method".TranslateSimple();

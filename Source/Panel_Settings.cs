@@ -100,7 +100,7 @@ namespace Analyzer
             DubGUI.InputField(listing.GetRect(Text.LineHeight), ResourceCache.Strings.settings_dnspy, ref Settings.PathToDnspy, ShowName: true);
             DubGUI.LabeledSliderFloat(listing, ResourceCache.Strings.settings_updates_per_second, ref Settings.updatesPerSecond, 1.0f, 20.0f);
             DubGUI.Checkbox(ResourceCache.Strings.settings_logging, listing, ref Settings.verboseLogging);
-            DubGUI.Checkbox(ResourceCache.Strings.settings_side_panel, listing, ref Settings.sidePanel);
+            DubGUI.Checkbox(ResourceCache.Strings.settings_disable_tps_counter, listing, ref Settings.disableTPSCounter);
 
             var s = ResourceCache.Strings.settings_disable_cleanup;
             var size = Mathf.CeilToInt(s.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight;

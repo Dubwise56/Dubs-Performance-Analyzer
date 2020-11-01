@@ -25,6 +25,7 @@ namespace Analyzer
 
         public static void Prefix(float leftX, float width, ref float curBaseY)
         {
+            if (Settings.disableTPSCounter && !Profiling.Analyzer.CurrentlyProfiling) return;
 
             float trm = Find.TickManager.TickRateMultiplier;
             tpsTarget = (int)Math.Round((trm == 0f) ? 0f : (60f * trm));
