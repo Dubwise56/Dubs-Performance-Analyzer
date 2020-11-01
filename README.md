@@ -1,7 +1,7 @@
 # Basic Understanding
 
 ## Lingo
-![Lingo](About/Identification.png)
+![Lingo](About/identification_lingo.png)
 
 ## Some Simple Statistics
 Rimworld's update cycle is broken up into units called *ticks*. Ticks measure the speed at which things change within the game. When you adjust the game speed in the bottom right, you increase the amount of ticks the game tries to execute per second. At 1x, it tries to reach 60 *ticks per second* (tps); at 2x, 180tps; at 3x, 360tps; and the dev mode 4x (also accessible through the Smart Speed mod), 900tps. These numbers are doubled whenever all player-controlled pawns on a map are sleeping.
@@ -25,7 +25,7 @@ The graph which pops up when selecting a log displays the a realtime view of the
 ## Finding a Mod a method is from
 Finding slow logs (and the associated method) is all well and good, and useful for modders, but for a user it is not something which helps. When you select a log, a panel will pop-up which contains information about which mod the method comes from, the dll, and some extra statistics.
 
-![Locate Mod](About/LocateMod.png)
+![Locate Mod](About/locate_mod.png)
 
 This will (if possible) show you the mod, and the assembly that the method is attributed to. This will not always work, mods often (annoyingly) package dependent dll's in their mods, so they don't have to have an explicit dependency on another mod. This will not get picked up, and ***can*** mis-attribute the 'source' of the lag. 
 
@@ -57,12 +57,12 @@ In the analyzer settings there is checkbox that, when enabled, will 'link' dnSpy
 
 Provide the absolute path to (and including) the dnSpy.exe. This allows it to be accessed via command line from in game by the Analyzer.
 
-![Open in Dnspy](About/OpenInDnspy.gif)
+![Open in Dnspy](About/open_dnspy.gif)
 
 ## Internal Profiling
 You can right-click the logs themselves to internal profile the method. This will show the methods which comprise the method you are profiling and the time it takes to execute them. This will open up a new entry named 'Method-int' which can be closed by right clicking on the entry itself.
 
-![Profile Internal Method](About/ProfileInternalMethod.gif)
+![Profile Internal Method](About/internal_meth_profilng.gif)
 
 ## Custom Profiling
 While using the Analyzer, there are a variety of ways by which methods can be profiled. These are displayed on the main dev page.
@@ -76,7 +76,7 @@ You can patch:
 - Method Internals (Internal method profiling on a given method)
 - Mod/Assembly (Patch all the methods implemented in an assembly)
 
-![Modders Patching](About/PatchingPage.png)
+![Modders Patching](About/custom_patching.png)
 
 ## Stack Traces
 You can view where a method is being called from by using the stack trace panel (accessible from the cog on the bottom panel windows). This will show you all the unique methods which are calling the method you are profiling, keep in mind that this will slow down your game significantly, mainly due to the retrieving of the stack trace itelf.
