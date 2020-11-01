@@ -72,10 +72,14 @@ You can patch:
 - Type (All the methods inside a type)
 - Patches on a Method (All the Harmony Patches which effect a method)
 - Patches on a Type (All the Harmony Patches which effect the methods of a type)
+- Subtypes of a Type (All methods in the subtypes of a given type)
 - Method Internals (Internal method profiling on a given method)
 - Mod/Assembly (Patch all the methods implemented in an assembly)
 
 ![Modders Patching](About/PatchingPage.png)
+
+## Stack Traces
+You can view where a method is being called from by using the stack trace panel (accessible from the cog on the bottom panel windows). This will show you all the unique methods which are calling the method you are profiling, keep in mind that this will slow down your game significantly, mainly due to the retrieving of the stack trace itelf.
 
 ---
 # For Modders
@@ -83,7 +87,7 @@ You can patch:
 ## Exceptions
 When exceptions are thrown in a method that is being profiled, The timer will be completely ***incorrect***. This is because the Stopwatch's `Stop()` function will never be called. This could hypothetically be remedied by using a Finalizer (or a raw try-catch), but this will incur a large amount of overhead, likely slowing the game to a crawl in entries with large amounts of methods. 
 
-There is the potential of in the future making a switch which would enable you to profile while including a try-catch for specific methods. However it is more work than it is worth currently, if it is a feature you would like, you are free to implement it yourself [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L79-L227)
+There is the potential of in the future making a switch which would enable you to profile while including a try-catch for specific methods. However it is more work than it is worth currently, if it is a feature you would like, you are free to implement it yourself [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L102-L282)
 
 ## Using the Analyzer.xml
 You can create a tab in the Analyzer specifically for your mod ahead of time by creating an XML file. This saves you the work of having to repatch the same methods to profile your mod during development. The file should be formatted as follows:
@@ -159,7 +163,7 @@ The stack will, after the transpiler, look like
 011 ret 
 ```
 
-The implementation for this is [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L79-L227)
+The implementation for this is [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L102-L282)
 
 ## Technical Explanations
 
@@ -212,7 +216,7 @@ public static void Foo_runtimeReplacement(int param2, int local2)
 ```
 The `Stopwatch.Start();` above is simplified because the process here is specific to how Analyzer collects data on methods, and thus is unimportant to the example.
 
-The implementation of this is [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L274-L370)
+The implementation of this is [here](Source/Profiling/Utility/ProfilingUtility/MethodTransplanting.cs#L292-L393)
 
 ### Transpiler Profiling
 Transpiler profiling is done using a relatively simple approach. The IL of the original method is compared to the current IL (after all transpilers have been applied) and a diff algorithm is applied. This profiling hinges on the fact that the diff algorithm is correct (which it may not always be!), I'd greatly appreciate examples where the algorithm *incorrectly* attributes an 'Added' method when no such method was added. Or improvements to the diff algorithm itself [here](Source/Profiling/Utility/Myers.cs)
