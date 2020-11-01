@@ -22,13 +22,12 @@ When looking at logs in the Row format, the coloured bar indicates the percentag
 
 The graph which pops up when selecting a log displays the a realtime view of the collective time the method is taking for a given update period. If you are in an entry in the Tick category, this update period will be one tick, otherwise it will just be a frame. The graph is useful for discerning patterns in the information, which the average/max will be able to display.
 
-
-## Finding the mod a method is from by using the side panel
-Finding slow logs (and the associated method) is all well and good, and useful for modders, but for a user it is not something which helps. In the settings, if you enable the `Side Panel` setting, you will be able to open a tab which looks like 
+## Finding a Mod a method is from
+Finding slow logs (and the associated method) is all well and good, and useful for modders, but for a user it is not something which helps. When you select a log, a panel will pop-up which contains information about which mod the method comes from, the dll, and some extra statistics.
 
 ![Locate Mod](About/LocateMod.png)
 
-This will (if possible) show you the mod, and the assembly that the method is attributed to.
+This will (if possible) show you the mod, and the assembly that the method is attributed to. This will not always work, mods often (annoyingly) package dependent dll's in their mods, so they don't have to have an explicit dependency on another mod. This will not get picked up, and ***can*** mis-attribute the 'source' of the lag. 
 
 ---
 # Basic Troubleshooting
@@ -54,20 +53,16 @@ If you see the error *[Analyzer] Analyzer is currently in the process of cleanin
 # Advanced Usage
 
 ## Linking Analyzer to Dnspy
-In the analyzer settings there is checkbox that, when enabled, will 'link' dnSpy to the Analyzer. This will allow you to directly open methods from inside the Analyzer from any mod within dnSpy.
+In the analyzer settings there is checkbox that, when enabled, will 'link' dnSpy to the Analyzer. This will allow you to directly open methods from inside the Analyzer from any loaded mod within dnSpy.
 
 Provide the absolute path to (and including) the dnSpy.exe. This allows it to be accessed via command line from in game by the Analyzer.
 
-![Open in Dnspy](About/OpenInDnspy.png)
-
-[Add Gif going from in game -> dnspy]
+![Open in Dnspy](About/OpenInDnspy.gif)
 
 ## Internal Profiling
 You can right-click the logs themselves to internal profile the method. This will show the methods which comprise the method you are profiling and the time it takes to execute them. This will open up a new entry named 'Method-int' which can be closed by right clicking on the entry itself.
 
-![Profile Internal Method](About/ProfileInternalMethod.png)
-
-![Close Entry](About/CloseEntry.png)
+![Profile Internal Method](About/ProfileInternalMethod.gif)
 
 ## Custom Profiling
 While using the Analyzer, there are a variety of ways by which methods can be profiled. These are displayed on the main dev page.
