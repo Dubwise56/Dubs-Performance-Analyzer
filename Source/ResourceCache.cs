@@ -31,6 +31,8 @@ namespace Analyzer
             public static Texture2D disco = ContentFinder<Texture2D>.Get("DPA/UI/discord", false);
             public static Texture2D Support = ContentFinder<Texture2D>.Get("DPA/UI/Support", false);
             public static Texture2D enter = ContentFinder<Texture2D>.Get("DPA/UI/enter", false);
+            public static Texture2D refresh = ContentFinder<Texture2D>.Get("DPA/UI/Refresh", false);
+
         }
 
         public static class Strings // May want to disable Code Lens for the formatting here...
@@ -69,6 +71,7 @@ namespace Analyzer
 
             // Top Row
             public static string top_pause_analyzer => "top.pause.analyzer".TranslateSimple();
+            public static string top_refresh => "top.refresh".TranslateSimple();
             public static string top_search => "top.search".TranslateSimple();
             public static string top_gc_tip => "top.gc.tip".TranslateSimple();
             public static string top_fps_tip => "top.fps.tip".TranslateSimple();

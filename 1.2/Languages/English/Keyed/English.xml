@@ -44,6 +44,7 @@
 
 	<!--Top Row-->
 	<top.pause.analyzer>Pause/Unpause profiling that the analyzer is done, this is not equivalent to unpatching</top.pause.analyzer>
+	<top.refresh>Refresh the list of logs</top.refresh>
 	<top.search>Search by name or time to filter which entries show</top.search>
 	<top.gc.tip>This will show a rough estimate of the memory consumed and thrown away at a given time</top.gc.tip>
 	<top.fps.tip>This will show your calculated frames per second</top.fps.tip>

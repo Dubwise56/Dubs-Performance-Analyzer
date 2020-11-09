@@ -50,7 +50,7 @@ namespace Analyzer
 
 #if DEBUG
             ThreadSafeLogger.Warning("==========================================================================");
-            ThreadSafeLogger.Warning("                   Analyzer Running In Debug Mode                         ");
+            ThreadSafeLogger.Warning("                          Analyzer Running In Debug Mode                  ");
             ThreadSafeLogger.Warning("==========================================================================");
 #endif
         }

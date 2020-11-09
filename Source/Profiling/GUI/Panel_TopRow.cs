@@ -23,6 +23,14 @@ namespace Analyzer.Profiling
             }
 
             TooltipHandler.TipRegion(row, ResourceCache.Strings.top_pause_analyzer);
+            rect.AdjustHorizonallyBy(25f);
+
+            row = rect.LeftPartPixels(25);
+            if (Widgets.ButtonImage(row, ResourceCache.GUI.refresh))
+            {
+                Analyzer.RefreshLogCount();
+            }
+            TooltipHandler.TipRegion(row, ResourceCache.Strings.top_refresh);
 
             Rect searchbox = rect.LeftPartPixels(rect.width - 350f);
             searchbox.x += 25f;

@@ -161,8 +161,6 @@ namespace Analyzer.Profiling
         {
             DrawSettings(this, ref rect);
 
-            if (Event.current.type != EventType.Repaint) return;
-
             DrawGraph(rect);
         }
 
@@ -201,6 +199,9 @@ namespace Analyzer.Profiling
                 if (arrayIndex > Profiler.RECORDS_HELD) arrayIndex = Profiler.RECORDS_HELD - 1;
             }
 
+            calls.Reverse();
+            times.Reverse();
+
             GraphDrawer.Draw(rect, timesMax, callsMax, entries, calls, times, showCalls, showTimes, ref hoverIdx, ref hoverString);
 
             GUI.EndGroup();
@@ -231,8 +232,8 @@ namespace Analyzer.Profiling
                             if (callsIndex != i - 1)
                             {
                                 // The first line should be straight so, lets use the one with fewer draw calls
-                                Widgets.DrawLine(new Vector2(callsIndex * xIncrement, prevY), new Vector2((i - 1) * xIncrement, prevY), Modbase.Settings.callsColour, 1f);
-                                //DubGUI.DrawLine(new Vector2(callsIndex * xIncrement, prevY), new Vector2((i - 1) * xIncrement, prevY), Modbase.Settings.callsColour, 1f, true);
+                                //Widgets.DrawLine(new Vector2(callsIndex * xIncrement, prevY), new Vector2((i - 1) * xIncrement, prevY), Modbase.Settings.callsColour, 1f);
+                                DubGUI.DrawLine(new Vector2(callsIndex * xIncrement, prevY), new Vector2((i - 1) * xIncrement, prevY), Modbase.Settings.callsColour, 1f, true);
                                 DubGUI.DrawLine(new Vector2((i - 1) * xIncrement, prevY), new Vector2(currentX, nextY), Modbase.Settings.callsColour, 1f, true);
                             }
                             else 
@@ -256,8 +257,8 @@ namespace Analyzer.Profiling
 
                             if (timesIndex != i - 1)
                             {
-                                Widgets.DrawLine(new Vector2(timesIndex * xIncrement, prevY), new Vector2((i - 1) * xIncrement, prevY), Modbase.Settings.timeColour, 1f);
-                                //DubGUI.DrawLine(new Vector2(timesIndex * xIncrement, prevY), new Vector2(i - 1 * xIncrement, nextY), Modbase.Settings.timeColour, 1f, true);
+                                //Widgets.DrawLine(new Vector2(timesIndex * xIncrement, prevY), new Vector2((i - 1) * xIncrement, prevY), Modbase.Settings.timeColour, 1f);
+                                DubGUI.DrawLine(new Vector2(timesIndex * xIncrement, prevY), new Vector2((i - 1) * xIncrement, prevY), Modbase.Settings.timeColour, 1f, true);
                                 DubGUI.DrawLine(new Vector2((i - 1) * xIncrement, prevY), new Vector2(currentX, nextY), Modbase.Settings.timeColour, 1f, true);
                             }
                             else
@@ -281,7 +282,8 @@ namespace Analyzer.Profiling
                             hoverIdx = i;
                         }
 
-                        SimpleCurveDrawer.DrawPoint(new Vector2( xIncrement * hoverIdx, 0));
+                        var y = !showTimes ? GetAdjustedY(calls[i], maxCalls) : GetAdjustedY(times[i], maxTime);
+                        SimpleCurveDrawer.DrawPoint(new Vector2( xIncrement * hoverIdx, y));
                     }
                 }
                 

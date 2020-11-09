@@ -68,7 +68,7 @@ namespace Analyzer.Profiling
             if (patchedMeths.Contains(meth))
             {
 #if DEBUG
-                ThreadSafeLogger.Warning($"[Analyzer] Already patched method {meth.Name}");
+                ThreadSafeLogger.Warning($"[Analyzer] Already patched method {meth.DeclaringType.FullName + ":" + meth.Name}");
 #else
                 if (Settings.verboseLogging)
                     ThreadSafeLogger.Warning($"[Analyzer] Already patched method {meth.DeclaringType.FullName + ":" + meth.Name}");
@@ -88,7 +88,7 @@ namespace Analyzer.Profiling
                 catch (Exception e)
                 {
 #if DEBUG
-                    ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.Name} failed with the error {e.Message}");
+                    ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.DeclaringType.FullName + ":" + meth.Name} failed with the error {e.Message}");
 #else
                     if (Settings.verboseLogging)
                         ThreadSafeLogger.Warning($"[Analyzer] Failed to patch method {meth.DeclaringType.FullName}:{meth.Name} failed with the error {e.Message}");

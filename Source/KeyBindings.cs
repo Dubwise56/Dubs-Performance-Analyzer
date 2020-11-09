@@ -1,4 +1,5 @@
 ﻿using System;
+using Analyzer.Performance;
 using Analyzer.Profiling;
 using HarmonyLib;
 using RimWorld;
@@ -12,11 +13,13 @@ namespace Analyzer
     {
         private static KeyBindingDef key;
         private static KeyBindingDef restartkey;
+        private static KeyBindingDef alertKey;
 
         static H_KeyPresses()
         {
             key = KeyBindingDef.Named("DubsOptimizerKey");
             restartkey = KeyBindingDef.Named("DubsOptimizerRestartKey");
+            alertKey = KeyBindingDef.Named("dpa_ToggleAlertBlock");
             PatchMe(Modbase.StaticHarmony);
         }
 
@@ -54,6 +57,11 @@ namespace Analyzer
             catch (Exception e)
             {
                 ThreadSafeLogger.Error(e.ToString());
+            }
+
+            if (alertKey.KeyDownEvent)
+            {
+                H_AlertsReadoutUpdate.DisableAlerts = !H_AlertsReadoutUpdate.DisableAlerts;
             }
         }
     }
