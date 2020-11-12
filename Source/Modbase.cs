@@ -24,11 +24,21 @@ namespace Analyzer
         private static Harmony staticHarmony = null;
         public static Harmony StaticHarmony => staticHarmony ??= new Harmony("Dubswise.PerformanceAnalyzer");
 
+        // Major - Reworked functionality
+        // Minor - New feature
+        // Build - New Change
+        // Revision - Hotfix
+
+        private static readonly Version analyzerVersion = new Version(1, 0, 1, 1);
+
         public static bool isPatched = false;
 
         public Modbase(ModContentPack content) : base(content)
         {
             Settings = GetSettings<Settings>();
+
+            ThreadSafeLogger.Message($"[Analyzer] Loaded version {analyzerVersion.Major}.{analyzerVersion.Minor}.{analyzerVersion.Build} rev {analyzerVersion.Revision}");
+
 
             { // Profiling
                 ModInfoCache.PopulateCache(Content.Name);
@@ -53,6 +63,7 @@ namespace Analyzer
             ThreadSafeLogger.Warning("                          Analyzer Running In Debug Mode                  ");
             ThreadSafeLogger.Warning("==========================================================================");
 #endif
+
         }
 
         public override void DoSettingsWindowContents(Rect inRect)
