@@ -67,6 +67,7 @@
     <Compile Include="Performance\Patches\H_ZoomThrottle.cs" />
     <Compile Include="Performance\PerfPatch.cs" />
     <Compile Include="Performance\PerformancePatches.cs" />
+    <Compile Include="Profiling\GUI\Bottom TabRow\Graph\GraphDrawer.cs" />
     <Compile Include="Profiling\GUI\Bottom TabRow\Panel_StackTraces.cs" />
     <Compile Include="Profiling\GUI\Bottom TabRow\Panel_Stats.cs" />
     <Compile Include="Profiling\GUI\Bottom TabRow\Panel_Patches.cs" />
@@ -82,7 +83,7 @@
     <Compile Include="Profiling\GUI\Constructs\GUIController.cs" />
     <Compile Include="GUIElement_TPS.cs" />
     <Compile Include="Profiling\GUI\Panel_Tabs.cs" />
-    <Compile Include="Profiling\GUI\Bottom TabRow\Panel_Graph.cs" />
+    <Compile Include="Profiling\GUI\Bottom TabRow\Graph\Panel_Graph.cs" />
     <Compile Include="Profiling\GUI\Panel_TopRow.cs" />
     <Compile Include="Profiling\Patches\Update\H_SectionLayer_ThingsDrawLayer.cs" />
     <Compile Include="Window_Analyzer.cs" />
@@ -189,6 +190,7 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

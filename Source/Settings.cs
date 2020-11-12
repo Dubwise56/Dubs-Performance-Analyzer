@@ -1,4 +1,5 @@
 ﻿using Analyzer.Performance;
+using Analyzer.Profiling;
 using RimWorld;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,13 @@ namespace Analyzer
         public override void ExposeData()
         {
             base.ExposeData();
+
+            
+            Scribe_Values.Look(ref GraphSettings.lineAliasing, "lineAliasing", 7.5f);
+            Scribe_Values.Look(ref GraphSettings.showMax, "showMax", false);
+            Scribe_Values.Look(ref GraphSettings.showAxis, "showAxis", true);
+            Scribe_Values.Look(ref GraphSettings.showGrid, "showGrid", true);
+
 
             Scribe_Values.Look(ref timeColour, "timeColour", new Color32(79, 147, 191, 255));
             Scribe_Values.Look(ref callsColour, "callsColour", new Color32(10, 10, 255, 255));

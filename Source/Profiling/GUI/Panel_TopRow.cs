@@ -28,8 +28,9 @@ namespace Analyzer.Profiling
             row = rect.LeftPartPixels(25);
             if (Widgets.ButtonImage(row, ResourceCache.GUI.refresh))
             {
-                Analyzer.RefreshLogCount();
+                GUIController.ResetProfilers();
             }
+
             TooltipHandler.TipRegion(row, ResourceCache.Strings.top_refresh);
 
             Rect searchbox = rect.LeftPartPixels(rect.width - 350f);
