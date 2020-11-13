@@ -73,6 +73,7 @@
     <Compile Include="Profiling\GUI\Bottom TabRow\Panel_Patches.cs" />
     <Compile Include="Profiling\GUI\Panel_BottomRow.cs" />
     <Compile Include="Profiling\GUI\Panel_DevOptions.cs" />
+    <Compile Include="Profiling\GUI\Window_SearchBar.cs" />
     <Compile Include="Profiling\Patches\Custom\CustomTick.cs" />
     <Compile Include="Profiling\Patches\GUI\H_ThingOverlaysOnGUI.cs" />
     <Compile Include="Profiling\Patches\Tick\H_PawnGeneration.cs" />

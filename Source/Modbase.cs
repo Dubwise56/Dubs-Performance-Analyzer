@@ -26,10 +26,10 @@ namespace Analyzer
 
         // Major - Reworked functionality
         // Minor - New feature
-        // Build - New Change
+        // Build - Change Existing Feature
         // Revision - Hotfix
 
-        private static readonly Version analyzerVersion = new Version(1, 0, 1, 1);
+        private static readonly Version analyzerVersion = new Version(1, 0, 2, 1);
 
         public static bool isPatched = false;
 
