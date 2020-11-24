@@ -103,9 +103,6 @@
 	<entry.tick.lord>Lords</entry.tick.lord>
 	<entry.tick.lord.tooltip>Lords are used for group AI, like weddings, raids, traders etc</entry.tick.lord.tooltip>
 
-	<entry.tick.pathfinder>Pathfinding</entry.tick.pathfinder>
-	<entry.tick.pathfinder.tooltip>Shows a variety of methods which are used in pathfinding</entry.tick.pathfinder.tooltip>
-
 	<entry.tick.stats>Statistics</entry.tick.stats>
 	<entry.tick.stats.tooltip>A variety of methods which are used to calculate and looking up stat-based values</entry.tick.stats.tooltip>
 
