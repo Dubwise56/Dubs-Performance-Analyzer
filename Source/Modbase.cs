@@ -28,7 +28,7 @@ namespace Analyzer
         // Build - Change Existing Feature
         // Revision - Hotfix
 
-        private static readonly Version analyzerVersion = new Version(1, 1, 2, 2);
+        private static readonly Version analyzerVersion = new Version(1, 1, 2, 3);
 
         public static bool isPatched = false;
 
