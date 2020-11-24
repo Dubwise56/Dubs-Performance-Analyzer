@@ -153,8 +153,8 @@ namespace Analyzer.Profiling
             Text.Anchor = TextAnchor.MiddleCenter;
 
             // [ - Show Axis ] 
-            str = "Axis";
-            contentWidth = str.GetWidthCached();
+            str = " Axis";
+            contentWidth = str.GetWidthCached() + 30;
             if (currentSlice.width < contentWidth)
             {
                 currentSlice = position.TopPartPixels(currentHeight);
@@ -166,7 +166,7 @@ namespace Analyzer.Profiling
             currentSlice.AdjustHorizonallyBy(contentWidth);
 
             // [ - Show Grid ] 
-            str = "Grid ";
+            str = " Grid " + 30;
             contentWidth = str.GetWidthCached();
             if (currentSlice.width < contentWidth)
             {
@@ -179,8 +179,8 @@ namespace Analyzer.Profiling
             currentSlice.AdjustHorizonallyBy(contentWidth);
 
             // [ - Show Max ] 
-            str = "Max ";
-            contentWidth = str.GetWidthCached();
+            str = " Max ";
+            contentWidth = str.GetWidthCached() + 30;
             if (currentSlice.width < contentWidth)
             {
                 currentSlice = position.TopPartPixels(currentHeight);
