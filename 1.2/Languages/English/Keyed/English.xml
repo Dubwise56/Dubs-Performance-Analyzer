@@ -233,9 +233,6 @@
 	<performance.drawlabelsfix>Optimize pawn labels</performance.drawlabelsfix>
 	<performance.drawlabelsfix.tooltip>Optimize the drawing of pawn and animal names in-map</performance.drawlabelsfix.tooltip>
 
-	<performance.fixthingfilter>Fix Thing Filter</performance.fixthingfilter>
-	<performance.fixthingfilter.tooltip>Optimizes ThingFilterUI.DoThingFilterConfigWindow</performance.fixthingfilter.tooltip>
-
 	<!-- Temporary -->
 	<temp.section>Optimize Map Loading</temp.section>
 	<temp.section.tooltip>Caches types in the constructor for 'Section' - this should be fixed in a future rw update</temp.section.tooltip>
