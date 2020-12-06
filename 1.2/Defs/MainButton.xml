@@ -22,11 +22,18 @@
     <defaultKeyCodeA></defaultKeyCodeA>
   </KeyBindingDef>
 
+  <KeyBindingDef>
+    <category>DubsOptimizer</category>
+    <defName>dpa_ToggleAlertBlock</defName>
+    <label>Toggle Alerts</label>
+    <defaultKeyCodeA></defaultKeyCodeA>
+  </KeyBindingDef>
+
   <MainButtonDef>
     <defName>DubsOptimizer</defName>
     <label>Dubs Performance Analyzer</label>
     <description>Open Analyzer.</description>
-    <workerClass>DubsAnalyzer.MainButtonWorker_ToggleAnalyzer</workerClass>
+    <workerClass>Analyzer.MainButton_Toggle</workerClass>
     <order>79</order>
         <minimized>True</minimized>
     <iconPath>DPA/UI/MintSearch</iconPath>
