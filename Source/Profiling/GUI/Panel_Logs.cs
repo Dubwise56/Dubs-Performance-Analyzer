@@ -248,7 +248,12 @@ namespace Analyzer.Profiling
                             if (Utility.IsNotAnalyzerPatch(patch.owner))
                             {
                                 string ass = patch.PatchMethod.DeclaringType.Assembly.FullName;
-                                string modName = ModInfoCache.AssemblyToModname[ass];
+
+                                string modName = "Unknown";
+                                try
+                                {
+                                    modName = ModInfoCache.AssemblyToModname[ass];
+                                } catch { }
 
                                 builder.AppendLine($"{type} from {modName} with the index {patch.index} and the priority {patch.priority}\n");
                             }
