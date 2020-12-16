@@ -132,24 +132,43 @@ namespace Analyzer.Profiling
 
             // sub string
             var subString = key.Substring(first, (key.LastIndexOf(']') + 1) - first);
+
+            // The string follows this rough format
+            // BaseAssembly.BaseType`[
+            //                          [Assembly.Type, Assembly, Version, Culture, PublicKeyToken ], 
+            //                          [Assembly.Type, Assembly, Version, Culture, PublicKeyToken ]
+            //                       ]:Method
+            // We aim to leave it like BaseAssembly.BaseType<Type, Type>:Method
+
+            // The method to do this is pretty simple
+            // 1. Find the closest comma to the beginning of the string
+            // 2. Iterate backwards until you find the period 
+            // 3. Cut out the substring between the period and the comma (Type), and move it into the insertString
+            // 4. Remove all text from the subString from index 0 -> first index of ]
+            // 5. If there is still a [ in the substring, there are multiple type parameters -> goto step 1
+
             while (subString.Contains('['))
             {
+                // If we have multiple generic args, separate with a comma
                 if (insertString.Length > 1) insertString += ", ";
 
+                // Find the first comma
                 var commaIndex = subString.FirstIndexOf(c => c == ',');
 
+                // Iterate backwards to find the period which indicates the Assembly declaration
                 var cutOff = commaIndex;
-                while (subString[cutOff] != '.')
-                {
-                    cutOff--;
-                }
+                while (subString[cutOff] != '.') cutOff--;
 
+                // Adjust for the period
                 cutOff++;
 
+                // Add to the insert string the Type (the text between the period and the comma)
                 insertString += subString.Substring(cutOff, commaIndex - cutOff);
 
-                subString = subString.Remove(0, subString.FirstIndexOf(c => c == ']') + 1);
+                // Remove the string from the subString which includes the information which has just been taken out
+                subString = subString.Remove(0, subString.FirstIndexOf(c => c == ']') + 2);
             }
+            
             insertString += ">";
 
             key = key.Remove(first, (key.LastIndexOf(']') + 1) - first);

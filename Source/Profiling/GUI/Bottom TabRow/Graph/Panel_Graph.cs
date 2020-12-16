@@ -153,7 +153,7 @@ namespace Analyzer.Profiling
             Text.Anchor = TextAnchor.MiddleCenter;
 
             // [ - Show Axis ] 
-            str = " Axis";
+            str = " Axis ";
             contentWidth = str.GetWidthCached() + 30;
             if (currentSlice.width < contentWidth)
             {

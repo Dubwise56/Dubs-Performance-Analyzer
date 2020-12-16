@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+using System.Threading;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -33,15 +34,16 @@ namespace Analyzer.Profiling
         {
             try
             {
-                List<CodeInstruction> instructions = new List<CodeInstruction>(codeInstructions);
+                List<CodeInstruction> instructions = codeInstructions.ToList();
 
-                for (int i = 0; i < instructions.Count(); i++)
+                for (int i = 0; i < instructions.Count; i++)
                 {
                     if (!IsFunctionCall(instructions[i].opcode)) continue;
                     if (!(instructions[i].operand is MethodInfo meth)) continue;
 
                     // Check for constrained
                     if (i != 0 && instructions[i - 1].opcode == OpCodes.Constrained) continue;
+
                     // Make sure it is not an analyzer profiling method
                     if (meth.DeclaringType.FullName.Contains("Analyzer.Profiling")) continue;
 
