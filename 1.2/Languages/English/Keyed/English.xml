@@ -21,7 +21,7 @@
   <settings.Optimizations>Optimizations</settings.Optimizations>
 	<settings.performance>Performance Options</settings.performance>
 	<settings.developer>Developer Options</settings.developer>
-
+  <settings.debuglog>Enable log without debug mode</settings.debuglog>
 	<settings.wiki>Analyzer Wiki</settings.wiki>
 	<settings.discord>Dubs Discord</settings.discord>
 	<settings.dnspy>Path to Dnspy (Including the Exe)</settings.dnspy>
@@ -94,7 +94,10 @@
 	
 	<!-- Tick -->
 
-  	<entry.tick.single>Single Tick</entry.tick.single>
+  <entry.tick.jobdrivertick>Job driver tick</entry.tick.jobdrivertick>
+  <entry.tick.jobdrivertick.tooltip>A detoured profiler for the whole job driver tick including the cost of ticking each individual driver</entry.tick.jobdrivertick.tooltip>
+
+  <entry.tick.single>Single Tick</entry.tick.single>
 	<entry.tick.single.tooltip>A variety of tick methods, including; World, History, FilthMonitor, Storyteller</entry.tick.single.tooltip>
 
 	<entry.tick.pathfinder>Pathfinding</entry.tick.pathfinder>
@@ -131,10 +134,10 @@
 	<entry.tick.things.tooltip>Profiles the ticking methods of various things on the map</entry.tick.things.tooltip>
 
 	<entry.tick.jobgiver>Job Giver</entry.tick.jobgiver>
-	<entry.tick.jobgiver.tooltip>Job Giver shows jobs which pro-actively seek out work to be done. For example. Fermenting barrels looking for incregredients, bills looking for resources, etc</entry.tick.jobgiver.tooltip>
+	<entry.tick.jobgiver.tooltip>Job Giver shows jobs which pro-actively seek out work to be done. For example. Fermenting barrels looking for ingredients, bills looking for resources, etc</entry.tick.jobgiver.tooltip>
 
 	<entry.tick.jobgiverd>Job Giver (Detoured)</entry.tick.jobgiverd>
-	<entry.tick.jobgiverd.tooltip>Job Giver shows jobs which pro-actively seek out work to be done. For example. Fermenting barrels looking for incregredients, bills looking for resources, etc</entry.tick.jobgiverd.tooltip>
+	<entry.tick.jobgiverd.tooltip>Job Giver shows jobs which pro-actively seek out work to be done. For example. Fermenting barrels looking for ingredients, bills looking for resources, etc</entry.tick.jobgiverd.tooltip>
 
 	<entry.tick.world>World Tick</entry.tick.world>
 	<entry.tick.world.tooltip>Tick methods for various world entries, such as; WorldPawns, Factions, Caravans</entry.tick.world.tooltip>
@@ -142,7 +145,7 @@
 	<!-- Update  -->
 
 	<entry.update.alert>Alerts</entry.update.alert>
-	<entry.update.alert.tooltip>The recalculate and draw methos for Alerts</entry.update.alert.tooltip>
+	<entry.update.alert.tooltip>The recalculate and draw methods for Alerts</entry.update.alert.tooltip>
 
 	<entry.update.dynamicdraw>Draw Dynamic Things</entry.update.dynamicdraw>
 	<entry.update.dynamicdraw.tooltip>The draw method for things which are drawn via the DynamicDrawManager</entry.update.dynamicdraw.tooltip>
@@ -244,7 +247,7 @@
 
 	<!-- Fixes -->
 
-	<fix.fixmodremoval>Fix mod removal, may solve grey screen issue</fix.fixmodremoval>
+  <fix.fixmodremoval>Fix mod removal, may solve grey screen issue</fix.fixmodremoval>
 	<fix.fixmodremoval.tooltip>This fixes the area manager trying to loop through null area classes from missing mods</fix.fixmodremoval.tooltip>
 
 	<fix.faction>Fix missing mod factions</fix.faction>

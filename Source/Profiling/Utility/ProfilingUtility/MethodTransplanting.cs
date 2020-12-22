@@ -80,7 +80,7 @@ namespace Analyzer.Profiling
             typeInfo.TryAdd(meth, type);
 
             Task.Factory.StartNew(delegate
-            {
+           {
                 try
                 {
                     Modbase.Harmony.Patch(meth, transpiler: transpiler);

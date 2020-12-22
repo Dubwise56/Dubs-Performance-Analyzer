@@ -31,11 +31,12 @@ namespace Analyzer.Profiling
 
         private static IEnumerable<CodeInstruction> Transpiler(MethodBase __originalMethod, IEnumerable<CodeInstruction> codeInstructions)
         {
+            var enumerable = codeInstructions.ToList();
             try
             {
-                List<CodeInstruction> instructions = new List<CodeInstruction>(codeInstructions);
+                List<CodeInstruction> instructions = enumerable;
 
-                for (int i = 0; i < instructions.Count(); i++)
+                for (int i = 0; i < instructions.Count; i++)
                 {
                     if (!IsFunctionCall(instructions[i].opcode)) continue;
                     if (!(instructions[i].operand is MethodInfo meth)) continue;
@@ -69,7 +70,7 @@ namespace Analyzer.Profiling
                     ThreadSafeLogger.Warning($"Failed to patch the internal method {__originalMethod.DeclaringType.FullName}:{__originalMethod.Name}, failed with the error " + e.Message);
 #endif
 
-                return codeInstructions;
+                return enumerable;
             }
         }
 

@@ -151,7 +151,7 @@ namespace Analyzer.Profiling
             {
                 //  Text.Font = GameFont.Small;
                 Widgets.Label(rect.TopHalf(), name);
-                if (totalReadout != String.Empty)
+                if (totalReadout != string.Empty)
                 {
                     // Text.Font = GameFont.Tiny;
                     Widgets.Label(rect.BottomHalf(), totalReadout);
@@ -268,9 +268,9 @@ namespace Analyzer.Profiling
             if (GUIController.CurrentProfiler?.key == profile.key)
                 Widgets.DrawHighlightSelected(visible);
 
-            // onhover tooltip
-            if (Mouse.IsOver(visible))
-                DrawHover(log, visible);
+            // onhover tooltip //doesn't actually work properly so fuck that off
+          //  if (Mouse.IsOver(visible))
+             //   DrawHover(log, visible);
 
             // onclick work, left click view stats, right click internal patch, ctrl + left click unpatch
             if (Widgets.ButtonInvisible(visible))
@@ -319,39 +319,48 @@ namespace Analyzer.Profiling
             }
         }
 
-        public static void DrawHover(ProfileLog log, Rect visible)
-        {
-            if (log.meth != null)
-            {
-                if (log.label != tipLabelCache) // If we have a new label, re-create the string, else use our cached version.
-                {
-                    tipLabelCache = log.label;
-                    StringBuilder builder = new StringBuilder();
-                    Patches patches = Harmony.GetPatchInfo(log.meth);
-                    if (patches != null)
-                    {
-                        foreach (Patch patch in patches.Prefixes) GetString("Prefix", patch);
-                        foreach (Patch patch in patches.Postfixes) GetString("Postfix", patch);
-                        foreach (Patch patch in patches.Transpilers) GetString("Transpiler", patch);
-                        foreach (Patch patch in patches.Finalizers) GetString("Finalizer", patch);
+        // doesn't work properly
+        //public static void DrawHover(ProfileLog log, Rect visible)
+        //{
+        //    if (log.meth != null)
+        //    {
+        //        if (log.label != tipLabelCache) // If we have a new label, re-create the string, else use our cached version.
+        //        {
+        //            tipLabelCache = log.label;
+        //            StringBuilder builder = new StringBuilder();
+        //            Patches patches = Harmony.GetPatchInfo(log.meth);
+        //            if (patches != null)
+        //            {
+        //                foreach (Patch patch in patches.Prefixes) GetString("Prefix", patch);
+        //                foreach (Patch patch in patches.Postfixes) GetString("Postfix", patch);
+        //                foreach (Patch patch in patches.Transpilers) GetString("Transpiler", patch);
+        //                foreach (Patch patch in patches.Finalizers) GetString("Finalizer", patch);
 
-                        void GetString(string type, Patch patch)
-                        {
-                            if (Utility.IsNotAnalyzerPatch(patch.owner))
-                            {
-                                string ass = patch.PatchMethod.DeclaringType.Assembly.FullName;
-                                string modName = ModInfoCache.AssemblyToModname[ass];
+        //                void GetString(string type, Patch patch)
+        //                {
+        //                    if (Utility.IsNotAnalyzerPatch(patch.owner))
+        //                    {
+        //                        if (patch.PatchMethod.DeclaringType != null)
+        //                        {
+        //                            string ass = patch.PatchMethod.DeclaringType.Assembly.FullName;
+        //                            string modName = "Unknown";
+        //                            try
+        //                            {
+        //                                modName = ModInfoCache.AssemblyToModname[ass];
+        //                            }
+        //                            catch { }
 
-                                builder.AppendLine($"{type} from {modName} with the index {patch.index} and the priority {patch.priority}\n");
-                            }
-                        }
+        //                            builder.AppendLine($"{type} from {modName} with the index {patch.index} and the priority {patch.priority}\n");
+        //                        }
+        //                    }
+        //                }
 
-                        tipCache = builder.ToString();
-                    }
-                }
-                TooltipHandler.TipRegion(visible, tipCache);
-            }
-        }
+        //                tipCache = builder.ToString();
+        //            }
+        //        }
+        //        TooltipHandler.TipRegion(visible, tipCache);
+        //    }
+        //}
 
         public static void ClickWork(ProfileLog log, Profiler profile)
         {

@@ -214,7 +214,7 @@ namespace Analyzer
 
             rect.AdjustVerticallyBy(handleRect);
 
-            Panel_BottomRow.Draw(rect, inRect);
+            Panel_BottomRow.Draw(rect);
         }
 
         public void HandleGraphDrag(Rect bigRect, Rect rect, Rect graphRect)

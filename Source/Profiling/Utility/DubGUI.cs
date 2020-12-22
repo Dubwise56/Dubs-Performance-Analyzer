@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using RimWorld;
@@ -11,11 +12,6 @@ namespace Analyzer.Profiling
     [StaticConstructorOnStartup]
     public static class DubGUI
     {
-        public static string Tr(this string s)
-        {
-            return s.TranslateSimple();
-        }
-
         public static Texture2D MintSearch = ContentFinder<Texture2D>.Get("DPA/UI/MintSearch", false);
         public static Texture2D DropDown = ContentFinder<Texture2D>.Get("DPA/UI/dropdown", false);
         public static Texture2D FoldUp = ContentFinder<Texture2D>.Get("DPA/UI/foldup", false);
@@ -28,6 +24,11 @@ namespace Analyzer.Profiling
         static DubGUI()
         {
             Initialize();
+        }
+
+        public static string Tr(this string s)
+        {
+            return s.TranslateSimple();
         }
 
         public static void DrawLine(Vector2 pointA, Vector2 pointB, Color color, float width, bool drawDouble = false)
@@ -61,7 +62,7 @@ namespace Analyzer.Profiling
 
             GL.PushMatrix();
             GL.MultMatrix(matrix);
-            for (int i = 0; i < (drawDouble ? 2 : 1); i++)
+            for (var i = 0; i < (drawDouble ? 2 : 1); i++)
                 Graphics.DrawTexture(lineRect, aaLineTex, lineRect, 0, 0, 0, 0, color, blendMaterial);
             GL.PopMatrix();
         }
@@ -72,7 +73,7 @@ namespace Analyzer.Profiling
             var lastV = CubeBezier(start, startTangent, end, endTangent, 0);
             for (var i = 1; i < segments; ++i)
             {
-                var v = CubeBezier(start, startTangent, end, endTangent, i / (float)segments);
+                var v = CubeBezier(start, startTangent, end, endTangent, i / (float) segments);
                 DrawLine(lastV, v, color, width);
                 lastV = v;
             }
@@ -102,9 +103,9 @@ namespace Analyzer.Profiling
                 aaLineTex.Apply();
             }
 
-            blitMaterial = (Material)typeof(GUI)
+            blitMaterial = (Material) typeof(GUI)
                 .GetMethod("get_blitMaterial", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
-            blendMaterial = (Material)typeof(GUI)
+            blendMaterial = (Material) typeof(GUI)
                 .GetMethod("get_blendMaterial", BindingFlags.NonPublic | BindingFlags.Static).Invoke(null, null);
         }
 
@@ -232,7 +233,7 @@ namespace Analyzer.Profiling
 
         public static void CopyToClipboard(this string s)
         {
-            var te = new TextEditor { text = s };
+            var te = new TextEditor {text = s};
             te.SelectAll();
             te.Copy();
         }
@@ -284,7 +285,7 @@ namespace Analyzer.Profiling
         public static bool Checkbox(Rect rect, string s, ref bool checkOn)
         {
             Widgets.DrawHighlightIfMouseover(rect);
-            bool br = checkOn;
+            var br = checkOn;
             if (Widgets.ButtonInvisible(rect))
             {
                 checkOn = !checkOn;
@@ -312,9 +313,9 @@ namespace Analyzer.Profiling
             if (height > lineHeight)
             {
                 textureRect = textureRect.TopPartPixels(lineHeight);
-                textureRect.y += (height - lineHeight)/2;
+                textureRect.y += (height - lineHeight) / 2;
             }
-         
+
             Widgets.DrawTextureFitted(textureRect, checkOn ? Widgets.CheckboxOnTex : Widgets.CheckboxOffTex, 0.5f);
             rect.x += 30;
             rect.width -= 30;
@@ -330,15 +331,15 @@ namespace Analyzer.Profiling
 
         public static bool Checkbox(string s, Listing_Standard listing, ref bool checkOn)
         {
-            Rect rect = listing.GetRect(Mathf.CeilToInt(s.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight);
+            var rect = listing.GetRect(Mathf.CeilToInt(s.GetWidthCached() / listing.ColumnWidth) * Text.LineHeight);
             return Checkbox(rect, s, ref checkOn);
         }
 
-        public static bool HeadingCheckBox(Listing_Standard listing, string label, ref bool active)	
-        {	
-            var rect = listing.GetRect(30f);	
-            Heading(rect.LeftPartPixels(rect.width - 30f), label);	
-            return Checkbox(rect.RightPartPixels(30f), "", ref active);	
+        public static bool HeadingCheckBox(Listing_Standard listing, string label, ref bool active)
+        {
+            var rect = listing.GetRect(30f);
+            Heading(rect.LeftPartPixels(rect.width - 30f), label);
+            return Checkbox(rect.RightPartPixels(30f), "", ref active);
         }
 
         public static bool ContainsCaseless(this string source, string toCheck)

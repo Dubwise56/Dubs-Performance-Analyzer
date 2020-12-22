@@ -1,10 +1,4 @@
-﻿using HarmonyLib;
-using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 using UnityEngine;
 using Verse;
 
@@ -51,9 +45,9 @@ namespace Analyzer
 
             Rect rect = new Rect(leftX - 20f, curBaseY - 26f, width + 20f - 7f, 26f);
             Text.Anchor = TextAnchor.MiddleRight;
-            Widgets.Label(rect, "TPS: " + tpsActual.ToString() + "(" + tpsTarget.ToString() + ")");
+            Widgets.Label(rect, $"TPS: {tpsActual}({tpsTarget})");
             rect.y -= 26f;
-            Widgets.Label(rect, "FPS: " + fpsActual.ToString());
+            Widgets.Label(rect, $"FPS: {fpsActual}");
             curBaseY -= 52f;
             Text.Anchor = TextAnchor.UpperLeft;
         }

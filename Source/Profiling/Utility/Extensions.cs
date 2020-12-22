@@ -47,6 +47,16 @@ namespace Analyzer.Profiling
             rect.height -= height;
         }
 
+        public static void ShiftX(this ref Rect rect, float gap = 0)
+        {
+            rect.x = rect.xMax + gap;
+        }
+
+        public static void ShiftY(this ref Rect rect, float gap = 0)
+        {
+            rect.y = rect.yMax + gap;
+        }
+
         public static Rect RetAdjustVerticallyBy(this Rect rect, float height)
         {
             var retRect = new Rect(rect);

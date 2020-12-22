@@ -255,7 +255,7 @@ namespace Analyzer.Profiling
                 if (type.GetCustomAttribute<CompilerGeneratedAttribute>() != null) continue;
 
 
-                foreach (var meth in type.GetMethods())
+                foreach (var meth in type.GetMethods(AccessTools.all))
                 {
                     if (!meth.HasMethodBody()) continue;
                     if (meth.IsGenericMethod || meth.ContainsGenericParameters) continue;

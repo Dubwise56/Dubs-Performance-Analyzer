@@ -1,13 +1,7 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
+using HarmonyLib;
 using UnityEngine;
 using Verse;
 
@@ -16,21 +10,21 @@ namespace Analyzer.Profiling
     public static class Analyzer
     {
         private const int MAX_LOG_COUNT = 2000;
-        private static int currentLogCount = 0; // How many update cycles have passed since beginning profiling an entry?
+        private static int currentLogCount; // How many update cycles have passed since beginning profiling an entry?
         public static List<ProfileLog> logs = new List<ProfileLog>();
 
         // todo, how can I do this more elegantly?
-        private static Comparer<ProfileLog> maxComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.max < second.max ? 1 : -1);
-        private static Comparer<ProfileLog> averageComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.average < second.average ? 1 : -1);
-        private static Comparer<ProfileLog> percentComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.percent < second.percent ? 1 : -1);
-        private static Comparer<ProfileLog> totalComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.total < second.total ? 1 : -1);
-        private static Comparer<ProfileLog> callsComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => first.calls < second.calls ? 1 : -1);
-        private static Comparer<ProfileLog> nameComparer = Comparer<ProfileLog>.Create((ProfileLog first, ProfileLog second) => string.Compare(first.label, second.label));
+        private static Comparer<ProfileLog> maxComparer = Comparer<ProfileLog>.Create((first, second) => first.max < second.max ? 1 : -1);
+        private static Comparer<ProfileLog> averageComparer = Comparer<ProfileLog>.Create((first, second) => first.average < second.average ? 1 : -1);
+        private static Comparer<ProfileLog> percentComparer = Comparer<ProfileLog>.Create((first, second) => first.percent < second.percent ? 1 : -1);
+        private static Comparer<ProfileLog> totalComparer = Comparer<ProfileLog>.Create((first, second) => first.total < second.total ? 1 : -1);
+        private static Comparer<ProfileLog> callsComparer = Comparer<ProfileLog>.Create((first, second) => first.calls < second.calls ? 1 : -1);
+        private static Comparer<ProfileLog> nameComparer = Comparer<ProfileLog>.Create((first, second) => string.Compare(first.label, second.label));
 
         private static object logicSync = new object();
 
-        private static bool currentlyProfiling = false;
-        private static bool currentlyPaused = false;
+        private static bool currentlyProfiling;
+        private static bool currentlyPaused;
 
         public static List<ProfileLog> Logs => logs;
         public static object LogicLock => logicSync;
@@ -45,7 +39,7 @@ namespace Analyzer.Profiling
         public static void BeginProfiling() => currentlyProfiling = true;
         public static void EndProfiling() => currentlyProfiling = false;
 
-        public static bool CurrentlyCleaningUp { get; set; } = false;
+        public static bool CurrentlyCleaningUp { get; set; }
         public static SortBy SortBy { get; set; } = SortBy.Percent;
 
         public static void RefreshLogCount()
@@ -96,7 +90,7 @@ namespace Analyzer.Profiling
                 {
                     var meth = AccessTools.Method(entry.type, "ProfilePatch");
 
-                    if(meth != null) meth.Invoke(null, null);
+                    if (meth != null) meth.Invoke(null, null);
                     else MethodTransplanting.PatchMethods(entry.type);
 
                     entry.isLoading = false;
@@ -117,7 +111,9 @@ namespace Analyzer.Profiling
 
         public static void Cleanup()
         {
-            Task.Factory.StartNew(() => CleanupBackground());
+            Task.Factory.StartNew(() =>
+          CleanupBackground()
+             );
         }
 
         // n = count of profiles
@@ -201,7 +197,7 @@ namespace Analyzer.Profiling
 #endif
 
                 // clear all logs
-                Analyzer.Logs.Clear();
+                Logs.Clear();
 #if DEBUG 
                 ThreadSafeLogger.Warning("Cleared Logs");
 #endif
@@ -216,13 +212,13 @@ namespace Analyzer.Profiling
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 ThreadSafeLogger.Error("Failed to cleanup analyzer, failed with the error " + e.Message);
             }
 
 #if DEBUG 
-            ThreadSafeLogger.Message($"Finished state cleanup");
+            ThreadSafeLogger.Message("Finished state cleanup");
 #endif
             CurrentlyCleaningUp = false;
         }

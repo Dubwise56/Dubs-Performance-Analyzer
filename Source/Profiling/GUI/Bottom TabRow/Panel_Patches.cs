@@ -1,68 +1,66 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using HarmonyLib;
-using JetBrains.Annotations;
 using UnityEngine;
 using Verse;
-
 namespace Analyzer.Profiling
 {
     public struct GeneralInformation
     {
         public MethodBase method;
-
         public string modName;
         public string assname;
         public string methodName;
         public string typeName;
-
         public string patchType;
         public List<GeneralInformation> patches;
     }
-
     public static class Panel_Patches
     {
+        private static float x = 0;
+        static float y = 0;
+        static Vector2 scroller;
+
         public static void Draw(Rect inrect, GeneralInformation? currentInformation)
         {
+            inrect = inrect.ContractedBy(4);
             if (currentInformation == null || currentInformation.Value.patches.NullOrEmpty()) return;
 
             Text.Font = GameFont.Tiny;
             Text.Anchor = TextAnchor.MiddleLeft;
 
+            x = 0;
+
+            var viewrect = inrect;
+            viewrect.x += 10;
+            viewrect.width -= 28;
+            viewrect.height = y;
+
+            var row = viewrect;
+            row.height = 40;
+            row.width = Mathf.Max(x, viewrect.width);
+
+            Widgets.BeginScrollView(inrect, ref scroller, viewrect);
+
             foreach (var patch in currentInformation?.patches)
             {
-                var left = $" {patch.patchType}";
-                var right = $" {patch.modName}";
+                var meth = $"{patch.typeName} : {patch.methodName}";
+                row.width = meth.GetWidthCached();
 
-                var textHeight = Mathf.Max(Text.CalcHeight(left, inrect.width / 2), Text.CalcHeight(right, inrect.width / 2 - 5f));
-
-                var rect = inrect.TopPartPixels(textHeight);
-                inrect.y += textHeight;
-
-                var anchor = Text.Anchor;
-                Text.Anchor = TextAnchor.MiddleCenter;
-
-                var leftRect = rect.LeftPart(.5f);
-                Widgets.Label(leftRect, left);
-                var rightRect = rect.RightPart(.5f);
-                rightRect.x += 5;
-                Widgets.Label(rightRect, right);
-
-                Text.Anchor = anchor;
-
-                Widgets.DrawHighlightIfMouseover(rect);
-
-                if (Mouse.IsOver(rect))
+                if (row.width > x)
                 {
-                    // todo cache tip
-                    TooltipHandler.TipRegion(rect, $"Mod Name: {patch.modName}\nPatch Type: {patch.patchType}\nPatch Method: {patch.typeName}:{patch.methodName}");
+                    x = row.width;
                 }
 
-                if (Input.GetMouseButtonDown(1) && rect.Contains(Event.current.mousePosition)) // mouse button right
+                Widgets.Label(row, meth);
+                
+                Widgets.DrawHighlightIfMouseover(row);
+
+                if (Mouse.IsOver(row))
+                {
+                    TooltipHandler.TipRegion(row, $"Mod Name: {patch.modName}\nPatch Type: {patch.patchType}");
+                }
+
+                if (Input.GetMouseButtonDown(1) && row.Contains(Event.current.mousePosition)) // mouse button right
                 {
                     List<FloatMenuOption> options = new List<FloatMenuOption>()
                     {
@@ -72,7 +70,13 @@ namespace Analyzer.Profiling
 
                     Find.WindowStack.Add(new FloatMenu(options));
                 }
+
+                row.y = row.yMax;
+
+                y = row.yMax;
             }
+
+            Widgets.EndScrollView();
 
             DubGUI.ResetFont();
         }

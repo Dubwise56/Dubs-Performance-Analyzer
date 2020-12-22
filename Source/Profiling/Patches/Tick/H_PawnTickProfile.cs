@@ -16,6 +16,7 @@ namespace Analyzer.Profiling
 
         public static IEnumerable<MethodInfo> GetPatchMethods()
         {
+            yield return AccessTools.Method(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.JobTrackerTick));
             yield return AccessTools.Method(typeof(Pawn_AgeTracker), nameof(Pawn_AgeTracker.AgeTick));
             yield return AccessTools.Method(typeof(Pawn_HealthTracker), nameof(Pawn_HealthTracker.HealthTick));
             yield return AccessTools.Method(typeof(Pawn_RecordsTracker), nameof(Pawn_RecordsTracker.RecordsTick));
@@ -26,7 +27,6 @@ namespace Analyzer.Profiling
             yield return AccessTools.Method(typeof(Pawn_MindState), nameof(Pawn_MindState.MindStateTick));
             yield return AccessTools.Method(typeof(Pawn_RotationTracker), nameof(Pawn_RotationTracker.RotationTrackerTick));
             yield return AccessTools.Method(typeof(Pawn_PathFollower), nameof(Pawn_PathFollower.PatherTick));
-            yield return AccessTools.Method(typeof(Pawn_JobTracker), nameof(Pawn_JobTracker.FinalizeTick));
             yield return AccessTools.Method(typeof(Pawn_StanceTracker), nameof(Pawn_StanceTracker.StanceTrackerTick));
             yield return AccessTools.Method(typeof(Pawn_EquipmentTracker), nameof(Pawn_EquipmentTracker.EquipmentTrackerTick));
             yield return AccessTools.Method(typeof(Pawn_ApparelTracker), nameof(Pawn_ApparelTracker.ApparelTrackerTick));

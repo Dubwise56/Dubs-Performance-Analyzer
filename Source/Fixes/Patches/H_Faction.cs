@@ -15,6 +15,8 @@ namespace Analyzer.Fixes
         public static bool Active = false;
         public override string Name => "fix.faction";
 
+
+
         public override void OnGameLoaded(Game g, Harmony h)
         {
             var factionManger = g.World.factionManager;

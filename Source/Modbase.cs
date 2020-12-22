@@ -22,7 +22,7 @@ namespace Analyzer
         private static Harmony harmony = null;
         public static Harmony Harmony => harmony ??= new Harmony("Dubwise.DubsProfiler");
         private static Harmony staticHarmony = null;
-        public static Harmony StaticHarmony => staticHarmony ??= new Harmony("Dubswise.PerformanceAnalyzer");
+        public static Harmony StaticHarmony => staticHarmony ??= new Harmony("Dubwise.PerformanceAnalyzer");
 
         // Major - Reworked functionality
         // Minor - New feature
@@ -52,6 +52,11 @@ namespace Analyzer
             { // Always Running
                 StaticHarmony.Patch(AccessTools.Method(typeof(GlobalControlsUtility), nameof(GlobalControlsUtility.DoTimespeedControls)),
                     prefix: new HarmonyMethod(typeof(GUIElement_TPS), nameof(GUIElement_TPS.Prefix)));
+
+                StaticHarmony.Patch(AccessTools.Method(typeof(Log), nameof(Log.Error)), prefix: new HarmonyMethod(typeof(DebugLogenabler), nameof(DebugLogenabler.ErrorPrefix)), new HarmonyMethod(typeof(DebugLogenabler), nameof(DebugLogenabler.ErrorPostfix)));
+                StaticHarmony.Patch(AccessTools.Method(typeof(Prefs), "get_DevMode"), prefix: new HarmonyMethod(typeof(DebugLogenabler), nameof(DebugLogenabler.DevModePrefix)));
+                StaticHarmony.Patch(AccessTools.Method(typeof(DebugWindowsOpener), "DevToolStarterOnGUI"), prefix: new HarmonyMethod(typeof(DebugLogenabler), nameof(DebugLogenabler.DebugKeysPatch)));
+
             }
 
             { // Performance Patches

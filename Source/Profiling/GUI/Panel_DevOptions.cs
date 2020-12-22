@@ -32,6 +32,7 @@ namespace Analyzer.Profiling
             DubGUI.LabeledSliderFloat(listing, Strings.settings_updates_per_second, ref Settings.updatesPerSecond, 1.0f, 20.0f);
             DubGUI.Checkbox(Strings.settings_logging, listing, ref Settings.verboseLogging);
             DubGUI.Checkbox(Strings.settings_disable_tps_counter, listing, ref Settings.disableTPSCounter);
+            DubGUI.Checkbox("settings.debuglog".Tr(), listing, ref Settings.enableLog);
 
             var s = Strings.settings_disable_cleanup;
             var rect = listing.GetRect(Text.LineHeight);

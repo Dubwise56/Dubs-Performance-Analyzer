@@ -187,6 +187,11 @@ namespace Analyzer.Profiling
 
         [Setting("Per Pawn")] public static bool PerPawn = false;
 
+        [TweakValue("____JOB REFIRE", 0, 20000)]
+        public static int refireLength = 5000;
+
+        public static Dictionary<WorkGiverDef, int> refires = new Dictionary<WorkGiverDef, int>();
+
         public static bool Active = false;
         public static WorkGiver giver;
         public static string key;
@@ -216,12 +221,29 @@ namespace Analyzer.Profiling
                 for (int i = 0; i < workGiversByPriority.Count; i++)
                 {
                     WorkGiver worker = workGiversByPriority[i].Worker;
+                    int refire = 0;
+                    try
+                    {
+                        refire = refires[worker.def];
+                    }
+                    catch (Exception)
+                    {
+                        refires.Add(worker.def, 0);
+                    }
+                    if (refire > 0)
+                    {
+                        continue;
+                    }
+
+
                     Job job = __instance.GiverTryGiveJobPrioritized(pawn, worker, pawn.mindState.priorityWork.Cell);
                     if (job != null)
                     {
                         job.playerForced = true;
+                        
                         return new ThinkResult(job, __instance, workGiversByPriority[i].tagToGive);
                     }
+                    refires[worker.def] = refireLength;
                 }
 
                 pawn.mindState.priorityWork.Clear();
@@ -239,6 +261,19 @@ namespace Analyzer.Profiling
             for (int j = 0; j < coo; j++)
             {
                 WorkGiver workGiver = list[j];
+                int refire = 0;
+                try
+                {
+                    refire = refires[workGiver.def];
+                }
+                catch (Exception)
+                {
+                    refires.Add(workGiver.def, 0);
+                }
+                if (refire > 0)
+                {
+                    continue;
+                }
 
                 if (!H_TryIssueJobPackageTrans.meths.TryGetValue(workGiver, out var meth))
                 {
@@ -308,7 +343,10 @@ namespace Analyzer.Profiling
 
                     try
                     {
+                        prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn, meth);
                         Job job2 = workGiver.NonScanJob(pawn);
+                        prof.Stop();
+
                         if (job2 != null)
                         {
                             return new ThinkResult(job2, __instance, list[j].def.tagToGive);
@@ -394,7 +432,7 @@ namespace Analyzer.Profiling
 
                             if (scanner.def.scanCells)
                             {
-                                prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn, meth);
+                               prof = ProfileController.Start(name, namer, workGiver.GetType(), workGiver.def, pawn, meth);
                                 float closestDistSquared = 99999f;
                                 float bestPriority = float.MinValue;
                                 bool prioritized = scanner.Prioritized;
@@ -412,7 +450,7 @@ namespace Analyzer.Profiling
                                             if (!allowUnreachable &&
                                                 !pawn.CanReach(intVec, scanner.PathEndMode, maxDanger))
                                             {
-                                                continue;
+                                                goto jamalam;
                                             }
 
                                             num5 = scanner.GetPriority(pawn, intVec);
@@ -426,7 +464,7 @@ namespace Analyzer.Profiling
                                     {
                                         if (!allowUnreachable && !pawn.CanReach(intVec, scanner.PathEndMode, maxDanger))
                                         {
-                                            continue;
+                                            goto jamalam;
                                         }
 
                                         flag = true;
@@ -476,8 +514,12 @@ namespace Analyzer.Profiling
                                 ". The CanGiveJob and JobOnX methods may not be synchronized."), 6112651);
                     }
 
+               
                     num = workGiver.def.priorityInType;
                 }
+
+                jamalam:
+                refires[workGiver.def] = refireLength;
             }
 
             return ThinkResult.NoJob;

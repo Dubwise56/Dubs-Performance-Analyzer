@@ -14,7 +14,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    public enum RowName
+    public enum ProfileInfoMode
     {
         Graph,
         Stats,
@@ -25,185 +25,102 @@ namespace Analyzer.Profiling
 
     public class BottomRowPanel
     {
-        public BottomRowPanel(RowName row, float xStart, float width)
+        public BottomRowPanel(ProfileInfoMode row, float xStart, float width)
         {
             type = row;
             this.width = width;
             this.xStart = xStart;
             dragging = false;
-            if(row == RowName.Graph) graph = new Panel_Graph();
+            if (row == ProfileInfoMode.Graph) graph = new Panel_Graph();
         }
 
-        public RowName type;
+        public ProfileInfoMode type;
         public float xStart;
         public float width;
         public bool dragging;
         public Panel_Graph graph;
     }
 
-    /*
-     * ___________________________
-     * | Stats |X| | Graph     |X|
-     * |---------| |-------------|
-     * |         | |             |
-     * |         | |             |
-     * |         | |             |
-     * |         | |             |
-     * |_________|_|_____________|
-     */
-
-    class Panel_BottomRow
+    public class Panel_BottomRow
     {
         public static GeneralInformation? currentProfilerInformation;
         public static List<BottomRowPanel> panels = new List<BottomRowPanel>
         {
-            new BottomRowPanel(RowName.Stats, 0, 250f),
-            new BottomRowPanel(RowName.Graph, 268, 900f)
+            new BottomRowPanel(ProfileInfoMode.Stats, 0, 250f),
+            new BottomRowPanel(ProfileInfoMode.Graph, 268, 900f)
         };
 
+        public static ProfileInfoMode ProfileInfoTab;
 
-        public static void Draw(Rect rect, Rect bigRect)
+        public static Panel_Graph graph = new Panel_Graph();
+
+        static Rect tabRect = new Rect(0, 0, 150, 18);
+        public static void Drawtab(Rect r, ProfileInfoMode i, string lab)
         {
-            if (currentProfilerInformation == null || (GUIController.CurrentProfiler != null && currentProfilerInformation.Value.method != GUIController.CurrentProfiler.meth))
+            r.height += 1;
+            r.width += 1;
+            Widgets.DrawMenuSection(r);
+            if (ProfileInfoTab == i)
+            {
+                var hang = r.ContractedBy(1f);
+                hang.y += 2;
+                Widgets.DrawBoxSolid(hang, Widgets.MenuSectionBGFillColor);
+            }
+
+            Widgets.Label(r, lab);
+
+            if (Widgets.ButtonInvisible(r))
+            {
+                ProfileInfoTab = i;
+                Modbase.Settings.Write();
+            }
+        }
+
+
+        public static void Draw(Rect rect)
+        {
+            if (currentProfilerInformation == null || GUIController.CurrentProfiler != null && currentProfilerInformation.Value.method != GUIController.CurrentProfiler.meth)
             {
                 GetGeneralSidePanelInformation();
             }
 
+            var statbox = rect;
+            statbox.width = Panel_Tabs.width - 10;
 
-            var buttonColumn = rect.LeftPartPixels(" + ".GetWidthCached());
-            rect.AdjustHorizonallyBy(" + ".GetWidthCached());
 
-            DrawButtonColumn(buttonColumn, rect.width);
+            var pRect = rect;
+            pRect.x = statbox.xMax + 10;
+            pRect.width -= statbox.xMax;
+            pRect.AdjustVerticallyBy(tabRect.height);
 
-            panels[panels.Count - 1].width = 
-                (panels.Count <= 1) ? 
-                    rect.width : 
-                    rect.width - (panels[panels.Count - 2].xStart + panels[panels.Count - 2].width) - 18;
+            Widgets.DrawMenuSection(statbox);
 
-            for(int i = panels.Count - 1; i >= 0; i--)
+            Panel_Stats.DrawStats(statbox, currentProfilerInformation);
+
+            Widgets.DrawMenuSection(pRect);
+
+            Text.Font = GameFont.Tiny;
+            Text.Anchor = TextAnchor.MiddleCenter;
+
+            tabRect.width = Mathf.Min(100f, pRect.width / 3f);
+
+            tabRect.x = pRect.x;
+            tabRect.y = pRect.y - tabRect.height;
+            Drawtab(tabRect, ProfileInfoMode.Graph, "Graph");
+            tabRect.x = tabRect.xMax;
+            Drawtab(tabRect, ProfileInfoMode.Patches, "Patches");
+            tabRect.x = tabRect.xMax;
+            Drawtab(tabRect, ProfileInfoMode.StackTrace, "Stacktrace");
+            tabRect.x = tabRect.xMax;
+
+            DubGUI.ResetFont();
+
+            switch (ProfileInfoTab)
             {
-                var panel = panels[i];
-
-                var panelRect = new Rect(rect.x + panel.xStart, rect.y, panel.width, rect.height);
-
-                if (i != 0) // Drag Rct
-                {
-                    var r = new Rect(rect.x + (panel.xStart - Window_Analyzer.handleRect), rect.y, Window_Analyzer.handleRect, rect.height);
-                   
-                    Widgets.DrawHighlightIfMouseover(r);
-
-                    if (Input.GetMouseButtonDown(0) && Mouse.IsOver(r) && !panel.dragging) panel.dragging = true;
-
-                    if (panel.dragging)
-                    {
-                        var newPos = Event.current.mousePosition.x - (rect.x - Window_Analyzer.handleRect / 2.0f);
-                        var delta = panel.xStart - newPos;
-                        panel.xStart = newPos;
-                        panel.width += delta;
-                        panels[i - 1].width -= delta;
-                    }
-
-                    if (Input.GetMouseButtonUp(0)) panel.dragging = false;
-                }
-
-                Widgets.DrawMenuSection(panelRect);
-                {
-                    var topRect = panelRect.TopPartPixels(Text.LineHeight);
-                    panelRect.AdjustVerticallyBy(Text.LineHeight);
-                    Widgets.DrawLineHorizontal(panelRect.x, panelRect.y, panelRect.width);
-
-                    panelRect = panelRect.ContractedBy(2f);
-
-                    var label = "  " + panel.type.ToString();
-
-                    var leftPartRect = topRect.LeftPartPixels(label.GetWidthCached());
-                    Widgets.Label(leftPartRect, label);
-
-                    if (Widgets.ButtonImage(topRect.RightPartPixels(Text.LineHeight), Textures.Menu))
-                    {
-                        var enums = typeof(RowName).GetEnumValues();
-                        var list = (from object e in enums select new FloatMenuOption(((RowName) e).ToString(), () =>
-                        {
-                            panel.type = (RowName) e;
-                            panel.graph = panel.type == RowName.Graph ? new Panel_Graph() : null;
-                        })).ToList();
-                        Find.WindowStack.Add(new FloatMenu(list));
-                    }
-
-
-                }
-                
-                panelRect.AdjustVerticallyBy(2f);
-
-                // ALL OF THESE FUNCTIONS MUST HANDLE THE CASE WHERE CURRENTPROFILERINFORMATION IS NULL.
-                
-                switch(panel.type)
-                {
-                    case RowName.Graph: panel.graph.Draw(panelRect); break;
-                    case RowName.Stats: Panel_Stats.DrawStats(panelRect, currentProfilerInformation); break;
-                    case RowName.Patches: Panel_Patches.Draw(panelRect, currentProfilerInformation); break;
-                    case RowName.StackTrace: Panel_StackTraces.Draw(panelRect, currentProfilerInformation); break;
-                }
-            }
-
-        }
-
-        private static void DrawButtonColumn(Rect rect, float availWidth)
-        {
-            if (Widgets.ButtonText(rect.TopPartPixels(Text.LineHeight), " + "))
-            {
-                var widthMinusGrabBars = availWidth - (18 * panels.Count);
-                var avWidth = widthMinusGrabBars / (panels.Count + 1.0f);
-
-                var increment = avWidth / panels.Count;
-                increment = Mathf.Round(increment);
-
-                for(int i = 0; i < panels.Count; i++)
-                {
-                    var panel = panels[i];
-                    panel.width -= increment;
-                    panel.xStart += increment * (panels.Count - i);
-                }
-
-                if (panels.Count >= 1)
-                {
-                    panels[0].xStart += 18;
-                    panels[0].width -= 18;
-                    panels.Insert(0, new BottomRowPanel(RowName.Graph, 0, panels[0].xStart - 18));
-                }
-                else
-                {
-                    panels.Add(new BottomRowPanel(RowName.Graph, 0, availWidth));
-
-                }
-            }
-            rect.AdjustVerticallyBy(Text.LineHeight);
-
-            if (Widgets.ButtonText(rect.TopPartPixels(Text.LineHeight), " - "))
-            {
-                if (panels.Count == 1) return;
-
-                var delta = panels[0].width + 18;
-                var increment = delta / ( panels.Count - 1.0f );
-
-                for(int i = 0; i < panels.Count; i++)
-                {
-                    var panel = panels[i];
-                    panel.width += increment;
-                    panel.xStart -= (increment * (panels.Count - i));
-                }
-
-                if (panels.Count == 2)
-                {
-                    panels[1].xStart = 0;
-                    panels[1].width = availWidth;
-                } else if (panels.Count > 2)
-                {
-                    panels[1].xStart = 0;
-                    panels[1].width = panels[2].xStart - 18;
-                }
-
-                panels.RemoveAt(0);
+                case ProfileInfoMode.Graph: graph.Draw(pRect.ContractedBy(1)); break;
+                case ProfileInfoMode.Stats: Panel_Stats.DrawStats(pRect, currentProfilerInformation); break;
+                case ProfileInfoMode.Patches: Panel_Patches.Draw(pRect, currentProfilerInformation); break;
+                case ProfileInfoMode.StackTrace: Panel_StackTraces.Draw(pRect, currentProfilerInformation); break;
             }
         }
 
@@ -296,7 +213,7 @@ namespace Analyzer.Profiling
             if (info.Contains("System")) return "Rimworld - System";
 
             if (ModInfoCache.AssemblyToModname.TryGetValue(info, out var value)) return value;
-            
+
             return "Failed to locate assembly information";
         }
     }

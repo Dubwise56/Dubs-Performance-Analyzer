@@ -148,7 +148,7 @@ namespace Analyzer.Profiling
 
                 insertString += subString.Substring(cutOff, commaIndex - cutOff);
 
-                subString = subString.Remove(0, subString.FirstIndexOf(c => c == ']') + 1);
+                subString = subString.Remove(0, subString.FirstIndexOf(c => c == ']') + 2);
             }
             insertString += ">";
 
@@ -379,6 +379,7 @@ namespace Analyzer.Profiling
                     {
                         Error($"Failed to internal patch method {method.DeclaringType.FullName}:{method.Name}, failed with the exep " + e.Message);
                     }
+
                 });
             }
             catch (Exception e)
