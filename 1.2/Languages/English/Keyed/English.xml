@@ -226,17 +226,17 @@
 	<performance.roof>Optimize roof jobgiver</performance.roof>
 	<performance.roof.tooltip>Caches when roofs are removed / need replacing, and preventing the jobgiver from running when no state has changed</performance.roof.tooltip>
 
-	<performance.wallsnconduits>Optimize rendering for walls and conduits</performance.wallsnconduits>
+	<performance.wallsnconduits>Optimize drawing for walls and conduits</performance.wallsnconduits>
 	<performance.wallsnconduits.tooltip>Set the mesh draw type for walls and conduits to 'MapMeshOnly'</performance.wallsnconduits.tooltip>
 
 	<performance.compdeepdrill>Optimize deep drills</performance.compdeepdrill>
 	<performance.compdeepdrill.tooltip>Skips a check for the 'correct' stone under a drill, improves performance of drills when using pawns with high mining</performance.compdeepdrill.tooltip>
 
-	<performance.tempcache>Remove some stutters on raid generation</performance.tempcache>
-	<performance.tempcache.tooltip>Caches temperature lookups in the same tick, removing some overhead from raid generation</performance.tempcache.tooltip>
+	<performance.tempcache>Cache ComfortableTemperatureRange</performance.tempcache>
+	<performance.tempcache.tooltip>Caches safe temperature range once per tick, reducing excess cpu load from spamming it for things like pathfinding</performance.tempcache.tooltip>
 
-	<performance.zoom>Reduce stutters while zooming</performance.zoom>
-	<performance.zoom.tooltip>Lowers the target tps when zooming in order to stabilize fps</performance.zoom.tooltip>
+	<performance.zoom>Reduce stutters while panning</performance.zoom>
+	<performance.zoom.tooltip>Lowers the target tps when panning to reduce stuttering</performance.zoom.tooltip>
 
 	<performance.drawlabelsfix>Optimize pawn labels</performance.drawlabelsfix>
 	<performance.drawlabelsfix.tooltip>Optimize the drawing of pawn and animal names in-map</performance.drawlabelsfix.tooltip>
