@@ -11,6 +11,7 @@ using Verse;
 
 namespace Analyzer
 {
+    //DONT USE GAME COMPONENTS FFS! WHYYYYYY
     public class GameComponent_Analyzer : GameComponent
     {
         private Game game = null;

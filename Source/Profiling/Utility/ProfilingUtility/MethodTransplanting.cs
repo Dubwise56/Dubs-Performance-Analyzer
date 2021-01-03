@@ -67,12 +67,11 @@ namespace Analyzer.Profiling
         {
             if (patchedMeths.Contains(meth))
             {
-#if DEBUG
-                ThreadSafeLogger.Warning($"[Analyzer] Already patched method {meth.DeclaringType.FullName + ":" + meth.Name}");
-#else
                 if (Settings.verboseLogging)
+                {
                     ThreadSafeLogger.Warning($"[Analyzer] Already patched method {meth.DeclaringType.FullName + ":" + meth.Name}");
-#endif
+                }
+
                 return;
             }
 
@@ -87,12 +86,11 @@ namespace Analyzer.Profiling
                 }
                 catch (Exception e)
                 {
-#if DEBUG
-                    ThreadSafeLogger.Error($"[Analyzer] Failed to patch method {meth.DeclaringType.FullName + ":" + meth.Name} failed with the error {e.Message}");
-#else
                     if (Settings.verboseLogging)
+                    {
                         ThreadSafeLogger.Warning($"[Analyzer] Failed to patch method {meth.DeclaringType.FullName}:{meth.Name} failed with the error {e.Message}");
-#endif
+                    }
+
                 }
             });
         }
