@@ -81,7 +81,7 @@ namespace Analyzer.Profiling
                 var replaceInstruction = MethodTransplanting.ReplaceMethodInstruction(
                     thing.value,
                     key,
-                    typeof(H_HarmonyTranspilers),
+                    typeof(H_HarmonyTranspilersInternalMethods),
                     index);
 
                 // Find the place it was in our method, and replace the instruction (Optimisation Opportunity to improve this)

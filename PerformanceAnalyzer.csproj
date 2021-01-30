@@ -175,7 +175,8 @@
     <Compile Include="Source\Profiling\Patches\Update\H_DrawSection.cs" />
     <Compile Include="Source\Profiling\Patches\Update\H_GameComponentUpdate.cs" />
     <Compile Include="Source\Profiling\Patches\Update\H_HarmonyPatches.cs" />
-    <Compile Include="Source\Profiling\Patches\Update\H_HarmonyTranspilers.cs" />
+    <Compile Include="Source\Profiling\Patches\Update\H_HarmonyTranspilersInternalMethods.cs" />
+    <Compile Include="Source\Profiling\Patches\Update\H_HarmonyTranspiledMethods.cs" />
     <Compile Include="Source\Profiling\Patches\Update\H_InfoCard.cs" />
     <Compile Include="Source\Profiling\Patches\Update\H_MapComponentUpdate.cs" />
     <Compile Include="Source\Profiling\Patches\Update\H_RegenerateLayers.cs" />

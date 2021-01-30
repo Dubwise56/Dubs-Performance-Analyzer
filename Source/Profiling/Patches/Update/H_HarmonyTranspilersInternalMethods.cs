@@ -16,7 +16,7 @@ using Verse;
 namespace Analyzer.Profiling
 {
     [Entry("entry.update.harmonytranspilers", Category.Update)]
-    public static class H_HarmonyTranspilers
+    public static class H_HarmonyTranspilersInternalMethods
     {
         public static bool Active = false;
 

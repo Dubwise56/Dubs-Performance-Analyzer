@@ -274,7 +274,7 @@ namespace Analyzer.Profiling
             while (i > 0)
             {
                 var timeEntry = (float)prof.times[arrayIndex];
-                var hitsEntry = GUIController.CurrentEntry.type == typeof(H_HarmonyTranspilers)
+                var hitsEntry = GUIController.CurrentEntry.type == typeof(H_HarmonyTranspilersInternalMethods)
                     ? 0
                     : prof.hits[arrayIndex];
 

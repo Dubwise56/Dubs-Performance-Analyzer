@@ -123,7 +123,7 @@ namespace Analyzer.Profiling
             DrawColumnHeader(ref rect, Strings.logs_percent, Strings.logs_percent_desc, SortBy.Percent, NUMERIC_WIDTH, $"{totals.Percent * 100:0.0}%");
             DrawColumnHeader(ref rect, Strings.logs_total, Strings.logs_total_desc, SortBy.Total, NUMERIC_WIDTH, $"{totals.Total:0.000}ms");
 
-            if (GUIController.CurrentEntry.type != typeof(H_HarmonyTranspilers))
+            if (GUIController.CurrentEntry.type != typeof(H_HarmonyTranspilersInternalMethods))
                 DrawColumnHeader(ref rect, Strings.logs_calls, Strings.logs_calls_desc, SortBy.Calls, NUMERIC_WIDTH, $"{totals.Calls.ToString("N0", CultureInfo.InvariantCulture)}");
             // give the name 'infinite' width so there is no wrapping
             // Set text anchor to middle left so we can see our text
@@ -291,7 +291,7 @@ namespace Analyzer.Profiling
             DrawColumnContents(ref visible, $" {log.percent * 100:0.0}% ", SortBy.Percent);
             DrawColumnContents(ref visible, $" {log.total:0.000}ms ", SortBy.Total);
 
-            if (GUIController.CurrentEntry.type != typeof(H_HarmonyTranspilers))
+            if (GUIController.CurrentEntry.type != typeof(H_HarmonyTranspilersInternalMethods))
                 DrawColumnContents(ref visible, $" {log.calls.ToString("N0", CultureInfo.InvariantCulture)} ", SortBy.Calls);
 
 
@@ -419,7 +419,7 @@ namespace Analyzer.Profiling
                 yield return new FloatMenuOption("Unpatch methods that patch (Destructive)", () => Utility.UnpatchMethodsOnMethod(meth));
             }
 
-            if (GUIController.CurrentEntry.type != typeof(H_HarmonyTranspilers))
+            if (GUIController.CurrentEntry.type != typeof(H_HarmonyTranspilersInternalMethods))
                 yield return new FloatMenuOption("Profile the internal methods of", () => Utility.PatchInternalMethod(meth, GUIController.CurrentCategory));
 
             // This part is WIP - it would require the ability to change the tab a method is active in on the fly
