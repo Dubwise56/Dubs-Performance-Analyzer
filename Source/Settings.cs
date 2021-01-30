@@ -1,4 +1,5 @@
-﻿using Analyzer.Performance;
+﻿using System.Collections.Generic;
+using Analyzer.Performance;
 using Analyzer.Profiling;
 using UnityEngine;
 using Verse;
@@ -18,6 +19,8 @@ namespace Analyzer
         public static bool disableCleanup;
         public static bool disableTPSCounter;
         public static bool enableLog;
+        public static HashSet<string> SavedPatches_Tick;
+        public static HashSet<string> SavedPatches_Update;
 
         // Performance Settings are held in the type which implements the optimisation
 
@@ -40,6 +43,8 @@ namespace Analyzer
             Scribe_Values.Look(ref verboseLogging, "verboseLogging");
             Scribe_Values.Look(ref disableCleanup, "disableCleanup");
             Scribe_Values.Look(ref disableTPSCounter, "disableTPSCounter");
+            Scribe_Collections.Look(ref SavedPatches_Update, "SavedPatches_Update");
+            Scribe_Collections.Look(ref SavedPatches_Tick, "SavedPatches_Tick");
 
             // We save/load all performance-related settings here.
             PerformancePatches.ExposeData();

@@ -1,6 +1,9 @@
 ﻿using ColourPicker;
+
 using HarmonyLib;
+
 using RimWorld;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,234 +12,250 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+
 using UnityEngine;
+
 using Verse;
 
 namespace Analyzer
 {
-    using Profiling;
+	using Profiling;
 
-    public class Window_Analyzer : Window
-    {
-        public const float TOP_ROW_HEIGHT = 24f;
-        public const float handleRect = 18f;
+	public class Window_Analyzer : Window
+	{
+		public const float TOP_ROW_HEIGHT = 24f;
+		public const float handleRect = 18f;
 
-        public static Vector2 Initial = new Vector2(890, 650);
-        public override Vector2 InitialSize => Initial;
-        public override float Margin => 0;
-        public static bool firstOpen = true;
-        public static float GraphHeight = 220f;
-        public static bool draggingGraph;
+		public static Vector2 Initial = new Vector2(890, 650);
+		public override Vector2 InitialSize => Initial;
+		public override float Margin => 0;
+		public static bool firstOpen = true;
+		public static float GraphHeight = 220f;
+		public static bool draggingGraph;
 
 
-        public Window_Analyzer()
-        {
-            layer = WindowLayer.Super;
-            forcePause = false;
-            absorbInputAroundWindow = false;
-            closeOnCancel = false;
-            soundAppear = SoundDefOf.CommsWindow_Open;
-            soundClose = SoundDefOf.CommsWindow_Close;
-            doCloseButton = false;
-            doCloseX = true;
-            draggable = true;
-            drawShadow = true;
-            preventCameraMotion = false;
-            onlyOneOfTypeAllowed = true;
-            resizeable = true;
-            closeOnCancel = false;
-            closeOnAccept = false;
-            draggable = false;
-        }
+		public Window_Analyzer()
+		{
+			layer = WindowLayer.Super;
+			forcePause = false;
+			absorbInputAroundWindow = false;
+			closeOnCancel = false;
+			soundAppear = SoundDefOf.CommsWindow_Open;
+			soundClose = SoundDefOf.CommsWindow_Close;
+			doCloseButton = false;
+			doCloseX = true;
+			draggable = true;
+			drawShadow = true;
+			preventCameraMotion = false;
+			onlyOneOfTypeAllowed = true;
+			resizeable = true;
+			closeOnCancel = false;
+			closeOnAccept = false;
+			draggable = false;
+		}
 
-        public override void SetInitialSizeAndPosition()
-        {
-            windowRect = new Rect(50f, (UI.screenHeight - InitialSize.y) / 2f, InitialSize.x, InitialSize.y);
-            windowRect = windowRect.Rounded();
-        }
+		public override void SetInitialSizeAndPosition()
+		{
+			windowRect = new Rect(50f, (UI.screenHeight - InitialSize.y) / 2f, InitialSize.x, InitialSize.y);
+			windowRect = windowRect.Rounded();
+		}
 
-        public override void PreOpen()
-        {
-            if (Analyzer.CurrentlyCleaningUp)
-            {
-                Find.WindowStack.TryRemove(this);
-                ThreadSafeLogger.Error("[Analyzer] Analyzer is currently in the process of cleaning up - This is unlikely to happen, and shouldn't take long. please attempt to re-open the window in a couple seconds");
-                return;
-            }
+		public override void PreOpen()
+		{
+			if (Analyzer.CurrentlyCleaningUp)
+			{
+				Find.WindowStack.TryRemove(this);
+				ThreadSafeLogger.Error("[Analyzer] Analyzer is currently in the process of cleaning up - This is unlikely to happen, and shouldn't take long. please attempt to re-open the window in a couple seconds");
+				return;
+			}
 
-            base.PreOpen();
+			base.PreOpen();
 
-            if (firstOpen) // If we have not been opened yet, load all our entries
-            {
-                LoadEntries();
-                firstOpen = false;
-            }
+			if (firstOpen) // If we have not been opened yet, load all our entries
+			{
+				LoadEntries();
+				firstOpen = false;
+			}
 
-            Analyzer.BeginProfiling();
+			Analyzer.BeginProfiling();
 
-            if (Modbase.isPatched) return;
+			if (Modbase.isPatched) return;
 
-        
-            Modbase.Harmony.Patch(AccessTools.Method(typeof(Root_Play), nameof(Root_Play.Update)),
-                prefix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.Prefix)),
-                postfix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.Postfix)));
 
-            Modbase.Harmony.Patch(AccessTools.Method(typeof(TickManager), nameof(TickManager.DoSingleTick)),
+			Modbase.Harmony.Patch(AccessTools.Method(typeof(Root_Play), nameof(Root_Play.Update)),
+				prefix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.Prefix)),
+				postfix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.Postfix)));
+
+			Modbase.Harmony.Patch(AccessTools.Method(typeof(TickManager), nameof(TickManager.DoSingleTick)),
 #if DEBUG
             prefix: new HarmonyMethod(typeof(H_DoSingleTickUpdate), nameof(H_DoSingleTickUpdate.Prefix)),
 #endif
-            postfix: new HarmonyMethod(typeof(H_DoSingleTickUpdate), nameof(H_DoSingleTickUpdate.Postfix)));
+			postfix: new HarmonyMethod(typeof(H_DoSingleTickUpdate), nameof(H_DoSingleTickUpdate.Postfix)));
 
-            Modbase.isPatched = true;
-            
-        }
+			Modbase.isPatched = true;
 
-        public override void PostClose()
-        {
-            base.PostClose();
+			if (Settings.SavedPatches_Tick == null)
+			{
+				Settings.SavedPatches_Tick = new HashSet<string>();
+				Settings.SavedPatches_Update = new HashSet<string>();
+			}
+			foreach (var patch in Settings.SavedPatches_Tick)
+			{
+				Panel_DevOptions.ExecutePatch(CurrentInput.Method, patch, Category.Tick);
+			}
+			foreach (var patch in Settings.SavedPatches_Update)
+			{
+				Panel_DevOptions.ExecutePatch(CurrentInput.Method, patch, Category.Update);
+			}
 
-            Analyzer.EndProfiling();
-            GUIController.ResetToSettings();
+		}
 
-            Modbase.Settings.Write();
+		public override void PostClose()
+		{
+			base.PostClose();
 
-            // Pend the cleaning up of all of our state.
-            if(!Settings.disableCleanup)
-                Current.Game.GetComponent<GameComponent_Analyzer>().TimeTillCleanup = Modbase.TIME_SINCE_CLOSE_FOR_CLEANUP;
-        }
+			Analyzer.EndProfiling();
+			GUIController.ResetToSettings();
 
-        public static void LoadEntries()
-        {
-            List<Type> allEntries = GenTypes.AllTypes.Where(m => m.TryGetAttribute<Entry>(out _)).OrderBy(m => m.TryGetAttribute<Entry>().name).ToList();
+			Modbase.Settings.Write();
 
-            foreach (Type entryType in allEntries)
-            {
-                try
-                {
-                    Entry entry = entryType.TryGetAttribute<Entry>();
-                    entry.Settings = new Dictionary<FieldInfo, Setting>();
+			// Pend the cleaning up of all of our state.
+			if (!Settings.disableCleanup)
+				Current.Game.GetComponent<GameComponent_Analyzer>().TimeTillCleanup = Modbase.TIME_SINCE_CLOSE_FOR_CLEANUP;
+		}
 
-                    foreach (FieldInfo fieldInfo in entryType.GetFields().Where(m => m.TryGetAttribute<Setting>(out _)))
-                    {
-                        Setting sett = fieldInfo.TryGetAttribute<Setting>();
-                        entry.Settings.SetOrAdd(fieldInfo, sett);
-                    }
+		public static void LoadEntries()
+		{
+			List<Type> allEntries = GenTypes.AllTypes.Where(m => m.TryGetAttribute<Entry>(out _)).OrderBy(m => m.TryGetAttribute<Entry>().name).ToList();
 
-                    entry.onMouseOver = AccessTools.Method(entryType, "MouseOver");
-                    entry.onClick = AccessTools.Method(entryType, "Clicked");
-                    entry.onSelect = AccessTools.Method(entryType, "Selected");
-                    entry.checkBox = AccessTools.Method(entryType, "Checkbox");
+			foreach (Type entryType in allEntries)
+			{
+				try
+				{
+					Entry entry = entryType.TryGetAttribute<Entry>();
+					entry.Settings = new Dictionary<FieldInfo, Setting>();
 
-                    entry.type = entryType;
+					foreach (FieldInfo fieldInfo in entryType.GetFields().Where(m => m.TryGetAttribute<Setting>(out _)))
+					{
+						Setting sett = fieldInfo.TryGetAttribute<Setting>();
+						entry.Settings.SetOrAdd(fieldInfo, sett);
+					}
 
-                    // Find and append Entry to the correct Tab
-                    if (!GUIController.Tab(entry.category).entries.ContainsKey(entry))
-                        GUIController.Tab(entry.category).entries.Add(entry, entryType);
-                }
-                catch (Exception e)
-                {
-                    ThreadSafeLogger.Error(e.ToString());
-                }
-            }
+					entry.onMouseOver = AccessTools.Method(entryType, "MouseOver");
+					entry.onClick = AccessTools.Method(entryType, "Clicked");
+					entry.onSelect = AccessTools.Method(entryType, "Selected");
+					entry.checkBox = AccessTools.Method(entryType, "Checkbox");
 
-            // Loop through our static instances and add them to the Correct Tab
-            foreach (Entry entry in Entry.entries)
-            {
-                if (!GUIController.Tab(entry.category).entries.ContainsKey(entry))
-                    GUIController.Tab(entry.category).entries.Add(entry, entry.type);
-            }
+					entry.type = entryType;
 
-        }
+					// Find and append Entry to the correct Tab
+					if (!GUIController.Tab(entry.category).entries.ContainsKey(entry))
+						GUIController.Tab(entry.category).entries.Add(entry, entryType);
+				}
+				catch (Exception e)
+				{
+					ThreadSafeLogger.Error(e.ToString());
+				}
+			}
 
-        public void HandleWindowDrag(Rect rect)
-        {
-            var DragRect = new Rect(rect.x, rect.y, rect.width - 50f, 18f);
-            GUI.DragWindow(DragRect);
+			// Loop through our static instances and add them to the Correct Tab
+			foreach (Entry entry in Entry.entries)
+			{
+				if (!GUIController.Tab(entry.category).entries.ContainsKey(entry))
+					GUIController.Tab(entry.category).entries.Add(entry, entry.type);
+			}
 
-            DragRect = new Rect(rect.x, rect.y, 18f, rect.height);
-            GUI.DragWindow(DragRect);
+		}
 
-            DragRect = new Rect(rect.width - 18f, rect.y, 18f, rect.height);
-            GUI.DragWindow(DragRect);
+		public void HandleWindowDrag(Rect rect)
+		{
+			var DragRect = new Rect(rect.x, rect.y, rect.width - 50f, 18f);
+			GUI.DragWindow(DragRect);
 
-            DragRect = new Rect(rect.x, rect.y + rect.height - 18f, rect.width, 18f);
-            GUI.DragWindow(DragRect);
-        }
+			DragRect = new Rect(rect.x, rect.y, 18f, rect.height);
+			GUI.DragWindow(DragRect);
 
-        public override void DoWindowContents(Rect inRect)
-        {
-            HandleWindowDrag(inRect);
+			DragRect = new Rect(rect.width - 18f, rect.y, 18f, rect.height);
+			GUI.DragWindow(DragRect);
 
-            var rect = inRect.ContractedBy(18f);
+			DragRect = new Rect(rect.x, rect.y + rect.height - 18f, rect.width, 18f);
+			GUI.DragWindow(DragRect);
+		}
 
-            var profilersRect = rect;
+		public override void DoWindowContents(Rect inRect)
+		{
+			HandleWindowDrag(inRect);
 
-            if (GUIController.CurrentProfiler == null)
-            {
-                Panel_Tabs.Draw(profilersRect, GUIController.Tabs);
-                rect.AdjustHorizonallyBy(Panel_Tabs.width);
+			var rect = inRect.ContractedBy(18f);
 
-                if (GUIController.CurrentCategory == Category.Settings)
-                {
-                    Panel_Settings.Draw(rect);
-                    return;
-                }
+			var profilersRect = rect;
 
-                Panel_TopRow.Draw(rect.TopPartPixels(TOP_ROW_HEIGHT));
-                rect.AdjustVerticallyBy(TOP_ROW_HEIGHT+5);
+			if (GUIController.CurrentProfiler == null)
+			{
+				Panel_Tabs.Draw(profilersRect, GUIController.Tabs);
+				rect.AdjustHorizonallyBy(Panel_Tabs.width);
 
-                Panel_Logs.DrawLogs(rect);
+				if (GUIController.CurrentCategory == Category.Settings)
+				{
+					Panel_Settings.Draw(rect);
+					return;
+				}
 
-                return;
-            }
+				Panel_TopRow.Draw(rect.TopPartPixels(TOP_ROW_HEIGHT));
+				rect.AdjustVerticallyBy(TOP_ROW_HEIGHT + 5);
 
-            profilersRect.height -= GraphHeight + handleRect;
+				Panel_Logs.DrawLogs(rect);
 
-            Panel_Tabs.Draw(profilersRect, GUIController.Tabs);
-            rect.AdjustHorizonallyBy(Panel_Tabs.width);
-            
-            Panel_TopRow.Draw(rect.TopPartPixels(TOP_ROW_HEIGHT));
-            rect.AdjustVerticallyBy(TOP_ROW_HEIGHT);
+				return;
+			}
 
-            // If there is a current profiler, we need to adjust the height of the logs 
-            rect.height -= GraphHeight + handleRect;
+			profilersRect.height -= GraphHeight + handleRect;
 
-            Panel_Logs.DrawLogs(rect);
+			Panel_Tabs.Draw(profilersRect, GUIController.Tabs);
+			rect.AdjustHorizonallyBy(Panel_Tabs.width);
 
-            // Move the rect down to just below the Logs
-            rect.x -= Panel_Tabs.width;
-            rect.width += Panel_Tabs.width;
-            rect.y = rect.yMax;
-            rect.height = GraphHeight + handleRect;
+			Panel_TopRow.Draw(rect.TopPartPixels(TOP_ROW_HEIGHT));
+			rect.AdjustVerticallyBy(TOP_ROW_HEIGHT);
 
-            var barRect = rect.TopPartPixels(handleRect);
-            HandleGraphDrag(inRect, rect, barRect);
+			// If there is a current profiler, we need to adjust the height of the logs 
+			rect.height -= GraphHeight + handleRect;
 
-            rect.AdjustVerticallyBy(handleRect);
+			Panel_Logs.DrawLogs(rect);
 
-            Panel_BottomRow.Draw(rect);
-        }
+			// Move the rect down to just below the Logs
+			rect.x -= Panel_Tabs.width;
+			rect.width += Panel_Tabs.width;
+			rect.y = rect.yMax;
+			rect.height = GraphHeight + handleRect;
 
-        public void HandleGraphDrag(Rect bigRect, Rect rect, Rect graphRect)
-        {
-            Widgets.DrawHighlightIfMouseover(graphRect);
+			var barRect = rect.TopPartPixels(handleRect);
+			HandleGraphDrag(inRect, rect, barRect);
 
-            if (Input.GetMouseButtonDown(0) && Mouse.IsOver(graphRect) && draggingGraph == false)
-            {
-                draggingGraph = true;
-            }
+			rect.AdjustVerticallyBy(handleRect);
 
-            if (draggingGraph)
-            {
-                GraphHeight = rect.height - ((Event.current.mousePosition.y - rect.y) + handleRect/2.0f);
-            }
+			Panel_BottomRow.Draw(rect);
+		}
 
-            GraphHeight = Mathf.Clamp(GraphHeight, 50f, bigRect.height - 100f);
+		public void HandleGraphDrag(Rect bigRect, Rect rect, Rect graphRect)
+		{
+			Widgets.DrawHighlightIfMouseover(graphRect);
 
-            if (Input.GetMouseButtonUp(0))
-            {
-                draggingGraph = false;
-            }
-        }
-    }
+			if (Input.GetMouseButtonDown(0) && Mouse.IsOver(graphRect) && draggingGraph == false)
+			{
+				draggingGraph = true;
+			}
+
+			if (draggingGraph)
+			{
+				GraphHeight = rect.height - ((Event.current.mousePosition.y - rect.y) + handleRect / 2.0f);
+			}
+
+			GraphHeight = Mathf.Clamp(GraphHeight, 50f, bigRect.height - 100f);
+
+			if (Input.GetMouseButtonUp(0))
+			{
+				draggingGraph = false;
+			}
+		}
+	}
 }

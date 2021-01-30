@@ -165,6 +165,9 @@
 	<entry.update.mapcomponent>Map Component Update</entry.update.mapcomponent>
 	<entry.update.mapcomponent.tooltip>The Update method for Map Components</entry.update.mapcomponent.tooltip>
 
+	<entry.update.transpilermethods>Harmony Transpiled Methods</entry.update.transpilermethods>
+	<entry.update.transpilermethods.tooltip>Profiles entire methods that have transpiler patches, doesn't show the impact of individual changes, only the whole method, a transpiler might change how often some code in a method runs, not just call extra methods, use to compare how a method runs before and after adding a mod that patches it</entry.update.transpilermethods.tooltip>
+
 	<entry.update.sectionlayer.thingsdrawlayer>Draw Printed Things</entry.update.sectionlayer.thingsdrawlayer>
 	<entry.update.sectionlayer.thingsdrawlayer.tooltip>Profile how long each thing takes to print</entry.update.sectionlayer.thingsdrawlayer.tooltip>
 

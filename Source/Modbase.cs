@@ -63,6 +63,9 @@ namespace Analyzer
                 PerformancePatches.InitialisePatches();
             }
 
+
+
+
 #if DEBUG
             ThreadSafeLogger.Warning("==========================================================================");
             ThreadSafeLogger.Warning("                          Analyzer Running In Debug Mode                  ");
