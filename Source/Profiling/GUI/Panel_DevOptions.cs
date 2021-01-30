@@ -126,7 +126,7 @@ namespace Analyzer.Profiling
 					var row = listing.GetRect(Text.LineHeight);
 					if (Widgets.CloseButtonFor(row.LeftPartPixels(30f)))
 					{
-						Settings.SavedPatches_Tick.Remove(patch);
+						Settings.SavedPatches_Update.Remove(patch);
 					}
 					Widgets.Label(row.RightPartPixels(row.width - 30f), patch + " Update");
 					listing.GapLine();
