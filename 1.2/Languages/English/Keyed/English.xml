@@ -128,13 +128,13 @@
 	<entry.tick.room.tooltip>The method which is responsible for the updating of room stats</entry.tick.room.tooltip>
 
 	<entry.tick.thinknodes>ThinkNodes</entry.tick.thinknodes>
-	<entry.tick.thinknodes.tooltip>ThinkNodes are related to how pawns decide what they are doing</entry.tick.thinknodes.tooltip>
+	<entry.tick.thinknodes.tooltip>ThinkNodes are basically sets of general job givers filtered in an ai tree, like satisfying needs, optimizing apparel, fleeing, work is all combined in a single JobGiver_Work which can be individually profiled by looking at the Work Giver profiler tab</entry.tick.thinknodes.tooltip>
 
 	<entry.tick.things>Tick Things</entry.tick.things>
 	<entry.tick.things.tooltip>Profiles the ticking methods of various things on the map</entry.tick.things.tooltip>
 
-	<entry.tick.jobgiver>Job Giver</entry.tick.jobgiver>
-	<entry.tick.jobgiver.tooltip>Job Giver shows jobs which pro-actively seek out work to be done. For example. Fermenting barrels looking for ingredients, bills looking for resources, etc</entry.tick.jobgiver.tooltip>
+	<entry.tick.jobgiver>Work Giver</entry.tick.jobgiver>
+	<entry.tick.jobgiver.tooltip>Work Giver is only jobs done for work, that means all the jobs listed in the Work tab, this does not include jobs run by the ai for things like satisfying needs or optimizing apparel, those can be found in the ThinkNodes profile tab</entry.tick.jobgiver.tooltip>
 
 	<entry.tick.jobgiverd>Job Giver (Detoured)</entry.tick.jobgiverd>
 	<entry.tick.jobgiverd.tooltip>Job Giver shows jobs which pro-actively seek out work to be done. For example. Fermenting barrels looking for ingredients, bills looking for resources, etc</entry.tick.jobgiverd.tooltip>
