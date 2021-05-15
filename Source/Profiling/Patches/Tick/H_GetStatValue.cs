@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using RimWorld;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Verse;
 
@@ -19,14 +20,10 @@ namespace Analyzer.Profiling
 
         public static void ProfilePatch()
         {
-            MethodInfo jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValue));
-            HarmonyMethod pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(Prefix));
-            HarmonyMethod post = new HarmonyMethod(typeof(H_GetStatValue), nameof(Postfix));
-            Modbase.Harmony.Patch(jiff, pre, post);
+            var jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueAbstract), new[] { typeof(BuildableDef), typeof(StatDef), typeof(ThingDef) });
+            var pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(PrefixAb));
+            var post = new HarmonyMethod(typeof(H_GetStatValue), nameof(Postfix));
 
-
-            jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueAbstract), new[] { typeof(BuildableDef), typeof(StatDef), typeof(ThingDef) });
-            pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(PrefixAb));
             Modbase.Harmony.Patch(jiff, pre, post);
 
             jiff = AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValueAbstract), new[] { typeof(AbilityDef), typeof(StatDef) });
@@ -153,31 +150,25 @@ namespace Analyzer.Profiling
             return true;
         }
 
-        [HarmonyPriority(Priority.Last)]
-        public static void Prefix(MethodBase __originalMethod, Thing thing, StatDef stat, ref Profiler __state)
-        {
-            if (Active && !GetValDetour)
-            {
-                string state = string.Empty;
-                if (ByDef)
-                {
-                    state = $"{stat.defName} for {thing.def.defName}";
-                }
-                else
-                {
-                    state = stat.defName;
-                }
 
-                __state = ProfileController.Start(state, null, null, null, null, __originalMethod);
-            }
+        public static IEnumerable<MethodInfo> GetPatchMethods()
+        {
+            yield return AccessTools.Method(typeof(StatExtension), nameof(StatExtension.GetStatValue));
         }
+
+        public static string GetName(Thing thing, StatDef stat)
+        {
+            return GetValDetour ? null : 
+                ByDef ? $"{stat.defName} for {thing.def.defName}" : stat.defName;
+        }
+
 
         [HarmonyPriority(Priority.First)]
         public static void Postfix(Profiler __state)
         {
             if (Active && !GetValDetour)
             {
-                __state.Stop();
+                __state?.Stop();
             }
         }
 
