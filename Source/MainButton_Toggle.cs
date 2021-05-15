@@ -13,6 +13,8 @@ namespace Analyzer
         {
             get
             {
+                this.def.buttonVisible = Settings.showIcon;
+
                 return Find.CurrentMap == null
                     && (!def.validWithoutMap || def == MainButtonDefOf.World) || Find.WorldRoutePlanner.Active
                     && Find.WorldRoutePlanner.FormingCaravan
