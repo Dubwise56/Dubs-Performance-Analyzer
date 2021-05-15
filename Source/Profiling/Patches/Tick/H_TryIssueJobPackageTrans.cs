@@ -37,7 +37,7 @@ namespace Analyzer.Profiling
 
         public static void Prefix(Pawn pawn)
         {
-            pawnname = pawn.Name.ToStringShort;
+            pawnname = pawn?.Name?.ToStringShort ?? "";
         }
         public static void Postfix()
         {
