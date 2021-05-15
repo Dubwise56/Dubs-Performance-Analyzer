@@ -206,6 +206,16 @@ namespace Analyzer.Profiling
 
         private static void PopulateSearch(string searchText, CurrentInput inputType)
         {
+            if (searchText.Length <= 4 && currentInput != CurrentInput.Assembly)
+            {
+                lock (sync)
+                {
+                    cachedEntries = new HashSet<string>();
+                }
+                
+                return;
+            }
+
             bool active = false;
 
             lock (sync)
@@ -238,8 +248,6 @@ namespace Analyzer.Profiling
 
         private static void PopulateSearchMethod(string searchText)
         {
-            if (searchText.Length <= 4) return;
-
             lock (sync)
             {
                 currentlySearching = true;
@@ -277,8 +285,6 @@ namespace Analyzer.Profiling
 
         private static void PopulateSearchType(string searchText)
         {
-            if (searchText.Length <= 2) return;
-
             lock (sync)
             {
                 currentlySearching = true;
