@@ -16,12 +16,14 @@
 	<tab.modder.desc>Methods which have been added by modders via Analyzer.xml</tab.modder.desc>
 
 	<!--Settings-->
-  <settings.Overrides>Overrides</settings.Overrides>
-  <settings.Disabling>Disabling</settings.Disabling>
-  <settings.Optimizations>Optimizations</settings.Optimizations>
+  	<settings.Overrides>Overrides</settings.Overrides>
+  	<settings.Disabling>Disabling</settings.Disabling>
+  	<settings.Optimizations>Optimizations</settings.Optimizations>
 	<settings.performance>Performance Options</settings.performance>
 	<settings.developer>Developer Options</settings.developer>
-  <settings.debuglog>Enable log without debug mode</settings.debuglog>
+  	<settings.debuglog>Enable log without debug mode</settings.debuglog>
+    <settings.showicon>Show the main tab icon on the bottom bar</settings.showicon>
+
 	<settings.wiki>Analyzer Wiki</settings.wiki>
 	<settings.discord>Dubs Discord</settings.discord>
 	<settings.dnspy>Path to Dnspy (Including the Exe)</settings.dnspy>
@@ -94,10 +96,10 @@
 	
 	<!-- Tick -->
 
-  <entry.tick.jobdrivertick>Job driver tick</entry.tick.jobdrivertick>
-  <entry.tick.jobdrivertick.tooltip>A detoured profiler for the whole job driver tick including the cost of ticking each individual driver</entry.tick.jobdrivertick.tooltip>
+  	<entry.tick.jobdrivertick>Job driver tick</entry.tick.jobdrivertick>
+  	<entry.tick.jobdrivertick.tooltip>A detoured profiler for the whole job driver tick including the cost of ticking each individual driver</entry.tick.jobdrivertick.tooltip>
 
-  <entry.tick.single>Single Tick</entry.tick.single>
+  	<entry.tick.single>Single Tick</entry.tick.single>
 	<entry.tick.single.tooltip>A variety of tick methods, including; World, History, FilthMonitor, Storyteller</entry.tick.single.tooltip>
 
 	<entry.tick.pathfinder>Pathfinding</entry.tick.pathfinder>

@@ -142,6 +142,9 @@ namespace Analyzer.Profiling
                     yield return new CodeInstruction(OpCodes.Ldstr, key);
                 }
                 yield return new CodeInstruction(OpCodes.Stloc, keyLocal);
+                // if our key is null, start the method (opt out by name)
+                yield return new CodeInstruction(OpCodes.Ldloc, keyLocal);
+                yield return new CodeInstruction(OpCodes.Brfalse, beginLabel);
             }
 
             { // if(Profilers.TryGetValue(key, out var prof))

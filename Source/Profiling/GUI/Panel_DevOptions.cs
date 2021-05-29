@@ -36,6 +36,7 @@ namespace Analyzer.Profiling
 			DubGUI.Checkbox(Strings.settings_logging, listing, ref Settings.verboseLogging);
 			DubGUI.Checkbox(Strings.settings_disable_tps_counter, listing, ref Settings.disableTPSCounter);
 			DubGUI.Checkbox("settings.debuglog".Tr(), listing, ref Settings.enableLog);
+			DubGUI.Checkbox("settings.showicon".Tr(), listing, ref Settings.showIcon);
 
 			var s = Strings.settings_disable_cleanup;
 			var rect = listing.GetRect(Text.LineHeight);

@@ -19,6 +19,7 @@ namespace Analyzer
         public static bool disableCleanup;
         public static bool disableTPSCounter;
         public static bool enableLog;
+        public static bool showIcon;
         public static HashSet<string> SavedPatches_Tick;
         public static HashSet<string> SavedPatches_Update;
 
@@ -43,6 +44,10 @@ namespace Analyzer
             Scribe_Values.Look(ref verboseLogging, "verboseLogging");
             Scribe_Values.Look(ref disableCleanup, "disableCleanup");
             Scribe_Values.Look(ref disableTPSCounter, "disableTPSCounter");
+
+            Scribe_Values.Look(ref enableLog, "enableDebugLog", false);
+            Scribe_Values.Look(ref showIcon, "showMainTabIcon", true);
+
             Scribe_Collections.Look(ref SavedPatches_Update, "SavedPatches_Update");
             Scribe_Collections.Look(ref SavedPatches_Tick, "SavedPatches_Tick");
 

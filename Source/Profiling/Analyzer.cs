@@ -91,7 +91,7 @@ namespace Analyzer.Profiling
                     var meth = AccessTools.Method(entry.type, "ProfilePatch");
 
                     if (meth != null) meth.Invoke(null, null);
-                    else MethodTransplanting.PatchMethods(entry.type);
+                    MethodTransplanting.PatchMethods(entry.type);
 
                     entry.isLoading = false;
                     entry.isPatched = true;
