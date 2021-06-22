@@ -25,7 +25,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>1.2\Assemblies\</OutputPath>
+    <OutputPath>1.3\Assemblies\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -41,7 +41,7 @@
       <HintPath>packages\Lib.Harmony.2.0.4\lib\net472\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp_publicized">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll</HintPath>
+      <HintPath>..\..\RimWorldWin64_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -51,8 +51,8 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.CoreModule_publicized">
-      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\publicized_assemblies\UnityEngine.CoreModule_publicized.dll</HintPath>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\..\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
@@ -76,26 +76,26 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="1.0\Defs\MainButton.xml" />
-    <Content Include="1.2\Assemblies\0Harmony.dll" />
-    <Content Include="1.2\Assemblies\0Harmony.xml" />
-    <Content Include="1.2\Assemblies\PerformanceAnalyzer.dll" />
-    <Content Include="1.2\Defs\MainButton.xml" />
-    <Content Include="1.2\Languages\English\Keyed\English.xml" />
-    <Content Include="1.2\Textures\DPA\UI\az.png" />
-    <Content Include="1.2\Textures\DPA\UI\billButt.png" />
-    <Content Include="1.2\Textures\DPA\UI\discord.png" />
-    <Content Include="1.2\Textures\DPA\UI\dropdown.png" />
-    <Content Include="1.2\Textures\DPA\UI\enter.png" />
-    <Content Include="1.2\Textures\DPA\UI\foldup.png" />
-    <Content Include="1.2\Textures\DPA\UI\hsbMark.png" />
-    <Content Include="1.2\Textures\DPA\UI\hueMark.png" />
-    <Content Include="1.2\Textures\DPA\UI\mem.png" />
-    <Content Include="1.2\Textures\DPA\UI\MenuSett.png" />
-    <Content Include="1.2\Textures\DPA\UI\MintSearch.png" />
-    <Content Include="1.2\Textures\DPA\UI\Refresh.png" />
-    <Content Include="1.2\Textures\DPA\UI\sav.png" />
-    <Content Include="1.2\Textures\DPA\UI\Support.png" />
+    <Content Include="1.3\Assemblies\0Harmony.dll" />
+    <Content Include="1.3\Assemblies\0Harmony.xml" />
+    <Content Include="1.3\Assemblies\PerformanceAnalyzer.dll" />
+    <Content Include="1.3\Assemblies\PerformanceAnalyzer.pdb" />
+    <Content Include="1.3\Defs\MainButton.xml" />
+    <Content Include="1.3\Languages\English\Keyed\English.xml" />
+    <Content Include="1.3\Textures\DPA\UI\az.png" />
+    <Content Include="1.3\Textures\DPA\UI\billButt.png" />
+    <Content Include="1.3\Textures\DPA\UI\discord.png" />
+    <Content Include="1.3\Textures\DPA\UI\dropdown.png" />
+    <Content Include="1.3\Textures\DPA\UI\enter.png" />
+    <Content Include="1.3\Textures\DPA\UI\foldup.png" />
+    <Content Include="1.3\Textures\DPA\UI\hsbMark.png" />
+    <Content Include="1.3\Textures\DPA\UI\hueMark.png" />
+    <Content Include="1.3\Textures\DPA\UI\mem.png" />
+    <Content Include="1.3\Textures\DPA\UI\MenuSett.png" />
+    <Content Include="1.3\Textures\DPA\UI\MintSearch.png" />
+    <Content Include="1.3\Textures\DPA\UI\Refresh.png" />
+    <Content Include="1.3\Textures\DPA\UI\sav.png" />
+    <Content Include="1.3\Textures\DPA\UI\Support.png" />
     <Content Include="About\About.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -210,7 +210,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".vs\Rimprofiler\v16\" />
-    <Folder Include="1.1\Defs\" />
     <Folder Include="Assemblies\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
