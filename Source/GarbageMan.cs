@@ -45,10 +45,10 @@ namespace Analyzer.GCNotify
 
         public static void Init()
         {
-            if (GarbageCollector.isIncremental)
-            {
-                Log.Warning($"Running incremental garbage collection with time slice of {GarbageCollector.incrementalTimeSliceNanoseconds} nanoseconds");
-            }
+            //if (GarbageCollector.isIncremental)
+            //{
+            //    Log.Warning($"Running incremental garbage collection with time slice of {GarbageCollector.incrementalTimeSliceNanoseconds} nanoseconds");
+            //}
 
           //  GarbageCollector.incrementalTimeSliceNanoseconds = 3000000;
         }
