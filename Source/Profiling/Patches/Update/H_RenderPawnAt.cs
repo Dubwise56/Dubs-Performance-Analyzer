@@ -8,7 +8,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.update.pawnrenderer", Category.Update)]
+    [Entry("entry.update.pawnrenderer", Category.Update)] 
     internal class H_RenderPawnAt
     {
         public static bool Active = false;
