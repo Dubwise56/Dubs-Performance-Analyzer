@@ -35,13 +35,15 @@ namespace Analyzer
 
         public static void OnGUI()
         {
-            if (restartkey.KeyDownEvent)
-            {
-                GenCommandLine.Restart();
-            }
+
 
             try
             {
+	            if (restartkey.KeyDownEvent)
+	            {
+		            GenCommandLine.Restart();
+	            }
+
                 if (key != null && key.KeyDownEvent)
                 {
                     if (Find.WindowStack.WindowOfType<Window_Analyzer>() != null)
