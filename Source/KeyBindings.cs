@@ -22,7 +22,7 @@ namespace Analyzer
             alertKey = KeyBindingDef.Named("dpa_ToggleAlertBlock");
             PatchMe(Modbase.StaticHarmony);
         }
-
+	    
         public static void PatchMe(Harmony harmony)
         {
             var biff = new HarmonyMethod(typeof(H_KeyPresses).GetMethod(nameof(OnGUI)));
@@ -49,7 +49,7 @@ namespace Analyzer
                     if (Find.WindowStack.WindowOfType<Window_Analyzer>() != null)
                     {
                         Find.WindowStack.RemoveWindowsOfType(typeof(Window_Analyzer));
-                    } 
+                    }
                     else
                     {
                         Find.WindowStack.Add(new Window_Analyzer());
