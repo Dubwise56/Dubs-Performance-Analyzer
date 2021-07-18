@@ -49,7 +49,7 @@ namespace Analyzer
                     if (Find.WindowStack.WindowOfType<Window_Analyzer>() != null)
                     {
                         Find.WindowStack.RemoveWindowsOfType(typeof(Window_Analyzer));
-                    }
+                    } 
                     else
                     {
                         Find.WindowStack.Add(new Window_Analyzer());
