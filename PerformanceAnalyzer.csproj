@@ -37,8 +37,8 @@
     <RootNamespace>PerformanceAnalyzer</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Lib.Harmony.2.0.4\lib\net472\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Lib.Harmony.2.2.2\lib\net472\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp_publicized">
       <HintPath>..\..\RimWorldWin64_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll</HintPath>
@@ -76,26 +76,30 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="1.3\Assemblies\0Harmony.dll" />
-    <Content Include="1.3\Assemblies\0Harmony.xml" />
-    <Content Include="1.3\Assemblies\PerformanceAnalyzer.dll" />
-    <Content Include="1.3\Assemblies\PerformanceAnalyzer.pdb" />
-    <Content Include="1.3\Defs\MainButton.xml" />
-    <Content Include="1.3\Languages\English\Keyed\English.xml" />
-    <Content Include="1.3\Textures\DPA\UI\az.png" />
-    <Content Include="1.3\Textures\DPA\UI\billButt.png" />
-    <Content Include="1.3\Textures\DPA\UI\discord.png" />
-    <Content Include="1.3\Textures\DPA\UI\dropdown.png" />
-    <Content Include="1.3\Textures\DPA\UI\enter.png" />
-    <Content Include="1.3\Textures\DPA\UI\foldup.png" />
-    <Content Include="1.3\Textures\DPA\UI\hsbMark.png" />
-    <Content Include="1.3\Textures\DPA\UI\hueMark.png" />
-    <Content Include="1.3\Textures\DPA\UI\mem.png" />
-    <Content Include="1.3\Textures\DPA\UI\MenuSett.png" />
-    <Content Include="1.3\Textures\DPA\UI\MintSearch.png" />
-    <Content Include="1.3\Textures\DPA\UI\Refresh.png" />
-    <Content Include="1.3\Textures\DPA\UI\sav.png" />
-    <Content Include="1.3\Textures\DPA\UI\Support.png" />
+    <Content Include="1.4\Assemblies\0Harmony.dll" />
+    <Content Include="1.4\Assemblies\0Harmony.xml" />
+    <Content Include="1.4\Assemblies\PerformanceAnalyzer.dll" />
+    <Content Include="1.4\Defs\MainButton.xml" />
+    <Content Include="1.4\Languages\ChineseSimplified\DefInjected\KeyBindingCategoryDef\MainButton.xml" />
+    <Content Include="1.4\Languages\ChineseSimplified\DefInjected\KeyBindingDef\KeyBindings_Add_MainTab.xml" />
+    <Content Include="1.4\Languages\ChineseSimplified\DefInjected\KeyBindingDef\MainButton.xml" />
+    <Content Include="1.4\Languages\ChineseSimplified\DefInjected\MainButtonDef\MainButton.xml" />
+    <Content Include="1.4\Languages\ChineseSimplified\Keyed\PerfAnal.xml" />
+    <Content Include="1.4\Languages\English\Keyed\English.xml" />
+    <Content Include="1.4\Textures\DPA\UI\az.png" />
+    <Content Include="1.4\Textures\DPA\UI\billButt.png" />
+    <Content Include="1.4\Textures\DPA\UI\discord.png" />
+    <Content Include="1.4\Textures\DPA\UI\dropdown.png" />
+    <Content Include="1.4\Textures\DPA\UI\enter.png" />
+    <Content Include="1.4\Textures\DPA\UI\foldup.png" />
+    <Content Include="1.4\Textures\DPA\UI\hsbMark.png" />
+    <Content Include="1.4\Textures\DPA\UI\hueMark.png" />
+    <Content Include="1.4\Textures\DPA\UI\mem.png" />
+    <Content Include="1.4\Textures\DPA\UI\MenuSett.png" />
+    <Content Include="1.4\Textures\DPA\UI\MintSearch.png" />
+    <Content Include="1.4\Textures\DPA\UI\Refresh.png" />
+    <Content Include="1.4\Textures\DPA\UI\sav.png" />
+    <Content Include="1.4\Textures\DPA\UI\Support.png" />
     <Content Include="About\About.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -126,7 +130,6 @@
     <Compile Include="Source\Performance\Patches\H_Notify_PawnDamaged.cs" />
     <Compile Include="Source\Performance\Patches\H_PawnGeneration.cs" />
     <Compile Include="Source\Performance\Patches\H_SectionCtor.cs" />
-    <Compile Include="Source\Performance\Patches\H_SectionLayer_Snow.cs" />
     <Compile Include="Source\Performance\Patches\H_ZoomThrottle.cs" />
     <Compile Include="Source\Performance\PerformancePatches.cs" />
     <Compile Include="Source\Performance\PerfPatch.cs" />

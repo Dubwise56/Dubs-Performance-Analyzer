@@ -25,7 +25,7 @@ namespace Analyzer.Profiling
             yield return AccessTools.Method(typeof(Pawn_CarryTracker), nameof(Pawn_CarryTracker.CarryHandsTick));
             yield return AccessTools.Method(typeof(Pawn_NeedsTracker), nameof(Pawn_NeedsTracker.NeedsTrackerTick));
             yield return AccessTools.Method(typeof(Pawn_MindState), nameof(Pawn_MindState.MindStateTick));
-            yield return AccessTools.Method(typeof(Pawn_RotationTracker), nameof(Pawn_RotationTracker.RotationTrackerTick));
+            yield return AccessTools.Method(typeof(Pawn_RotationTracker), nameof(Pawn_RotationTracker.ProcessPostTickVisuals));
             yield return AccessTools.Method(typeof(Pawn_PathFollower), nameof(Pawn_PathFollower.PatherTick));
             yield return AccessTools.Method(typeof(Pawn_StanceTracker), nameof(Pawn_StanceTracker.StanceTrackerTick));
             yield return AccessTools.Method(typeof(Pawn_EquipmentTracker), nameof(Pawn_EquipmentTracker.EquipmentTrackerTick));
@@ -39,7 +39,7 @@ namespace Analyzer.Profiling
             yield return AccessTools.Method(typeof(Pawn_RelationsTracker), nameof(Pawn_RelationsTracker.RelationsTrackerTick));
             yield return AccessTools.Method(typeof(Pawn_PsychicEntropyTracker), nameof(Pawn_PsychicEntropyTracker.PsychicEntropyTrackerTick));
             yield return AccessTools.Method(typeof(Pawn_InteractionsTracker), nameof(Pawn_InteractionsTracker.InteractionsTrackerTick));
-            yield return AccessTools.Method(typeof(Pawn_DrawTracker), nameof(Pawn_DrawTracker.DrawTrackerTick));
+            yield return AccessTools.Method(typeof(Pawn_DrawTracker), nameof(Pawn_DrawTracker.ProcessPostTickVisuals));
         }
     }
 }
