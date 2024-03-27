@@ -47,7 +47,7 @@ namespace Analyzer.Profiling
                 prof.Stop();
 
                 prof = ProfileController.Start("StatsToDraw");
-                StatsReportUtility.cachedDrawEntries.AddRange(StatsReportUtility.StatsToDraw(thing).Where(s => s.ShouldDisplay));
+                StatsReportUtility.cachedDrawEntries.AddRange(StatsReportUtility.StatsToDraw(thing).Where(s => s.ShouldDisplay(thing)));
                 prof.Stop();
 
                 prof = ProfileController.Start("RemoveAll");

@@ -69,7 +69,7 @@ namespace Analyzer
                 
                 if (alertKey.KeyDownEvent)
                 {
-                    H_AlertsReadoutUpdate.DisableAlerts = !H_AlertsReadoutUpdate.DisableAlerts;
+                    //H_AlertsReadoutUpdate.DisableAlerts = !H_AlertsReadoutUpdate.DisableAlerts;
                 }
             }
             catch (Exception e)

@@ -99,7 +99,7 @@ namespace Analyzer.Profiling
                         break;
                     case LogMessageType.Error:
                         UnityEngine.Debug.LogError(res.message);
-                        if (Prefs.PauseOnError && Current.ProgramState == ProgramState.Playing)
+                        if (DebugSettings.pauseOnError && Current.ProgramState == ProgramState.Playing)
                         {
                             Find.TickManager.Pause();
                         }

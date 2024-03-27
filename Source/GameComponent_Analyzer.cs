@@ -1,6 +1,5 @@
 ﻿using Analyzer.Performance;
 using Analyzer.Profiling;
-using Analyzer.Fixes;
 using System;
 using System.Collections.Generic;
 using System.Linq;

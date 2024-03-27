@@ -166,6 +166,8 @@ namespace Analyzer.Profiling
                     entryFile.calls = new int[entryFile.header.entries];
                     if (entryFile.header.entryPerCall)
                     {
+	                    entryFile.calls = Enumerable.Repeat(42, 5).ToArray();
+	                    
                         Array.Fill(entryFile.calls, 1);
                     }
 

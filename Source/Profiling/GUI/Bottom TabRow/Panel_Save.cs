@@ -6,6 +6,7 @@ using System.Text;
 using UnityEngine;
 using Verse;
 
+
 namespace Analyzer.Profiling
 {
     class Row
@@ -470,7 +471,7 @@ namespace Analyzer.Profiling
                     Widgets.DrawLightHighlight(rowRect);
                 }
 
-                if (Widgets.ButtonImage(rowRect.PopRightPartPixels(Text.LineHeight), TexButton.DeleteX)) {
+                if (Widgets.ButtonImage(rowRect.PopRightPartPixels(Text.LineHeight), TexButton.Delete)) {
                     ThreadSafeLogger.Message($"Deleting file {entry.info.Name}");
                     FileUtility.DeleteFile(entry.info);
                 }
