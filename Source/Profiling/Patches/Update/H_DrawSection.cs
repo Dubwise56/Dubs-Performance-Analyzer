@@ -5,7 +5,6 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-	//TODO transpile this.
 	[Entry("entry.update.mapdrawer", Category.Update)]
 	internal class H_DrawSection
 	{
@@ -22,41 +21,42 @@ namespace Analyzer.Profiling
 		public static bool Prefix(MethodBase __originalMethod, Section __instance)
 		{
 			if (!Active)
-			{
 				return true;
-			}
-
+			
 			if (__instance.anyLayerDirty)
-			{
 				__instance.RegenerateDirtyLayers();
-			}
 			
-				int count = __instance.layers.Count;
-				for (int i = 0; i < count; i++)
-				{
-					var type = __instance.layers[i].GetType();
-					var name = type.Name;
-
-					var prof = ProfileController.Start(name, null, type, __originalMethod);
-					__instance.layers[i].DrawLayer();
-					prof.Stop();
-				}
-			
-			if (DebugViewSettings.drawSectionEdges)
+			for (int index = 0; index < __instance.layers.Count; ++index)
 			{
-				Vector3 a = __instance.botLeft.ToVector3();
-				GenDraw.DrawLineBetween(a, a + new Vector3(0f, 0f, 17f));
-				GenDraw.DrawLineBetween(a, a + new Vector3(17f, 0f, 0f));
-				if (__instance.CellRect.Contains(UI.MouseCell()))
-				{
-					Vector3 a2 = __instance.bounds.Min.ToVector3();
-					Vector3 a3 = __instance.bounds.Max.ToVector3() + new Vector3(1f, 0f, 1f);
-					GenDraw.DrawLineBetween(a2, a2 + new Vector3(__instance.bounds.Width, 0f, 0f), SimpleColor.Magenta);
-					GenDraw.DrawLineBetween(a2, a2 + new Vector3(0f, 0f, __instance.bounds.Height), SimpleColor.Magenta);
-					GenDraw.DrawLineBetween(a3, a3 - new Vector3(__instance.bounds.Width, 0f, 0f), SimpleColor.Magenta);
-					GenDraw.DrawLineBetween(a3, a3 - new Vector3(0f, 0f, __instance.bounds.Height), SimpleColor.Magenta);
-				}
+				var layer = __instance.layers[index];
+				var type = layer.GetType();
+				var prof = ProfileController.Start(type.Name, null, type, __originalMethod);
+				layer.DrawLayer();
+				prof.Stop();
 			}
+
+			if (!DebugViewSettings.drawSectionEdges)
+				return false;
+			
+			Vector3 vector3_1 = __instance.botLeft.ToVector3();
+			GenDraw.DrawLineBetween(vector3_1, vector3_1 + new Vector3(0.0f, 0.0f, 17f));
+			GenDraw.DrawLineBetween(vector3_1, vector3_1 + new Vector3(17f, 0.0f, 0.0f));
+			
+			if (!__instance.CellRect.Contains(UI.MouseCell()))
+				return false;
+			
+			IntVec3 intVec3 = __instance.bounds.Min;
+			Vector3 vector3_2 = intVec3.ToVector3();
+			intVec3 = __instance.bounds.Max;
+			Vector3 A = intVec3.ToVector3() + new Vector3(1f, 0.0f, 1f);
+			GenDraw.DrawLineBetween(vector3_2, vector3_2 + new Vector3((float)__instance.bounds.Width, 0.0f, 0.0f),
+				SimpleColor.Magenta);
+			GenDraw.DrawLineBetween(vector3_2, vector3_2 + new Vector3(0.0f, 0.0f, (float)__instance.bounds.Height),
+				SimpleColor.Magenta);
+			GenDraw.DrawLineBetween(A, A - new Vector3((float)__instance.bounds.Width, 0.0f, 0.0f),
+				SimpleColor.Magenta);
+			GenDraw.DrawLineBetween(A, A - new Vector3(0.0f, 0.0f, (float)__instance.bounds.Height),
+				SimpleColor.Magenta);
 
 			return false;
 		}

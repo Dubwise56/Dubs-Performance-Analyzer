@@ -61,20 +61,23 @@ namespace Analyzer.Profiling
             var insts = new Myers<CodeInstruction>(inst.ToArray(), modInstList.ToArray(), methComparer);
             insts.Compute();
 
-            var key = Utility.GetMethodKey(__originalMethod);
-            var index = MethodInfoCache.AddMethod(key, __originalMethod);
+            // var key = Utility.GetMethodKey(__originalMethod);
+            // var index = MethodInfoCache.AddMethod(key, __originalMethod);
 
             foreach (var thing in insts.changeSet)
             {
                 // We only want added methods
                 if (thing.change != ChangeType.Added) continue;
 
-                if (!Utility.ValidCallInstruction(thing.value, null, out var meth, out _)) continue;
+                var instruction = thing.value;
+                if (!Utility.ValidCallInstruction(instruction, null, out var meth, out var key)) continue;
                 if (!(meth is MethodInfo)) continue;
 
+                var index = MethodInfoCache.AddMethod(key, meth);
+                
                 // swap our instruction
                 var replaceInstruction = MethodTransplanting.ReplaceMethodInstruction(
-                    thing.value,
+                    instruction,
                     key,
                     typeof(H_HarmonyTranspilersInternalMethods),
                     index);

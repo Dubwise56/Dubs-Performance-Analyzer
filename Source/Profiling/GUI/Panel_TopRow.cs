@@ -9,6 +9,11 @@ namespace Analyzer.Profiling
         public static string TimesFilter = string.Empty;
         public static string MatchType = string.Empty;
 
+        public static int
+            tps,
+            tpsTarget,
+            fps;
+
         public static void Draw(Rect rect)
         {
             var row = rect.LeftPartPixels(25f);
@@ -40,7 +45,7 @@ namespace Analyzer.Profiling
             Text.Anchor = TextAnchor.UpperLeft;
             Text.Font = GameFont.Tiny;
             
-            var cat = GUIController.CurrentCategory == Category.Tick ? "tick" : "update";
+            var cat = GUIController.CurrentCategory == Category.Tick ? Strings.tab_tick : Strings.Frame;
             var str = $"{ProfileController.updateAverage:F3}ms/{cat}";
 
             var strLen = str.GetWidthCached();
@@ -50,14 +55,20 @@ namespace Analyzer.Profiling
             
             Widgets.Label(periodLen, str);
 
+            if (Analyzer.CurrentlyProfiling)
+            {
+                fps = GUIElement_TPS.FPS;
+                tps = GUIElement_TPS.TPS;
+                tpsTarget = GUIElement_TPS.TPSTarget;
+            }
 
             var tpsFpsRect = rect;
             tpsFpsRect.width = 50f;
-            Widgets.Label(tpsFpsRect, $"FPS: {GUIElement_TPS.FPS}");
+            Widgets.Label(tpsFpsRect, $"FPS: {fps}");
             TooltipHandler.TipRegion(tpsFpsRect, Strings.top_fps_tip);
             tpsFpsRect.x = tpsFpsRect.xMax + 5;
             tpsFpsRect.width = 90f;
-            Widgets.Label(tpsFpsRect, $"TPS: {GUIElement_TPS.TPS}({GUIElement_TPS.TPSTarget})");
+            Widgets.Label(tpsFpsRect, $"TPS: {tps}({tpsTarget})");
             TooltipHandler.TipRegion(tpsFpsRect, Strings.top_tps_tip);
             tpsFpsRect.x = tpsFpsRect.xMax + 5;
             tpsFpsRect.width = 30f;

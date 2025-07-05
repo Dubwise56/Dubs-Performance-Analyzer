@@ -32,12 +32,16 @@ namespace Analyzer.Profiling
                 var frames = new StackTrace(false).GetFrames();
                 if (frames == null) return;
 
-                var methods = frames.Select(Harmony.GetMethodFromStackframe).Select(m => m is MethodInfo mi ? Harmony.GetOriginalMethod(mi) ?? m : m);
+                var methods = frames.Select(Harmony.GetMethodFromStackframe).Select(static m
+                    => m is MethodInfo mi ? Harmony.GetOriginalMethod(mi) ?? m : m);
                 
                 // find the first non harmony/dpa method in the stack trace and assoc the asm
                 // that method is from with the stack trace
                 foreach (var method in methods)
                 {
+                    if (method is null)
+                        continue;
+                    
                     var asm = method.DeclaringType?.Assembly ?? method.ReflectedType?.Assembly;                    
                     if (asm == null) continue;
                     
@@ -51,9 +55,9 @@ namespace Analyzer.Profiling
                 }
 
             }
-            catch (Exception e) // lets be exceedingly careful.
+            catch (Exception ex) // lets be exceedingly careful.
             {
-                ThreadSafeLogger.ReportException(e, "Failed to capture Harmony ctor");
+                Log.Error($"Failed to capture Harmony ctor for id '{id}':\n{ex}");
             }
         }
         
@@ -136,7 +140,8 @@ namespace Analyzer.Profiling
 
         public static void Initialise()
         {
-            try {
+            try
+            {
                 foreach (var mod in LoadedModManager.RunningMods)
                 {
                     foreach (var asm in mod.assemblies.loadedAssemblies)
@@ -161,13 +166,14 @@ namespace Analyzer.Profiling
                 harmonyIds.Add(Modbase.Harmony.Id, assembly);
                 harmonyIds.Add(Modbase.StaticHarmony.Id, assembly);
             }
-            catch (Exception e) {
+            catch
+            {
                 foreach(var (key, val) in mods)  {
                     ThreadSafeLogger.Error("Caught an error when building an assembly -> mod mapping, dumping existing mapping");
                     ThreadSafeLogger.Message($"Asm: {key}, maps to mod {val}");
                 }
 
-                throw e;
+                throw;
             }
         }
 

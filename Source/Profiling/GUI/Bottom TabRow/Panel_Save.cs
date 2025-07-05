@@ -6,7 +6,6 @@ using System.Text;
 using UnityEngine;
 using Verse;
 
-
 namespace Analyzer.Profiling
 {
     class Row

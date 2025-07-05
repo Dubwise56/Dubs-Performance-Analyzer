@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30523.141
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dubs Performance Analyzer", "Dubs Performance Analyzer.csproj", "{6EB466C5-07AA-4BF1-81FA-8FDD5C88F4A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dubs Performance Analyzer.1.5", "Dubs Performance Analyzer.1.5.csproj", "{6EB466C5-07AA-4BF1-81FA-8FDD5C88F4A9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dubs Performance Analyzer.1.6", "Dubs Performance Analyzer.1.6.csproj", "{C08A9D0F-729B-44B2-B06E-78654C6772D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{6EB466C5-07AA-4BF1-81FA-8FDD5C88F4A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EB466C5-07AA-4BF1-81FA-8FDD5C88F4A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6EB466C5-07AA-4BF1-81FA-8FDD5C88F4A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C08A9D0F-729B-44B2-B06E-78654C6772D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C08A9D0F-729B-44B2-B06E-78654C6772D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C08A9D0F-729B-44B2-B06E-78654C6772D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C08A9D0F-729B-44B2-B06E-78654C6772D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

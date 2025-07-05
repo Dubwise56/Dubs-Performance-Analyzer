@@ -1,5 +1,6 @@
 ﻿using Analyzer.Performance;
 using Analyzer.Profiling;
+using Analyzer.Fixes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace Analyzer
         public override void GameComponentUpdate()
         {
             // Display our logged messages that we may have recieved from other threads.
-            ThreadSafeLogger.DisplayLogs();
+            // ThreadSafeLogger.DisplayLogs();
 
             if (TimeTillCleanup == -1) return;
 

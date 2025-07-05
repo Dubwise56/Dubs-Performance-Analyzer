@@ -7,11 +7,13 @@ namespace Analyzer
     public static class GUIElement_TPS
     {
         private static DateTime prevTime;
-        private static int prevTicks;
-        private static int tpsActual = 0;
-        private static int tpsTarget = 0;
-        private static int prevFrames;
-        private static int fpsActual = 0;
+        
+        private static int
+            prevTicks,
+            tpsActual,
+            tpsTarget,
+            prevFrames,
+            fpsActual;
 
         public static int TPS => tpsActual;
         public static int TPSTarget => tpsTarget;
@@ -19,8 +21,11 @@ namespace Analyzer
 
         public static void Prefix(float leftX, float width, ref float curBaseY)
         {
-            if (Settings.disableTPSCounter) return;
+            var disableTPSCounter = Settings.disableTPSCounter;
 
+            if (disableTPSCounter && !Profiling.Analyzer.CurrentlyProfiling)
+                return;
+            
             float trm = Find.TickManager.TickRateMultiplier;
             tpsTarget = (int)Math.Round((trm == 0f) ? 0f : (60f * trm));
 
@@ -42,6 +47,9 @@ namespace Analyzer
                 }
             }
             prevFrames++;
+
+            if (disableTPSCounter)
+                return;
 
             Rect rect = new Rect(leftX - 20f, curBaseY - 26f, width + 20f - 7f, 26f);
             Text.Anchor = TextAnchor.MiddleRight;

@@ -1,6 +1,8 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
+using RimWorld;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -23,37 +25,47 @@ namespace Analyzer.Profiling
             {
                 __instance.ClearSubMeshes(MeshParts.All);
                 Profiler prof = null;
-                foreach (IntVec3 intVec in __instance.section.CellRect)
+                __instance.bounds = __instance.section.CellRect;
+                foreach (IntVec3 c in __instance.section.CellRect)
                 {
-                    List<Thing> list = __instance.Map.thingGrid.ThingsListAt(intVec);
-                    int count = list.Count;
-                    for (int i = 0; i < count; i++)
+                    List<Thing> thingList = __instance.Map.thingGrid.ThingsListAt(c);
+                    int count = thingList.Count;
+                    for (int index = 0; index < count; ++index)
                     {
-                        Thing thing = list[i];
-
+                        Thing t = thingList[index];
                         __state = "Flag check";
                         prof = ProfileController.Start(__state, null, null, __originalMethod);
-                        bool flag =
-                            ((thing.def.seeThroughFog ||
-                              !__instance.Map.fogGrid.fogGrid[
-                                  CellIndicesUtility.CellToIndex(thing.Position, __instance.Map.Size.x)]) &&
-                             thing.def.drawerType != DrawerType.None &&
-                             (thing.def.drawerType != DrawerType.RealtimeOnly || !__instance.requireAddToMapMesh) &&
-                             (thing.def.hideAtSnowDepth >= 1f || __instance.Map.snowGrid.GetDepth(thing.Position) <=
-                                 thing.def.hideAtSnowDepth) && thing.Position.x == intVec.x &&
-                             thing.Position.z == intVec.z);
-                        prof.Stop();
 
+                        var flag = (t.def.seeThroughFog || !__instance.Map.fogGrid.IsFogged(t.Position))
+                            && t.def.drawerType != DrawerType.None
+                            && (t.def.drawerType != DrawerType.RealtimeOnly || !__instance.requireAddToMapMesh)
+#if V1_5
+                            && ((double)t.def.hideAtSnowDepth >= 1.0
+                                || __instance.Map.snowGrid.GetDepth(t.Position) <= (double)t.def.hideAtSnowDepth)
+#else
+                            && (t.def.hideAtSnowOrSandDepth >= 1f
+                                || !(Math.Max(__instance.Map.snowGrid.GetDepth(t.Position),
+                                        t.Position.GetSandDepth(__instance.Map))
+                                    > t.def.hideAtSnowOrSandDepth))
+                            && (t.def.plant == null
+                                || t.def.plant.showInFrozenWater
+                                || t.Position.GetTerrain(__instance.Map) != TerrainDefOf.ThinIce)
+#endif
+                            && t.Position.x == c.x
+                            && t.Position.z == c.z;
+                        
+                        prof.Stop();
+                        
                         if (flag)
                         {
-                            __state = thing.def.defName;
+                            __state = t.def.defName;
                             prof = ProfileController.Start(__state, null, null, __originalMethod);
-                            __instance.TakePrintFrom(thing);
+                            __instance.TakePrintFrom(t);
+                            __instance.bounds = __instance.bounds.Encapsulate(t.OccupiedDrawRect());
                             prof.Stop();
                         }
                     }
                 }
-
                 __state = "Finalize mesh";
                 prof = ProfileController.Start(__state, null, null, __originalMethod);
                 __instance.FinalizeMesh(MeshParts.All);

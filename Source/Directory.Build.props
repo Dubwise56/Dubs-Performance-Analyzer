@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+	<PropertyGroup>
+		<RootNamespace>Analyzer</RootNamespace>
+		<AssemblyName>PerformanceAnalyzer</AssemblyName>
+		<TargetFramework>net472</TargetFramework>
+		<LangVersion>preview</LangVersion>
+		<PlatformTarget>x64</PlatformTarget>
+		<Optimize>true</Optimize>
+		<EnableNETAnalyzers>True</EnableNETAnalyzers>
+		<AnalysisLevel>preview-recommended</AnalysisLevel>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>portable</DebugType>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>5</WarningLevel>
+		<NoWarn>
+			CA1000;CA1051;CA1305;CA1310;CA1707;CA1708;CA1710;CA1711;CA1716;CA1725;CA1852;CA2201;CS0809;CS8500
+		</NoWarn>
+		<DefaultItemExcludes>$(DefaultItemExcludes);obj/**/*.*</DefaultItemExcludes>
+		<BaseIntermediateOutputPath>obj\$(MSBuildProjectName)\$(Configuration)\</BaseIntermediateOutputPath>
+		<MSBuildProjectExtensionsPath>obj\$(MSBuildProjectName)\$(Configuration)\</MSBuildProjectExtensionsPath>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="PolySharp" Version="1.*" />
+		<PackageReference Include="Krafs.Publicizer" Version="2.*" />
+		<Publicize Include="Assembly-CSharp;UnityEngine.CoreModule" MemberPattern="(?!(?:[^.\r\n\s]+\.){2,}?I[^.\r\n\s]+\.[^.\r\n\s]+)^.*" />
+	</ItemGroup>
+</Project>

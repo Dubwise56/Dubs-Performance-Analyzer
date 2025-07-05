@@ -82,7 +82,11 @@ namespace Analyzer.Profiling
 
         public static void ResetProfilers()
         {
-            ProfileController.Profiles.Clear();
+            foreach (var profiler in ProfileController.Profiles.Values)
+                profiler.Reset();
+
+            // ProfileController.Profiles.Clear(); // TODO
+            
             Analyzer.RefreshLogCount();
             currentProfiler = null;
         }

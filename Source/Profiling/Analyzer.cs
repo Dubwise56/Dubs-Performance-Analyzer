@@ -30,8 +30,8 @@ namespace Analyzer.Profiling
 
         private static object logicSync = new object();
 
-        private static bool currentlyProfiling = false;
-        private static bool currentlyPaused = false;
+        internal static bool currentlyProfiling = false;
+        internal static bool currentlyPaused = false;
 
         public static List<ProfileLog> Logs => logs;
         public static object LogicLock => logicSync;
@@ -72,7 +72,8 @@ namespace Analyzer.Profiling
         // Calculates stats for all active profilers (not only the currently selected one)
         internal static void FinishUpdateCycle()
         {
-            if (ProfileController.Profiles.Count == 0) return;
+            var profiles = ProfileController.Profiles;
+            if (profiles.IsEmpty) return;
 
             var comparer = SortBy switch
             {
@@ -87,7 +88,9 @@ namespace Analyzer.Profiling
                 _ => averageComparer // default to order by average
             };
 
-            Task.Factory.StartNew(() => ProfileCalculations(new Dictionary<string, Profiler>(ProfileController.Profiles), currentLogCount, comparer));
+            var profilesCopy = new Dictionary<string, Profiler>(profiles);
+            var updateAverage = ProfileController.updateAverage;
+            Task.Factory.StartNew(() => ProfileCalculations(profilesCopy, currentLogCount, updateAverage, comparer));
         }
 
         public static void PatchEntry(Entry entry)
@@ -133,19 +136,28 @@ namespace Analyzer.Profiling
         // n = count of profiles
         // m = number of logs
         // o(n*m + n*log(n)); - Could maybe thread this some more, to push higher update speeds
-        private static void ProfileCalculations(Dictionary<string, Profiler> Profiles, int currentLogCount, Comparer<ProfileLog> comparer)
+        private static void ProfileCalculations(Dictionary<string, Profiler> Profiles, int currentLogCount,
+            double updateAverage, Comparer<ProfileLog> comparer)
         {
             var newLogs = new List<ProfileLog>(Profiles.Count);
 
-            double sumOfAverages = 0;
-
             foreach (var value in Profiles.Values) // o(n)
             {
+                if (value.Empty)
+                    continue;
+
                 // o(m)
                 value.CollectStatistics(Mathf.Min(currentLogCount, MAX_LOG_COUNT - 1), out var average, out var max, out var total, out var calls, out var maxCalls);
-                newLogs.Add(new ProfileLog(currentLogCount, value.label, average, (float)max, value.key, (float)total, calls, maxCalls, value.type, value.meth, value.pinned));
+                if (value.Empty)
+                    continue;
 
-                sumOfAverages += average;
+                var key = value.key;
+                if ((object)key == H_RootUpdate.GameUpdateKey)
+                    updateAverage = average;
+                else if ((object)key == H_RootUpdate.FrameTimeKey)
+                    calls++;
+                
+                newLogs.Add(new(currentLogCount, value.label, average, (float)max, key, (float)total, calls, maxCalls, value.type, value.meth, value.pinned));
             }
 
             var sortedLogs = new List<ProfileLog>(newLogs.Count);
@@ -153,7 +165,7 @@ namespace Analyzer.Profiling
 
             foreach (var log in newLogs) // o(n)
             {
-                var adjustedAverage = (float)(log.average / sumOfAverages);
+                var adjustedAverage = (float)(log.average / updateAverage);
                 log.percent = adjustedAverage;
 
                 // o(logn)
@@ -209,6 +221,12 @@ namespace Analyzer.Profiling
 
                 // clear all profiles
                 ProfileController.Profiles.Clear();
+
+                var handles = ProfileController.Handles;
+                foreach (var handle in handles)
+                    handle.Free();
+                
+                handles.Clear();
 #if DEBUG 
                 ThreadSafeLogger.Warning("Cleared Profiles");
 #endif

@@ -14,7 +14,7 @@ namespace Analyzer.Profiling
     {
         public const int RECORDS_HELD = 2000;
 
-        private readonly Watch stopwatch;
+        private readonly Stopwatch stopwatch;
         public Type type;
         public MethodBase meth;
 
@@ -27,13 +27,14 @@ namespace Analyzer.Profiling
         public readonly double[] times;
         public readonly int[] hits;
         public uint currentIndex = 0; // ring buffer tracking
+        public bool Empty = true;
 
         public Profiler(string key, string label, Type type, MethodBase meth)
         {
             this.key = key;
             this.meth = meth;
             this.label = label;
-            this.stopwatch = new Watch();
+            this.stopwatch = new();
             this.type = type;
             this.times = new double[RECORDS_HELD];
             this.hits = new int[RECORDS_HELD];
@@ -41,17 +42,25 @@ namespace Analyzer.Profiling
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Profiler Start()
+        public void Start()
         {
             stopwatch.Start();
-            return this;
+            hitCounter++;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Stop()
         {
-            var adj = stopwatch.Stop();
-            hitCounter++;
+            stopwatch.Stop();
+        }
+
+        public void Reset()
+        {
+            stopwatch.Reset();
+            hitCounter = 0;
+            Array.Clear(times, 0, times.Length);
+            Array.Clear(hits, 0, hits.Length);
+            Empty = true;
         }
 
         public void RecordMeasurement()
@@ -60,13 +69,17 @@ namespace Analyzer.Profiling
             if (stopwatch.IsRunning) ThreadSafeLogger.Error($"[Analyzer] Profile {key} was still running when recorded");
 #endif
 
-            times[currentIndex] = stopwatch.Elapsed.TotalMilliseconds;
             hits[currentIndex] = hitCounter;
+            
+            if (hitCounter != 0)
+            {
+                times[currentIndex] = stopwatch.Elapsed.TotalMilliseconds;
+                stopwatch.Reset();
+                hitCounter = 0;
+                Empty = false;
+            }
 
             currentIndex = (currentIndex + 1) % RECORDS_HELD; // ring buffer
-
-            stopwatch.Reset();
-            hitCounter = 0;
         }
 
         public void CollectStatistics(int entries, out double average, out double max, out double total, out float calls, out float maxCalls)
@@ -97,6 +110,9 @@ namespace Analyzer.Profiling
             }
 
             average = total / (float) entries;
+
+            if (calls == 0)
+                Empty = true;
         }
     }
 }

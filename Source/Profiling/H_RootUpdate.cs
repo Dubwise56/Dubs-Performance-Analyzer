@@ -10,10 +10,14 @@ namespace Analyzer.Profiling
     {
         public static bool Active = false;
 
+        public static readonly string
+            FrameTimeKey = "Frame times",
+            GameUpdateKey = "Game Update";
+
         public static void Prefix()
         {
             if (Active)
-                ProfileController.Start("Game Update");
+                ProfileController.Start(GameUpdateKey);
 
             if (GUIController.CurrentCategory != Category.Tick)
                 ProfileController.BeginUpdate();
@@ -23,15 +27,15 @@ namespace Analyzer.Profiling
         {
             if (Active)
             {
-                ProfileController.Stop("Frame times");
-                ProfileController.Stop("Game Update");
+                ProfileController.Stop(FrameTimeKey);
+                ProfileController.Stop(GameUpdateKey);
             }
 
             if (GUIController.CurrentCategory != Category.Tick) // If we are tick, we will 'update' in the TickManager.DoSingleTick method
                 ProfileController.EndUpdate();
 
             if (Active)
-                ProfileController.Start("Frame times");
+                ProfileController.Start(FrameTimeKey);
 
         }
     }

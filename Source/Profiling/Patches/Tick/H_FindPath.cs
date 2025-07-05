@@ -1,9 +1,7 @@
 ﻿using HarmonyLib;
 using RimWorld;
-using System;
 using System.Collections.Generic;
 using System.Reflection;
-using RimWorld.Planet;
 using Verse;
 using Verse.AI;
 
@@ -20,10 +18,12 @@ namespace Analyzer.Profiling
                 new[] {typeof(IntVec3), typeof(LocalTargetInfo), typeof(PathEndMode), typeof(TraverseParms)});
             yield return AccessTools.Method(typeof(PawnUtility), nameof(PawnUtility.ShouldCollideWithPawns));
             yield return AccessTools.Method(typeof(PathFinder), nameof(PathFinder.CalculateDestinationRect));
-            yield return AccessTools.Method(typeof(PathFinder), nameof(PathFinder.GetAllowedArea));
             yield return AccessTools.Method(typeof(PathFinder), nameof(PathFinder.DetermineHeuristicStrength));
+#if V1_5
+            yield return AccessTools.Method(typeof(PathFinder), nameof(PathFinder.GetAllowedArea));
             yield return AccessTools.Method(typeof(PathFinder), nameof(PathFinder.CalculateAndAddDisallowedCorners));
             yield return AccessTools.Method(typeof(PathFinder), nameof(PathFinder.InitStatusesAndPushStartNode));
+#endif
         }
     }
 }

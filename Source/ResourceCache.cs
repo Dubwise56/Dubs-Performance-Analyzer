@@ -7,16 +7,18 @@ namespace Analyzer
     [StaticConstructorOnStartup]
     public static class Textures
     {
-        public static readonly Texture2D black = SolidColorMaterials.NewSolidColorTexture(Color.black);
-        public static readonly Texture2D grey = SolidColorMaterials.NewSolidColorTexture(Color.grey);
-        public static readonly Texture2D darkgrey = SolidColorMaterials.NewSolidColorTexture(Color.grey * 0.5f);
-        public static readonly Texture2D clear = SolidColorMaterials.NewSolidColorTexture(Color.clear);
-
-        public static readonly Texture2D red =
-            SolidColorMaterials.NewSolidColorTexture(new Color32(160, 80, 90, 255));
-
-        public static readonly Texture2D blue =
-            SolidColorMaterials.NewSolidColorTexture(new Color32(80, 123, 160, 255));
+        public static readonly Texture2D
+            black = SolidColorMaterials.NewSolidColorTexture(Color.black),
+            grey = SolidColorMaterials.NewSolidColorTexture(Color.grey),
+            lightGrey = SolidColorMaterials.NewSolidColorTexture(new(0.67f, 0.67f, 0.67f, 1f)),
+            lighterGrey = SolidColorMaterials.NewSolidColorTexture(new(0.83f, 0.83f, 0.83f, 1f)),
+            white = SolidColorMaterials.NewSolidColorTexture(Color.white),
+            darkgrey = SolidColorMaterials.NewSolidColorTexture(Color.grey * 0.5f),
+            clear = SolidColorMaterials.NewSolidColorTexture(Color.clear),
+            red = SolidColorMaterials.NewSolidColorTexture(new Color32(160, 80, 90, 255)),
+            blue = SolidColorMaterials.NewSolidColorTexture(new Color32(130, 123, 190, 255)),
+            yellow = SolidColorMaterials.NewSolidColorTexture(new Color32(175, 160, 40, 225)),
+            green = SolidColorMaterials.NewSolidColorTexture(new Color32(40, 200, 40, 127));
 
         public static readonly Texture2D hueMark = ContentFinder<Texture2D>.Get("DPA/UI/hueMark");
         public static readonly Texture2D hsbMark = ContentFinder<Texture2D>.Get("DPA/UI/hsbMark");
@@ -87,13 +89,17 @@ namespace Analyzer
 
         // Logs Row
         public static string logs_max => "logs.max".Tr();
+        public static string logs_maxpu(string cycle) => "logs.maxpu".Translate(cycle);
         public static string logs_av => "logs.av".Tr();
+        public static string logs_avpu(string cycle) => "logs.avpu".Translate(cycle);
         public static string logs_percent => "logs.percent".Tr();
         public static string logs_avpc => "logs.avpc".Tr();
         public static string logs_calls => "logs.calls".Tr();
         public static string logs_name => "logs.name".Tr();
         public static string logs_total => "logs.total".Tr();
         public static string logs_callspu(string cycle) => "logs.callspu".Translate(cycle);
+        
+        public static string Frame => "dpa.frame".Tr();
 
         public static string logs_max_desc => "logs.max.desc".Tr();
         public static string logs_av_desc => "logs.av.desc".Tr();

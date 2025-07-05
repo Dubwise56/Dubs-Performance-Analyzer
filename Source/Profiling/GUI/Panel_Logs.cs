@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-
+using NAudio.Wave;
 using UnityEngine;
 using Verse;
 using Verse.Noise;
@@ -16,13 +16,13 @@ namespace Analyzer.Profiling
     public enum SortBy
     {
         Average,
-        Max, 
-        Calls, 
+        Max,
         AvPc,
+        CallsPu,
         Percent,
         Name,
-        Total,
-        CallsPu
+        Calls,
+        Total
     }
 
     public class Column : IExposable
@@ -48,19 +48,22 @@ namespace Analyzer.Profiling
             {
                 switch (sortBy)
                 {
-                    case SortBy.Average: return Strings.logs_av;
-                    case SortBy.Max: return Strings.logs_max;
+                    case SortBy.Average: return Strings.logs_avpu(CurrentCycleName);
+                    case SortBy.Max: return Strings.logs_maxpu(CurrentCycleName);
                     case SortBy.Calls: return Strings.logs_calls;
                     case SortBy.AvPc: return Strings.logs_avpc;
                     case SortBy.Percent: return Strings.logs_percent;
                     case SortBy.Name: return Strings.logs_name;
                     case SortBy.Total: return Strings.logs_total;
-                    case SortBy.CallsPu: return Strings.logs_callspu(GUIController.CurrentCategory == Category.Tick ? "Tick" : "Update");
+                    case SortBy.CallsPu: return Strings.logs_callspu(CurrentCycleName);
                 }
 
                 return null;
             }
         }
+
+        private static string CurrentCycleName
+            => GUIController.CurrentCategory == Category.Tick ? Strings.tab_tick : Strings.Frame;
 
         public string Desc
         {
@@ -75,7 +78,7 @@ namespace Analyzer.Profiling
                     case SortBy.Percent: return Strings.logs_percent_desc;
                     case SortBy.Name: return Strings.logs_name_desc;
                     case SortBy.Total: return Strings.logs_total_desc;
-                    case SortBy.CallsPu: return Strings.logs_callspu_desc(GUIController.CurrentCategory == Category.Tick ? "Tick" : "Update");
+                    case SortBy.CallsPu: return Strings.logs_callspu_desc(CurrentCycleName);
                 }
 
                 return null;
@@ -89,27 +92,28 @@ namespace Analyzer.Profiling
                 case SortBy.Average: return $" {log.average:0.000}ms ";
                 case SortBy.Max: return $" {log.max:0.000}ms ";
                 case SortBy.Calls: return $" {log.calls.ToString("N0", CultureInfo.InvariantCulture)} ";
-                case SortBy.AvPc: return $" {log.total/log.calls:0.000}ms ";
-                case SortBy.Percent: return $" {log.percent * 100:0.0}% ";
-                case SortBy.Name: return "    " + log.label;
-                case SortBy.Total: return $" {log.total:0.000}ms ";
+                case SortBy.AvPc:
+                    var averagePerCall = 1000f * log.total / log.calls;
+                    return $" {(averagePerCall < 10 ? $"{averagePerCall:0.00}"
+                        : averagePerCall < 100 ? $"{averagePerCall:0.0}"
+                        : $"{averagePerCall:0}")}us ";
+                case SortBy.Percent:
+                    return $" {log.percent * 100:0.00}% ";
+                case SortBy.Name:
+                    return "    " + (log.label ?? ProfileController.Profiles[log.key].label);
+                case SortBy.Total:
+                    return $" {log.total:0.000}ms ";
                 case SortBy.CallsPu:
                     var num = log.calls / log.entries;
-                    return num < 1 ? $" {num:F3}" : $" {(int)Math.Round(num)}";
+                    return num < 1 ? $" {num:F3}"
+                        : num < 10 ? $" {num:F1}"
+                        : $" {Convert.ToInt32(num)}";
+                default:
+                    return "";
             }
-
-            return "";
         }
 
-        public bool Active(Type curEntry)
-        {
-            var transpilersType = typeof(H_HarmonyTranspilersInternalMethods);
-
-            if ((sortBy == SortBy.Calls || sortBy == SortBy.AvPc || sortBy == SortBy.CallsPu) && transpilersType == curEntry)
-                return false;
-
-            return active;
-        }
+        public bool Active(Type curEntry) => active;
 
         public void ExposeData()
         {
@@ -164,8 +168,9 @@ namespace Analyzer.Profiling
 
             var columnsR = rect.TopPartPixels(50f);
             DrawColumns(columnsR);
-
-            columns[(int)SortBy.Average].total = 0;
+            
+            for (var i = 0; i < columns.Count; i++)
+                columns[i].total = 0d;
 
             rect.AdjustVerticallyBy(columnsR.height + 4);
             rect.height -= 2f;
@@ -255,8 +260,9 @@ namespace Analyzer.Profiling
 
             if (c.total != 0)
             {
-                Widgets.Label(rect.TopHalf(), c.Name);
-                Widgets.Label(rect.BottomHalf(), $"{c.total:0.000}ms");
+                Widgets.Label(rect with { height = rect.height * 2f / 3f}, c.Name);
+                Widgets.Label(rect with { yMin = rect.yMax - rect.height / 3f },
+                    c.sortBy == SortBy.Percent ? $"{Math.Max(Math.Min(c.total, 1d), 0d) * 100d:0.00}%" : $"{c.total:0.000}ms");
             }
             else
             {
@@ -324,6 +330,11 @@ namespace Analyzer.Profiling
 
             columns[(int)SortBy.Average].total += log.average;
 
+            ref var maxColumnTotal = ref columns[(int)SortBy.Max].total;
+            maxColumnTotal = Math.Max(maxColumnTotal, log.max);
+            
+            columns[(int)SortBy.Percent].total += log.percent;
+
             var visible = listing.GetRect(BOX_HEIGHT);
 
             if (!visible.Overlaps(viewFrustum)) // if we don't overlap, continue, but continue to adjust for further logs.
@@ -355,13 +366,28 @@ namespace Analyzer.Profiling
             if (Widgets.ButtonInvisible(visible))
                 ClickWork(log, profile);
 
-            // Colour a fillable bar below the log depending on the % fill of a log
-            var colour = Textures.grey;
-            if (log.percent <= .25f) colour = Textures.grey; // <= 25%
-            else if (log.percent <= .75f) colour = Textures.blue; //  25% < x <=75%
-            else if (log.percent <= .999) colour = Textures.red; // 75% < x <= 99.99% (we want 100% to be grey)
+            var declaringAssembly = log.meth?.DeclaringType?.Assembly;
 
-            Widgets.FillableBar(visible.BottomPartPixels(8f), log.percent, colour, Textures.clear, false);
+            // Colour a fillable bar below the log depending on the % fill of a log
+            
+            var colour = log.meth == null
+                || (declaringAssembly != null && _vanillaAssemblies.Contains(declaringAssembly))
+                    ? log.percent switch
+                    {
+                        < .005f => Textures.grey,
+                        <= .03f => Textures.lightGrey,
+                        <= .1f => Textures.lighterGrey,
+                        _ => Textures.white
+                    }
+                    : log.percent switch
+                    {
+                        < .005f => Textures.green,
+                        <= .03f => Textures.blue,
+                        <= .1f => Textures.yellow,
+                        _ => Textures.red
+                    };
+
+            Widgets.FillableBar(visible.BottomPartPixels(8f), Mathf.Clamp01(log.percent * 10f), colour, Textures.clear, false);
 
             Text.Anchor = TextAnchor.MiddleCenter;
 
@@ -375,6 +401,12 @@ namespace Analyzer.Profiling
             listing.GapLine(0f);
             currentListHeight += (BOX_HEIGHT + 4);
         }
+
+        private static readonly HashSet<Assembly> _vanillaAssemblies
+            = ((Type[])
+            [
+                typeof(int), typeof(Enumerable), typeof(Thing), typeof(Vector2), typeof(GUI), typeof(LinkedList<>)
+            ]).Select(static type => type.Assembly).ToHashSet();
 
         public static void DrawColumnContents(ref Rect rect, Column c, string value, Profiler profile)
         {

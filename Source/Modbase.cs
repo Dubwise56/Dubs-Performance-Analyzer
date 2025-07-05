@@ -25,7 +25,7 @@ namespace Analyzer
         // Build - Change Existing Feature
         // Revision - Hotfix
 
-        private static readonly Version analyzerVersion = new Version(1, 6, 0, 0);
+        private static readonly Version analyzerVersion = new Version(1, 6, 0, 1);
 
         public static bool isPatched = false;
         public static bool visualExceptionIntegration = false;
@@ -110,10 +110,10 @@ namespace Analyzer
             {
                 ThreadSafeLogger.ReportException(e, "Failed to initialise analyzer, dumping messages to debug log");
             }
-            finally
-            {
-                ThreadSafeLogger.DisplayLogs();
-            }
+            // finally
+            // {
+            //     ThreadSafeLogger.DisplayLogs();
+            // }
         }
 
         public override void DoSettingsWindowContents(Rect inRect)

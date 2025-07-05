@@ -1,10 +1,12 @@
 ﻿using RimWorld.QuestGen;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -14,14 +16,16 @@ namespace Analyzer.Profiling
 {
     public static class ProfileController
     {
-        public static Dictionary<string, Profiler> profiles = new Dictionary<string, Profiler>();
+        public static ConcurrentDictionary<string, Profiler> profiles = [];
 
         private static bool midUpdate = false;
 
         private static float deltaTime = 0.0f;
         public static float updateFrequency => 1 / Settings.updatesPerSecond; // how many ms per update (capped at every 0.05ms)
 
-        public static Dictionary<string, Profiler> Profiles => profiles;
+        public static ConcurrentDictionary<string, Profiler> Profiles => profiles;
+
+        public static ConcurrentBag<GCHandle> Handles { get; } = [];
 
         private static Stopwatch rootProf = new Stopwatch();
         private static float prevSample = 0.0f;
@@ -34,14 +38,15 @@ namespace Analyzer.Profiling
         {
             if (!Analyzer.CurrentlyProfiling) return null;
 
-            if (Profiles.TryGetValue(key, out var prof)) return prof.Start();
-            else
+            Profiler profiler;
+            while (!Profiles.TryGetValue(key, out profiler))
             {
-                Profiles[key] = GetLabel != null ? new Profiler(key, GetLabel(), type, meth)
-                                                 : new Profiler(key, key, type, meth);
-
-                return Profiles[key].Start();
+                if (Profiles.TryAdd(key, profiler = new(key, GetLabel != null ? GetLabel() : key, type, meth)))
+                    break;
             }
+
+            profiler.Start();
+            return profiler;
         }
 
         public static void Stop(string key)
