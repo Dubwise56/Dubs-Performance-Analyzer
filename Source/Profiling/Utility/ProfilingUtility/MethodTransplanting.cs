@@ -45,9 +45,10 @@ namespace Analyzer.Profiling
         // dictionary
         private static readonly MethodInfo
             Dict_TryGetValue = AccessTools.Method(typeof(ConcurrentDictionary<string, Profiler>),
-                nameof(ConcurrentDictionary<,>.TryGetValue)),
+                "TryGetValue"),
             Dict_Add = AccessTools.Method(typeof(ConcurrentDictionary<string, Profiler>),
-                nameof(ConcurrentDictionary<,>.TryAdd));
+                "TryAdd");
+
         
         public static void ClearCaches()
         {

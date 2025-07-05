@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Analyzer.Performance;
 using Analyzer.Profiling;
 using UnityEngine;
 using Verse;
@@ -54,9 +53,6 @@ namespace Analyzer
 
             Scribe_Collections.Look(ref SavedPatches_Update, "SavedPatches_Update");
             Scribe_Collections.Look(ref SavedPatches_Tick, "SavedPatches_Tick");
-
-            // We save/load all performance-related settings here.
-            PerformancePatches.ExposeData();
         }
 
         public void DoSettings(Rect canvas)

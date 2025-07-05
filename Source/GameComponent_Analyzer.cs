@@ -1,6 +1,4 @@
-﻿using Analyzer.Performance;
-using Analyzer.Profiling;
-using Analyzer.Fixes;
+﻿using Analyzer.Profiling;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +18,6 @@ namespace Analyzer
         {
             this.game = game;
             // On game load, initialise the currently active performance patches
-            PerformancePatches.ActivateEnabledPatches();
         }
 
         public override void LoadedGame()

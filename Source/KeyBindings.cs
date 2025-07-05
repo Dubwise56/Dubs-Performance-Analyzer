@@ -1,5 +1,4 @@
 ﻿using System;
-using Analyzer.Performance;
 using Analyzer.Profiling;
 using HarmonyLib;
 using RimWorld;
@@ -65,11 +64,6 @@ namespace Analyzer
                     {
                         Find.WindowStack.Add(new Window_Analyzer());
                     }
-                }
-                
-                if (alertKey.KeyDownEvent)
-                {
-                    H_AlertsReadoutUpdate.DisableAlerts = !H_AlertsReadoutUpdate.DisableAlerts;
                 }
             }
             catch (Exception e)

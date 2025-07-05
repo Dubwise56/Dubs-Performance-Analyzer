@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<OutDir>..\1.6\Assemblies\</OutDir>
 	</PropertyGroup>
+
 	
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<DefineConstants>TRACE;NDEBUG;V1_6</DefineConstants>
@@ -15,5 +16,9 @@
 	<ItemGroup>
 		<PackageReference Include="Krafs.Rimworld.Ref" Version="1.6.*-*" />
 		<PackageReference Include="Lib.Harmony" Version="2.3.6" ExcludeAssets="runtime" />
+		<PackageReference Update="Krafs.Publicizer" Version="2.3.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 </Project>

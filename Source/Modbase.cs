@@ -1,5 +1,4 @@
-﻿using Analyzer.Performance;
-using Analyzer.Profiling;
+﻿using Analyzer.Profiling;
 using HarmonyLib;
 using RimWorld;
 using System;
@@ -95,11 +94,6 @@ namespace Analyzer
                         prefix: new HarmonyMethod(typeof(DebugLogenabler), nameof(DebugLogenabler.DebugKeysPatch)));
                 }
 
-                {
-                    // Performance Patches
-                    PerformancePatches.InitialisePatches();
-                }
-
 #if DEBUG
                 ThreadSafeLogger.Warning("==========================================================================");
                 ThreadSafeLogger.Warning("                          Analyzer Running In Debug Mode                  ");
@@ -119,13 +113,6 @@ namespace Analyzer
         public override void DoSettingsWindowContents(Rect inRect)
         {
             Settings.DoSettings(inRect);
-        }
-
-        public override void WriteSettings()
-        {
-            base.WriteSettings();
-            // Any patches we had pending closing are now going to get closed
-            PerformancePatches.ClosePatches();
         }
 
         public override string SettingsCategory()
