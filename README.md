@@ -106,10 +106,13 @@ You can create a tab in the Analyzer specifically for your mod ahead of time by 
         <NestedTypes>
             <li>Verse.ThreadLocalDeepProfiler</li> 
         </NestedTypes>
+        <DerivedTypes>
+            <li>RimWorld.Need</li> 
+        </DerivedTypes>
     </tabName>
 </Analyzer>
 ```
-This will create a tab titled `tabName` which will profile all the methods in the type `Verse.Pawn` and the method `Verse.Thing:Tick`. It will also profile all methods implemented in the nested types of `Verse.ThreadLocalDeepProfiler`. Primary use-case for the nested classes being nested harmony-patch classes.
+This will create a tab titled `tabName` which will profile all the methods in the type `Verse.Pawn` and the method `Verse.Thing:Tick`. It will also profile all methods implemented in the nested types of `Verse.ThreadLocalDeepProfiler`, and all methods implemented in ``RimWorld.Need`` as well as any derived types. Primary use-case for the nested classes being nested harmony-patch classes.
 
 This file should be placed in the root directory of your mod. If you wish to avoid cluttering the Analyzer for end users, remember to remove it before releasing to steam. However, you might also decide to keep it in to allow users to easily see how your mod performs, to pre-emptively counter complaints.
 
