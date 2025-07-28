@@ -61,6 +61,10 @@ namespace Analyzer.Profiling
                         case "nestedtypes":
                             foreach (XmlNode type in child.ChildNodes)
                                 meths.AddRange(ParseSubTypeTypeMethods(type.InnerText)); break;
+                        case "derivedtype":
+                        case "derivedtypes":
+                            foreach (XmlNode type in child.ChildNodes)
+                                meths.AddRange(ParseDerivedTypeMethods(type.InnerText)); break;
                         default:
                             ThreadSafeLogger.Error($"[Analyzer] Attempting to read unknown value from an Analyzer.xml, the given input was {child.Name}, it should have been either '(M/m)ethods', '(T/t)ypes' '(N/n)estedTypes");
                             break;
@@ -91,6 +95,23 @@ namespace Analyzer.Profiling
 
             foreach(var subType in type.GetNestedTypes())
                 foreach(var method in Utility.GetTypeMethods(subType))
+                    yield return method;
+        }
+
+        private static IEnumerable<MethodInfo> ParseDerivedTypeMethods(string str)
+        {
+            var type = AccessTools.TypeByName(str);
+            if (type == null)
+                yield break;
+
+            if (type == typeof(object))
+            {
+                ThreadSafeLogger.Error("[Analyzer] Attempting to parse derived types of object, which is all reference types.");
+                yield break;
+            }    
+
+            foreach (var derivedType in AccessTools.AllTypes().Where(type.IsAssignableFrom))
+                foreach (var method in Utility.GetTypeMethods(derivedType))
                     yield return method;
         }
     }
