@@ -66,7 +66,7 @@ namespace Analyzer.Profiling
                             foreach (XmlNode type in child.ChildNodes)
                                 meths.AddRange(ParseDerivedTypeMethods(type.InnerText)); break;
                         default:
-                            ThreadSafeLogger.Error($"[Analyzer] Attempting to read unknown value from an Analyzer.xml, the given input was {child.Name}, it should have been either '(M/m)ethods', '(T/t)ypes' '(N/n)estedTypes");
+                            ThreadSafeLogger.Error($"[Analyzer] Attempting to read unknown value from an Analyzer.xml, the given input was {child.Name}, it should have been either '(M/m)ethods', '(T/t)ypes', '(N/n)estedTypes', '(D/d)erivedTypes'");
                             break;
                     }
                 }
