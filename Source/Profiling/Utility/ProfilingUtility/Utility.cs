@@ -388,6 +388,14 @@ namespace Analyzer.Profiling
         {
             if (InternalMethodUtility.PatchedInternals.Contains(method))
             {
+                var guiEntryStr = method.DeclaringType + ":" + method.Name + "-int";
+                Entry entry = GUIController.EntryByName(guiEntryStr);
+                if (entry != null)
+                { 
+                    GUIController.SwapToEntry(guiEntryStr);
+                    return;
+                }
+
                 var ms = GetSignature(method, true);
                 Messages.Message($"Have already patched the method {ms}", MessageTypeDefOf.CautionInput, false);
                 Warn($"Trying to re-transpile an already profiled internal method - {ms}");
