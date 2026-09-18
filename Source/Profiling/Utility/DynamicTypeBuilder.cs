@@ -40,7 +40,6 @@ namespace Analyzer.Profiling
             ThreadSafeLogger.Message($"[Analyzer] Converted the parameter called {input} into {name}, creating type");
 #endif
 
-            ThreadSafeLogger.Message(name);
             TypeBuilder tb = ModuleBuilder.DefineType(name, staticAtt, typeof(Entry));
 
             FieldBuilder active = tb.DefineField("Active", typeof(bool), FieldAttributes.Public | FieldAttributes.Static);

@@ -19,11 +19,19 @@ namespace Analyzer.Profiling.Patches.Tick
         {
             foreach (var typ in typeof(ThingComp).AllSubclasses())
             {
-                var method =  AccessTools.Method(typ, nameof(ThingComp.CompTick));
-
-                if (method != null && method.DeclaringType == typ)
+                // 1.6 moved most comp work into CompTickInterval, so CompTick alone misses the bulk of it
+                foreach (var name in new[] { nameof(ThingComp.CompTick), nameof(ThingComp.CompTickRare), nameof(ThingComp.CompTickLong)
+#if !V1_5
+                    , nameof(ThingComp.CompTickInterval)
+#endif
+                })
                 {
-                    yield return method;
+                    var method = AccessTools.Method(typ, name);
+
+                    if (method != null && method.DeclaringType == typ)
+                    {
+                        yield return method;
+                    }
                 }
             }
         }

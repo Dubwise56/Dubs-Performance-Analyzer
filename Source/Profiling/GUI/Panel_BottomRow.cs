@@ -80,11 +80,11 @@ namespace Analyzer.Profiling
             GetGeneralSidePanelInformation();
             
             // are we in the patches category, but the method has no patches?
-            if (ProfileInfoTab == ProfileInfoMode.Patches && (currentProfilerInformation?.patches.Any() ?? false))
+            if (ProfileInfoTab == ProfileInfoMode.Patches && !(currentProfilerInformation?.patches.Any() ?? false))
                 ProfileInfoTab = ProfileInfoMode.Graph;
-                
+
             // are we in the stack trace category, but the profiler has no method?
-            if (ProfileInfoTab == ProfileInfoMode.StackTrace && currentProfilerInformation?.method != null)
+            if (ProfileInfoTab == ProfileInfoMode.StackTrace && currentProfilerInformation?.method == null)
                 ProfileInfoTab = ProfileInfoMode.Graph;
         }
 

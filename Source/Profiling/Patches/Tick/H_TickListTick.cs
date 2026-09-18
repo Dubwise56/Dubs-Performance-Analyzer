@@ -302,6 +302,11 @@ namespace Analyzer.Profiling
                 {
                     try
                     {
+#if !V1_5
+                        // 1.6: DoTick dispatches Tick/TickRare/TickLong itself and also runs TickInterval and
+                        // the held-thing ticking, none of which happen if Tick is called directly.
+                        LogMe(sam, sam.DoTick, "DoTick");
+#else
                         TickerType tickerType = __instance.tickType;
                         if (tickerType != TickerType.Normal)
                         {
@@ -321,6 +326,7 @@ namespace Analyzer.Profiling
                         {
                             LogMe(sam, sam.Tick, "Tick");
                         }
+#endif
                     }
                     catch (Exception ex)
                     {

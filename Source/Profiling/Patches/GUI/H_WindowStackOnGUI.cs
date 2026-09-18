@@ -46,6 +46,11 @@ namespace Analyzer.Profiling
             {
                 if (__instance.windowStackOnGUITmpList[j].drawShadow)
                 {
+                    // same skip as vanilla: shadowed windows are not drawn at all in screenshot mode
+                    if (!__instance.windowStackOnGUITmpList[j].drawInScreenshotMode && Find.UIRoot.screenshotMode.Active)
+                    {
+                        continue;
+                    }
                     GUI.color = new Color(1f, 1f, 1f, __instance.windowStackOnGUITmpList[j].shadowAlpha);
                     Widgets.DrawShadowAround(__instance.windowStackOnGUITmpList[j].windowRect);
                     GUI.color = Color.white;

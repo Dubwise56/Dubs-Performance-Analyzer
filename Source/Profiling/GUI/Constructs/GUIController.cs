@@ -26,7 +26,8 @@ namespace Analyzer.Profiling
 
         public static IEnumerable<Tab> Tabs => tabs.Values;
         public static Tab Tab(Category cat) => tabs[cat];
-        public static Entry EntryByName(string name) => Tabs.First(t => t.entries.Keys.Any(e => e.name == name)).entries.First(e => e.Key.name == name).Key;
+        // null when no tab holds the entry (e.g. it was closed), callers check for it
+        public static Entry EntryByName(string name) => Tabs.SelectMany(t => t.entries.Keys).FirstOrDefault(e => e.name == name);
 
         public static void InitialiseTabs()
         {

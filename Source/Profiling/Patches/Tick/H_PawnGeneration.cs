@@ -25,7 +25,7 @@ namespace Analyzer.Profiling
 
         public static string GetName(PawnGenerationRequest request)
         {
-            return ByFaction ? $"Request for {request.Faction.Name}" : $"Request for {request.KindDef.label}";
+            return ByFaction ? $"Request for {request.Faction?.Name ?? "no faction"}" : $"Request for {request.KindDef.label}";
         }
     }
 }

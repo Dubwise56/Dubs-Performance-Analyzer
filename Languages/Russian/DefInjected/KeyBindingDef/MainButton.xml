@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+
+  <DubsOptimizerKey.label>Dubs Performance Analyzer</DubsOptimizerKey.label>
+  <DubsOptimizerRestartKey.label>Перезапустить игру</DubsOptimizerRestartKey.label>
+  <dpa_ToggleAlertBlock.label>Переключение оповещений</dpa_ToggleAlertBlock.label>
+
+
+</LanguageData>

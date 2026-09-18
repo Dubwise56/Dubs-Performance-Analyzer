@@ -18,7 +18,8 @@ namespace Analyzer.Profiling
 
         public static void ProfilePatch()
         {
-            Modbase.Harmony.Patch(AccessTools.Method(typeof(InspectPaneUtility), "<DoTabs>g__Do|17_0"), new HarmonyMethod(typeof(H_DoTabs), "Prefix"), new HarmonyMethod(typeof(H_DoTabs), "Postfix"));
+            // The compiler-generated local function name carries a number that changes between game versions (17_0 in 1.5, 18_0 in 1.6)
+            Modbase.Harmony.Patch(AccessTools.FirstMethod(typeof(InspectPaneUtility), m => m.Name.StartsWith("<DoTabs>g__Do")), new HarmonyMethod(typeof(H_DoTabs), "Prefix"), new HarmonyMethod(typeof(H_DoTabs), "Postfix"));
 
         }
 

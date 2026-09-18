@@ -22,6 +22,11 @@ namespace Analyzer.Profiling
         {
             if (!Active)
                 return true;
+#if !V1_5
+            // 1.6 hides part of this layer during the gravship cutscene, leave those frames to vanilla
+            if (!DebugViewSettings.drawThingsPrinted || WorldComponent_GravshipController.CutsceneInProgress)
+                return true;
+#endif
 
             if (!__instance.Visible)
                 return false;
@@ -56,6 +61,7 @@ namespace Analyzer.Profiling
         public static string GetSubMeshName(LayerSubMesh subMesh)
             => subMesh.material is var m
                 && m
+                && m.HasProperty("_MainTex") // Unity logs a warning per call otherwise (e.g. the SunShadowFade material)
                 && m.mainTexture is var mTex // todo material.mainTexture is a non trivial lookup
                 && mTex
                 && mTex.name is var mTexName

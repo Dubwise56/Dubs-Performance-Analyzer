@@ -73,7 +73,8 @@ namespace Analyzer.Profiling
 
             string mKey;
             if (method.ReflectedType != null) mKey = TypeName(method.ReflectedType, true) + ":" + method.Name;
-            else mKey = TypeName(method.DeclaringType, true) + ":" + method.Name;
+            else if (method.DeclaringType != null) mKey = TypeName(method.DeclaringType, true) + ":" + method.Name;
+            else mKey = method.Name; // DynamicMethod, e.g. our own runtime replacements
             sigBuilder.Append(mKey);
 
             // Add method generics
@@ -575,6 +576,8 @@ namespace Analyzer.Profiling
             if (prev != null && prev.opcode == OpCodes.Constrained) return false;
 
             methodBase = cur.operand as MethodBase;
+            // calls to DynamicMethods (no declaring type) can not be wrapped, other mods' transpilers insert these
+            if (methodBase?.DeclaringType == null) return false;
             key = GetMethodKey(methodBase);
 
             // Make sure it is not an analyzer profiling method

@@ -39,7 +39,7 @@ namespace Analyzer
             if (Widgets.ButtonText(lrec.LeftPartPixels(Strings.settings_wiki.GetWidthCached()),
                     Strings.settings_wiki, false))
             {
-                Application.OpenURL("https://github.com/simplyWiri/Dubs-Performance-Analyzer/blob/master/README.md");
+                Application.OpenURL("https://github.com/Dubwise56/Dubs-Performance-Analyzer/blob/develop/README.md");
             }
 
             Widgets.DrawTextureFitted(rec.RightPartPixels(40f), Textures.disco, 1f);
@@ -47,7 +47,7 @@ namespace Analyzer
             if (Widgets.ButtonText(rec.RightPartPixels(Strings.settings_discord.GetWidthCached()),
                     Strings.settings_discord, false))
             {
-                Application.OpenURL("https://discord.gg/Az5CnDW");
+                Application.OpenURL("https://discord.gg/bajcjsu");
             }
 
             listing.GapLine();

@@ -102,12 +102,13 @@ namespace Analyzer.Profiling
                 this.patchCount = 0;
             }
 
-            var foundMod = StackTraceUtility.mods.TryGetValue(m.DeclaringType.Assembly, out mod);
+            var asm = m.DeclaringType?.Assembly; // null for DynamicMethods
+            var foundMod = asm != null && StackTraceUtility.mods.TryGetValue(asm, out mod);
             if (foundMod) return;
-            
+
             // We add Assembly-CSharp into the `mods` dict, so all we
             // need to check is the UnityEngine components.
-            if (!foundMod && m.DeclaringType.Assembly.FullName.Contains("UnityEngine"))
+            if (!foundMod && asm != null && asm.FullName.Contains("UnityEngine"))
                 this.mod = "Rimworld";
             else
                 this.mod = "Unknown";
