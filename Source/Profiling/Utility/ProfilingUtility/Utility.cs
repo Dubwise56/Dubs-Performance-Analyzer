@@ -262,29 +262,48 @@ namespace Analyzer.Profiling
         public static IEnumerable<MethodInfo> GetMethods(string str)
         {
             foreach (var s in GetSplitString(str))
-                yield return AccessTools.Method(s);
+                foreach (var m in MethodsNamed(s))
+                    yield return m;
+        }
+
+        public static IEnumerable<MethodInfo> MethodsNamed(string typeColonName)
+        {
+            var split = typeColonName.LastIndexOf(':');
+            if (split <= 0) yield break;
+
+            var name = typeColonName.Substring(split + 1).Trim();
+            for (var type = AccessTools.TypeByName(typeColonName.Substring(0, split).Trim()); type != null; type = type.BaseType)
+            {
+                var found = AccessTools.GetDeclaredMethods(type).Where(m => m.Name == name).ToList();
+                if (found.Count == 0) continue;
+
+                foreach (var m in found.Count == 1 ? found : found.Where(m => m.HasMethodBody() && !m.IsGenericMethod && !m.ContainsGenericParameters))
+                    yield return m;
+                yield break;
+            }
         }
 
         public static IEnumerable<MethodInfo> GetMethodsPatching(string str)
         {
             foreach (var meth in GetMethods(str))
-            {
-                var p = Harmony.GetPatchInfo(meth);
-
-                foreach (var patch in p.Prefixes.Concat(p.Postfixes, p.Transpilers, p.Finalizers))
-                    yield return patch.PatchMethod;
-            }
+                foreach (var patch in PatchesOf(meth))
+                    yield return patch;
         }
 
         public static IEnumerable<MethodInfo> GetMethodsPatchingType(Type type)
         {
             foreach (var meth in GetTypeMethods(type))
-            {
-                var p = Harmony.GetPatchInfo(meth);
+                foreach (var patch in PatchesOf(meth))
+                    yield return patch;
+        }
 
-                foreach (var patch in p.Prefixes.Concat(p.Postfixes, p.Transpilers, p.Finalizers))
-                    yield return patch.PatchMethod;
-            }
+        private static IEnumerable<MethodInfo> PatchesOf(MethodBase meth)
+        {
+            var p = Harmony.GetPatchInfo(meth);
+            if (p == null) yield break;
+
+            foreach (var patch in p.Prefixes.Concat(p.Postfixes, p.Transpilers, p.Finalizers).Where(x => IsNotAnalyzerPatch(x.owner)))
+                yield return patch.PatchMethod;
         }
 
 

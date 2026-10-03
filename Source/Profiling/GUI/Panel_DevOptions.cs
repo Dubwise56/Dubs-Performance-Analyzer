@@ -296,7 +296,7 @@ namespace Analyzer.Profiling
 				MethodTransplanting.UpdateMethods(entry, methods.ToList());
 				GUIController.Tab(cat).collapsed = false;
 
-				var entryName = (cat == Category.Tick) ? "Custom Tick" : "Custom Update";
+				var entryName = ((cat == Category.Tick) ? "entry.tick.custom" : "entry.update.custom").Tr();
 				GUIController.SwapToEntry(entryName);
 			}
 			catch (Exception e)

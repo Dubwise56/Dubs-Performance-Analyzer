@@ -46,8 +46,7 @@ namespace Analyzer.Profiling
                         case "methods":
                         case "method":
                             foreach (XmlNode method in child.ChildNodes) {
-                                var meth = ParseMethod(method.InnerText);
-                                if (meth is not null) {
+                                foreach (var meth in Utility.MethodsNamed(method.InnerText)) {
                                     meths.Add(meth);
                                 }
                             }
@@ -75,11 +74,6 @@ namespace Analyzer.Profiling
 
                 GUIController.Tab(Category.Modder).entries.Add(Entry.Create(myType.Name, Category.Modder, myType, false, true), myType);
             }
-        }
-
-        private static MethodInfo ParseMethod(string str)
-        {
-            return AccessTools.Method(str);
         }
 
         private static IEnumerable<MethodInfo> ParseTypeMethods(string str) {

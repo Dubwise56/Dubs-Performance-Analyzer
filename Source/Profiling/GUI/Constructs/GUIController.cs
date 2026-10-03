@@ -101,6 +101,7 @@ namespace Analyzer.Profiling
             }
 
             currentEntry = EntryByName(entryName);
+            if (currentEntry == null) return;
 
             if (!currentEntry.isPatched)
             {
