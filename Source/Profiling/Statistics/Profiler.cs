@@ -78,6 +78,10 @@ namespace Analyzer.Profiling
                 hitCounter = 0;
                 Empty = false;
             }
+            else
+            {
+                times[currentIndex] = 0; // overwrite the time recorded one lap ago
+            }
 
             currentIndex = (currentIndex + 1) % RECORDS_HELD; // ring buffer
         }
