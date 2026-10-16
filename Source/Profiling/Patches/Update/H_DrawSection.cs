@@ -1,6 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
 using HarmonyLib;
-using UnityEngine;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -14,51 +14,29 @@ namespace Analyzer.Profiling
 
 		public static void ProfilePatch()
 		{
-			Modbase.Harmony.Patch(AccessTools.Method(typeof(Section), nameof(Section.DrawSection)),
-				new HarmonyMethod(typeof(H_DrawSection), "Prefix"));
+			original = AccessTools.Method(typeof(Section), nameof(Section.DrawSection));
+			Modbase.Harmony.Patch(original, transpiler: new HarmonyMethod(typeof(H_DrawSection), nameof(Transpiler)));
 		}
 
-		public static bool Prefix(MethodBase __originalMethod, Section __instance)
+		private static MethodInfo original;
+
+		private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
+			=> CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+				m => m.Name == nameof(SectionLayer.DrawLayer) && m.GetParameters().Length == 0,
+				AccessTools.Method(typeof(H_DrawSection), nameof(DrawLayer)));
+
+		public static void DrawLayer(SectionLayer layer)
 		{
 			if (!Active)
-				return true;
-			
-			if (__instance.anyLayerDirty)
-				__instance.RegenerateDirtyLayers();
-			
-			for (int index = 0; index < __instance.layers.Count; ++index)
 			{
-				var layer = __instance.layers[index];
-				var type = layer.GetType();
-				var prof = ProfileController.Start(type.Name, null, type, __originalMethod);
 				layer.DrawLayer();
-				prof.Stop();
+				return;
 			}
 
-			if (!DebugViewSettings.drawSectionEdges)
-				return false;
-			
-			Vector3 vector3_1 = __instance.botLeft.ToVector3();
-			GenDraw.DrawLineBetween(vector3_1, vector3_1 + new Vector3(0.0f, 0.0f, 17f));
-			GenDraw.DrawLineBetween(vector3_1, vector3_1 + new Vector3(17f, 0.0f, 0.0f));
-			
-			if (!__instance.CellRect.Contains(UI.MouseCell()))
-				return false;
-			
-			IntVec3 intVec3 = __instance.bounds.Min;
-			Vector3 vector3_2 = intVec3.ToVector3();
-			intVec3 = __instance.bounds.Max;
-			Vector3 A = intVec3.ToVector3() + new Vector3(1f, 0.0f, 1f);
-			GenDraw.DrawLineBetween(vector3_2, vector3_2 + new Vector3((float)__instance.bounds.Width, 0.0f, 0.0f),
-				SimpleColor.Magenta);
-			GenDraw.DrawLineBetween(vector3_2, vector3_2 + new Vector3(0.0f, 0.0f, (float)__instance.bounds.Height),
-				SimpleColor.Magenta);
-			GenDraw.DrawLineBetween(A, A - new Vector3((float)__instance.bounds.Width, 0.0f, 0.0f),
-				SimpleColor.Magenta);
-			GenDraw.DrawLineBetween(A, A - new Vector3(0.0f, 0.0f, (float)__instance.bounds.Height),
-				SimpleColor.Magenta);
-
-			return false;
+			var type = layer.GetType();
+			var prof = ProfileController.Start(type.Name, null, type, original);
+			layer.DrawLayer();
+			prof?.Stop();
 		}
 	}
 }

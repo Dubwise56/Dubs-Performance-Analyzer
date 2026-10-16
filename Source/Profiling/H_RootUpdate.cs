@@ -34,6 +34,10 @@ namespace Analyzer.Profiling
             if (GUIController.CurrentCategory != Category.Tick) // If we are tick, we will 'update' in the TickManager.DoSingleTick method
                 ProfileController.EndUpdate();
 
+#if V1_7
+            VanillaProfilerMirror.EndFrame();
+#endif
+
             if (Active)
                 ProfileController.Start(FrameTimeKey);
 

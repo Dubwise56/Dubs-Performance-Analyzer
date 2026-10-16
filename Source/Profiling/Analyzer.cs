@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -222,11 +221,7 @@ namespace Analyzer.Profiling
                 // clear all profiles
                 ProfileController.Profiles.Clear();
 
-                var handles = ProfileController.Handles;
-                foreach (var handle in handles)
-                    handle.Free();
-                
-                handles.Clear();
+                ProfileController.ClearILProfilers();
 #if DEBUG 
                 ThreadSafeLogger.Warning("Cleared Profiles");
 #endif

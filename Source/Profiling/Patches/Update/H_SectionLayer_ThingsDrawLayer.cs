@@ -1,7 +1,8 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.Rendering;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -13,60 +14,52 @@ namespace Analyzer.Profiling
 
         public static void ProfilePatch()
         {
-            Modbase.Harmony.Patch(AccessTools.Method(typeof(SectionLayer_Things), nameof(SectionLayer_Things.DrawLayer)),
-                new HarmonyMethod(typeof(H_SectionLayer_ThingsDrawLayer), "Prefix"));
+            var drawLayer = AccessTools.Method(typeof(SectionLayer), nameof(SectionLayer.DrawLayer));
+            original = AccessTools.DeclaredMethod(drawLayer.DeclaringType, drawLayer.Name, Type.EmptyTypes);
+            Modbase.Harmony.Patch(original, transpiler: new HarmonyMethod(typeof(H_SectionLayer_ThingsDrawLayer), nameof(Transpiler)));
         }
 
+        private static MethodInfo original;
 
-        public static bool Prefix(MethodBase __originalMethod, SectionLayer_Things __instance)
-        {
-            if (!Active)
-                return true;
-#if !V1_5
-            // 1.6 hides part of this layer during the gravship cutscene, leave those frames to vanilla
-            if (!DebugViewSettings.drawThingsPrinted || WorldComponent_GravshipController.CutsceneInProgress)
-                return true;
-#endif
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
+            => CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                m => m.DeclaringType == typeof(Graphics) && m.Name == nameof(Graphics.DrawMesh),
+                AccessTools.Method(typeof(H_SectionLayer_ThingsDrawLayer), nameof(DrawMesh)), passInstance: true);
 
-            if (!__instance.Visible)
-                return false;
-
-            var subMeshes = __instance.subMeshes;
-            var count = subMeshes.Count;
-            
-            for (var i = 0; i < count; i++)
-            {
-                var layerSubMesh = subMeshes[i];
-                if (layerSubMesh.finalized && !layerSubMesh.disabled)
-                {
-                    string Namer() => GetSubMeshName(layerSubMesh);
-
-                    var prof = ProfileController.Start(GetSubMeshName(layerSubMesh), Namer, __originalMethod.GetType(),
-                        __originalMethod);
-                    
-                    Graphics.DrawMesh(layerSubMesh.mesh, Vector3.zero, Quaternion.identity, layerSubMesh.material,
-#if V1_5
-                        0);
+#if V1_7
+        public static void DrawMesh(Mesh mesh, Matrix4x4 matrix, Material material, int layer, object __instance)
 #else
-                        layerSubMesh.renderLayer);
+        public static void DrawMesh(Mesh mesh, Vector3 position, Quaternion rotation, Material material, int layer, object __instance)
 #endif
-                    
-                    prof.Stop();
-                }
+        {
+            if (!Active || __instance is not SectionLayer_Things)
+            {
+#if V1_7
+                Graphics.DrawMesh(mesh, matrix, material, layer);
+#else
+                Graphics.DrawMesh(mesh, position, rotation, material, layer);
+#endif
+                return;
             }
 
-            return false;
+            var name = GetMaterialName(material);
+            var prof = ProfileController.Start(name, null, null, original);
+#if V1_7
+            Graphics.DrawMesh(mesh, matrix, material, layer);
+#else
+            Graphics.DrawMesh(mesh, position, rotation, material, layer);
+#endif
+            prof?.Stop();
         }
 
-        public static string GetSubMeshName(LayerSubMesh subMesh)
-            => subMesh.material is var m
-                && m
+        public static string GetMaterialName(Material m)
+            => m
                 && m.HasProperty("_MainTex") // Unity logs a warning per call otherwise (e.g. the SunShadowFade material)
                 && m.mainTexture is var mTex // todo material.mainTexture is a non trivial lookup
                 && mTex
                 && mTex.name is var mTexName
                 && !string.IsNullOrEmpty(mTexName)
                     ? mTexName
-                    : subMesh.GetType().Name;
+                    : nameof(LayerSubMesh);
     }
 }

@@ -21,6 +21,10 @@ namespace Analyzer.Profiling
         public string label;
         public string key;
         public bool pinned;
+        public int ilIndex = -1;
+#if V1_7
+        public int vanillaLabel = -1;
+#endif
 
         public int hitCounter = 0;
 
@@ -46,12 +50,18 @@ namespace Analyzer.Profiling
         {
             stopwatch.Start();
             hitCounter++;
+#if V1_7
+            if (VanillaProfilerMirror.Active) VanillaProfilerMirror.Enter(this);
+#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Stop()
         {
             stopwatch.Stop();
+#if V1_7
+            if (VanillaProfilerMirror.Used) VanillaProfilerMirror.Leave(this);
+#endif
         }
 
         public void Reset()

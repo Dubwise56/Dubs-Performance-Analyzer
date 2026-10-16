@@ -30,9 +30,8 @@ namespace Analyzer.Profiling
             pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(PrefixAbility));
             Modbase.Harmony.Patch(jiff, pre, post);
 
-            jiff = AccessTools.Method(typeof(StatWorker), nameof(StatWorker.GetValue), new[] { typeof(StatRequest), typeof(bool) });
-            pre = new HarmonyMethod(typeof(H_GetStatValue), nameof(GetValueDetour));
-            Modbase.Harmony.Patch(jiff, pre);
+            getValue = AccessTools.Method(typeof(StatWorker), nameof(StatWorker.GetValue), new[] { typeof(StatRequest), typeof(bool) });
+            Modbase.Harmony.Patch(getValue, transpiler: new HarmonyMethod(typeof(H_GetStatValue), nameof(GetValueTranspiler)));
 
             HarmonyMethod go = new HarmonyMethod(typeof(H_GetStatValue), nameof(PartPrefix));
             HarmonyMethod biff = new HarmonyMethod(typeof(H_GetStatValue), nameof(PartPostfix));
@@ -99,54 +98,47 @@ namespace Analyzer.Profiling
             }
         }
 
-        public static bool GetValueDetour(MethodBase __originalMethod, StatWorker __instance, StatRequest req, ref float __result, bool applyPostProcess = true)
+        private static MethodInfo getValue;
+
+        private static IEnumerable<CodeInstruction> GetValueTranspiler(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
         {
-            if (Active && GetValDetour && __instance is StatWorker sw)
+            instructions = CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(StatWorker), nameof(StatWorker.GetValueUnfinalized)),
+                AccessTools.Method(typeof(H_GetStatValue), nameof(GetValueUnfinalized)));
+            return CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(StatWorker), nameof(StatWorker.FinalizeValue)),
+                AccessTools.Method(typeof(H_GetStatValue), nameof(FinalizeValue)));
+        }
+
+        public static float GetValueUnfinalized(StatWorker sw, StatRequest req, bool applyPostProcess)
+        {
+            if (!Active || !GetValDetour) return sw.GetValueUnfinalized(req, applyPostProcess);
+
+            var slag = ByDef
+                ? $"{sw.stat.defName} GetValueUnfinalized for {req.Def.defName}"
+                : $"{sw.stat.defName} GetValueUnfinalized";
+
+            Profiler prof = ProfileController.Start(slag, null, null, getValue);
+            float valueUnfinalized = sw.GetValueUnfinalized(req, applyPostProcess);
+            prof?.Stop();
+            return valueUnfinalized;
+        }
+
+        public static void FinalizeValue(StatWorker sw, StatRequest req, ref float val, bool applyPostProcess)
+        {
+            if (!Active || !GetValDetour)
             {
-                if (sw.stat.minifiedThingInherits)
-                {
-                    if (req.Thing is MinifiedThing minifiedThing)
-                    {
-                        if (minifiedThing.InnerThing == null)
-                        {
-                            Log.Error("MinifiedThing's inner thing is null.");
-                        }
-                        __result = minifiedThing.InnerThing.GetStatValue(sw.stat, applyPostProcess);
-                        return false;
-                    }
-                }
-
-                string slag = "";
-                if (ByDef)
-                {
-                    slag = $"{__instance.stat.defName} GetValueUnfinalized for {req.Def.defName}";
-                }
-                else
-                {
-                    slag = $"{__instance.stat.defName} GetValueUnfinalized";
-                }
-
-                Profiler prof = ProfileController.Start(slag, null, null, __originalMethod);
-                float valueUnfinalized = sw.GetValueUnfinalized(req, applyPostProcess);
-                prof.Stop();
-
-                if (ByDef)
-                {
-                    slag = $"{__instance.stat.defName} FinalizeValue for {req.Def.defName}";
-                }
-                else
-                {
-                    slag = $"{__instance.stat.defName} FinalizeValue";
-                }
-
-                prof = ProfileController.Start(slag, null, null, __originalMethod);
-                sw.FinalizeValue(req, ref valueUnfinalized, applyPostProcess);
-                prof.Stop();
-
-                __result = valueUnfinalized;
-                return false;
+                sw.FinalizeValue(req, ref val, applyPostProcess);
+                return;
             }
-            return true;
+
+            var slag = ByDef
+                ? $"{sw.stat.defName} FinalizeValue for {req.Def.defName}"
+                : $"{sw.stat.defName} FinalizeValue";
+
+            Profiler prof = ProfileController.Start(slag, null, null, getValue);
+            sw.FinalizeValue(req, ref val, applyPostProcess);
+            prof?.Stop();
         }
 
 

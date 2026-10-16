@@ -1,8 +1,6 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 using System.Collections.Generic;
 using System.Reflection;
-using RimWorld;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -14,66 +12,46 @@ namespace Analyzer.Profiling
 
         public static void ProfilePatch()
         {
-            Modbase.Harmony.Patch(
-                AccessTools.Method(typeof(SectionLayer_Things), nameof(SectionLayer_Things.Regenerate)),
-                new HarmonyMethod(typeof(H_SectionLayer_Things), nameof(Prefix)));
+            original = AccessTools.Method(typeof(SectionLayer_Things), nameof(SectionLayer_Things.Regenerate));
+            Modbase.Harmony.Patch(original, transpiler: new HarmonyMethod(typeof(H_SectionLayer_Things), nameof(Transpiler)));
         }
 
-        public static bool Prefix(MethodBase __originalMethod, SectionLayer_Things __instance, ref string __state)
-        {
-            if (Active)
-            {
-                __instance.ClearSubMeshes(MeshParts.All);
-                Profiler prof = null;
-                __instance.bounds = __instance.section.CellRect;
-                foreach (IntVec3 c in __instance.section.CellRect)
-                {
-                    List<Thing> thingList = __instance.Map.thingGrid.ThingsListAt(c);
-                    int count = thingList.Count;
-                    for (int index = 0; index < count; ++index)
-                    {
-                        Thing t = thingList[index];
-                        __state = "Flag check";
-                        prof = ProfileController.Start(__state, null, null, __originalMethod);
+        private static MethodInfo original;
 
-                        var flag = (t.def.seeThroughFog || !__instance.Map.fogGrid.IsFogged(t.Position))
-                            && t.def.drawerType != DrawerType.None
-                            && (t.def.drawerType != DrawerType.RealtimeOnly || !__instance.requireAddToMapMesh)
-#if V1_5
-                            && ((double)t.def.hideAtSnowDepth >= 1.0
-                                || __instance.Map.snowGrid.GetDepth(t.Position) <= (double)t.def.hideAtSnowDepth)
-#else
-                            && (t.def.hideAtSnowOrSandDepth >= 1f
-                                || !(Math.Max(__instance.Map.snowGrid.GetDepth(t.Position),
-                                        t.Position.GetSandDepth(__instance.Map))
-                                    > t.def.hideAtSnowOrSandDepth))
-                            && (t.def.plant == null
-                                || t.def.plant.showInFrozenWater
-                                || t.Position.GetTerrain(__instance.Map) != TerrainDefOf.ThinIce)
-#endif
-                            && t.Position.x == c.x
-                            && t.Position.z == c.z;
-                        
-                        prof.Stop();
-                        
-                        if (flag)
-                        {
-                            __state = t.def.defName;
-                            prof = ProfileController.Start(__state, null, null, __originalMethod);
-                            __instance.TakePrintFrom(t);
-                            __instance.bounds = __instance.bounds.Encapsulate(t.OccupiedDrawRect());
-                            prof.Stop();
-                        }
-                    }
-                }
-                __state = "Finalize mesh";
-                prof = ProfileController.Start(__state, null, null, __originalMethod);
-                __instance.FinalizeMesh(MeshParts.All);
-                prof.Stop();
-                return false;
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
+        {
+            instructions = CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(SectionLayer_Things), nameof(SectionLayer_Things.TakePrintFrom)),
+                AccessTools.Method(typeof(H_SectionLayer_Things), nameof(TakePrintFrom)));
+            return CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                m => m.Name == nameof(SectionLayer.FinalizeMesh),
+                AccessTools.Method(typeof(H_SectionLayer_Things), nameof(FinalizeMesh)));
+        }
+
+        public static void TakePrintFrom(SectionLayer_Things layer, Thing t)
+        {
+            if (!Active)
+            {
+                layer.TakePrintFrom(t);
+                return;
             }
 
-            return true;
+            var prof = ProfileController.Start(t.def.defName, null, null, original);
+            layer.TakePrintFrom(t);
+            prof?.Stop();
+        }
+
+        public static void FinalizeMesh(SectionLayer layer, MeshParts tags)
+        {
+            if (!Active)
+            {
+                layer.FinalizeMesh(tags);
+                return;
+            }
+
+            var prof = ProfileController.Start("Finalize mesh", null, null, original);
+            layer.FinalizeMesh(tags);
+            prof?.Stop();
         }
     }
 }

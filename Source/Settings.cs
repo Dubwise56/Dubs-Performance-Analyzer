@@ -50,6 +50,9 @@ namespace Analyzer
             Scribe_Values.Look(ref showIcon, "showMainTabIcon", true);
             Scribe_Values.Look(ref longFormNames, "longFormNames", false);
             Scribe_Values.Look(ref disableThreadedPatching, "disableThreadedPatching", false);
+#if V1_7
+            Scribe_Values.Look(ref VanillaProfilerMirror.enabled, "mirrorToVanillaProfiler", false);
+#endif
 
             Scribe_Collections.Look(ref SavedPatches_Update, "SavedPatches_Update");
             Scribe_Collections.Look(ref SavedPatches_Tick, "SavedPatches_Tick");

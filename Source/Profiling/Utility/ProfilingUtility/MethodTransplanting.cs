@@ -26,6 +26,9 @@ namespace Analyzer.Profiling
         private static readonly FieldInfo ProfilerController_Profiles
             = AccessTools.Field(typeof(ProfileController), nameof(ProfileController.profiles));
 
+        private static readonly FieldInfo ProfileController_ILProfilers
+            = AccessTools.Field(typeof(ProfileController), nameof(ProfileController.ILProfilers));
+
         // profiler
         private static readonly MethodInfo
             Profiler_Start = AccessTools.Method(typeof(Profiler), nameof(Profiler.Start)),
@@ -320,13 +323,9 @@ namespace Analyzer.Profiling
             if (profiler == null)
                 return instructions;
 
-            var getProfiler = GetProfilerThroughConstInstruction(profiler);
-
-            var toObject = new CodeInstruction(OpCodes.Conv_I);
-
             CodeInstruction[] profilerStart =
             [
-                getProfiler, toObject, new(OpCodes.Call, Profiler_Start)
+                ..LoadProfilerInstructions(profiler), new(OpCodes.Call, Profiler_Start)
             ];
             
             instructions.InsertRange(startIndex, profilerStart);
@@ -340,11 +339,9 @@ namespace Analyzer.Profiling
                 var instruction = instructions[i];
                 if (instruction.opcode == OpCodes.Ret)
                 {
-                    instructions.InsertRange(i,
-                    [
-                        getProfiler.Clone().MoveLabelsFrom(instruction), toObject.Clone(),
-                        new(OpCodes.Call, Profiler_Stop)
-                    ]);
+                    var loadProfiler = LoadProfilerInstructions(profiler);
+                    loadProfiler[0].MoveLabelsFrom(instruction);
+                    instructions.InsertRange(i, [..loadProfiler, new(OpCodes.Call, Profiler_Stop)]);
                 }
             }
 
@@ -357,16 +354,8 @@ namespace Analyzer.Profiling
 
             if (!profiles.TryGetValue(key, out var profiler) || profiler == null)
             {
-                var handle = GCHandle.Alloc(profiler = new(key, label, type, MethodInfoCache.Get(methodKey)), GCHandleType.Pinned);
-                if (!profiles.TryAdd(key, profiler))
-                {
+                if (!profiles.TryAdd(key, profiler = new(key, label, type, MethodInfoCache.Get(methodKey))))
                     profiler = profiles[key];
-                    handle.Free();
-                }
-                else
-                {
-                    ProfileController.Handles.Add(handle);
-                }
             }
 
             if (profiler == null)
@@ -378,13 +367,13 @@ namespace Analyzer.Profiling
             return profiler;
         }
 
-        private static unsafe CodeInstruction GetProfilerThroughConstInstruction(Profiler profiler)
-        {
-            var profilerPointer = *(nint*)&profiler;
-            return sizeof(nint) == sizeof(long)
-                ? new CodeInstruction(OpCodes.Ldc_I8, (long)profilerPointer)
-                : new(OpCodes.Ldc_I4, (int)profilerPointer);
-        }
+        private static CodeInstruction[] LoadProfilerInstructions(Profiler profiler)
+            =>
+            [
+                new(OpCodes.Ldsfld, ProfileController_ILProfilers),
+                new(OpCodes.Ldc_I4, ProfileController.AddILProfiler(profiler)),
+                new(OpCodes.Ldelem_Ref)
+            ];
 
         // Emulates Harmonys '__instance' & '___fieldName' & parameter sniping.
         private static List<CodeInstruction> GetLoadArgsForMethodParams(MethodInfo originalMethod, ParameterInfo[] methodparams)
@@ -449,8 +438,8 @@ namespace Analyzer.Profiling
 
             var meth = new DynamicMethod(
                 method.Name + "_runtimeReplacement",
-                MethodAttributes.Public,
-                method.CallingConvention,
+                MethodAttributes.Public | MethodAttributes.Static,
+                CallingConventions.Standard,
                 method.ReturnType,
                 parameters,
                 method.DeclaringType?.IsInterface ?? true ? typeof(void) : method.DeclaringType,
@@ -464,7 +453,7 @@ namespace Analyzer.Profiling
 
             // dynamically add our parameters, as many as they are, onto the stack for our original method
             for (var i = 0; i < parameters.Length; i++)
-                gen.Emit(OpCodes.Ldarg, i);
+                gen.Emit(OpCodes.Ldarg, (short)i);
 
             gen.Emit(inst.opcode, method); // call our original method, (all parameters are on the stack)
 
@@ -510,13 +499,9 @@ namespace Analyzer.Profiling
 
         private static void EmitGetProfilerThroughConstInstruction(ILGenerator ilGen, Profiler profiler)
         {
-            var getProfiler = GetProfilerThroughConstInstruction(profiler);
-            if (IntPtr.Size == sizeof(long))
-                ilGen.Emit(getProfiler.opcode, (long)getProfiler.operand);
-            else
-                ilGen.Emit(getProfiler.opcode, (int)getProfiler.operand);
-
-            ilGen.Emit(OpCodes.Conv_I);
+            ilGen.Emit(OpCodes.Ldsfld, ProfileController_ILProfilers);
+            ilGen.Emit(OpCodes.Ldc_I4, ProfileController.AddILProfiler(profiler));
+            ilGen.Emit(OpCodes.Ldelem_Ref);
         }
     }
 }

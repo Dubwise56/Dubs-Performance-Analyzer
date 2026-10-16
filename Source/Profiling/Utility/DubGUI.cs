@@ -84,7 +84,11 @@ namespace Analyzer.Profiling
             GL.MultMatrix(matrix);
 
             for (var i = 0; i < (drawDouble ? 2 : 1); i++)
+#if V1_7
+                GUI.DrawTexture(lineRect, aaLineTex, ScaleMode.StretchToFill, true, 0, color, 0, 0);
+#else
                 Graphics.DrawTexture(lineRect, aaLineTex, lineRect, 0, 0, 0, 0, color, blendMaterial);
+#endif
 
             GL.PopMatrix();
         }
@@ -110,11 +114,13 @@ namespace Analyzer.Profiling
             Shader shader = Shader.Find("Hidden/Internal-Colored");
             mat = new Material (shader);
             mat.hideFlags = HideFlags.HideAndDontSave;
+#if !V1_7
             //Turn on alpha blending
             mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
             mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
             // Turn backface culling off
             mat.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+#endif
             // Turn off depth writes
             mat.SetInt("_ZWrite", 0);
 

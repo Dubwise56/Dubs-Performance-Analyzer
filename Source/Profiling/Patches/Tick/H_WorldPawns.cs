@@ -27,7 +27,8 @@ namespace Analyzer.Profiling
             yield return AccessTools.Method(typeof(FactionManager), nameof(FactionManager.FactionManagerTick));
             yield return AccessTools.Method(typeof(WorldObjectsHolder), nameof(WorldObjectsHolder.WorldObjectsHolderTick));
             yield return AccessTools.Method(typeof(WorldPathGrid), nameof(WorldPathGrid.WorldPathGridTick));
-            yield return AccessTools.Method(typeof(Caravan), nameof(Caravan.Tick));
+            var caravanTick = AccessTools.DeclaredMethod(typeof(Caravan), "TickInterval") ?? AccessTools.DeclaredMethod(typeof(Caravan), nameof(Caravan.Tick));
+            if (caravanTick != null) yield return caravanTick;
         }
     }
 }

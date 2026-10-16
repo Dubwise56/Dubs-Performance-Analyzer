@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using RimWorld.QuestGen;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Verse;
 
@@ -202,7 +203,7 @@ namespace Analyzer.Profiling
         {
             if (isPatched) return;
 
-            Modbase.Harmony.Patch(AccessTools.Method(typeof(TickList), nameof(TickList.Tick)), prefix: new HarmonyMethod(typeof(H_TickListTick), "Prefix"));
+            Modbase.Harmony.Patch(AccessTools.Method(typeof(TickList), nameof(TickList.Tick)), transpiler: new HarmonyMethod(typeof(H_TickListTick), nameof(Transpiler)));
             isPatched = true;
         }
 
@@ -259,95 +260,46 @@ namespace Analyzer.Profiling
             }
         }
 
-        private static bool Prefix(TickList __instance)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
         {
-            if (!Active)
-            {
-                return true;
-            }
-
-            for (int i = 0; i < __instance.thingsToRegister.Count; i++)
-            {
-                __instance.BucketOf(__instance.thingsToRegister[i]).Add(__instance.thingsToRegister[i]);
-            }
-
-            __instance.thingsToRegister.Clear();
-            for (int j = 0; j < __instance.thingsToDeregister.Count; j++)
-            {
-                __instance.BucketOf(__instance.thingsToDeregister[j]).Remove(__instance.thingsToDeregister[j]);
-            }
-
-            __instance.thingsToDeregister.Clear();
-            if (DebugSettings.fastEcology)
-            {
-                Find.World.tileTemperatures.ClearCaches();
-                for (int k = 0; k < __instance.thingLists.Count; k++)
-                {
-                    System.Collections.Generic.List<Thing> list = __instance.thingLists[k];
-                    for (int l = 0; l < list.Count; l++)
-                    {
-                        if (list[l].def.category == ThingCategory.Plant)
-                        {
-                            list[l].TickLong();
-                        }
-                    }
-                }
-            }
-
-            System.Collections.Generic.List<Thing> list2 = __instance.thingLists[Find.TickManager.TicksGame % __instance.TickInterval];
-            for (int m = 0; m < list2.Count; m++)
-            {
-                Thing sam = list2[m];
-                if (!sam.Destroyed)
-                {
-                    try
-                    {
 #if !V1_5
-                        // 1.6: DoTick dispatches Tick/TickRare/TickLong itself and also runs TickInterval and
-                        // the held-thing ticking, none of which happen if Tick is called directly.
-                        LogMe(sam, sam.DoTick, "DoTick");
+            return CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(Thing), nameof(Thing.DoTick)), AccessTools.Method(typeof(H_TickListTick), nameof(DoTick)));
 #else
-                        TickerType tickerType = __instance.tickType;
-                        if (tickerType != TickerType.Normal)
-                        {
-                            if (tickerType != TickerType.Rare)
-                            {
-                                if (tickerType == TickerType.Long)
-                                {
-                                    LogMe(sam, sam.TickLong, "TickLong");
-                                }
-                            }
-                            else
-                            {
-                                LogMe(sam, sam.TickRare, "TickRare");
-                            }
-                        }
-                        else
-                        {
-                            LogMe(sam, sam.Tick, "Tick");
-                        }
+            instructions = CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(Thing), nameof(Thing.Tick)), AccessTools.Method(typeof(H_TickListTick), nameof(Tick)));
+            instructions = CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(Thing), nameof(Thing.TickRare)), AccessTools.Method(typeof(H_TickListTick), nameof(TickRare)));
+            return CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(Thing), nameof(Thing.TickLong)), AccessTools.Method(typeof(H_TickListTick), nameof(TickLong)));
 #endif
-                    }
-                    catch (Exception ex)
-                    {
-                        string text = !list2[m].Spawned ? string.Empty : " (at " + list2[m].Position + ")";
-                        if (Prefs.DevMode)
-                        {
-                            Log.Error(string.Concat("Exception ticking ", list2[m].ToStringSafe(), text, ": ", ex));
-                        }
-                        else
-                        {
-                            Log.ErrorOnce(
-                                string.Concat("Exception ticking ", list2[m].ToStringSafe(), text,
-                                    ". Suppressing further errors. Exception: ", ex),
-                                list2[m].thingIDNumber ^ 576876901);
-                        }
-                    }
-                }
-            }
-
-            return false;
         }
+
+#if !V1_5
+        public static void DoTick(Thing thing)
+        {
+            if (Active) LogMe(thing, thing.DoTick, "DoTick");
+            else thing.DoTick();
+        }
+#else
+        public static void Tick(Thing thing)
+        {
+            if (Active) LogMe(thing, thing.Tick, "Tick");
+            else thing.Tick();
+        }
+
+        public static void TickRare(Thing thing)
+        {
+            if (Active) LogMe(thing, thing.TickRare, "TickRare");
+            else thing.TickRare();
+        }
+
+        public static void TickLong(Thing thing)
+        {
+            if (Active) LogMe(thing, thing.TickLong, "TickLong");
+            else thing.TickLong();
+        }
+#endif
     }
 
 

@@ -42,6 +42,9 @@ namespace Analyzer.Profiling
 				ThreadSafeLogger.Warning("You will need to restart analyzer to see changes come into effect for tabs which are already open. (Right click on the analyzer icon, and click 'Cleanup' ; or wait 30s after closing analyzer)");
 			}
 			DubGUI.Checkbox(Strings.settings_disable_threading, listing, ref Settings.disableThreadedPatching);
+#if V1_7
+			DubGUI.Checkbox("Mirror timings to the vanilla Frame Profiler", listing, ref VanillaProfilerMirror.enabled);
+#endif
 
 			var s = Strings.settings_disable_cleanup;
 			var rect = listing.GetRect(Text.LineHeight);

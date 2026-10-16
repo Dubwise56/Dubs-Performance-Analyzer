@@ -35,42 +35,89 @@ namespace Analyzer.Profiling
             yield return AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.FinalizeCachedDrawEntries));
         }
 
-        public static bool FUUUCK(Rect rect, Thing thing)
+        private static MethodInfo drawStatsReport;
+
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
         {
-            if (!Active) return true;
+            instructions = CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                m => m.Name == nameof(ThingDef.SpecialDisplayStats) && m.GetParameters() is [{ ParameterType: var p }] && p == typeof(StatRequest),
+                AccessTools.Method(typeof(H_InfoCard), nameof(SpecialDisplayStats)));
+            instructions = CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.StatsToDraw), new[] { typeof(Thing) }),
+                AccessTools.Method(typeof(H_InfoCard), nameof(StatsToDraw)));
+            instructions = CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(List<StatDrawEntry>), nameof(List<StatDrawEntry>.RemoveAll)),
+                AccessTools.Method(typeof(H_InfoCard), nameof(RemoveAll)));
+            instructions = CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.FinalizeCachedDrawEntries)),
+                AccessTools.Method(typeof(H_InfoCard), nameof(FinalizeCachedDrawEntries)));
+            return CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsWorker)),
+                AccessTools.Method(typeof(H_InfoCard), nameof(DrawStatsWorker)));
+        }
 
-            Profiler prof = null;
-            if (StatsReportUtility.cachedDrawEntries.NullOrEmpty<StatDrawEntry>())
+        public static IEnumerable<StatDrawEntry> SpecialDisplayStats(Def def, StatRequest req)
+        {
+            if (!Active) return def.SpecialDisplayStats(req);
+
+            var prof = ProfileController.Start("SpecialDisplayStats", null, null, drawStatsReport);
+            var entries = def.SpecialDisplayStats(req).ToList();
+            prof?.Stop();
+            return entries;
+        }
+
+        public static IEnumerable<StatDrawEntry> StatsToDraw(Thing thing)
+        {
+            if (!Active) return StatsReportUtility.StatsToDraw(thing);
+
+            var prof = ProfileController.Start("StatsToDraw", null, null, drawStatsReport);
+            var entries = StatsReportUtility.StatsToDraw(thing).ToList();
+            prof?.Stop();
+            return entries;
+        }
+
+        public static int RemoveAll(List<StatDrawEntry> list, Predicate<StatDrawEntry> match)
+        {
+            if (!Active) return list.RemoveAll(match);
+
+            var prof = ProfileController.Start("RemoveAll", null, null, drawStatsReport);
+            var removed = list.RemoveAll(match);
+            prof?.Stop();
+            return removed;
+        }
+
+        public static void FinalizeCachedDrawEntries(IEnumerable<StatDrawEntry> original)
+        {
+            if (!Active)
             {
-                prof = ProfileController.Start("SpecialDisplayStats");
-                StatsReportUtility.cachedDrawEntries.AddRange(thing.def.SpecialDisplayStats(StatRequest.For(thing)));
-                prof.Stop();
-
-                prof = ProfileController.Start("StatsToDraw");
-                StatsReportUtility.cachedDrawEntries.AddRange(StatsReportUtility.StatsToDraw(thing).Where(s => s.ShouldDisplay()));
-                prof.Stop();
-
-                prof = ProfileController.Start("RemoveAll");
-                StatsReportUtility.cachedDrawEntries.RemoveAll((StatDrawEntry de) => de.stat != null && !de.stat.showNonAbstract);
-                prof.Stop();
-
-                prof = ProfileController.Start("FinalizeCachedDrawEntries");
-                StatsReportUtility.FinalizeCachedDrawEntries(StatsReportUtility.cachedDrawEntries);
-                prof.Stop();
+                StatsReportUtility.FinalizeCachedDrawEntries(original);
+                return;
             }
-            prof = ProfileController.Start("DrawStatsWorker");
-            StatsReportUtility.DrawStatsWorker(rect, thing, null);
-            prof.Stop();
 
-            return false;
+            var prof = ProfileController.Start("FinalizeCachedDrawEntries", null, null, drawStatsReport);
+            StatsReportUtility.FinalizeCachedDrawEntries(original);
+            prof?.Stop();
+        }
+
+        public static void DrawStatsWorker(Rect rect, Thing optionalThing, WorldObject optionalWorldObject)
+        {
+            if (!Active)
+            {
+                StatsReportUtility.DrawStatsWorker(rect, optionalThing, optionalWorldObject);
+                return;
+            }
+
+            var prof = ProfileController.Start("DrawStatsWorker", null, null, drawStatsReport);
+            StatsReportUtility.DrawStatsWorker(rect, optionalThing, optionalWorldObject);
+            prof?.Stop();
         }
 
         public static void ProfilePatch()
         {
             MethodTransplanting.PatchMethods(typeof(H_InfoCard));
 
-            Modbase.Harmony.Patch( AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(Thing) }),
-                new HarmonyMethod(typeof(H_InfoCard), nameof(FUUUCK)));
+            drawStatsReport = AccessTools.Method(typeof(StatsReportUtility), nameof(StatsReportUtility.DrawStatsReport), new[] { typeof(Rect), typeof(Thing) });
+            Modbase.Harmony.Patch(drawStatsReport, transpiler: new HarmonyMethod(typeof(H_InfoCard), nameof(Transpiler)));
         }
     }
 }

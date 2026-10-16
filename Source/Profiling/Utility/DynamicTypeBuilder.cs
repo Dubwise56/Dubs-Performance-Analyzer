@@ -16,10 +16,18 @@ namespace Analyzer.Profiling
         // this is what a static class looks like in attributes
 
         private static AssemblyBuilder assembly = null;
+#if V1_7
+        private static AssemblyBuilder Assembly => assembly ??= AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("DubsDynamicTypes"), AssemblyBuilderAccess.Run);
+#else
         private static AssemblyBuilder Assembly => assembly ??= AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("DubsDynamicTypes"), AssemblyBuilderAccess.RunAndSave);
+#endif
 
         private static ModuleBuilder moduleBuilder = null;
+#if V1_7
+        private static ModuleBuilder ModuleBuilder => moduleBuilder ??= Assembly.DefineDynamicModule("DubsDynamicTypes");
+#else
         private static ModuleBuilder ModuleBuilder => moduleBuilder ??= Assembly.DefineDynamicModule("DubsDynamicTypes", "DubsDynamicTypes.dll");
+#endif
 
         // Do NOT clear this cache, it holds information for all dynamically created types (including persistent ones!)
         public static Dictionary<string, HashSet<MethodInfo>> methods = new Dictionary<string, HashSet<MethodInfo>>();

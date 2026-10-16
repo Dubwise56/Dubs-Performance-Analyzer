@@ -25,7 +25,9 @@ namespace Analyzer.Profiling
 
         public static ConcurrentDictionary<string, Profiler> Profiles => profiles;
 
-        public static ConcurrentBag<GCHandle> Handles { get; } = [];
+        public static Profiler[] ILProfilers = new Profiler[256];
+        private static int ilProfilerCount;
+        private static readonly object ilProfilerLock = new();
 
         private static Stopwatch rootProf = new Stopwatch();
         private static float prevSample = 0.0f;
@@ -47,6 +49,33 @@ namespace Analyzer.Profiling
 
             profiler.Start();
             return profiler;
+        }
+
+        public static int AddILProfiler(Profiler profiler)
+        {
+            lock (ilProfilerLock)
+            {
+                if (profiler.ilIndex >= 0) return profiler.ilIndex;
+
+                if (ilProfilerCount == ILProfilers.Length)
+                {
+                    var grown = new Profiler[ILProfilers.Length * 2];
+                    Array.Copy(ILProfilers, grown, ilProfilerCount);
+                    ILProfilers = grown;
+                }
+
+                ILProfilers[ilProfilerCount] = profiler;
+                return profiler.ilIndex = ilProfilerCount++;
+            }
+        }
+
+        public static void ClearILProfilers()
+        {
+            lock (ilProfilerLock)
+            {
+                Array.Clear(ILProfilers, 0, ILProfilers.Length);
+                ilProfilerCount = 0;
+            }
         }
 
         public static void Stop(string key)

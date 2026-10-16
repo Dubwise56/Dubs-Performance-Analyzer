@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
+using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
 using Verse;
 
 namespace Analyzer.Profiling
@@ -12,73 +12,49 @@ namespace Analyzer.Profiling
 
         public static void ProfilePatch()
         {
-            Modbase.Harmony.Patch(AccessTools.Method(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI)), prefix: new HarmonyMethod(typeof(H_WindowStackOnGUI), "Prefix"));
+            original = AccessTools.Method(typeof(WindowStack), nameof(WindowStack.WindowStackOnGUI));
+            Modbase.Harmony.Patch(original, transpiler: new HarmonyMethod(typeof(H_WindowStackOnGUI), nameof(Transpiler)));
         }
 
-        public static bool Prefix(MethodBase __originalMethod, WindowStack __instance)
+        private static MethodInfo original;
+
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, MethodBase __originalMethod)
         {
-            if (!Active) return true;
-
-            __instance.windowStackOnGUITmpList.Clear();
-            __instance.windowStackOnGUITmpList.AddRange(__instance.windows);
-            for (int i = __instance.windowStackOnGUITmpList.Count - 1; i >= 0; i--)
-            {
-                string name = string.Empty;
-                if (__instance.windowStackOnGUITmpList[i] is ImmediateWindow)
-                {
-                    name = string.Intern(
-                        $"{__instance.windowStackOnGUITmpList[i].GetType()} ExtraOnGUI {__instance.windowStackOnGUITmpList[i].ID}");
-                }
-                else
-                {
-                    name = string.Intern($"{__instance.windowStackOnGUITmpList[i].GetType()} ExtraOnGUI");
-                }
-
-                Profiler prof = ProfileController.Start(name, null, null, __originalMethod);
-                __instance.windowStackOnGUITmpList[i].ExtraOnGUI();
-                prof.Stop();
-            }
-
-            __instance.UpdateImmediateWindowsList();
-            __instance.windowStackOnGUITmpList.Clear();
-            __instance.windowStackOnGUITmpList.AddRange(__instance.windows);
-            for (int j = 0; j < __instance.windowStackOnGUITmpList.Count; j++)
-            {
-                if (__instance.windowStackOnGUITmpList[j].drawShadow)
-                {
-                    // same skip as vanilla: shadowed windows are not drawn at all in screenshot mode
-                    if (!__instance.windowStackOnGUITmpList[j].drawInScreenshotMode && Find.UIRoot.screenshotMode.Active)
-                    {
-                        continue;
-                    }
-                    GUI.color = new Color(1f, 1f, 1f, __instance.windowStackOnGUITmpList[j].shadowAlpha);
-                    Widgets.DrawShadowAround(__instance.windowStackOnGUITmpList[j].windowRect);
-                    GUI.color = Color.white;
-                }
-
-                string name = string.Empty;
-                if (__instance.windowStackOnGUITmpList[j] is ImmediateWindow)
-                {
-                    name = string.Intern(
-                        $"{__instance.windowStackOnGUITmpList[j].GetType()} WindowOnGUI {__instance.windowStackOnGUITmpList[j].ID}");
-                }
-                else
-                {
-                    name = string.Intern($"{__instance.windowStackOnGUITmpList[j].GetType()} WindowOnGUI");
-                }
-
-                Profiler prof = ProfileController.Start(name, null, null, __originalMethod);
-                __instance.windowStackOnGUITmpList[j].WindowOnGUI();
-                prof.Stop();
-            }
-
-            if (__instance.updateInternalWindowsOrderLater)
-            {
-                __instance.updateInternalWindowsOrderLater = false;
-                __instance.UpdateInternalWindowsOrder();
-            }
-
-            return false;
+            instructions = CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(Window), nameof(Window.ExtraOnGUI)), AccessTools.Method(typeof(H_WindowStackOnGUI), nameof(ExtraOnGUI)));
+            return CallSiteProfiling.WrapCalls(instructions, __originalMethod,
+                AccessTools.Method(typeof(Window), nameof(Window.WindowOnGUI)), AccessTools.Method(typeof(H_WindowStackOnGUI), nameof(WindowOnGUI)));
         }
+
+        public static void ExtraOnGUI(Window window)
+        {
+            if (!Active)
+            {
+                window.ExtraOnGUI();
+                return;
+            }
+
+            var prof = ProfileController.Start(Key(window, "ExtraOnGUI"), null, null, original);
+            window.ExtraOnGUI();
+            prof?.Stop();
+        }
+
+        public static void WindowOnGUI(Window window)
+        {
+            if (!Active)
+            {
+                window.WindowOnGUI();
+                return;
+            }
+
+            var prof = ProfileController.Start(Key(window, "WindowOnGUI"), null, null, original);
+            window.WindowOnGUI();
+            prof?.Stop();
+        }
+
+        private static string Key(Window window, string call)
+            => window is ImmediateWindow
+                ? string.Intern($"{window.GetType()} {call} {window.ID}")
+                : string.Intern($"{window.GetType()} {call}");
     }
 }
