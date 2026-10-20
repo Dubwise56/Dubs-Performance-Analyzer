@@ -116,7 +116,7 @@ namespace Analyzer.Profiling
 
                     if (instance.times.entries[i] < visibleMin)
                     {
-                        visibleMin = instance.times.entries[timesIndex];
+                        visibleMin = instance.times.entries[i];
                     }
 
                     var cheese = new Rect(point.x - (xIncrement * 0.5f), 0, xIncrement, rect.height);
@@ -217,7 +217,7 @@ namespace Analyzer.Profiling
                 var box = new Rect(0, 0, 25f, Text.LineHeight);
                 box.y = (i * yIncrement) - (box.height / 2f);
 
-                Widgets.Label(box, Mathf.Round((4 - i) * (yAxis / 4f) * 100) / 100 + "");
+                Widgets.Label(box, Mathf.Round((4 - i) * (yAxis / 4f / .95f) * 100) / 100 + "");
 
             }
             DubGUI.ResetFont();

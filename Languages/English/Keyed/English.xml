@@ -59,26 +59,26 @@
 	<!-- Logs -->
 	<logs.max>Max</logs.max>
 	<logs.av>Average</logs.av>
-	<logs.avpu>Average Per {0}</logs.avpu>
+	<logs.avpu>Avg</logs.avpu>
 	<logs.percent>Percent</logs.percent>
-	<logs.avpc>Av Per Call</logs.avpc>
-	<logs.calls>Calls</logs.calls>
+	<logs.avpc>Per Call</logs.avpc>
+	<logs.calls>Total Calls</logs.calls>
 	<logs.name>Name</logs.name>
 	<logs.total>Total</logs.total>
-	<logs.callspu>Av Calls Per {0}</logs.callspu>
-	<logs.maxpu>Max For {0}</logs.maxpu>
+	<logs.callspu>Calls</logs.callspu>
+	<logs.maxpu>Max</logs.maxpu>
 
 	<dpa.frame>Frame</dpa.frame>
 
 
-	<logs.max.desc>Sort the rows by the maximum (MS) peak the method has reached</logs.max.desc>
-	<logs.av.desc>Sort the rows by the average (MS) the method is reaching</logs.av.desc>
-	<logs.percent.desc>Sort the rows by relative percent in the category</logs.percent.desc>
-	<logs.avpc.desc>Sort the rows by the average per call (MS)</logs.avpc.desc>
-	<logs.calls.desc>Sort the rows by total amount of calls</logs.calls.desc>
-	<logs.name.desc>Sort the rows in alphabetical order</logs.name.desc>
-	<logs.total.desc>Sort the rows by total (MS) impact</logs.total.desc>
-	<logs.callspu.desc>Sort the rows by average calls per {0}</logs.callspu.desc>
+	<logs.max.desc>The most time the method took in a single tick or frame, in milliseconds, within the samples shown at the top.</logs.max.desc>
+	<logs.av.desc>Average time per tick or frame, in milliseconds, over the samples shown at the top. Includes the profiled methods it calls.</logs.av.desc>
+	<logs.percent.desc>The method's share of the root shown at the top, averaged over the same samples. Includes the profiled methods it calls. The bar under each row shows its own time solid and the rest faded, in the same colour as the bar at the top.</logs.percent.desc>
+	<logs.avpc.desc>Average time of a single call, in microseconds (us).</logs.avpc.desc>
+	<logs.calls.desc>Total number of calls over the samples shown at the top.</logs.calls.desc>
+	<logs.name.desc>The profiled method. A small square before the name is a spike flag; hover the name to see what it means.</logs.name.desc>
+	<logs.total.desc>Total time over all the samples shown at the top, in milliseconds.</logs.total.desc>
+	<logs.callspu.desc>Average number of calls per {0}.</logs.callspu.desc>
 
 	<!-- Bottom Tab Panels -->
 
@@ -284,5 +284,106 @@
 
 	<fix.faction>Fix missing mod factions</fix.faction>
 	<fix.faction.tooltip>Removes all references to deleted factions in world objects. This will solve issues when removing factions mid-save</fix.faction.tooltip>
+
+	<!-- Frame Profiler buttons -->
+	<frameprofiler.button>Frame Profiler</frameprofiler.button>
+	<frameprofiler.open>Open the Frame Profiler</frameprofiler.open>
+	<frameprofiler.button.tip>Open the game's built-in Frame Profiler. Turn on "Mirror timings to the vanilla Frame Profiler" in Settings to see Analyzer's timings in it too.</frameprofiler.button.tip>
+
+	<!-- Patches tab -->
+	<tab.patches>Patches</tab.patches>
+	<tab.patches.desc>Harmony patches from every mod. They can run anywhere, so each row says whether it ran in ticks, frame updates or the interface, and the percentages are of the whole frame</tab.patches.desc>
+
+	<!-- Log columns -->
+	<logs.spikes>Spikes</logs.spikes>
+	<logs.spikes.desc>How many runs in the samples shown at the top were spikes: over 1 ms and over 5 times the method's usual run. Hover a row's count for the details, including methods that run on a steady interval.</logs.spikes.desc>
+	<logs.header.percenttotal>Rows shown use {0} of the root, counting each row's own time once.</logs.header.percenttotal>
+	<logs.header.mstotal>Rows shown add up to {0} ms.</logs.header.mstotal>
+	<logs.header.maxtotal>Rows shown add up to {0} ms at their highest.</logs.header.maxtotal>
+	<logs.header.sorted>Sorted by this column. Click again for the default order.</logs.header.sorted>
+	<logs.header.clicktosort>Click to sort by this column.</logs.header.clicktosort>
+	<logs.rowbar.tip>Solid: {0} ms of its own time ({1} of the root). Faded: {2} ms including the profiled methods it calls ({3}). Averages over {4} samples, on the same scale as the bar at the top.</logs.rowbar.tip>
+
+	<!-- Where a patch ran -->
+	<phase.tick>tick</phase.tick>
+	<phase.update>update</phase.update>
+	<phase.interface>interface</phase.interface>
+	<phase.threads>other threads</phase.threads>
+	<phase.none>outside the game loop</phase.none>
+
+	<!-- Root and frame map -->
+	<unit.tick>tick</unit.tick>
+	<unit.ticks>ticks</unit.ticks>
+	<unit.frame>frame</unit.frame>
+	<unit.frames>frames</unit.frames>
+	<root.frame.title>Whole frame</root.frame.title>
+	<root.frame.noun>frame</root.frame.noun>
+	<root.tick.title>Game tick (TickManager.DoSingleTick)</root.tick.title>
+	<root.tick.noun>game tick</root.tick.noun>
+	<root.update.title>Frame update (Root_Play.Update)</root.update.title>
+	<root.update.noun>frame update</root.update.noun>
+	<root.heading>{0}: {1} ms per {2}, avg of last {3} {4}. Rows: {5} ms ({6})</root.heading>
+	<root.heading.tip>Every number in this tab is an average over the last {0} {1} (up to 2,000), measured inside the {2} only. Calls made outside it are not counted here.\n\nThe rows below use {3} ms of it, counting each row's own time once.</root.heading.tip>
+	<root.segment.tip>{0}\n{1} ms per {2} of its own time, {3} of the {4}</root.segment.tip>
+	<root.otherrows>{0} other rows</root.otherrows>
+	<root.rest.tip>The whole bar is the {0}. Each coloured part is one row's own time, not counting other rows inside it, so nested rows are only counted once. The bar under each row uses the same colour and scale. This dark part is time this list doesn't cover.</root.rest.tip>
+	<frame.tip.poll>PollEvents: the engine reading window, mouse and keyboard events.</frame.tip.poll>
+	<frame.tip.update>GameUpdate: the game's update. Root_Play.Update and every game tick run in here.</frame.tip.update>
+	<frame.tip.capture>CaptureFrame: building the frame to draw, including the map, the world and the interface (OnGUI).</frame.tip.capture>
+	<frame.tip.other>Other engine work: everything else the engine does each frame, such as GPU memory and render queue work.</frame.tip.other>
+	<frame.tip.waiting>Waiting for the next frame: the main thread is idle, held back by vsync or the frame rate cap. This is not a cost; it is the headroom left before the game would drop below that rate.</frame.tip.waiting>
+	<frame.waiting>waiting for next frame</frame.waiting>
+	<frame.segment.tip>{0}\n{1} ms per frame, {2} of the frame</frame.segment.tip>
+	<frame.ticksperframe>x {0} ticks per frame</frame.ticksperframe>
+	<frame.heading>Frame map: where the work in this tab happens inside one average frame of {0} ms ({1} fps, last {2} frames)</frame.heading>
+	<frame.heading.tip>A flame graph of one average frame, all on the same scale. The top bar is the engine's own breakdown: PollEvents, GameUpdate, CaptureFrame, other engine work, and waiting for the next frame. Under the part where this tab's root runs is the root itself, and under that the rows of this list, each by its own time. So the widths show how much of the whole frame what you are looking at really costs.</frame.heading.tip>
+	<frame.label.whole>Whole frame</frame.label.whole>
+	<frame.label.ticks>Game ticks</frame.label.ticks>
+	<frame.label.update>Frame update</frame.label.update>
+	<frame.label.tab>This tab</frame.label.tab>
+	<frame.root.tip>{0}: {1} ms per {2}{3} = {4} ms per frame, {5} of the frame. It runs inside GameUpdate.</frame.root.tip>
+	<frame.row.tip>{0}\n{1} ms per {2} of its own time{3} = {4} ms per frame.\n{5} of the {6}, {7} of the whole frame.</frame.row.tip>
+	<frame.tab.heading>This tab: {0}, {1} ms per {2}, avg of last {3} {4}. Rows: {5} ms ({6})</frame.tab.heading>
+	<frame.tab.heading.tip>Every number in this tab is an average over the last {0} {1} (up to 2,000), measured inside the {2} only. Calls made outside it are not counted here.\n\nThe rows below use {3} ms of it, counting each row's own time once. The bar under each row uses the same colour as its part of the flame graph above.</frame.tab.heading.tip>
+
+	<!-- Spike flags -->
+	<spike.every>Runs every {0} {1}.</spike.every>
+	<spike.one>1 spike in the last {0} {1}: worst {2} ms, usual run {3} ms.</spike.one>
+	<spike.many>{0} spikes in the last {1} {2}: worst {3} ms, usual run {4} ms.</spike.many>
+	<spike.notinterval>These are well above its usual run, so the interval doesn't explain them.</spike.notinterval>
+	<spike.heavy>Each run takes about {0} ms. That's normal for this method, but it causes a regular hitch.</spike.heavy>
+	<spike.light>Each run takes about {0} ms, so its time comes in bursts. That's expected.</spike.light>
+
+	<!-- Stack traces -->
+	<stack.trace>Trace callers</stack.trace>
+	<stack.trace.tip>Record which code paths call this method, sample by sample, so you can click a point below and see who made the calls in it. Ticking it again starts a fresh recording.</stack.trace.tip>
+	<stack.status.tracing>Tracing {0}: {1} stacks captured, {2} different paths. Pause the analyzer to hold the samples still.</stack.status.tracing>
+	<stack.status.stopped>Stopped: {0} stacks captured, {1} different paths.</stack.status.stopped>
+	<stack.status.idle>Tick 'Trace callers' to start recording.</stack.status.idle>
+	<stack.splitter.tip>Drag to resize the samples and the stacks below them.</stack.splitter.tip>
+	<stack.samples.hint>Click a sample to see its stacks, scroll to zoom at the mouse, drag to pan</stack.samples.hint>
+	<stack.samples.selected>Selected: {0} ago (click it again to show all)</stack.samples.selected>
+	<stack.sample.tip>{0} {1} ago: {2} ms, {3} calls</stack.sample.tip>
+	<stack.sample.none>No stacks recorded for this sample.</stack.sample.none>
+	<stack.sample.click>Click to see who made these calls.</stack.sample.click>
+	<stack.title.sample>Sample {0} {1} ago: {2} calls</stack.title.sample>
+	<stack.title.ontype>on {0}</stack.title.ontype>
+	<stack.title.sampled>split by caller from sampled stacks</stack.title.sampled>
+	<stack.title.all>All recorded samples</stack.title.all>
+	<stack.title.alltype>All recorded samples, calls on {0}</stack.title.alltype>
+	<stack.title.none>No stacks were recorded for the selected sample</stack.title.none>
+	<stack.col.calls>Calls</stack.col.calls>
+	<stack.col.patches>Patches</stack.col.patches>
+	<stack.col.calledfrom>Called from</stack.col.calledfrom>
+	<stack.col.method>Method</stack.col.method>
+	<stack.col.mod>Mod</stack.col.mod>
+	<stack.table.tip>Each row is one distinct call path into this method. Every call is counted. When a sample has many calls, stacks are captured for the first 128 and then for every 2nd, 4th, 8th... call, and each captured stack counts for the calls it stands for, so the split between callers is then an estimate that adds up to the real total. When the row you selected is one type of a shared method (such as Pawn under Tick Things), only calls on that type are recorded. Called from is the method that made the call. Patches counts the Harmony patches on every method along the path. Click a row to see its full call stack.</stack.table.tip>
+	<stack.select>Select a row to see its full call stack</stack.select>
+	<stack.full>Full call stack, nearest caller first. Click a method to profile it</stack.full>
+	<stack.menu.profile>Profile {0} (Custom {1})</stack.menu.profile>
+	<stack.menu.internal>Profile the methods {0} calls (Custom {1})</stack.menu.internal>
+	<stack.menu.patches>Profile the Harmony patches on {0} (Custom {1})</stack.menu.patches>
+	<stack.menu.copy>Copy</stack.menu.copy>
+	<stack.menu.dnspy>Open in dnSpy</stack.menu.dnspy>
 
 </LanguageData>

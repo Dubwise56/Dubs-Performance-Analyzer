@@ -61,8 +61,9 @@ namespace Analyzer.Profiling
             
             Array.Sort(calls);
             Array.Sort(times);
+            var offset = times.Length - entries;
             
-            for (var i = 0; i < entries; i++)
+            for (var i = offset; i < times.Length; i++)
             {
                 stats.TotalCalls += calls[i];
                 stats.TotalTime += times[i];
@@ -73,14 +74,14 @@ namespace Analyzer.Profiling
             stats.MeanTimePerUpdateCycle = stats.TotalTime / entries;
             stats.MeanCallsPerUpdateCycle = stats.TotalCalls / (float) entries;
 
-            var middle = entries / 2;
+            var middle = offset + entries / 2;
             // Medians
             stats.MedianTime = times[middle];
             stats.MedianCalls = calls[middle];
 
             // Max
-            stats.HighestTime = times[entries - 1];
-            stats.HighestCalls = calls[entries - 1];
+            stats.HighestTime = times[times.Length - 1];
+            stats.HighestCalls = calls[calls.Length - 1];
 
             // general
             stats.Entries = entries;

@@ -37,15 +37,18 @@ namespace Analyzer
             }
             else
             {
+                var options = new List<FloatMenuOption>();
+
                 if (Find.WindowStack.WindowOfType<Window_Analyzer>() == null && Modbase.isPatched)
                 {
-                    var options = new List<FloatMenuOption>()
-                    {
-                        new FloatMenuOption("Cleanup", () => Current.Game.GetComponent<GameComponent_Analyzer>().TimeTillCleanup = 0)
-                    };
-
-                    Find.WindowStack.Add(new FloatMenu(options));
+                    options.Add(new FloatMenuOption("Cleanup", () => Current.Game.GetComponent<GameComponent_Analyzer>().TimeTillCleanup = 0));
                 }
+#if V1_7
+                options.Add(new FloatMenuOption(Strings.frameprofiler_button, Profiling.VanillaProfilerMirror.ToggleWindow));
+#endif
+
+                if (options.Count > 0)
+                    Find.WindowStack.Add(new FloatMenu(options));
             }
         }
     }

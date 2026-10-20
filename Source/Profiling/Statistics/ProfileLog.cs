@@ -18,6 +18,11 @@ namespace Analyzer.Profiling
         public Type type;
         public MethodBase meth;
         public bool pinned;
+        public double self;
+        public int spike;
+        public int spikes;
+        public string spikeText;
+        public int seenIn;
 
         public ProfileLog(int entries, string label, double average, float max, string key, float total, float calls, float maxCalls, Type type, MethodBase meth = null, bool pinned = false)
         {

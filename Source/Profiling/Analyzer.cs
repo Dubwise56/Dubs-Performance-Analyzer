@@ -26,6 +26,7 @@ namespace Analyzer.Profiling
         private static Comparer<ProfileLog> nameComparer = Comparer<ProfileLog>.Create((first, second) => string.Compare(first.label, second.label));
         private static Comparer<ProfileLog> totalComparer = Comparer<ProfileLog>.Create((first, second) => first.total < second.total ? 1 : -1);
         private static Comparer<ProfileLog> callspuComparer = Comparer<ProfileLog>.Create((first, second) => (first.calls/first.entries) < (second.calls/second.entries) ? 1 : -1);
+        private static Comparer<ProfileLog> spikesComparer = Comparer<ProfileLog>.Create((first, second) => first.spikes != second.spikes ? (first.spikes < second.spikes ? 1 : -1) : first.spike != second.spike ? (first.spike < second.spike ? 1 : -1) : (first.average < second.average ? 1 : -1));
 
         private static object logicSync = new object();
 
@@ -84,11 +85,12 @@ namespace Analyzer.Profiling
                 SortBy.Name => nameComparer,
                 SortBy.Total => totalComparer,
                 SortBy.CallsPu => callspuComparer,
+                SortBy.Spikes => spikesComparer,
                 _ => averageComparer // default to order by average
             };
 
             var profilesCopy = new Dictionary<string, Profiler>(profiles);
-            var updateAverage = ProfileController.updateAverage;
+            var updateAverage = ProfileController.CollectRootAverage(currentLogCount);
             Task.Factory.StartNew(() => ProfileCalculations(profilesCopy, currentLogCount, updateAverage, comparer));
         }
 
@@ -146,17 +148,15 @@ namespace Analyzer.Profiling
                     continue;
 
                 // o(m)
-                value.CollectStatistics(Mathf.Min(currentLogCount, MAX_LOG_COUNT - 1), out var average, out var max, out var total, out var calls, out var maxCalls);
+                value.CollectStatistics(currentLogCount, out var average, out var max, out var total, out var calls, out var maxCalls);
                 if (value.Empty)
                     continue;
 
                 var key = value.key;
-                if ((object)key == H_RootUpdate.GameUpdateKey)
-                    updateAverage = average;
-                else if ((object)key == H_RootUpdate.FrameTimeKey)
-                    calls++;
                 
-                newLogs.Add(new(currentLogCount, value.label, average, (float)max, key, (float)total, calls, maxCalls, value.type, value.meth, value.pinned));
+                var spike = value.FindSpikes(currentLogCount, GUIController.CurrentCategory == Category.Tick ? Strings.unit_ticks : Strings.unit_frames, out var spikeText, out var spikeCount);
+                newLogs.Add(new(currentLogCount, value.label, average, (float)max, key, (float)total, calls, maxCalls, value.type, value.meth, value.pinned)
+                    { self = Math.Max(0d, average - value.ChildAverage(currentLogCount)), spike = spike, spikeText = spikeText, spikes = spikeCount, seenIn = value.seenIn });
             }
 
             var sortedLogs = new List<ProfileLog>(newLogs.Count);

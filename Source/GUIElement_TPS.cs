@@ -46,7 +46,7 @@ namespace Analyzer
                     prevFrames = 0;
                 }
             }
-            prevFrames++;
+            if (Event.current.type == EventType.Repaint) prevFrames++;
 
             if (disableTPSCounter)
                 return;

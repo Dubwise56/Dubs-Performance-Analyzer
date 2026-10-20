@@ -21,6 +21,7 @@ namespace Analyzer.Profiling
         private static bool midUpdate = false;
 
         private static float deltaTime = 0.0f;
+        private static int lastFrame = -1;
         public static float updateFrequency => 1 / Settings.updatesPerSecond; // how many ms per update (capped at every 0.05ms)
 
         public static ConcurrentDictionary<string, Profiler> Profiles => profiles;
@@ -30,9 +31,28 @@ namespace Analyzer.Profiling
         private static readonly object ilProfilerLock = new();
 
         private static Stopwatch rootProf = new Stopwatch();
-        private static float prevSample = 0.0f;
-        private static int hits = 0;
+        private static readonly double[] rootTimes = new double[Profiler.RECORDS_HELD];
+        private static uint rootIndex = 0;
         public static float updateAverage;
+        public static long cycle;
+        public static bool WholeFrameRoot => GUIController.CurrentCategory is Category.GUI or Category.Patches;
+
+        public const int PhaseTick = 1, PhaseUpdate = 2, PhaseGUI = 4, PhaseThread = 8;
+        public static int phase, gate;
+
+        public static bool Gated
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => gate != 0 && (phase & gate) == 0 && UnityData.IsInMainThread;
+        }
+
+        public static int GateFor(Category category) => category switch
+        {
+            Category.Tick => PhaseTick,
+            Category.Update => PhaseUpdate | PhaseTick,
+            Category.GUI => PhaseGUI,
+            _ => 0
+        };
         
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -84,6 +104,19 @@ namespace Analyzer.Profiling
                 prof.Stop();
         }
 
+        public static float CollectRootAverage(int entries)
+        {
+            double total = 0;
+            var index = rootIndex;
+            for (var i = 0; i < entries; i++)
+            {
+                index = (index + Profiler.RECORDS_HELD - 1) % Profiler.RECORDS_HELD;
+                total += rootTimes[index];
+            }
+
+            return updateAverage = (float)(total / entries);
+        }
+
         // Mostly here for book keeping, optimised out of a release build.
         public static void BeginUpdate()
         {
@@ -104,23 +137,22 @@ namespace Analyzer.Profiling
             if (Analyzer.CurrentlyPaused) return;
             
             rootProf.Stop();
-            hits++;
+            rootTimes[rootIndex] = WholeFrameRoot ? Time.unscaledDeltaTime * 1000.0 : rootProf.Elapsed.TotalMilliseconds;
+            rootIndex = (rootIndex + 1) % Profiler.RECORDS_HELD;
+            rootProf.Reset();
 
             Analyzer.UpdateCycle(); // Update all our profilers, record measurements
+            cycle++;
 
-            deltaTime += Time.deltaTime;
+            if (lastFrame != Time.frameCount)
+            {
+                lastFrame = Time.frameCount;
+                deltaTime += Time.deltaTime;
+            }
             if (deltaTime >= updateFrequency)
             {
                 Analyzer.FinishUpdateCycle(); // Process the information for all our profilers.
                 deltaTime -= updateFrequency;
-            }
-
-            if (Time.time - prevSample >= 1)
-            {
-                prevSample = Time.time;
-                updateAverage = (rootProf.ElapsedMilliseconds / (float)hits);
-                hits = 0;
-                rootProf.Reset();
             }
             
             midUpdate = false;

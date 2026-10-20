@@ -116,5 +116,106 @@ namespace Analyzer
         public static string panel_patch_type => "panel.patch.type".Tr();
         public static string panel_opengithub => "panel.opengithub".Tr();
         public static string panel_opendnspy => "panel.opendnspy".Tr();
+
+        // Frame Profiler buttons
+        public static string frameprofiler_button => "frameprofiler.button".Tr();
+        public static string frameprofiler_open => "frameprofiler.open".Tr();
+        public static string frameprofiler_button_tip => "frameprofiler.button.tip".Tr();
+
+        // Patches tab
+        public static string tab_patches => "tab.patches".Tr();
+        public static string tab_patches_desc => "tab.patches.desc".Tr();
+
+        // Log columns
+        public static string logs_spikes => "logs.spikes".Tr();
+        public static string logs_spikes_desc => "logs.spikes.desc".Tr();
+        public static string logs_header_percenttotal(string pct) => "logs.header.percenttotal".Translate(pct);
+        public static string logs_header_mstotal(string ms) => "logs.header.mstotal".Translate(ms);
+        public static string logs_header_maxtotal(string ms) => "logs.header.maxtotal".Translate(ms);
+        public static string logs_header_sorted => "logs.header.sorted".Tr();
+        public static string logs_header_clicktosort => "logs.header.clicktosort".Tr();
+        public static string logs_rowbar_tip(string self, string selfPct, string avg, string avgPct, string entries) => "logs.rowbar.tip".Translate(self, selfPct, avg, avgPct, entries);
+
+        // Where a patch ran
+        public static string phase_tick => "phase.tick".Tr();
+        public static string phase_update => "phase.update".Tr();
+        public static string phase_interface => "phase.interface".Tr();
+        public static string phase_threads => "phase.threads".Tr();
+        public static string phase_none => "phase.none".Tr();
+
+        // Root and frame map
+        public static string unit_tick => "unit.tick".Tr();
+        public static string unit_ticks => "unit.ticks".Tr();
+        public static string unit_frame => "unit.frame".Tr();
+        public static string unit_frames => "unit.frames".Tr();
+        public static string root_frame_title => "root.frame.title".Tr();
+        public static string root_frame_noun => "root.frame.noun".Tr();
+        public static string root_tick_title => "root.tick.title".Tr();
+        public static string root_tick_noun => "root.tick.noun".Tr();
+        public static string root_update_title => "root.update.title".Tr();
+        public static string root_update_noun => "root.update.noun".Tr();
+        public static string root_heading(string title, string ms, string unit, string samples, string units, string listed, string pct) => "root.heading".Translate(title, ms, unit, samples, units, listed, pct);
+        public static string root_heading_tip(string samples, string units, string noun, string listed) => "root.heading.tip".Translate(samples, units, noun, listed);
+        public static string root_segment_tip(string label, string ms, string unit, string pct, string noun) => "root.segment.tip".Translate(label, ms, unit, pct, noun);
+        public static string root_otherrows(string count) => "root.otherrows".Translate(count);
+        public static string root_rest_tip(string noun) => "root.rest.tip".Translate(noun);
+        public static string frame_tip_poll => "frame.tip.poll".Tr();
+        public static string frame_tip_update => "frame.tip.update".Tr();
+        public static string frame_tip_capture => "frame.tip.capture".Tr();
+        public static string frame_tip_other => "frame.tip.other".Tr();
+        public static string frame_tip_waiting => "frame.tip.waiting".Tr();
+        public static string frame_waiting => "frame.waiting".Tr();
+        public static string frame_segment_tip(string tip, string ms, string pct) => "frame.segment.tip".Translate(tip, ms, pct);
+        public static string frame_ticksperframe(string ticks) => "frame.ticksperframe".Translate(ticks);
+        public static string frame_heading(string ms, string fps, string samples) => "frame.heading".Translate(ms, fps, samples);
+        public static string frame_heading_tip => "frame.heading.tip".Tr();
+        public static string frame_label_whole => "frame.label.whole".Tr();
+        public static string frame_label_ticks => "frame.label.ticks".Tr();
+        public static string frame_label_update => "frame.label.update".Tr();
+        public static string frame_label_tab => "frame.label.tab".Tr();
+        public static string frame_root_tip(string title, string ms, string unit, string ticks, string frameMs, string pct) => "frame.root.tip".Translate(title, ms, unit, ticks, frameMs, pct);
+        public static string frame_row_tip(string label, string ms, string unit, string ticks, string frameMs, string rootPct, string noun, string framePct) => "frame.row.tip".Translate(label, ms, unit, ticks, frameMs, rootPct, noun, framePct);
+        public static string frame_tab_heading(string title, string ms, string unit, string samples, string units, string listed, string pct) => "frame.tab.heading".Translate(title, ms, unit, samples, units, listed, pct);
+        public static string frame_tab_heading_tip(string samples, string units, string noun, string listed) => "frame.tab.heading.tip".Translate(samples, units, noun, listed);
+
+        // Spike flags
+        public static string spike_every(string interval, string units) => "spike.every".Translate(interval, units);
+        public static string spike_one(string entries, string units, string worst, string usual) => "spike.one".Translate(entries, units, worst, usual);
+        public static string spike_many(string count, string entries, string units, string worst, string usual) => "spike.many".Translate(count, entries, units, worst, usual);
+        public static string spike_notinterval => "spike.notinterval".Tr();
+        public static string spike_heavy(string usual) => "spike.heavy".Translate(usual);
+        public static string spike_light(string usual) => "spike.light".Translate(usual);
+
+        // Stack traces
+        public static string stack_trace => "stack.trace".Tr();
+        public static string stack_trace_tip => "stack.trace.tip".Tr();
+        public static string stack_status_tracing(string method, string captured, string paths) => "stack.status.tracing".Translate(method, captured, paths);
+        public static string stack_status_stopped(string captured, string paths) => "stack.status.stopped".Translate(captured, paths);
+        public static string stack_status_idle => "stack.status.idle".Tr();
+        public static string stack_splitter_tip => "stack.splitter.tip".Tr();
+        public static string stack_samples_hint => "stack.samples.hint".Tr();
+        public static string stack_samples_selected(string distance) => "stack.samples.selected".Translate(distance);
+        public static string stack_sample_tip(string distance, string units, string ms, string calls) => "stack.sample.tip".Translate(distance, units, ms, calls);
+        public static string stack_sample_none => "stack.sample.none".Tr();
+        public static string stack_sample_click => "stack.sample.click".Tr();
+        public static string stack_title_sample(string distance, string units, string calls) => "stack.title.sample".Translate(distance, units, calls);
+        public static string stack_title_ontype(string type) => "stack.title.ontype".Translate(type);
+        public static string stack_title_sampled => "stack.title.sampled".Tr();
+        public static string stack_title_all => "stack.title.all".Tr();
+        public static string stack_title_alltype(string type) => "stack.title.alltype".Translate(type);
+        public static string stack_title_none => "stack.title.none".Tr();
+        public static string stack_col_calls => "stack.col.calls".Tr();
+        public static string stack_col_patches => "stack.col.patches".Tr();
+        public static string stack_col_calledfrom => "stack.col.calledfrom".Tr();
+        public static string stack_col_method => "stack.col.method".Tr();
+        public static string stack_col_mod => "stack.col.mod".Tr();
+        public static string stack_table_tip => "stack.table.tip".Tr();
+        public static string stack_select => "stack.select".Tr();
+        public static string stack_full => "stack.full".Tr();
+        public static string stack_menu_profile(string method, string category) => "stack.menu.profile".Translate(method, category);
+        public static string stack_menu_internal(string method, string category) => "stack.menu.internal".Translate(method, category);
+        public static string stack_menu_patches(string method, string category) => "stack.menu.patches".Translate(method, category);
+        public static string stack_menu_copy => "stack.menu.copy".Tr();
+        public static string stack_menu_dnspy => "stack.menu.dnspy".Tr();
     }
 }

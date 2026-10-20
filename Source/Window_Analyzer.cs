@@ -26,11 +26,11 @@ namespace Analyzer
 		public const float TOP_ROW_HEIGHT = 24f;
 		public const float handleRect = 18f;
 
-		public static Vector2 Initial = new Vector2(890, 650);
+		public static Vector2 Initial = new Vector2(1150, 860);
 		public override Vector2 InitialSize => Initial;
 		public override float Margin => 0;
 		public static bool firstOpen = true;
-		public static float GraphHeight = 220f;
+		public static float GraphHeight = 320f;
 		public static bool draggingGraph;
 
 
@@ -56,7 +56,8 @@ namespace Analyzer
 
 		public override void SetInitialSizeAndPosition()
 		{
-			windowRect = new Rect(50f, (UI.screenHeight - InitialSize.y) / 2f, InitialSize.x, InitialSize.y);
+			var size = new Vector2(Mathf.Min(InitialSize.x, UI.screenWidth - 100f), Mathf.Min(InitialSize.y, UI.screenHeight - 60f));
+			windowRect = new Rect(50f, (UI.screenHeight - size.y) / 2f, size.x, size.y);
 			windowRect = windowRect.Rounded();
 		}
 
@@ -89,6 +90,19 @@ namespace Analyzer
 			Modbase.Harmony.Patch(AccessTools.Method(typeof(TickManager), nameof(TickManager.DoSingleTick)),
 				prefix: new HarmonyMethod(typeof(H_DoSingleTickUpdate), nameof(H_DoSingleTickUpdate.Prefix)),
 				postfix: new HarmonyMethod(typeof(H_DoSingleTickUpdate), nameof(H_DoSingleTickUpdate.Postfix)));
+
+			Modbase.Harmony.Patch(AccessTools.Method(typeof(Root), nameof(Root.OnGUI)),
+				prefix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.GUIPrefix)),
+				postfix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.GUIPostfix)));
+
+#if V1_7
+			// Waylith draws window contents (Window.DoWindowContents, inspect tabs, dialogs) in a separate pass during CaptureFrame, outside Root.OnGUI
+			var pendingWindows = AccessTools.Method(typeof(GUI), "RunPendingWindows");
+			if (pendingWindows != null)
+				Modbase.Harmony.Patch(pendingWindows,
+					prefix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.GUIPrefix)),
+					postfix: new HarmonyMethod(typeof(H_RootUpdate), nameof(H_RootUpdate.GUIPostfix)));
+#endif
 
 			Modbase.isPatched = true;
 

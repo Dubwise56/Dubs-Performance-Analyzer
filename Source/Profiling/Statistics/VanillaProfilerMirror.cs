@@ -1,6 +1,8 @@
 ﻿#if V1_7
 using System;
 using System.Collections.Generic;
+using Verse;
+using Verse.ProfilerUI;
 using Waylith.Profiling;
 
 namespace Analyzer.Profiling
@@ -15,10 +17,14 @@ namespace Analyzer.Profiling
         public static bool Active => enabled && FrameProfiler.IsCapturing;
         public static bool Used => used;
 
+        public static void ToggleWindow()
+        {
+            if (!Find.WindowStack.TryRemove(typeof(Window_FrameProfiler)))
+                Find.WindowStack.Add(new Window_FrameProfiler());
+        }
+
         public static void Enter(Profiler profiler)
         {
-            if ((object)profiler.key == H_RootUpdate.FrameTimeKey) return;
-
             if (profiler.vanillaLabel < 0)
                 profiler.vanillaLabel = FrameProfiler.GetOrCreateLabelId("PA: " + profiler.label).Value;
 

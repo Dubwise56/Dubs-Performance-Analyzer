@@ -156,6 +156,7 @@ namespace Analyzer.Profiling
             len = Mathf.Min(file.header.targetEntries - file.header.entries, len);
 
             if (len == 0) {
+                prevIdx++;
                 return idx;
             }
             Array.Fill(file.times, prof.times[prevIdx] / prof.hits[prevIdx], idx, len);
@@ -168,6 +169,7 @@ namespace Analyzer.Profiling
 
         private int EntriesWithValues(Profiler prof, int idx) {
             if (prof.hits[prevIdx] <= 0) {
+                prevIdx++;
                 return idx;
             }
             

@@ -44,6 +44,8 @@ namespace Analyzer.Profiling
 			DubGUI.Checkbox(Strings.settings_disable_threading, listing, ref Settings.disableThreadedPatching);
 #if V1_7
 			DubGUI.Checkbox("Mirror timings to the vanilla Frame Profiler", listing, ref VanillaProfilerMirror.enabled);
+			if (listing.ButtonText(Strings.frameprofiler_open))
+				VanillaProfilerMirror.ToggleWindow();
 #endif
 
 			var s = Strings.settings_disable_cleanup;

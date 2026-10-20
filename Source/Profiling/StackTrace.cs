@@ -178,24 +178,73 @@ namespace Analyzer.Profiling
             }
         }
 
-        public static void Add(StackTrace trace)
+        public class SlotTraces
+        {
+            public long cycle = -1;
+            public float weight;
+            public int calls;
+            public bool sampled;
+            public readonly Dictionary<long, float> counts = new();
+        }
+
+        public static readonly object sync = new();
+        public static readonly SlotTraces[] slots = new SlotTraces[Profiler.RECORDS_HELD];
+        public static int captured;
+
+        public static void Add(StackTrace trace, float weight, uint slot, long cycle, int calls)
         {
             long seed = 0x9e3779b9;
-            
-            foreach (var m in trace.GetFrames().Select(s => s.GetMethod()))
+
+            foreach (var m in trace.GetFrames().Select(s => s.GetMethod()).Where(m => m?.DeclaringType != typeof(Panel_StackTraces)))
             {
                 seed ^= m.GetHashCode() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
             }
-            
 
-            if(traces.TryGetValue(seed, out var value)) value.Count++;
-            else traces.Add(seed, new StackTraceInformation(trace));
+            lock (sync)
+            {
+                if (traces.TryGetValue(seed, out var value)) value.Weight += weight;
+                else traces.Add(seed, new StackTraceInformation(trace) { Weight = weight });
+
+                var s = Slot(slot, cycle);
+                s.counts[seed] = s.counts.TryGetValue(seed, out var w) ? w + weight : weight;
+                s.weight += weight;
+                s.calls = Math.Max(s.calls, calls);
+                s.sampled |= weight > 1;
+                captured++;
+            }
+        }
+
+        public static void SetCalls(uint slot, long cycle, int calls)
+        {
+            lock (sync)
+            {
+                var s = Slot(slot, cycle);
+                s.calls = Math.Max(s.calls, calls);
+            }
+        }
+
+        private static SlotTraces Slot(uint slot, long cycle)
+        {
+            var s = slots[slot] ??= new SlotTraces();
+            if (s.cycle == cycle) return s;
+
+            s.cycle = cycle;
+            s.weight = 0;
+            s.calls = 0;
+            s.sampled = false;
+            s.counts.Clear();
+            return s;
         }
 
         public static void Reset()
         {
-            cachedStrings.Clear();
-            traces.Clear();
+            lock (sync)
+            {
+                cachedStrings.Clear();
+                traces.Clear();
+                Array.Clear(slots, 0, slots.Length);
+                captured = 0;
+            }
         }
 
         public static void RegisterHarmonyId(string harmonyid, Assembly assembly)
@@ -355,30 +404,25 @@ namespace Analyzer.Profiling
     public class StackTraceInformation
     {
         private List<MethodMeta> methods;
-        
-        public int Count { get; set; } = 1;
-        public int Depth { get; private set; } = 0;
+        private StackTrace input;
+
+        public float Weight { get; set; }
+        public int Count => (int)Math.Round(Weight);
+        public int Depth { get { Process(); return methods.Count - 1; } }
         public string Header { get; set; } = "";
-        public int ModsInvolved { get; private set; } = 0;
+        public int ModsInvolved { get { Process(); return methods.Sum(m => m?.Patches ?? 0); } }
 
-        public int LongestMethod { get; private set; } = 0;
-        public int LongestSummary { get; private set; } = 0;
+        public MethodMeta Method(int depth) { Process(); return depth >= 0 && depth < methods.Count ? methods[depth] : null; }
+        public IEnumerable<MethodMeta> Methods { get { Process(); return methods; } }
 
-        public MethodMeta Method(int depth) => methods[depth];
-        public IEnumerable<MethodMeta> Methods => methods;
+        public StackTraceInformation(StackTrace input) => this.input = input;
 
-        public StackTraceInformation(StackTrace input) => ProcessInput(input);
-
-        private void ProcessInput(StackTrace stackTrace)
+        private void Process()
         {
-            // Translate our input into the strings we will want to show the user
-            _ = StackTraceUtility.GetStackTraceString(stackTrace, out methods);
-
-            Depth = methods.Count - 1;
-
-            LongestMethod = methods.Max(t => (int)t.MethodString.GetWidthCached());
-            LongestSummary = methods.Max(t => (int)t.SummaryString.GetWidthCached());
-            ModsInvolved = methods.Sum(m => m.Patches);
+            if (methods != null) return;
+            _ = StackTraceUtility.GetStackTraceString(input, out methods);
+            methods.RemoveAll(m => m == null || m.method.DeclaringType == typeof(Panel_StackTraces));
+            input = null;
         }
     }
 

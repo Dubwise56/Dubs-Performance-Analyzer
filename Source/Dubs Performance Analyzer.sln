@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dubs Performance Analyzer.1
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dubs Performance Analyzer.1.6", "Dubs Performance Analyzer.1.6.csproj", "{C08A9D0F-729B-44B2-B06E-78654C6772D7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dubs Performance Analyzer.1.7", "Dubs Performance Analyzer.1.7.csproj", "{7103D761-60E9-4CFB-884C-5C69D220E2E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,13 +16,13 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{6EB466C5-07AA-4BF1-81FA-8FDD5C88F4A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6EB466C5-07AA-4BF1-81FA-8FDD5C88F4A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6EB466C5-07AA-4BF1-81FA-8FDD5C88F4A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6EB466C5-07AA-4BF1-81FA-8FDD5C88F4A9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C08A9D0F-729B-44B2-B06E-78654C6772D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C08A9D0F-729B-44B2-B06E-78654C6772D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C08A9D0F-729B-44B2-B06E-78654C6772D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C08A9D0F-729B-44B2-B06E-78654C6772D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7103D761-60E9-4CFB-884C-5C69D220E2E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7103D761-60E9-4CFB-884C-5C69D220E2E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7103D761-60E9-4CFB-884C-5C69D220E2E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7103D761-60E9-4CFB-884C-5C69D220E2E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

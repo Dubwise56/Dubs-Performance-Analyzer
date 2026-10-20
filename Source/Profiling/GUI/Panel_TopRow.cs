@@ -37,6 +37,13 @@ namespace Analyzer.Profiling
 
             var searchbox = rect.LeftPartPixels(rect.width - 300f);
             searchbox.x += 25f;
+#if V1_7
+            searchbox.width -= 110f;
+            var profilerButton = new Rect(searchbox.xMax + 5f, searchbox.y, 100f, searchbox.height);
+            if (Widgets.ButtonText(profilerButton, Strings.frameprofiler_button))
+                VanillaProfilerMirror.ToggleWindow();
+            TooltipHandler.TipRegion(profilerButton, Strings.frameprofiler_button_tip);
+#endif
 
             DubGUI.InputField(searchbox, Strings.top_search, ref TimesFilter, DubGUI.MintSearch);
 

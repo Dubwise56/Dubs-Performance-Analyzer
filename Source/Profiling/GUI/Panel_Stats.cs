@@ -75,7 +75,7 @@ namespace Analyzer.Profiling
             sb.AppendLine($"Avg Time/{cat}:".Colorize(Color.grey) + $" {stats.MeanTimePerUpdateCycle:0.000}ms");
 
             sb.AppendLine($"Median Calls:".Colorize(Color.grey) + $" {stats.MedianCalls}");
-            sb.AppendLine($"Median Time:".Colorize(Color.grey) + $" {stats.MedianTime}");
+            sb.AppendLine($"Median Time:".Colorize(Color.grey) + $" {stats.MedianTime:0.000}ms");
             sb.AppendLine($"Max Time:".Colorize(Color.grey) + $" {stats.HighestTime:0.000}ms");
             sb.AppendLine($"Max Calls/{cat}:".Colorize(Color.grey) + $" {stats.HighestCalls}");
 

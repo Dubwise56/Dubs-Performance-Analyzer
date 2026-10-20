@@ -51,7 +51,11 @@ namespace Analyzer.Profiling
             if (Mouse.IsOver(rect) && Event.current.isScrollWheel &&
                 (Input.mouseScrollDelta.y > 0f || Input.mouseScrollDelta.y < 0f))
             {
-                entryCount = Mathf.Clamp(entryCount - (int)(Input.mouseScrollDelta.y * 100), 100, 2000);
+                var fromRight = 1f - Mathf.Clamp01((Event.current.mousePosition.x - rect.x) / rect.width);
+                var anchor = settings.offsets.x + fromRight * entryCount;
+                entryCount = Mathf.Clamp(entryCount - (int)(Input.mouseScrollDelta.y * entryCount * 0.2f), 20, 2000);
+                settings.offsets.x = Mathf.Clamp(anchor - fromRight * entryCount, 0, Mathf.Max(0, Analyzer.GetCurrentLogCount - entryCount));
+                Event.current.Use();
             }
 
             var stub = Vector2.right;
@@ -226,12 +230,12 @@ namespace Analyzer.Profiling
         internal int SetupArrays()
         {
             var entries = Mathf.Min(Analyzer.GetCurrentLogCount, entryCount);
-            settings.offsets.x = Mathf.Clamp(settings.offsets.x, 0, entryCount);
+            settings.offsets.x = Mathf.Clamp(settings.offsets.x, 0, Mathf.Max(0, Analyzer.GetCurrentLogCount - entries));
 
 
             var i = entries;
             var prof = GUIController.CurrentProfiler;
-            var arrayIndex = prof.currentIndex;
+            var arrayIndex = (prof.currentIndex + Profiler.RECORDS_HELD - 1) % Profiler.RECORDS_HELD;
 
             // arrayIndex = 300
             // offset = 400

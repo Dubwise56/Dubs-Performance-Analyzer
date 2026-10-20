@@ -33,6 +33,7 @@ namespace Analyzer.Profiling
             TranspilerMethodUtility.ClearCaches();
 
             MethodInfoCache.ClearCache();
+            H_TickListTick.isPatched = false;
 
 #if DEBUG
             ThreadSafeLogger.Message("[Analyzer] Cleared all caches");
@@ -139,7 +140,8 @@ namespace Analyzer.Profiling
 
             if (IsGenericType(type))
             {
-                var sb = new StringBuilder(tName.Substring(0, tName.IndexOf('`')));
+                var tick = tName.IndexOf('`');
+                var sb = new StringBuilder(tick < 0 ? tName : tName.Substring(0, tick));
                 sb.Append('<');
                 var first = true;
                 foreach (var t in type.GenericTypeArguments)

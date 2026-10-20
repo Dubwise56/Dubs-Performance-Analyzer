@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using HarmonyLib;
 using UnityEngine;
 using Verse;
@@ -13,344 +11,411 @@ namespace Analyzer.Profiling
 {
     public class Panel_StackTraces : IBottomTabRow
     {
-        // called from the postfix which is applied which captures the stack trace, hence why it is static
         public static bool currentlyTracking = false;
-        public static int currentTrackedStacktraces = 0;
-        
-        private const int GOAL_TRACKED_TRACES = 100_000;
-        private long currentTrace = 0;
-        private MethodInfo currentMethod = null;
-        private MethodInfo postfix = typeof(Panel_StackTraces).GetMethod(nameof(StacktracePostfix), BindingFlags.Public | BindingFlags.Static);
-        private StackTraceInformation CurrentTrace => (currentTrace == 0) ? null : StackTraceUtility.traces[currentTrace];
-        private Vector2 scrollPosition = Vector2.zero;
+        public static int currentTrackedStacktraces => StackTraceUtility.captured;
+
+        private const int CaptureStep = 128, CaptureCap = 2048;
+        private const float RowHeight = 18f;
+
+        private static Profiler tracedProfiler;
+        private static Type filterType;
+        private static long postfixCycle = -1;
+        private static uint postfixSlot;
+        private static int cycleCalls, cycleCaptures, rate = 1;
+
+        private readonly MethodInfo postfix = typeof(Panel_StackTraces).GetMethod(nameof(StacktracePostfix), BindingFlags.Public | BindingFlags.Static);
+        private readonly MethodInfo postfixInstance = typeof(Panel_StackTraces).GetMethod(nameof(StacktracePostfixInstance), BindingFlags.Public | BindingFlags.Static);
+        private MethodInfo currentMethod;
+
+        private int stripCount = 300, stripOffset;
+        private long selectedTrace, selectedCycle = -1;
+        private float stripHeight = 80f, dragStartX, dragStartOffset;
+        private bool draggingSplitter, draggingStrip, dragMoved;
+
+        private int selectedDistance
+        {
+            get => selectedCycle < 0 ? 0 : (int)(ProfileController.cycle - selectedCycle);
+            set => selectedCycle = value <= 0 ? -1 : ProfileController.cycle - value;
+        }
+        private Vector2 tableScroll, stackScroll;
 
         public void ResetState(GeneralInformation? info)
         {
             currentlyTracking = false;
-            currentTrace = 0;
-            currentTrackedStacktraces = 0;
+            tracedProfiler = null;
+            selectedDistance = 0;
+            selectedTrace = 0;
             currentMethod = null;
-            scrollPosition = Vector2.zero;
+            tableScroll = stackScroll = Vector2.zero;
 
-            if (info == null) return; 
-            
+            if (info == null) return;
+
             StackTraceUtility.Reset();
             Modbase.Harmony.CreateProcessor(info.Value.method).Unpatch(postfix);
+            Modbase.Harmony.CreateProcessor(info.Value.method).Unpatch(postfixInstance);
         }
 
         public void Draw(Rect rect, GeneralInformation? info)
         {
             if (info == null || info.Value.method == null) return;
             currentMethod = info.Value.method as MethodInfo;
-            
-            var panelWidth = Mathf.Clamp(rect.width / 4, 0, 65);
-            var leftHandPanel = rect.LeftPartPixels(panelWidth);
-            rect.AdjustHorizonallyBy(panelWidth + 4f);
-            DrawLeftColumn(leftHandPanel, currentMethod);
-            
-            var statusBox = rect.TopPartPixels(30f);
-            rect.AdjustVerticallyBy(30f);
-            DrawCurrentStatus(statusBox, currentMethod);
 
-            if (currentTrace == 0)
+            var font = Text.Font;
+            Text.Font = GameFont.Tiny;
+            Text.WordWrap = false;
+            rect = rect.ContractedBy(2f);
+            if (selectedDistance >= Profiler.RECORDS_HELD || selectedDistance > Analyzer.GetCurrentLogCount) selectedDistance = 0;
+
+            try
             {
-                if(StackTraceUtility.traces.Count > 0)
-                    currentTrace = StackTraceUtility.traces.MaxBy(t => t.Value.Count).Key;
-            } else
+
+            DrawToolbar(rect.TopPartPixels(22f), currentMethod);
+            rect.AdjustVerticallyBy(24f);
+
+            stripHeight = Mathf.Clamp(stripHeight, 30f, Mathf.Max(30f, rect.height - 80f));
+            var strip = rect.TopPartPixels(stripHeight);
+            DrawSamples(strip);
+            DrawSplitter(new Rect(rect.x, strip.yMax, rect.width, 8f));
+            rect.AdjustVerticallyBy(strip.height + 8f);
+
+            var table = rect.LeftPartPixels(rect.width * 0.55f);
+            DrawTable(table);
+            DrawStack(rect with { xMin = table.xMax + 6f });
+            }
+            finally
             {
-                DrawStackTrace(rect, StackTraceUtility.traces[currentTrace]);
-            } 
+                Text.Font = font;
+                Text.WordWrap = true;
+                Text.Anchor = TextAnchor.UpperLeft;
+                GUI.color = Color.white;
+            }
         }
 
-        // Vertical strip along the top of the UI informing the user of the current 
-        // status of the patching
-        private void DrawCurrentStatus(Rect statusBox, MethodInfo method)
+        private void DrawToolbar(Rect rect, MethodInfo method)
         {
-            const string activeTemplate = "Tracing; {0:#,##0.##} traces collected";
-            const string idleTemplate = "Idle";
-            const string inactiveTemplate = "Finished; {0:#,##0.##} traces collected";
-            const string traceInformationTempate = "Calls: {0:#,##0.##} ({1:P}), Mods Involved {2}  ";
-            
-            var status = "";
+            var tracking = currentlyTracking;
+            var toggle = rect.LeftPartPixels(Text.CalcSize(Strings.stack_trace).x + 34f);
+            Widgets.CheckboxLabeled(toggle, Strings.stack_trace, ref tracking, placeCheckboxNearText: true);
+            TooltipHandler.TipRegion(toggle, Strings.stack_trace_tip);
+            if (tracking != currentlyTracking) SetTracking(method, tracking);
+            rect.AdjustHorizonallyBy(toggle.width + 10f);
 
-            if (currentlyTracking)
-                status = string.Format(activeTemplate, currentTrackedStacktraces);
-            else
+            Text.Anchor = TextAnchor.MiddleLeft;
+            var status = currentlyTracking
+                ? Strings.stack_status_tracing(Utility.GetSignature(method, false), StackTraceUtility.captured.ToString("N0"), StackTraceUtility.traces.Count.ToString("N0"))
+                : StackTraceUtility.captured > 0 ? Strings.stack_status_stopped(StackTraceUtility.captured.ToString("N0"), StackTraceUtility.traces.Count.ToString("N0")) : Strings.stack_status_idle;
+            Widgets.Label(rect, status.Truncate(rect.width));
+            Text.Anchor = TextAnchor.UpperLeft;
+        }
+
+        private void SetTracking(MethodInfo method, bool on)
+        {
+            Modbase.Harmony.CreateProcessor(method).Unpatch(postfix);
+            Modbase.Harmony.CreateProcessor(method).Unpatch(postfixInstance);
+            tracedProfiler = null;
+
+            if (on)
             {
-                status = currentTrackedStacktraces != 0 
-                    ? string.Format(inactiveTemplate, currentTrackedStacktraces) 
-                    : string.Format(idleTemplate);
+                StackTraceUtility.Reset();
+                selectedDistance = 0;
+                selectedTrace = 0;
+                postfixCycle = -1;
+                tracedProfiler = GUIController.CurrentProfiler;
+                var declaring = method.DeclaringType;
+                var type = tracedProfiler?.type;
+                filterType = !method.IsStatic && type != null && declaring != null && type != declaring && declaring.IsAssignableFrom(type) ? type : null;
+                Modbase.Harmony.Patch(method, postfix: new HarmonyMethod(method.IsStatic ? postfix : postfixInstance));
             }
 
-            var statusWidth = status.GetWidthCached();
-            var tracingStatusRect = statusBox.LeftPartPixels(statusWidth);
-            statusBox.AdjustHorizonallyBy(statusWidth);
-            Widgets.Label(tracingStatusRect, status);
-
-            var ct = CurrentTrace;
-            if (ct == null) return;
-
-            var modsInvolved = CurrentTrace.Methods.Sum(st => st.Patches);
-            
-            status = string.Format(traceInformationTempate, ct.Count, ct.Count / (float)currentTrackedStacktraces, modsInvolved);
-            Widgets.Label(statusBox.RightPartPixels(status.GetWidthCached()), status);
+            currentlyTracking = on;
         }
 
-        // Horizontal column which offers the option to
-        // Enable, Disable, View Different Stacktrace, Summary
-        public void DrawLeftColumn(Rect rect, MethodInfo method)
+        private static string Units => GUIController.CurrentCategory == Category.Tick ? Strings.unit_ticks : Strings.unit_frames;
+
+        private static StackTraceUtility.SlotTraces SlotAt(Profiler profiler, int distance, out int slot)
         {
-            var col = GUI.color;
-            GUI.color = col * new Color(1f, 1f, 1f, 0.4f);
-            Widgets.DrawLineVertical(rect.x + rect.width, rect.y, rect.height);
-            GUI.color = col;
-            
-            var ts = Text.Font;
-            Text.Font = GameFont.Small;
-            
-            var height = rect.height - 12;
-            var individualHeight = height / 3f;
-            var methodString = Utility.GetSignature(method, false);
-            
-            // Enable
-            var enableRect = rect.TopPartPixels(individualHeight);
-            rect.AdjustVerticallyBy(individualHeight);
-            DrawEnableButton(enableRect, method, methodString);
-
-            DrawLine(ref rect);
-
-            // Disable
-            var disableRect = rect.TopPartPixels(individualHeight);
-            rect.AdjustVerticallyBy(individualHeight);
-            DrawDisableButton(disableRect, method);
-            
-            DrawLine(ref rect);
-
-            // Change
-            var changeTraceRect = rect.TopPartPixels(individualHeight);
-            rect.AdjustVerticallyBy(individualHeight);
-            DrawChangeTraceButton(changeTraceRect);
-
-            Text.Font = ts;
+            slot = 0;
+            if (distance < 1 || distance >= Profiler.RECORDS_HELD) return null;
+            slot = (int)((profiler.currentIndex + Profiler.RECORDS_HELD - distance) % Profiler.RECORDS_HELD);
+            var traces = StackTraceUtility.slots[slot];
+            return traces != null && traces.cycle == ProfileController.cycle - distance ? traces : null;
         }
-        public void DrawLine(ref Rect rect)
+
+        private void DrawSplitter(Rect rect)
         {
-            rect.AdjustVerticallyBy(2);
-            
-            var col = GUI.color;
-            GUI.color = col * new Color(1f, 1f, 1f, 0.4f);
-            Widgets.DrawLineHorizontal(rect.x, rect.y, rect.width);
-            GUI.color = col;
-            
-            rect.AdjustVerticallyBy(2);
-        }
-        private void DrawEnableButton(Rect rect, MethodInfo method, string methodString)
-        {
-            var tooltip = $"Enable stack trace profiling";
-            var height = rect.height;
-            if (height > 25f + Text.LineHeight)
+            var line = new Rect(rect.x, rect.center.y - 1f, rect.width, 2f);
+            Widgets.DrawBoxSolid(line, Mouse.IsOver(rect) || draggingSplitter ? new Color(1f, 1f, 1f, 0.5f) : new Color(1f, 1f, 1f, 0.15f));
+            TooltipHandler.TipRegion(rect, Strings.stack_splitter_tip);
+
+            var e = Event.current;
+            if (e.type == EventType.MouseDown && e.button == 0 && Mouse.IsOver(rect))
             {
-                DubGUI.CenterText(() => Widgets.Label(rect.TopPartPixels(Text.LineHeight), "Enable"));
-                rect.AdjustVerticallyBy(Text.LineHeight);
+                draggingSplitter = true;
+                e.Use();
+            }
+            else if (draggingSplitter && e.type == EventType.MouseDrag)
+            {
+                stripHeight += e.delta.y;
+                e.Use();
+            }
+            else if (draggingSplitter && e.rawType == EventType.MouseUp)
+            {
+                draggingSplitter = false;
+            }
+        }
+
+        private void DrawSamples(Rect rect)
+        {
+            var profiler = GUIController.CurrentProfiler;
+            Widgets.DrawBoxSolid(rect, new Color(0.1f, 0.1f, 0.1f));
+            if (profiler == null) return;
+
+            var logCount = Analyzer.GetCurrentLogCount;
+            var count = Mathf.Min(stripCount, logCount);
+            if (count <= 0) return;
+            stripOffset = Mathf.Clamp(stripOffset, 0, Mathf.Max(0, logCount - count));
+
+            var width = rect.width / count;
+            var e = Event.current;
+            var mouseFromRight = rect.xMax - e.mousePosition.x;
+
+            if (Mouse.IsOver(rect) && e.type == EventType.ScrollWheel)
+            {
+                var fromRight = Mathf.Clamp01(mouseFromRight / rect.width);
+                var anchor = stripOffset + fromRight * count;
+                stripCount = Mathf.Clamp(stripCount + (int)(e.delta.y * stripCount * 0.07f), 20, Profiler.RECORDS_HELD);
+                count = Mathf.Min(stripCount, logCount);
+                stripOffset = Mathf.Clamp(Mathf.RoundToInt(anchor - fromRight * count), 0, Mathf.Max(0, logCount - count));
+                width = rect.width / count;
+                e.Use();
             }
 
-            if (currentlyTracking)
-                Widgets.DrawHighlightSelected(rect);
-            
-            var centerRect = rect.CenterWithDimensions(25, 25);
-            TooltipHandler.TipRegion(centerRect, tooltip);
-            
-            if (Widgets.ButtonImage(centerRect, Widgets.CheckboxOnTex))
+            if (e.type == EventType.MouseDown && e.button == 0 && Mouse.IsOver(rect))
             {
-                if (currentlyTracking is false)
+                draggingStrip = true;
+                dragMoved = false;
+                dragStartX = e.mousePosition.x;
+                dragStartOffset = stripOffset;
+                e.Use();
+            }
+            else if (draggingStrip && e.type == EventType.MouseDrag)
+            {
+                if (Mathf.Abs(e.mousePosition.x - dragStartX) > 3f) dragMoved = true;
+                if (dragMoved) stripOffset = Mathf.Clamp(Mathf.RoundToInt(dragStartOffset + (e.mousePosition.x - dragStartX) / width), 0, Mathf.Max(0, logCount - count));
+                e.Use();
+            }
+            else if (draggingStrip && e.rawType == EventType.MouseUp)
+            {
+                draggingStrip = false;
+                if (!dragMoved && Mouse.IsOver(rect))
                 {
-                    StackTraceUtility.Reset();
-                    currentTrace = 0;
-                    currentTrackedStacktraces = 0;
-                    
-                    Modbase.Harmony.Patch(method, postfix: new HarmonyMethod(postfix));
+                    var d = stripOffset + 1 + Mathf.FloorToInt(mouseFromRight / width);
+                    selectedDistance = selectedDistance == d ? 0 : d;
+                    selectedTrace = 0;
+                    tableScroll = Vector2.zero;
+                }
+            }
+
+            var max = 0.001;
+            for (var d = stripOffset + 1; d <= stripOffset + count; d++) max = Math.Max(max, profiler.times[(profiler.currentIndex + Profiler.RECORDS_HELD - d) % Profiler.RECORDS_HELD]);
+
+            var selected = selectedDistance;
+            for (var i = 1; i <= count; i++)
+            {
+                var d = stripOffset + i;
+                var traces = SlotAt(profiler, d, out var slot);
+                var time = profiler.times[slot];
+                var x = rect.xMax - i * width;
+                var column = new Rect(x, rect.y, width, rect.height);
+                var height = (float)(time / max) * (rect.height - 2f);
+                var bar = new Rect(x, rect.yMax - height, Mathf.Max(1f, width - (width > 3f ? 1f : 0f)), height);
+
+                Widgets.DrawBoxSolid(bar, d == selected ? Color.white : traces != null ? new Color(0.4f, 0.65f, 0.95f) : new Color(0.35f, 0.35f, 0.35f));
+                if (d == selected) Widgets.DrawBoxSolid(column with { y = rect.yMax - 2f, height = 2f }, Color.white);
+
+                if (!Mouse.IsOver(column)) continue;
+
+                Widgets.DrawBoxSolid(column, new Color(1f, 1f, 1f, 0.08f));
+                TooltipHandler.TipRegion(column, new TipSignal(() => Strings.stack_sample_tip(d.ToString(), Units, profiler.times[slot].ToString("0.000"), profiler.hits[slot].ToString("N0")) + "\n" + (SlotAt(profiler, d, out _) == null ? Strings.stack_sample_none : Strings.stack_sample_click), "PA.StackSamples".GetHashCode()));
+            }
+
+            GUI.color = new Color(1f, 1f, 1f, 0.5f);
+            Text.Anchor = TextAnchor.UpperLeft;
+            Widgets.Label(rect.ContractedBy(3f, 1f), $"{max:0.00} ms");
+            Text.Anchor = TextAnchor.UpperRight;
+            Widgets.Label(rect.ContractedBy(3f, 1f), selected == 0 ? Strings.stack_samples_hint : Strings.stack_samples_selected(selected.ToString()));
+            Text.Anchor = TextAnchor.UpperLeft;
+            GUI.color = Color.white;
+        }
+        private List<(long key, StackTraceInformation info, float calls)> Rows(out string title)
+        {
+            var rows = new List<(long, StackTraceInformation, float)>();
+            var profiler = GUIController.CurrentProfiler;
+
+            lock (StackTraceUtility.sync)
+            {
+                var slot = profiler == null || selectedDistance == 0 ? null : SlotAt(profiler, selectedDistance, out _);
+                if (slot != null)
+                {
+                    var scale = slot.calls > slot.weight && slot.weight > 0 ? slot.calls / slot.weight : 1f;
+                    foreach (var (key, weight) in slot.counts)
+                        if (StackTraceUtility.traces.TryGetValue(key, out var info)) rows.Add((key, info, weight * scale));
+                    title = Strings.stack_title_sample(selectedDistance.ToString(), Units, slot.calls.ToString("N0")) + (filterType != null ? " " + Strings.stack_title_ontype(filterType.Name) : "") + (slot.sampled ? ", " + Strings.stack_title_sampled : "");
                 }
                 else
                 {
-                    ThreadSafeLogger.ErrorOnce($"Can not retrace {methodString} while currently tracing", method.GetHashCode());
+                    foreach (var (key, info) in StackTraceUtility.traces) rows.Add((key, info, info.Weight));
+                    title = selectedDistance == 0 ? (filterType != null ? Strings.stack_title_alltype(filterType.Name) : Strings.stack_title_all) : Strings.stack_title_none;
+                    if (selectedDistance != 0) rows.Clear();
                 }
-
-                currentlyTracking = true;
             }
+
+            rows.Sort((a, b) => b.Item3.CompareTo(a.Item3));
+            return rows;
         }
 
-        private void DrawDisableButton(Rect rect, MethodInfo method)
+        private void DrawTable(Rect rect)
         {
-            var height = rect.height;
-            if (height > 25f + Text.LineHeight)
+            var rows = Rows(out var title);
+            var total = rows.Sum(r => r.calls);
+
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Widgets.Label(rect.TopPartPixels(RowHeight), title);
+            rect.AdjustVerticallyBy(RowHeight);
+
+            var header = rect.TopPartPixels(RowHeight);
+            var callsW = 70f;
+            var pctW = 50f;
+            var patchW = 50f;
+            GUI.color = new Color(0.65f, 0.65f, 0.65f);
+            Text.Anchor = TextAnchor.MiddleRight;
+            Widgets.Label(header.LeftPartPixels(callsW), Strings.stack_col_calls);
+            Widgets.Label(new Rect(header.x + callsW, header.y, pctW, RowHeight), "%");
+            Widgets.Label(new Rect(header.xMax - patchW - 16f, header.y, patchW, RowHeight), Strings.stack_col_patches);
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Widgets.Label(new Rect(header.x + callsW + pctW + 8f, header.y, header.width - callsW - pctW - patchW - 24f, RowHeight), Strings.stack_col_calledfrom);
+            GUI.color = Color.white;
+            TooltipHandler.TipRegion(header, Strings.stack_table_tip);
+            rect.AdjustVerticallyBy(RowHeight);
+
+            Widgets.DrawLineHorizontal(rect.x, rect.y, rect.width);
+
+            var view = new Rect(0f, 0f, rect.width - 16f, rows.Count * RowHeight);
+            Widgets.BeginScrollView(rect, ref tableScroll, view, true);
+
+            for (var i = 0; i < rows.Count; i++)
             {
-                DubGUI.CenterText(() => Widgets.Label(rect.TopPartPixels(Text.LineHeight), "Disable"));
-                rect.AdjustVerticallyBy(Text.LineHeight);
-            }
+                var row = new Rect(0f, i * RowHeight, view.width, RowHeight);
+                if (row.yMax < tableScroll.y || row.y > tableScroll.y + rect.height) continue;
 
-            var tooltip = $"Disable stack trace profiling";
+                var (key, info, calls) = rows[i];
+                if (key == selectedTrace) Widgets.DrawHighlightSelected(row);
+                Widgets.DrawHighlightIfMouseover(row);
 
-            if (currentlyTracking is false)
-                GUI.color = Color.gray;
+                var caller = info.Methods.FirstOrDefault(m => m.method != currentMethod);
+                Text.Anchor = TextAnchor.MiddleRight;
+                Widgets.Label(row.LeftPartPixels(callsW), $"{Math.Round(calls):N0}");
+                Widgets.Label(new Rect(row.x + callsW, row.y, pctW, RowHeight), total > 0 ? $"{calls / total:P0}" : "");
+                Widgets.Label(new Rect(row.xMax - patchW, row.y, patchW, RowHeight), info.ModsInvolved.ToString());
+                Text.Anchor = TextAnchor.MiddleLeft;
+                var name = caller == null ? "?" : $"{caller.MethodString}  ({caller.Mod})";
+                Widgets.Label(new Rect(row.x + callsW + pctW + 8f, row.y, row.width - callsW - pctW - patchW - 12f, RowHeight), name.Truncate(row.width - callsW - pctW - patchW - 12f));
 
-            var centerRect = rect.CenterWithDimensions(25, 25);
-            TooltipHandler.TipRegion(centerRect, tooltip);
-            
-            if (Widgets.ButtonImage(centerRect, Widgets.CheckboxOffTex))
-            {
-                if (currentlyTracking)
+                if (Widgets.ButtonInvisible(row))
                 {
-                    Modbase.Harmony.CreateProcessor(method).Unpatch(postfix);
+                    selectedTrace = key;
+                    stackScroll = Vector2.zero;
                 }
-
-                currentlyTracking = false;
             }
-            
-            if (currentlyTracking is false)
-                GUI.color = Color.white;
+
+            Widgets.EndScrollView();
+            Text.Anchor = TextAnchor.UpperLeft;
         }
 
-        private void DrawChangeTraceButton(Rect rect)
+        private void DrawStack(Rect rect)
         {
-            var height = rect.height;
-            if (height > 25f + Text.LineHeight)
-            {
-                DubGUI.CenterText(() => Widgets.Label(rect.TopPartPixels(Text.LineHeight), "Change"));
-                rect.AdjustVerticallyBy(Text.LineHeight);
-            }
+            StackTraceInformation info;
+            lock (StackTraceUtility.sync) StackTraceUtility.traces.TryGetValue(selectedTrace, out info);
 
-            var tooltip = $"Change the currently viewed stacktrace";
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Widgets.Label(rect.TopPartPixels(RowHeight), info == null ? Strings.stack_select : Strings.stack_full);
+            Text.Anchor = TextAnchor.UpperLeft;
+            rect.AdjustVerticallyBy(RowHeight);
 
-            if (currentTrackedStacktraces == 0)
-                GUI.color = Color.gray;
-            
-            var centerRect = rect.CenterWithDimensions(25, 25);
-            TooltipHandler.TipRegion(centerRect, tooltip);
-
-            if(Widgets.ButtonImage(centerRect, Textures.Burger))
-            {
-                if (currentTrackedStacktraces != 0)
-                {
-                    var traces = StackTraceUtility.traces.Values.ToList();
-                    CalculateHeaders(traces, traces.MaxBy(t => t.Depth).Depth);
-                    
-                    var options = StackTraceUtility.traces
-                        .OrderBy(p => p.Value.Count)
-                        .Reverse()
-                        .Select(st => new FloatMenuOption($"{st.Value.Header} : {st.Value.Count}", () => { currentTrace = st.Key; }))
-                        .ToList();
-
-                    Find.WindowStack.Add(new FloatMenu(options));
-                }
-            }
-            
-            if (currentTrackedStacktraces == 0)
-                GUI.color = Color.white;
-        }
-        private void CalculateHeaders(List<StackTraceInformation> stackTraces, int maxDepth)
-        {
-            // Find first unique method at a given depth
-            // from each callstack and display it 
-            
-            //  2      another     |      different    |      blahblah
-            //  1      notunique   |     notunique     |     uniquepath
-            //  0      target      |       target      |      target
-            //       ----------------------------------------------------
-            //Header:  another     |     different     |     uniquepath
-            
-            for (var depth = 0; depth < maxDepth; depth++)
-            {
-                var seenMethods = new Dictionary<MethodBase, int>();
-                for (var i = 0; i < stackTraces.Count; i++)
-                {
-                    var stackTrace = stackTraces[i];
-                    if (stackTrace.Depth < depth || stackTrace.Header.NullOrEmpty() is false) continue;
-
-                    var method = stackTrace.Method(depth);
-                    if (stackTrace.Depth == depth)
-                    {
-                        stackTrace.Header = Utility.GetSignature(stackTrace.Method(depth).method, false);
-                    }
-
-                    if (seenMethods.TryGetValue(method.method, out var idx))
-                    {
-                        var otherTrace = stackTraces[idx];
-                        
-                        if(otherTrace.Depth > depth)
-                            otherTrace.Header = "";
-                    }
-                    else
-                    {
-                        seenMethods.Add(stackTrace.Method(depth).method, i);
-                        stackTrace.Header = Utility.GetSignature(method.method, false);
-                    }
-                }
-            }
+            if (info != null) DrawStackTrace(rect, info);
         }
 
         private void DrawStackTrace(Rect rect, StackTraceInformation stackTrace)
         {
-            const string dummyLen = "XXXXXXXXXXXXXXXX"; // 16 chars length
-            const string dummyAddition = "XXXX";
+            var methods = stackTrace.Methods.ToList();
+            var modWidth = Mathf.Min(140f, rect.width * 0.25f);
+            var patchWidth = 50f;
+            var methodWidth = rect.width - modWidth - patchWidth - 16f;
 
-            var dummyAdditionLen = dummyAddition.GetWidthCached();
-            var textSize = Text.LineHeight;
-            
-            var patchesLen = "Patches   ".GetWidthCached();
-            var modNameLen = Mathf.Min(dummyLen.GetWidthCached(), stackTrace.Methods.MaxBy(t => t.Mod.GetWidthCached()).Mod.GetWidthCached() + dummyAdditionLen);
-            var availModLen = rect.width - (patchesLen + modNameLen);
-            
-            var methodLen = Mathf.Min(availModLen, stackTrace.Methods.MaxBy(t => t.MethodString.GetWidthCached()).MethodString.GetWidthCached() + dummyAdditionLen);
-            
-
-            Rect GetMethodColumn(float y, float height) => new Rect(rect.x, y, methodLen, height);
-            Rect GetModColumn(float y, float height) => new Rect(rect.x + methodLen, y, modNameLen, height);
-            Rect GetPatchColumn(float y, float height) => new Rect(rect.x + methodLen + modNameLen, y, patchesLen, height);
-
-            Widgets.Label( GetMethodColumn(rect.y, textSize), " Method ");
-            var anchor = Text.Anchor;
-            
-            Text.Anchor = TextAnchor.MiddleCenter;
-            Widgets.Label( GetModColumn(rect.y, textSize), " Mod ");
-            Widgets.Label( GetPatchColumn(rect.y, textSize), " Patches ");
-            Text.Anchor = anchor;
-
-            rect.AdjustVerticallyBy(textSize);
-            
-            var col = GUI.color;
-            GUI.color = col * new Color(1f, 1f, 1f, 0.4f);
+            GUI.color = new Color(0.65f, 0.65f, 0.65f);
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Widgets.Label(new Rect(rect.x, rect.y, methodWidth, RowHeight), Strings.stack_col_method);
+            Widgets.Label(new Rect(rect.x + methodWidth, rect.y, modWidth, RowHeight), Strings.stack_col_mod);
+            Text.Anchor = TextAnchor.MiddleRight;
+            Widgets.Label(new Rect(rect.x + methodWidth + modWidth, rect.y, patchWidth, RowHeight), Strings.stack_col_patches);
+            GUI.color = Color.white;
+            rect.AdjustVerticallyBy(RowHeight);
             Widgets.DrawLineHorizontal(rect.x, rect.y, rect.width);
-            Widgets.DrawLineVertical(rect.x + methodLen, rect.y - textSize, rect.height + textSize);
-            Widgets.DrawLineVertical(rect.x + methodLen + modNameLen + 1, rect.y - textSize, rect.height + textSize);
-            GUI.color = col;
 
-            var inner = new Rect(rect.x, 0, rect.width - 17f, stackTrace.Methods.Count() * textSize);
-            Widgets.BeginScrollView(rect, ref scrollPosition, inner, false);
+            var view = new Rect(0f, 0f, rect.width - 16f, methods.Count * RowHeight);
+            Widgets.BeginScrollView(rect, ref stackScroll, view, true);
 
-            for (int i = 0; i < stackTrace.Methods.Count(); i++)
+            for (var i = 0; i < methods.Count; i++)
             {
-                var trace = stackTrace.Method(i);
+                var trace = methods[i];
+                var y = i * RowHeight;
+                var row = new Rect(0f, y, view.width, RowHeight);
 
-                var methodRect = GetMethodColumn(inner.y + (i * textSize), textSize);
-                DrawStringWithin(methodRect, trace.MethodString, true);
+                Widgets.DrawHighlightIfMouseover(row);
+                if (Widgets.ButtonInvisible(row) && trace.method != null)
+                    Find.WindowStack.Add(new FloatMenu(MethodMenu(trace).ToList()));
 
-                Text.Anchor = TextAnchor.MiddleCenter;
-                
-                var modRect = GetModColumn(inner.y + (i * textSize), textSize);
-                DrawStringWithin(modRect, trace.Mod, true);
-                
-                var patchRect = GetPatchColumn(inner.y + (i * textSize), textSize);
+                Text.Anchor = TextAnchor.MiddleLeft;
+                DrawStringWithin(new Rect(0f, y, methodWidth, RowHeight), trace.MethodString, true);
+                DrawStringWithin(new Rect(methodWidth, y, modWidth, RowHeight), trace.Mod, false);
+
+                var patchRect = new Rect(methodWidth + modWidth, y, patchWidth, RowHeight);
+                Text.Anchor = TextAnchor.MiddleRight;
                 Widgets.Label(patchRect, trace.Patches.ToString());
-                TooltipHandler.TipRegion(patchRect, trace.SummaryString);
-
-                Text.Anchor = anchor;
+                if (trace.Patches > 0) TooltipHandler.TipRegion(patchRect, trace.SummaryString);
             }
-            
+
             Widgets.EndScrollView();
+            Text.Anchor = TextAnchor.UpperLeft;
+        }
+
+        private static IEnumerable<FloatMenuOption> MethodMenu(MethodMeta trace)
+        {
+            var method = trace.method;
+            var category = GUIController.CurrentCategory == Category.Tick ? Category.Tick : Category.Update;
+            var name = $"{method.DeclaringType?.FullName}:{method.Name}";
+            var categoryName = category == Category.Tick ? Strings.tab_tick : Strings.tab_update;
+
+            yield return new FloatMenuOption(Strings.stack_menu_profile(method.Name, categoryName), () => Panel_DevOptions.ExecutePatch(CurrentInput.Method, name, category));
+
+            if (method is MethodInfo info)
+                yield return new FloatMenuOption(Strings.stack_menu_internal(method.Name, categoryName), () => Utility.PatchInternalMethod(info, category));
+
+            if (trace.Patches > 0)
+                yield return new FloatMenuOption(Strings.stack_menu_patches(method.Name, categoryName), () => Panel_DevOptions.ExecutePatch(CurrentInput.MethodHarmony, name, category));
+
+            yield return new FloatMenuOption(Strings.stack_menu_copy, () =>
+            {
+                var te = new TextEditor { text = Utility.GetSignature(method, false) };
+                te.SelectAll();
+                te.Copy();
+            });
+
+            yield return new FloatMenuOption(Strings.stack_menu_dnspy, () => Panel_BottomRow.OpenDnspy(method));
         }
 
         // Squishes a string of varying size into the rect bounding, if
-        // the string is larger than the rect, a tooltip will be drawn 
+        // the string is larger than the rect, a tooltip will be drawn
         // when the rect is hovered over, and the string will be trimmed
         // trimming occurs from the left if the `left` param is true.
         private void DrawStringWithin(Rect bounding, string value, bool left)
@@ -360,7 +425,7 @@ namespace Analyzer.Profiling
 
             var strWidth = value.GetWidthCached();
             var strLen = value.Length;
-            
+
             if (strWidth > bounding.width)
             {
                 var diff = strWidth - bounding.width;
@@ -384,10 +449,10 @@ namespace Analyzer.Profiling
             // No bracket, its not a method
             var lhsParams = str.FirstIndexOf(c => c == '(');
             if (lhsParams == -1) return str.Substring(left ? charsToRemove : 0, newLen);
-            
+
             // How many characters between the parens
             var paramChars = str.Length - lhsParams;
-            
+
             // Enough to warrant chopping it off ( replace it with (...) )
             if (paramChars > 5)
             {
@@ -405,23 +470,32 @@ namespace Analyzer.Profiling
             return str;
         }
 
-        // This will be added as a Postfix to the method which we want to gather stack trace information for
-        // it will only effect one method, so we can skip the check, and it will not slow down other profilers
-        // because it will only be patched onto one method. There can be extra checks and flexibility in how
-        // many frames are grabbed p/s etc. These are to be done when the GUI decisions have been made.
+        public static void StacktracePostfix() => Capture(null);
 
-        public static void StacktracePostfix()
+        public static void StacktracePostfixInstance(object __instance) => Capture(__instance);
+
+        private static void Capture(object instance)
         {
-            // The JIT doesn't seem to inline dynamically generated methods. So it should be safe to hardcode
-            // the '2' skipframes, maybe in future updates this will not hold true and should be updated.
+            var profiler = tracedProfiler;
+            if (profiler == null || Analyzer.CurrentlyPaused) return;
+            if (filterType != null && instance?.GetType() != filterType) return;
 
-            if (currentTrackedStacktraces < GOAL_TRACKED_TRACES)
+            var cycle = ProfileController.cycle;
+            if (cycle != postfixCycle)
             {
-                StackTraceUtility.Add(new StackTrace(2, false));
-                currentTrackedStacktraces++;
+                if (postfixCycle >= 0) StackTraceUtility.SetCalls(postfixSlot, postfixCycle, cycleCalls);
+                postfixCycle = cycle;
+                postfixSlot = profiler.currentIndex;
+                cycleCalls = cycleCaptures = 0;
+                rate = 1;
             }
-            else currentlyTracking = false;
-        }
 
+            if (++cycleCalls % rate != 0 || cycleCaptures >= CaptureCap) return;
+
+            var weight = rate;
+            if (++cycleCaptures % CaptureStep == 0) rate *= 2;
+
+            StackTraceUtility.Add(new StackTrace(1, false), weight, postfixSlot, cycle, cycleCalls);
+        }
     }
 }

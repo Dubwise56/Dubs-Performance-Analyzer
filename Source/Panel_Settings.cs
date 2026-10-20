@@ -14,8 +14,8 @@ namespace Analyzer
         public static void Draw(Rect rect, bool settingsPage = false)
         {
             rect = rect.Rounded();
-            rect.height -= 32;
-            rect.y += 32;
+            //rect.height -= 32;
+            //rect.y += 32;
             Widgets.DrawMenuSection(rect);
 
             rect = rect.ContractedBy(10);

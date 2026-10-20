@@ -21,7 +21,8 @@ namespace Analyzer.Profiling
         Percent,
         Name,
         Calls,
-        Total
+        Total,
+        Spikes
     }
 
     public class Column : IExposable
@@ -55,6 +56,7 @@ namespace Analyzer.Profiling
                     case SortBy.Name: return Strings.logs_name;
                     case SortBy.Total: return Strings.logs_total;
                     case SortBy.CallsPu: return Strings.logs_callspu(CurrentCycleName);
+                    case SortBy.Spikes: return Strings.logs_spikes;
                 }
 
                 return null;
@@ -78,6 +80,7 @@ namespace Analyzer.Profiling
                     case SortBy.Name: return Strings.logs_name_desc;
                     case SortBy.Total: return Strings.logs_total_desc;
                     case SortBy.CallsPu: return Strings.logs_callspu_desc(CurrentCycleName);
+                    case SortBy.Spikes: return Strings.logs_spikes_desc;
                 }
 
                 return null;
@@ -107,6 +110,8 @@ namespace Analyzer.Profiling
                     return num < 1 ? $" {num:F3}"
                         : num < 10 ? $" {num:F1}"
                         : $" {Convert.ToInt32(num)}";
+                case SortBy.Spikes:
+                    return log.spikes > 0 ? $" {log.spikes} " : "";
                 default:
                     return "";
             }
@@ -141,7 +146,13 @@ namespace Analyzer.Profiling
 
         public static void Initialise()
         {
-            if (columns != null) return;
+            if (columns != null)
+            {
+                foreach (SortBy val in Enum.GetValues(typeof(SortBy)))
+                    if (columns.All(c => c.sortBy != val)) columns.Add(new Column(val, val == SortBy.Spikes));
+                columns.First(c => c.sortBy == SortBy.Percent).order = -1;
+                return;
+            }
 
             var enumLength = typeof(SortBy).GetEnumValues().Length;
             columns = new List<Column>();
@@ -150,8 +161,10 @@ namespace Analyzer.Profiling
             {
                 var val = (SortBy) i;
 
-                columns.Add(new Column(val, i <= 5));
+                columns.Add(new Column(val, i <= 5 || val == SortBy.Spikes));
             }
+
+            columns.First(c => c.sortBy == SortBy.Percent).order = -1;
         }
 
 
@@ -165,7 +178,16 @@ namespace Analyzer.Profiling
                 return;
             }
 
-            var columnsR = rect.TopPartPixels(50f);
+            var top = rect.TopPartPixels(RootBarHeight).ContractedBy(6f, 4f);
+#if V1_7
+            if (FrameBreakdown.parts.Count > 0)
+                DrawFlame(top);
+            else
+#endif
+            DrawRootBar(top.TopPartPixels(BLOCK_HEIGHT));
+            rect.AdjustVerticallyBy(RootBarHeight);
+
+            var columnsR = rect.TopPartPixels(COLUMN_HEADER_HEIGHT);
             DrawColumns(columnsR);
             
             for (var i = 0; i < columns.Count; i++)
@@ -253,42 +275,37 @@ namespace Analyzer.Profiling
 
         private static void DrawColumnHeader(ref Rect inRect, Column c)
         {
-            Widgets.DrawOptionBackground(inRect, false);
+            var rect = c.sortBy == SortBy.Name ? inRect with { width = inRect.width - 30f } : inRect.LeftPartPixels(NUMERIC_WIDTH);
+            var sorted = Analyzer.SortBy == c.sortBy;
 
-            var rect = inRect.LeftPartPixels(NUMERIC_WIDTH);
+            Widgets.DrawHighlightIfMouseover(rect);
+            GUI.color = sorted ? Color.white : new Color(0.65f, 0.65f, 0.65f);
+            Text.Anchor = c.sortBy == SortBy.Name ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
 
-            if (c.total != 0)
+            var label = rect.ContractedBy(4f, 0f);
+            if (c.sortBy == SortBy.Name) label.xMin += 16f;
+            Text.WordWrap = false;
+            var name = c.Name.Truncate(label.width);
+            Widgets.Label(label, name);
+            Text.WordWrap = true;
+
+            if (sorted)
             {
-                Widgets.Label(rect with { height = rect.height * 2f / 3f}, c.Name);
-                Widgets.Label(rect with { yMin = rect.yMax - rect.height / 3f },
-                    c.sortBy == SortBy.Percent ? $"{Math.Max(Math.Min(c.total, 1d), 0d) * 100d:0.00}%" : $"{c.total:0.000}ms");
-            }
-            else
-            {
-                Widgets.Label(rect, (c.sortBy == SortBy.Name ? "    " : "") + c.Name);
-            }
-            
-            if (Analyzer.SortBy == c.sortBy) 
-                Widgets.DrawHighlight(rect);
-
-            if (Widgets.ButtonInvisible(rect))
-            { 
-                if (Event.current.button == 0) // left click, change sort by
-                {
-                    Analyzer.SortBy = Analyzer.SortBy == c.sortBy ? DEFAULT_SORTBY : c.sortBy;
-                }
+                var textWidth = Text.CalcSize(name).x;
+                Widgets.DrawBoxSolid(new Rect(c.sortBy == SortBy.Name ? label.x : label.xMax - textWidth, rect.yMax - 4f, textWidth, 2f), Color.white);
             }
 
-            TooltipHandler.TipRegion(rect, c.Desc);
+            GUI.color = Color.white;
+
+            if (Widgets.ButtonInvisible(rect) && Event.current.button == 0)
+                Analyzer.SortBy = sorted ? DEFAULT_SORTBY : c.sortBy;
+
+            var total = c.total == 0 ? "" : "\n\n" + (c.sortBy == SortBy.Percent ? Strings.logs_header_percenttotal(Math.Max(Math.Min(c.total, 1d), 0d).ToString("P1"))
+                : c.sortBy == SortBy.Max ? Strings.logs_header_maxtotal(c.total.ToString("0.000")) : Strings.logs_header_mstotal(c.total.ToString("0.000")));
+            Tip(rect, c.Desc + total + "\n\n" + (sorted ? Strings.logs_header_sorted : Strings.logs_header_clicktosort), "header." + c.sortBy);
 
             if (c.sortBy != SortBy.Name)
-            {
                 inRect.AdjustHorizonallyBy(NUMERIC_WIDTH);
-
-                GUI.color = Color.grey;
-                Widgets.DrawLineVertical(inRect.x, rect.y, rect.height);
-                GUI.color = Color.white;
-            }
         }
 
 
@@ -332,7 +349,7 @@ namespace Analyzer.Profiling
             ref var maxColumnTotal = ref columns[(int)SortBy.Max].total;
             maxColumnTotal = Math.Max(maxColumnTotal, log.max);
             
-            columns[(int)SortBy.Percent].total += log.percent;
+            columns[(int)SortBy.Percent].total += ProfileController.updateAverage > 0 ? log.self / ProfileController.updateAverage : 0d;
 
             var visible = listing.GetRect(BOX_HEIGHT);
 
@@ -365,34 +382,21 @@ namespace Analyzer.Profiling
             if (Widgets.ButtonInvisible(visible))
                 ClickWork(log, profile);
 
-            var declaringAssembly = log.meth?.DeclaringType?.Assembly;
+            var root = ProfileController.updateAverage;
+            if (root > 0)
+            {
+                var bar = visible.BottomPartPixels(6f);
+                var colour = rowColours.TryGetValue(log.key, out var c) ? c : Color.grey;
+                Widgets.DrawBoxSolid(bar with { width = bar.width * Mathf.Clamp01((float)(log.average / root)) }, colour with { a = 0.3f });
+                Widgets.DrawBoxSolid(bar with { width = bar.width * Mathf.Clamp01((float)(log.self / root)) }, colour);
+                Tip(bar, Strings.logs_rowbar_tip(log.self.ToString("0.000"), (log.self / root).ToString("P1"), log.average.ToString("0.000"), (log.average / root).ToString("P1"), log.entries.ToString()), "rowbar." + log.key);
+            }
 
-            // Colour a fillable bar below the log depending on the % fill of a log
-            
-            var colour = log.meth == null
-                || (declaringAssembly != null && _vanillaAssemblies.Contains(declaringAssembly))
-                    ? log.percent switch
-                    {
-                        < .005f => Textures.grey,
-                        <= .03f => Textures.lightGrey,
-                        <= .1f => Textures.lighterGrey,
-                        _ => Textures.white
-                    }
-                    : log.percent switch
-                    {
-                        < .005f => Textures.green,
-                        <= .03f => Textures.blue,
-                        <= .1f => Textures.yellow,
-                        _ => Textures.red
-                    };
-
-            Widgets.FillableBar(visible.BottomPartPixels(8f), Mathf.Clamp01(log.percent * 10f), colour, Textures.clear, false);
-
-            Text.Anchor = TextAnchor.MiddleCenter;
+            Text.Anchor = TextAnchor.MiddleRight;
 
             foreach (var column in columns.Where(c => c.Active(GUIController.CurrentEntry.type)).OrderBy(c => c.order))
             {
-                DrawColumnContents(ref visible, column, column.Value(log), profile);
+                DrawColumnContents(ref visible, column, column.Value(log), profile, log);
             }
 
             GUI.color = Color.white;
@@ -401,13 +405,7 @@ namespace Analyzer.Profiling
             currentListHeight += (BOX_HEIGHT + 4);
         }
 
-        private static readonly HashSet<Assembly> _vanillaAssemblies
-            = ((Type[])
-            [
-                typeof(int), typeof(Enumerable), typeof(Thing), typeof(Vector2), typeof(GUI), typeof(LinkedList<>)
-            ]).Select(static type => type.Assembly).ToHashSet();
-
-        public static void DrawColumnContents(ref Rect rect, Column c, string value, Profiler profile)
+        public static void DrawColumnContents(ref Rect rect, Column c, string value, Profiler profile, ProfileLog log = null)
         {
             if (c.sortBy == SortBy.Name)
             {
@@ -419,13 +417,195 @@ namespace Analyzer.Profiling
                     GUI.DrawTexture(iconRect, Textures.pin);
                 }
 
+                if (log != null && GUIController.CurrentCategory == Category.Patches)
+                    value += $" <color=#999999>({Phases(log.seenIn)})</color>";
+
                 Text.Anchor = TextAnchor.MiddleLeft;
                 rect.width = 10000;
             }
 
+            if (c.sortBy == SortBy.Spikes && log is { spike: > 0 })
+                Tip(rect.LeftPartPixels(NUMERIC_WIDTH), log.spikeText, "spike." + log.key);
+
             Widgets.Label(c.sortBy == SortBy.Name ? rect : rect.LeftPartPixels(NUMERIC_WIDTH), value);
             rect.x += NUMERIC_WIDTH;
         }
+
+        private const float BLOCK_HEIGHT = 34f;
+        private const float COLUMN_HEADER_HEIGHT = 26f;
+
+#if V1_7
+        private static float RootBarHeight => 8f + (FrameBreakdown.parts.Count > 0 ? 18f + 13f * (ProfileController.WholeFrameRoot ? 2 : 3) + 4f + 18f : BLOCK_HEIGHT);
+#else
+        private static float RootBarHeight => 8f + BLOCK_HEIGHT;
+#endif
+
+        private static Rect Heading(Rect block) => new(block.x, block.y, block.width, 18f);
+
+        private static Rect Bar(Rect block) => new(block.x, block.y + 19f, block.width, 10f);
+
+        private static void HeadingLabel(Rect rect, string text, string tip, string id)
+        {
+            Text.Font = GameFont.Tiny;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Text.WordWrap = false;
+            Widgets.Label(rect, text.Truncate(rect.width));
+            Text.WordWrap = true;
+            Tip(rect, tip, id);
+        }
+
+        private static void Tip(Rect rect, string text, string id) => TooltipHandler.TipRegion(rect, new TipSignal(text, ("PA.Logs." + id).GetHashCode()));
+
+        private static readonly Dictionary<string, Color> rowColours = new();
+
+
+        private static readonly Color[] BarColours = [new(0.36f, 0.62f, 0.9f), new(0.95f, 0.6f, 0.25f), new(0.45f, 0.8f, 0.45f), new(0.85f, 0.4f, 0.75f), new(0.9f, 0.85f, 0.35f), new(0.4f, 0.8f, 0.85f)];
+
+        private static string Phases(int seen)
+        {
+            var parts = new List<string>();
+            if ((seen & ProfileController.PhaseTick) != 0) parts.Add(Strings.phase_tick);
+            if ((seen & ProfileController.PhaseUpdate) != 0) parts.Add(Strings.phase_update);
+            if ((seen & ProfileController.PhaseGUI) != 0) parts.Add(Strings.phase_interface);
+            if ((seen & ProfileController.PhaseThread) != 0) parts.Add(Strings.phase_threads);
+            return parts.Count == 0 ? Strings.phase_none : string.Join(", ", parts);
+        }
+
+        private static (string title, string noun, string unit, string units) RootNames()
+        {
+            if (ProfileController.WholeFrameRoot) return (Strings.root_frame_title, Strings.root_frame_noun, Strings.unit_frame, Strings.unit_frames);
+            return GUIController.CurrentCategory == Category.Tick
+                ? (Strings.root_tick_title, Strings.root_tick_noun, Strings.unit_tick, Strings.unit_ticks)
+                : (Strings.root_update_title, Strings.root_update_noun, Strings.unit_frame, Strings.unit_frames);
+        }
+
+        private static void DrawRootBar(Rect rect)
+        {
+            List<ProfileLog> logs;
+            lock (Analyzer.LogicLock) logs = Analyzer.Logs.Where(l => l.self > 0).OrderByDescending(l => l.self).ToList();
+
+            var root = ProfileController.updateAverage;
+            var listed = logs.Sum(l => l.self);
+            var (title, noun, unit, units) = RootNames();
+
+            var samples = Analyzer.GetCurrentLogCount;
+
+            rowColours.Clear();
+            for (var i = 0; i < logs.Count; i++)
+                rowColours[logs[i].key] = i < BarColours.Length ? BarColours[i] : Color.grey;
+
+            HeadingLabel(Heading(rect), Strings.root_heading(title, root.ToString("0.000"), unit, samples.ToString("N0"), units, listed.ToString("0.000"), (root > 0 ? listed / root : 0).ToString("P1")),
+                Strings.root_heading_tip(samples.ToString("N0"), units, noun, listed.ToString("0.000")), "root.heading");
+
+            var bar = Bar(rect);
+            Widgets.DrawBoxSolid(bar, new Color(0.15f, 0.15f, 0.15f));
+
+            var x = bar.x;
+            for (var i = 0; i <= BarColours.Length && i < logs.Count && root > 0; i++)
+            {
+                var time = i < BarColours.Length ? logs[i].self : logs.Skip(i).Sum(l => l.self);
+                var segment = new Rect(x, bar.y, Mathf.Min(bar.width * (float)(time / root), bar.xMax - x), bar.height);
+                Widgets.DrawBoxSolid(segment, i < BarColours.Length ? BarColours[i] : Color.grey);
+                Tip(segment, Strings.root_segment_tip(i < BarColours.Length ? logs[i].label : Strings.root_otherrows((logs.Count - i).ToString()), time.ToString("0.000"), unit, (time / root).ToString("P1"), noun), "root.segment." + i);
+                x = segment.xMax;
+            }
+
+            Tip(bar with { xMin = x }, Strings.root_rest_tip(noun), "root.rest");
+
+            Text.Anchor = TextAnchor.UpperLeft;
+        }
+
+#if V1_7
+        private static readonly Color[] FrameColours = [new(0.35f, 0.75f, 0.7f), new(0.45f, 0.5f, 0.9f), new(0.7f, 0.45f, 0.8f), new(0.5f, 0.5f, 0.5f), new(0.24f, 0.3f, 0.24f)];
+
+        private static string[] FrameTips => [Strings.frame_tip_poll, Strings.frame_tip_update, Strings.frame_tip_capture, Strings.frame_tip_other, Strings.frame_tip_waiting];
+
+        private static void FlameLabel(Rect rect, string text)
+        {
+            Text.Anchor = TextAnchor.MiddleRight;
+            GUI.color = new Color(0.65f, 0.65f, 0.65f);
+            Widgets.Label(rect with { y = rect.y - 4f, height = rect.height + 8f }, text);
+            GUI.color = Color.white;
+        }
+
+        private static void DrawFlame(Rect rect)
+        {
+            List<ProfileLog> logs;
+            lock (Analyzer.LogicLock) logs = Analyzer.Logs.Where(l => l.self > 0).OrderByDescending(l => l.self).ToList();
+
+            rowColours.Clear();
+            for (var i = 0; i < logs.Count; i++)
+                rowColours[logs[i].key] = i < BarColours.Length ? BarColours[i] : Color.grey;
+
+            var category = GUIController.CurrentCategory;
+            var parent = ProfileController.WholeFrameRoot ? (category == Category.GUI ? 2 : -1) : 1;
+            var nested = !ProfileController.WholeFrameRoot;
+            var perFrame = category == Category.Tick ? (GUIElement_TPS.FPS > 0 ? GUIElement_TPS.TPS / (double)GUIElement_TPS.FPS : 0d) : 1d;
+            var (title, noun, unit, units) = RootNames();
+
+            var frame = FrameBreakdown.frameMs;
+            var root = ProfileController.updateAverage;
+            var listed = logs.Sum(l => l.self);
+            var samples = Analyzer.GetCurrentLogCount;
+            var ticks = category == Category.Tick ? " " + Strings.frame_ticksperframe(perFrame.ToString("0.#")) : "";
+
+            HeadingLabel(Heading(rect), Strings.frame_heading(frame.ToString("0.000"), (frame > 0 ? 1000d / frame : 0).ToString("0"), FrameBreakdown.samples.ToString()), Strings.frame_heading_tip, "frame.heading");
+
+            const float gutter = 70f;
+            var bar = new Rect(rect.x + gutter, rect.y + 19f, rect.width - gutter, 10f);
+            var scale = frame > 0 ? bar.width / frame : 0d;
+            FlameLabel(new Rect(rect.x, bar.y, gutter - 6f, bar.height), Strings.frame_label_whole);
+            FlameLabel(new Rect(rect.x, bar.y + 13f, gutter - 6f, bar.height), nested ? (category == Category.Tick ? Strings.frame_label_ticks : Strings.frame_label_update) : Strings.frame_label_tab);
+            if (nested) FlameLabel(new Rect(rect.x, bar.y + 26f, gutter - 6f, bar.height), Strings.frame_label_tab);
+            Widgets.DrawBoxSolid(bar, new Color(0.15f, 0.15f, 0.15f));
+
+            var x = bar.x;
+            var anchor = bar.x;
+            for (var i = 0; i < FrameBreakdown.parts.Count && frame > 0; i++)
+            {
+                var (label, ms) = FrameBreakdown.parts[i];
+                var segment = new Rect(x, bar.y, Mathf.Min((float)(ms * scale), bar.xMax - x), bar.height);
+                Widgets.DrawBoxSolid(segment, FrameColours[i]);
+                if (i == parent) anchor = segment.x;
+                if (i == parent || parent < 0 && i < 4) Widgets.DrawBox(segment);
+                if (i == 4 && segment.width > 140f)
+                {
+                    Text.Anchor = TextAnchor.MiddleCenter;
+                    GUI.color = new Color(0.75f, 0.85f, 0.75f);
+                    Widgets.Label(segment with { y = segment.y - 4f, height = segment.height + 8f }, Strings.frame_waiting);
+                    GUI.color = Color.white;
+                }
+                Tip(segment, Strings.frame_segment_tip(FrameTips[i], ms.ToString("0.000"), (ms / frame).ToString("P1")), "frame.segment." + i);
+                x = segment.xMax;
+            }
+
+            var y = bar.yMax + 3f;
+            if (nested)
+            {
+                var rootFrame = root * perFrame;
+                var rootRect = new Rect(anchor, y, Mathf.Max(1f, (float)(rootFrame * scale)), 10f);
+                Widgets.DrawBoxSolid(rootRect, FrameColours[1] * 0.7f + Color.white * 0.3f);
+                Widgets.DrawBox(rootRect);
+                Tip(rootRect, Strings.frame_root_tip(title, root.ToString("0.000"), unit, ticks, rootFrame.ToString("0.000"), (frame > 0 ? rootFrame / frame : 0).ToString("P1")), "flame.root");
+                y += 13f;
+            }
+
+            x = anchor;
+            for (var i = 0; i <= BarColours.Length && i < logs.Count && root > 0; i++)
+            {
+                var time = i < BarColours.Length ? logs[i].self : logs.Skip(i).Sum(l => l.self);
+                var segment = new Rect(x, y, (float)(time * perFrame * scale), 10f);
+                Widgets.DrawBoxSolid(segment, i < BarColours.Length ? BarColours[i] : Color.grey);
+                Tip(segment, Strings.frame_row_tip(i < BarColours.Length ? logs[i].label : Strings.root_otherrows((logs.Count - i).ToString()), time.ToString("0.000"), unit, ticks, (time * perFrame).ToString("0.000"), (time / root).ToString("P1"), noun, (frame > 0 ? time * perFrame / frame : 0).ToString("P2")), "flame.row." + i);
+                x = segment.xMax;
+            }
+
+            HeadingLabel(new Rect(rect.x, y + 14f, rect.width, 18f), Strings.frame_tab_heading(title, root.ToString("0.000"), unit, samples.ToString("N0"), units, listed.ToString("0.000"), (root > 0 ? listed / root : 0).ToString("P1")),
+                Strings.frame_tab_heading_tip(samples.ToString("N0"), units, noun, listed.ToString("0.000")), "root.heading");
+
+            Text.Anchor = TextAnchor.UpperLeft;
+        }
+#endif
 
         public static void ClickWork(ProfileLog log, Profiler profile)
         {

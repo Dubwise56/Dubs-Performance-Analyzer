@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.update.harmonypatches", Category.Update)]
+    [Entry("entry.update.harmonypatches", Category.Patches)]
     internal class H_HarmonyPatches
     {
         public static bool Active = false;

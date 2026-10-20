@@ -252,7 +252,7 @@ namespace Analyzer.Profiling
 
                 Profiler prof = ProfileController.Start(key, Namer, sam.GetType(), ac.GetMethodInfo());
                 ac();
-                prof.Stop();
+                prof?.Stop();
             }
             else
             {

@@ -19,10 +19,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- RimWorld 1.7 runs on .NET 10; Harmony 2 does not, so 1.7 bundles Harmony 3. -->
-		<PackageReference Include="Lib.Harmony" Version="3.0.0-rc.2" />
+		<!-- RimWorld 1.7 runs on .NET 10; Harmony 2 does not. Compile against Harmony 3; the Harmony mod (brrainz.harmony) provides it at runtime. -->
+		<PackageReference Include="Lib.Harmony" Version="3.0.0-rc.3" ExcludeAssets="runtime" />
 		<PackageReference Remove="PolySharp" />
-		<PackageReference Update="Krafs.Publicizer" Version="2.3.0">
+		<PackageReference Update="Krafs.Publicizer" Version="2.3.2">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

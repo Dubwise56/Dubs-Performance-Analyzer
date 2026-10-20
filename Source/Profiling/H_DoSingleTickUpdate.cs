@@ -6,12 +6,12 @@ namespace Analyzer.Profiling
 {
     internal class H_DoSingleTickUpdate
     {
+        private static int outerPhase;
+
         public static void Prefix()
         {
-            if (H_RootUpdate.Active)
-            {
-                ProfileController.Start("Tick");
-            }
+            outerPhase = ProfileController.phase;
+            ProfileController.phase = ProfileController.PhaseTick;
 
             if (GUIController.CurrentCategory == Category.Tick) // If we in Tick mode, start our update (can happen multiple times p frame)
                 ProfileController.BeginUpdate();
@@ -21,11 +21,8 @@ namespace Analyzer.Profiling
         {
             if (GUIController.CurrentCategory == Category.Tick) // If we in Tick mode, finish our update (can happen multiple times p frame)
                 ProfileController.EndUpdate();
-            
-            if (H_RootUpdate.Active)
-            {
-                ProfileController.Stop("Tick");
-            }
+
+            ProfileController.phase = outerPhase;
         }
     }
 }

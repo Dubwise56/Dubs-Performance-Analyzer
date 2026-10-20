@@ -30,6 +30,10 @@ namespace Analyzer
             // Display our logged messages that we may have recieved from other threads.
             // ThreadSafeLogger.DisplayLogs();
 
+#if V1_7
+            Profiling.FrameBreakdown.Update();
+#endif
+
             if (TimeTillCleanup == -1) return;
 
             if (Profiling.Analyzer.CurrentlyProfiling)

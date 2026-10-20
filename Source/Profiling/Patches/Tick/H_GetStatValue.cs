@@ -94,7 +94,7 @@ namespace Analyzer.Profiling
         {
             if (Active)
             {
-                __state.Stop();
+                __state?.Stop();
             }
         }
 

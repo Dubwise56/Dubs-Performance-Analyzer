@@ -15,7 +15,7 @@ using Verse;
 
 namespace Analyzer.Profiling
 {
-    [Entry("entry.update.transpilermethods", Category.Update)]
+    [Entry("entry.update.transpilermethods", Category.Patches)]
     public static class H_HarmonyTranspiledMethods
     {
         public static bool Active = false;
