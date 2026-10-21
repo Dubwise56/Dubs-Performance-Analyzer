@@ -259,12 +259,19 @@ namespace Analyzer.Profiling
             foreach (var type in GenTypes.AllTypes)
             {
                 if (type.FullName.Contains("Cecil") || type.FullName.Contains("Analyzer")) continue;
-                if (type.GetCustomAttribute<CompilerGeneratedAttribute>() != null) continue;
 
-
-                foreach (var meth in type.GetMethods(AccessTools.all))
+                MethodInfo[] methods;
+                try
                 {
-                    if (!meth.HasMethodBody()) continue;
+                    if (type.GetCustomAttribute<CompilerGeneratedAttribute>() != null) continue;
+                    methods = type.GetMethods(AccessTools.all);
+                }
+                catch { continue; }
+
+                foreach (var meth in methods)
+                {
+                    try { if (!meth.HasMethodBody()) continue; }
+                    catch { continue; }
                     if (meth.IsGenericMethod || meth.ContainsGenericParameters) continue;
 
                     var str = string.Concat(meth.DeclaringType, ":", meth.Name);
@@ -294,7 +301,8 @@ namespace Analyzer.Profiling
             var names = new HashSet<string>();
             foreach (var type in GenTypes.AllTypes)
             {
-                if (type.GetCustomAttribute<CompilerGeneratedAttribute>() != null) continue;
+                try { if (type.GetCustomAttribute<CompilerGeneratedAttribute>() != null) continue; }
+                catch { continue; }
 
 
                 var tyName = type.FullName;
